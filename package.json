@@ -1,6 +1,6 @@
 {
   "name": "bluzelle",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Bluzelle Database for JavaScript",
   "main": "api.js",
   "scripts": {
@@ -19,6 +19,7 @@
     "base64-arraybuffer": "^0.1.5",
     "buffer": "^5.1.0",
     "isomorphic-ws": "^4.0.0",
-    "websocket": "^1.0.25"
+    "websocket": "^1.0.25",
+    "ws": "^5.1.1"
   }
 }
