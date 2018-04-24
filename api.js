@@ -9,10 +9,13 @@ const createWithConversion = (key, value) =>
 
 
 const updateBase64 = communication.update;
+const createBase64 = communication.create;
+
+const createWithConversion = (key, value) =>
+    createBase64(key, valToBase64(value));
 
 const updateWithConversion = (key, value) =>
     updateBase64(key, valToBase64(value));
-
 
 const readBase64 = communication.read;
 
