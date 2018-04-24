@@ -7,7 +7,7 @@ const assert = require('assert');
 
 
 // Run if testing in node, otherwise skip
-(typeof window === 'undefined' ? describe.only : describe.skip)('redirect', () => {
+(typeof window === 'undefined' ? describe : describe.skip)('redirect', () => {
 
 	const port = 8105;
 
@@ -53,7 +53,7 @@ const assert = require('assert');
 		await api.connect('ws://localhost:' + port, '71e2cd35-b606-41e6-bb08-f20de30df76c');
         await api.setup();
 
-        await api.update('hey', 123);
+        await api.create('hey', 123);
         assert(await api.read('hey') === 123);
 
         await api.disconnect();

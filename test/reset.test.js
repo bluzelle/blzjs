@@ -17,7 +17,7 @@ describe('reset', () => {
         communication.disconnect());
 
     it('can add a key', async () => {
-        await communication.update('myKey', 'abc');
+        await communication.create('myKey', 'abc');
         assert(await communication.has('myKey'));
         assert(!await communication.has('someOtherKey'));
     });

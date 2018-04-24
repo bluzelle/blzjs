@@ -26,15 +26,17 @@ describe('bluzelle connection', () => {
 
     it('should be able to read and update base64 strings', async () => {
 
-        await communication.update('mykey', 'abcdef');
+        await communication.create('mykey', 'abcdef');
 
-        assert(await communication.read('mykey') === 'abcdef')
+        await communication.update('mykey', 'newval')
+
+        assert(await communication.read('mykey') === 'newval')
 
     });
 
     it('should be able to query if the database has a key', async () => {
 
-        await communication.update('myKey', 'abc');
+        await communication.create('myKey', 'abc');
         assert(await communication.has('myKey'));
         assert(!await communication.has('someOtherKey'));
 
@@ -42,7 +44,7 @@ describe('bluzelle connection', () => {
 
     it('should be able to remove a key', async () => {
 
-        await communication.update('myKey', 'abc');
+        await communication.create('myKey', 'abc');
         await communication.remove('myKey');
         assert(!await communication.has('myKey'));
 
@@ -57,6 +59,22 @@ describe('bluzelle connection', () => {
     it('should throw an error when trying to remove a non-existent key', done => {
 
         communication.remove('something').catch(() => done());
+
+    });
+
+    it('should throw an error when creating the same key twice', done => {
+
+        communication.create('mykey', 123).then(() => {
+
+            communication.create('mykey', 321).catch(() => done());
+
+        });
+
+    });
+
+    it('should throw an error when trying to update a non-existent key', done => {
+
+        communication.update('something', 123).catch(() => done());
 
     });
 

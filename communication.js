@@ -111,6 +111,7 @@ const send = (obj, resolver) => {
     }
 };
 
+
 const setup = () => new Promise((resolve, reject) => {
 
     const cmd = amendBznApi({
@@ -137,6 +138,22 @@ const update = (key, value) => new Promise((resolve, reject) => {
         obj.error ? reject(new Error(obj.error)) : resolve());
 
 });
+
+
+const create = (key, value) => new Promise((resolve, reject) => {
+
+    const cmd = amendBznApi({
+        cmd: 'create',
+        data: {
+            key, value
+        }
+    });
+
+    send(cmd, obj =>
+        obj.error ? reject(new Error(obj.error)) : resolve());
+
+});
+
 
 
 const remove = key => new Promise((resolve, reject) => {
@@ -204,12 +221,12 @@ module.exports = {
     disconnect,
     ping,
     setup,
+    create,
     read,
     update,
     remove,
     has,
     keys
-
 };
 
 

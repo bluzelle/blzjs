@@ -1,6 +1,13 @@
 const communication = require('./communication');
 const {valToBase64, base64ToVal} = require('./base64convert');
 
+
+const createBase64 = communication.create;
+
+const createWithConversion = (key, value) =>
+    createBase64(key, valToBase64(value));
+
+
 const updateBase64 = communication.update;
 
 const updateWithConversion = (key, value) =>
@@ -15,6 +22,7 @@ const readWithConversion = key =>
 
 
 module.exports = Object.assign(communication, {
+    create: createWithConversion,
     update: updateWithConversion,
     read: readWithConversion
 });

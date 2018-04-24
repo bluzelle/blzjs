@@ -1,6 +1,6 @@
 const http = require('http');
 const WebSocketServer = require('websocket').server;
-const reset = require('../emulator/Emulator').reset;
+const reset = require('../../emulator/Emulator').reset;
 const uuid = require('../communication').getUuid();
 
 
@@ -31,6 +31,9 @@ ws.on('connect', connection =>
 // Compile the tests
 
 const {exec} = require('child_process');
+
+
+// Something wrong here
 
 exec(`npx webpack --config ${__dirname}/webpage/webpack.config.js`, () => {
 

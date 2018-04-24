@@ -28,33 +28,33 @@ describe('bluzelle api', () => {
     });
 
     it('should be able to create and read number fields', async () => {
-        await api.update('myKey', 123);
+        await api.create('myKey', 123);
         assert(await api.read('myKey') === 123);
 
     });
 
     it('should be able to create and read text fields', async () => {
 
-        await api.update('myOtherKey', "hello world");
+        await api.create('myOtherKey', "hello world");
         assert(await api.read('myOtherKey') === "hello world");
 
 
-        await api.update('interestingString', "aGVsbG8gd29ybGQNCg==");
+        await api.create('interestingString', "aGVsbG8gd29ybGQNCg==");
         assert(await api.read('interestingString') === "aGVsbG8gd29ybGQNCg==");
 
     });
 
     it('should be able to create and read object fields', async () => {
 
-        await api.update('myObjKey', { a: 5 });
+        await api.create('myObjKey', { a: 5 });
         assert((await api.read('myObjKey')).a === 5);
 
     });
 
     it('should be able to get a list of keys', async () => {
 
-        await api.update('hello123', 10);
-        await api.update('test', 11);
+        await api.create('hello123', 10);
+        await api.create('test', 11);
 
         assert(isEqual(await api.keys(), ['hello123', 'test']));
         assert(!isEqual(await api.keys(), ['blah', 'bli']));

@@ -42,20 +42,20 @@ const api2 = require('../api');
             api2.ping());
 
         it('api1 should be able to write to database', async () => {
-            await api1.update('myKey', 123);
+            await api1.create('myKey', 123);
             assert(await api1.read('myKey') === 123);
         });
 
         it('api2 should be able to write to database', async () => {
-            await api2.update('myKey', 345);
+            await api2.create('myKey', 345);
             assert(await api2.read('myKey') === 345);
         });
 
         describe('number fields', async () => {
 
             beforeEach(async () => {
-                await api1.update('myKey', 123);
-                await api2.update('myKey', 345);
+                await api1.create('myKey', 123);
+                await api2.create('myKey', 345);
             });
 
             it('should be able to read with no collision', async () => {
@@ -80,8 +80,8 @@ const api2 = require('../api');
         describe('text fields', async () => {
 
             beforeEach(async () => {
-                await api1.update('myKey', 'hello world');
-                await api2.update('myKey', 'good morning');
+                await api1.create('myKey', 'hello world');
+                await api2.create('myKey', 'good morning');
             });
 
             it('should be able to read with no collision', async () => {
@@ -107,8 +107,8 @@ const api2 = require('../api');
         describe('object fields', async () => {
 
             beforeEach(async () => {
-                await api1.update('myKey', {a: 5});
-                await api2.update('myKey', {b: 9});
+                await api1.create('myKey', {a: 5});
+                await api2.create('myKey', {b: 9});
             });
 
             it('should be able to read with no collision', async () => {
@@ -134,7 +134,7 @@ const api2 = require('../api');
         describe('attempting to access keys of another client', () => {
 
             beforeEach(async () => {
-                await api1.update('onlyInOne', 'something');
+                await api1.create('onlyInOne', 'something');
             });
 
             it('should only be able to access keys in its database', async () => {
@@ -181,66 +181,23 @@ const api2 = require('../api');
             api2.ping());
 
         it('api1 should be able to write to database', async () => {
-            await api1.update('myKey', 123);
+            await api1.create('myKey', 123);
             assert(await api1.read('myKey') === 123);
         });
 
         it('api2 should be able to write to database', async () => {
-            await api2.update('myKey', 345);
+            await api2.create('myKey', 345);
             assert(await api2.read('myKey') === 345);
         });
 
         describe('api1\'s key should be mutated by api2\'s call', async () => {
-
-            describe('creating, updating, and then reading', () => {
-
-                describe('number fields', () => {
-
-                    beforeEach(async () => {
-                        await api1.update('myKey', 123);
-                        await api2.update('myKey', 345);
-                    });
-
-                    it('value should be equal to last call', async () => {
-                        assert(await api1.read('myKey') !== 123);
-                        assert(await api1.read('myKey') === 345);
-                    });
-                });
-
-                describe('text fields', () => {
-
-                    beforeEach(async () => {
-                        await api1.update('myKey', 'hello world');
-                        await api2.update('myKey', 'goodbye world');
-                    });
-
-                    it('value should be equal to last call', async () => {
-                        assert(await api1.read('myKey') !== 'hello world');
-                        assert(await api1.read('myKey') === 'goodbye world');
-                    });
-                });
-
-                describe('object fields', () => {
-
-                    beforeEach(async () => {
-                        await api1.update('myKey', { a : 5 });
-                        await api2.update('myKey', { a : 100});
-                    });
-
-                    it('value should be equal to last call', async () => {
-                        assert((await api1.read('myKey')).a !== 5 );
-                        assert((await api1.read('myKey')).a === 100);
-                    });
-                });
-
-            });
 
             describe('creating, deleting, and then reading', () => {
 
                 describe('number field', () => {
 
                     beforeEach(async () => {
-                        await api1.update('myKey', 123);
+                        await api1.create('myKey', 123);
                         await api2.remove('myKey');
                     });
 
@@ -253,7 +210,7 @@ const api2 = require('../api');
                 describe('text field', () => {
 
                     beforeEach(async () => {
-                        await api1.update('myKey', 'hello world');
+                        await api1.create('myKey', 'hello world');
                         await api2.remove('myKey');
                     });
 
@@ -266,7 +223,7 @@ const api2 = require('../api');
                 describe('object field', () => {
 
                     beforeEach(async () => {
-                        await api1.update('myKey', { a : 5 });
+                        await api1.create('myKey', { a : 5 });
                         await api2.remove('myKey');
                     });
 
