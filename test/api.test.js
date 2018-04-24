@@ -5,10 +5,10 @@ const assert = require('assert');
 
 describe('bluzelle api', () => {
 
-    beforeEach(reset);
+    // beforeEach(reset);
 
     beforeEach( () => {
-        api.connect('ws://localhost:8100', '71e2cd35-b606-41e6-bb08-f20de30df76c');
+        api.connect('ws://localhost:50000', '71e2cd35-b606-41e6-bb08-f20de30df76c');
     });
 
 
@@ -17,9 +17,9 @@ describe('bluzelle api', () => {
 
     it('should be able to connect many times', () => {
 
-        api.connect('ws://localhost:8100', '71e2cd35-b606-41e6-bb08-f20de30df76c');
-        api.connect('ws://localhost:8100', '71e2cd35-b606-41e6-bb08-f20de30df76c');
-        api.connect('ws://localhost:8100', '71e2cd35-b606-41e6-bb08-f20de30df76c');
+        api.connect('ws://localhost:50000', '71e2cd35-b606-41e6-bb08-f20de30df76c');
+        api.connect('ws://localhost:50000', '71e2cd35-b606-41e6-bb08-f20de30df76c');
+        api.connect('ws://localhost:50000', '71e2cd35-b606-41e6-bb08-f20de30df76c');
 
     });
 
