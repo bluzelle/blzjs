@@ -1,38 +1,20 @@
 const reset = require('../utils/reset');
 const api = require('../api');
 const assert = require('assert');
-const exec = require('child_process').exec;
-const {logFileMoved, logFileExists, readFile} = require('../utils/daemonLogHandlers');
-const waitUntil = require('async-wait-until');
-const {includes} = require('lodash');
-const fs = require('fs');
+const {beforeStartSwarm, afterKillSwarm} = require('../utils/swarmSetup');
 
-let logFileName;
+describe('bluzelle api', () => {
 
-before('swarm startup hook', async () => {
-    exec('cd ./resources; ./run-daemon.sh bluzelle.json');
+    beforeStartSwarm();
+    afterKillSwarm();
 
-    exec('cd ./resources; ./run-daemon.sh bluzelle2.json');
-
-    await waitUntil(() => logFileName = logFileExists());
-    await waitUntil(() => {
-        let contents = fs.readFileSync('../../daemon-build/output/' + logFileName, 'utf8');
-
-        // raft.cpp:582 stdouts 'I AM LEADER'
-        return includes(contents, 'raft.cpp:582');
+    beforeEach( async () => {
+        await api.connect('ws://localhost:50000', '71e2cd35-b606-41e6-bb08-f20de30df76c');
     });
-    await api.connect('ws://localhost:50000', '71e2cd35-b606-41e6-bb08-f20de30df76c');
-});
 
-after( async () => {
-    api.disconnect();
-    exec('pkill -2 swarm');
-    await waitUntil( () => logFileMoved(logFileName));
-});
+    afterEach(() =>
+        api.disconnect());
 
-describe.only('bluzelle api', () => {
-
-    // beforeEach(reset);
 
     const isEqual = (a, b) =>
         a.length === b.length && !a.some((v, i) => b[i] !== v);

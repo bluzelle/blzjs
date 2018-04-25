@@ -1,14 +1,12 @@
 const reset = require('../utils/reset');
-
 const assert = require('assert');
-
 const path = require('path');
+const {beforeStartSwarm, afterKillSwarm} = require('../utils/swarmSetup');
+
 
 const api1 = require('../api');
 
-
 // This enables us to have two copies of the library with seperate state
-
 delete require.cache[path.resolve(__dirname + '/../communication.js')];
 delete require.cache[path.resolve(__dirname + '/../api.js')];
 
@@ -21,7 +19,9 @@ const api2 = require('../api');
 
     describe('two clients with different UUID\'s interacting with the same key', () => {
 
-        // beforeEach(reset);
+        beforeStartSwarm();
+        afterKillSwarm();
+
 
         beforeEach(() => {
             api1.connect('ws://localhost:50000', '4982e0b0-0b2f-4c3a-b39f-26878e2ac814');

@@ -1,0 +1,43 @@
+const exec = require('child_process').exec;
+const {logFileMoved, logFileExists, readFile} = require('../utils/daemonLogHandlers');
+const waitUntil = require('async-wait-until');
+const {includes} = require('lodash');
+const fs = require('fs');
+
+let logFileName;
+
+after(async () => {
+    exec('pkill -2 swarm');
+    await waitUntil(() => logFileMoved(logFileName));
+});
+
+module.exports = {
+    beforeStartSwarm: function () {
+        before('swarm startup hook', async function () {
+            this.timeout(3000);
+
+            exec('cd ./scripts; ./run-daemon.sh bluzelle.json');
+
+            exec('cd ./scripts; ./run-daemon.sh bluzelle2.json');
+
+            await waitUntil(() => logFileName = logFileExists());
+
+            process.env.emulatorQuiet ||
+                console.log(`******** logFileName: ${logFileName} *******`);
+
+            await waitUntil(() => {
+                let contents = fs.readFileSync('../../daemon-build/output/' + logFileName, 'utf8');
+
+                // raft.cpp:582 stdouts 'I AM LEADER'
+                return includes(contents, 'raft.cpp:582');
+            });
+        });
+    },
+    afterKillSwarm: function () {
+        after(async () => {
+            exec('pkill -2 swarm');
+            await waitUntil(() => logFileMoved(logFileName));
+        });
+    }
+
+};

@@ -1,15 +1,15 @@
 const reset = require('../utils/reset');
-
 const communication = require('../communication');
 const assert = require('assert');
-
+const {beforeStartSwarm, afterKillSwarm} = require('../utils/swarmSetup');
 
 describe('bluzelle connection', () => {
 
-    // beforeEach(reset);
+    beforeStartSwarm();
+    afterKillSwarm();
 
     beforeEach( () => {
-        communication.connect('ws://localhost:8100', '71e2cd35-b606-41e6-bb08-f20de30df76c');
+        communication.connect('ws://localhost:50000', '71e2cd35-b606-41e6-bb08-f20de30df76c');
     });
 
 
