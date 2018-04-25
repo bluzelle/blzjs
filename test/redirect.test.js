@@ -33,10 +33,10 @@ const assert = require('assert');
 		ws.on('connect', connection => 
 			connection.on('message', ({utf8Data: message}) => {
 
-				const id = JSON.parse(message).request_id;
+				const id = JSON.parse(message)['request-id'];
 
 				connection.send(JSON.stringify({
-					response_to: id,
+					'response-to': id,
 					error: 'NOT_THE_LEADER',
 					data: {
 						"leader-id" : "137a8403-52ec-43b7-8083-91391d4c5e67",

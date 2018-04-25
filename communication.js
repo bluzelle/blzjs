@@ -48,14 +48,14 @@ const connect = (addr, id) => {
 
 const onMessage = (event, socket) => {
 
-    const request = messages.get(event.response_to);
-    const resolver = resolvers.get(event.response_to);
+    const request = messages.get(event['response-to']);
+    const resolver = resolvers.get(event['response-to']);
 
-    resolvers.delete(event.response_to);
-    messages.delete(event.response_to);
+    resolvers.delete(event['response-to']);
+    messages.delete(event['response-to']);
 
 
-    if(event.response_to === undefined) {
+    if(event['response-to'] === undefined) {
 
         throw new Error('Received non-response message.');
 
@@ -121,7 +121,7 @@ const amendRequestID = (() => {
 
     return obj =>
         Object.assign(obj, {
-            'request_id': requestIDCounter++
+            'request-id': requestIDCounter++
         });
 
 })();
@@ -130,8 +130,8 @@ const amendRequestID = (() => {
 const send = (obj, resolver) => {
 
     const message = amendUuid(uuid , amendRequestID(obj));
-    resolvers.set(message.request_id, resolver);
-    messages.set(message.request_id, message);
+    resolvers.set(message['request-id'], resolver);
+    messages.set(message['request-id'], message);
 
     for(let connection of connections.values()) {
         connection.send(JSON.stringify(message));
