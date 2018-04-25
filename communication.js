@@ -139,19 +139,6 @@ const send = (obj, resolver) => {
 };
 
 
-const setup = () => new Promise((resolve, reject) => {
-
-    const cmd = amendBznApi({
-        cmd: 'setup'
-    });
-
-
-    send(cmd, obj =>
-        obj.error ? reject(new Error(obj.error)) : resolve());
-
-});
-
-
 const update = (key, value) => new Promise((resolve, reject) => {
 
     const cmd = amendBznApi({
@@ -247,7 +234,6 @@ module.exports = {
     connect,
     disconnect,
     ping,
-    setup,
     create,
     read,
     update,

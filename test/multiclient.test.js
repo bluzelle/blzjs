@@ -24,10 +24,8 @@ const api2 = require('../api');
 
         beforeEach(async () => {
             await api1.connect('ws://localhost:8100', '4982e0b0-0b2f-4c3a-b39f-26878e2ac814');
-            api1.setup();
 
             await api2.connect('ws://localhost:8100', '45a61b71-7f20-4355-99d4-3780bad17d84');
-            api2.setup();
         });
 
         afterEach(() => {
@@ -163,10 +161,8 @@ const api2 = require('../api');
 
         beforeEach(async () => {
             await api1.connect('ws://localhost:8100', '4982e0b0-0b2f-4c3a-b39f-26878e2ac814');
-            api1.setup();
 
             await api2.connect('ws://localhost:8100', '4982e0b0-0b2f-4c3a-b39f-26878e2ac814');
-            api2.setup();
         });
 
         afterEach(() => {

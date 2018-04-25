@@ -9,7 +9,6 @@ describe('bluzelle connection', () => {
 
     beforeEach( async () => {
         await communication.connect('ws://localhost:8100', '71e2cd35-b606-41e6-bb08-f20de30df76c');
-        communication.setup();
     });
 
     afterEach(() =>
