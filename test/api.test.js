@@ -1,14 +1,34 @@
-const reset = require('./reset');
+const reset = require('../utils/reset');
 const api = require('../api');
 const assert = require('assert');
+const exec = require('child_process').exec;
+const logHandler = require('../utils/daemonLogHandlers');
+const waitUntil = require('async-wait-until');
 
+let logFileName;
 
-describe('bluzelle api', () => {
+describe.only('bluzelle api', () => {
 
     // beforeEach(reset);
 
-    beforeEach( () => {
-        api.connect('ws://localhost:50000', '71e2cd35-b606-41e6-bb08-f20de30df76c');
+    beforeEach( async () => {
+        await exec('cd ./resources; ./run-daemon.sh bluzelle.json', async (err, stdout, stderr) => {
+            if (err !== null) {
+                console.log(err);
+            } else {
+                console.log('stdout: ' + stdout);
+                console.log('stderr: ' + stderr);
+            }
+        });
+        await waitUntil( () => logFileName = logHandler.logFileExists());
+        await api.connect('ws://localhost:50000', '71e2cd35-b606-41e6-bb08-f20de30df76c');
+        // api.setup();
+    });
+
+    afterEach( async () => {
+        api.disconnect();
+        exec('pkill -2 swarm');
+        await waitUntil( () => logHandler.logFileMoved(logFileName));
     });
 
 

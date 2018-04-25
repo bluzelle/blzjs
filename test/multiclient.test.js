@@ -1,4 +1,5 @@
-const reset = require('./reset');
+const reset = require('../utils/reset');
+
 const assert = require('assert');
 
 const path = require('path');

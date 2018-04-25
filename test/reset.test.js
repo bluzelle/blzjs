@@ -1,4 +1,4 @@
-const reset = require('./reset');
+const reset = require('../utils/reset');
 const communication = require('../communication');
 const api = require('../api');
 const assert = require('assert');

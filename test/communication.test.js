@@ -1,4 +1,5 @@
-const reset = require('./reset');
+const reset = require('../utils/reset');
+
 const communication = require('../communication');
 const assert = require('assert');
 
@@ -34,13 +35,22 @@ describe('bluzelle connection', () => {
 
     // });
 
-    it('should be able to read and update base64 strings', async () => {
+    it('should be able to create and read base64 strings', async () => {
 
         await communication.create('mykey', 'abcdef');
 
         await communication.update('mykey', 'newval')
 
         assert(await communication.read('mykey') === 'newval')
+
+    });
+
+    it('should be able to create and update base64 strings', async () => {
+
+        await communication.create('mykey', 'abcdef');
+        await communication.update('mykey', 'zxcv');
+
+        assert(await communication.read('mykey') === 'zxcv')
 
     });
 

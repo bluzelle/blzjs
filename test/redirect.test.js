@@ -2,7 +2,7 @@ const api = require('../api');
 
 const WebSocketServer = require('websocket').server;
 const http = require('http');
-const reset = require('./reset');
+const reset = require('../utils/reset');
 const assert = require('assert');
 
 
