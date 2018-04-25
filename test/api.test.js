@@ -9,7 +9,7 @@ describe('bluzelle api', () => {
     afterKillSwarm();
 
     beforeEach( async () => {
-        await api.connect('ws://localhost:50000', '71e2cd35-b606-41e6-bb08-f20de30df76c');
+        await api.connect(`ws://localhost:${process.env.port}`, '71e2cd35-b606-41e6-bb08-f20de30df76c');
     });
 
     afterEach(() =>
@@ -21,9 +21,9 @@ describe('bluzelle api', () => {
 
     it('should be able to connect many times', () => {
 
-        api.connect('ws://localhost:50000', '71e2cd35-b606-41e6-bb08-f20de30df76c');
-        api.connect('ws://localhost:50000', '71e2cd35-b606-41e6-bb08-f20de30df76c');
-        api.connect('ws://localhost:50000', '71e2cd35-b606-41e6-bb08-f20de30df76c');
+        api.connect(`ws://localhost:${process.env.port}`, '71e2cd35-b606-41e6-bb08-f20de30df76c');
+        api.connect(`ws://localhost:${process.env.port}`, '71e2cd35-b606-41e6-bb08-f20de30df76c');
+        api.connect(`ws://localhost:${process.env.port}`, '71e2cd35-b606-41e6-bb08-f20de30df76c');
 
     });
 

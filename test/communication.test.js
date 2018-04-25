@@ -8,9 +8,8 @@ describe('bluzelle connection', () => {
     beforeStartSwarm();
     afterKillSwarm();
 
-    beforeEach( () => {
-        communication.connect('ws://localhost:50000', '71e2cd35-b606-41e6-bb08-f20de30df76c');
-    });
+    beforeEach( () => communication.connect(`ws://localhost:${process.env.port}`, '71e2cd35-b606-41e6-bb08-f20de30df76c');
+
 
 
     it('should be able to connect', () => {});

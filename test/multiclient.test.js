@@ -23,10 +23,10 @@ const api2 = require('../api');
         afterKillSwarm();
 
 
-        beforeEach(() => {
-            api1.connect('ws://localhost:50000', '4982e0b0-0b2f-4c3a-b39f-26878e2ac814');
+        beforeEach( () => {
+            api1.connect(`ws://localhost:${process.env.port}`, '4982e0b0-0b2f-4c3a-b39f-26878e2ac814');
 
-            api2.connect('ws://localhost:50000', '45a61b71-7f20-4355-99d4-3780bad17d84');
+            api2.connect(`ws://localhost:${process.env.port}`, '71e2cd35-b606-41e6-bb08-f20de30df76c');
         });
 
         // it('api1 should be able to ping the connection', () =>
@@ -155,10 +155,10 @@ const api2 = require('../api');
 
         // beforeEach(reset);
 
-        beforeEach(() => {
-            api1.connect('ws://localhost:50000', '4982e0b0-0b2f-4c3a-b39f-26878e2ac814');
+        beforeEach( () => {
+            api1.connect(`ws://localhost:${process.env.port}`, '4982e0b0-0b2f-4c3a-b39f-26878e2ac814');
 
-            api2.connect('ws://localhost:50000', '4982e0b0-0b2f-4c3a-b39f-26878e2ac814');
+            api2.connect(`ws://localhost:${process.env.port}`, '4982e0b0-0b2f-4c3a-b39f-26878e2ac814');
         });
 
 
