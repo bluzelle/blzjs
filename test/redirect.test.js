@@ -37,7 +37,7 @@ const assert = require('assert');
 
 				connection.send(JSON.stringify({
 					response_to: id,
-					error: 'NOT_THE_LEADER'
+					error: 'NOT_THE_LEADER',
 					data: {
 						"leader-id" : "137a8403-52ec-43b7-8083-91391d4c5e67",
                			"leader-url":"127.0.0.1",
@@ -54,7 +54,7 @@ const assert = require('assert');
 
 	it('should follow a redirect and send the command to a different socket', async () => {
 
-		await api.connect('ws://localhost:' + followerPort, '71e2cd35-b606-41e6-bb08-f20de30df76c');
+		await api.connect('ws://127.0.0.1:' + followerPort, '71e2cd35-b606-41e6-bb08-f20de30df76c');
         await api.setup();
 
         await api.create('hey', 123);

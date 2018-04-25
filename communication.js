@@ -1,7 +1,10 @@
 const WebSocket = require('isomorphic-ws');
+const assert = require('assert');
 
 const connections = new Set();
 const resolvers = new Map();
+const messages = new Map();
+
 let uuid;
 
 const ping = () => new Promise(resolve => {
@@ -28,7 +31,6 @@ const connect = (addr, id) => {
 
         };
 
-        s.onclose = () => connections.delete(s);
         s.onerror = e =>  {
 
             s.close();
@@ -46,19 +48,31 @@ const connect = (addr, id) => {
 
 const onMessage = (event, socket) => {
 
+    const request = messages.get(event.response_to);
+    const resolver = resolvers.get(event.response_to);
+
+    resolvers.delete(event.response_to);
+    messages.delete(event.response_to);
+
+
     if(event.response_to === undefined) {
 
         throw new Error('Received non-response message.');
 
     }
 
-    if(event.redirect) {
+    if(event.error && event.error === 'NOT_THE_LEADER') {
 
         disconnect().then(() => {
 
-            connect(event.redirect, uuid).then(() => {
+            assert(connections.size === 0);
 
-               send(event.data, resolvers.get(event.response_to));
+
+            const addressAndPort = 'ws://' + event.data['leader-url'] + ':' + event.data['leader-port'];
+
+            connect(addressAndPort, uuid).then(() => {
+
+                send(request, resolver);
 
             });
 
@@ -66,7 +80,7 @@ const onMessage = (event, socket) => {
 
     } else {
 
-        resolvers.get(event.response_to)(event);
+        resolver(event);
 
     }
 
@@ -75,7 +89,19 @@ const onMessage = (event, socket) => {
 
 
 const disconnect = () => 
-    Promise.all(Array.from(connections).map(con => con.close()));
+    Promise.all(Array.from(connections).map(con => 
+        new Promise(resolve => {
+
+        con.onclose = () => {
+
+            connections.delete(con);
+            resolve();
+
+        };
+
+        con.close();
+
+    })));
 
 
 const amendBznApi = obj =>
@@ -105,6 +131,7 @@ const send = (obj, resolver) => {
 
     const message = amendUuid(uuid , amendRequestID(obj));
     resolvers.set(message.request_id, resolver);
+    messages.set(message.request_id, message);
 
     for(let connection of connections.values()) {
         connection.send(JSON.stringify(message));
