@@ -7,7 +7,7 @@ const assert = require('assert');
 
 
 // Run if testing in node, otherwise skip
-(typeof window === 'undefined' ? describe : describe.skip)('redirect', () => {
+(typeof window === 'undefined' ? describe.skip : describe.skip)('redirect', () => {
 
 	const followerPort = 8105;
 

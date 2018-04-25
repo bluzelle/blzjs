@@ -4,7 +4,7 @@ const api = require('../api');
 const assert = require('assert');
 
 
-describe('reset', () => {
+describe.skip('reset', () => {
 
     // beforeEach(reset);
 

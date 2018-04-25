@@ -16,11 +16,10 @@ const api2 = require('../api');
 // Run if testing in node, otherwise skip
 (typeof window === 'undefined' ? describe : describe.skip)('multi-client bluzelle api', () => {
 
+    beforeStartSwarm();
+    afterKillSwarm();
 
     describe('two clients with different UUID\'s interacting with the same key', () => {
-
-        beforeStartSwarm();
-        afterKillSwarm();
 
 
         beforeEach( () => {

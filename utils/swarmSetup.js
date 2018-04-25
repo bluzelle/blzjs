@@ -1,15 +1,10 @@
 const exec = require('child_process').exec;
-const {logFileMoved, logFileExists, readFile} = require('../utils/daemonLogHandlers');
+const {logFileMoved, logFileExists} = require('../utils/daemonLogHandlers');
 const waitUntil = require('async-wait-until');
 const {includes} = require('lodash');
 const fs = require('fs');
 
 let logFileName;
-
-after(async () => {
-    exec('pkill -2 swarm');
-    await waitUntil(() => logFileMoved(logFileName));
-});
 
 module.exports = {
     beforeStartSwarm: function () {
