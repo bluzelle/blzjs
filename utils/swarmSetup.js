@@ -18,7 +18,9 @@ module.exports = {
 
             exec('cd ./scripts; ./run-daemon.sh bluzelle.json');
 
-            exec('cd ./scripts; ./run-daemon.sh bluzelle2.json');
+            // Waiting briefly before starting second Daemon ensures the first starts as leader
+            setTimeout(() => {exec('cd ./scripts; ./run-daemon.sh bluzelle2.json')}, 1000);
+
 
             await waitUntil(() => logFileName = logFileExists());
 
