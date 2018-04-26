@@ -6,14 +6,32 @@ const resolvers = new Map();
 const messages = new Map();
 
 
-// const ping = () => new Promise(resolve => {
+// Disabled until we can get confirmation that this is implemented in the
+// daemon.
 
+// const ping = () => new Promise(resolve => {
+//
 //     send({
 //         cmd: 'ping',
 //         'bzn-api': 'ping'
 //     }, obj => resolve());
-
+//
 // });
+
+
+
+// Non-polling actions
+
+// - has
+// - keys
+// - read
+
+
+// Polling actions
+
+// - create
+// - remove
+// - update
 
 
 let uuid;
@@ -132,52 +150,8 @@ const send = (obj, resolver) => {
 };
 
 
-const update = (key, value) => new Promise((resolve, reject) => {
 
-    const cmd = amendBznApi({
-        cmd: 'update',
-        data: {
-            key, value
-        }
-    });
-
-    send(cmd, obj =>
-        obj.error ? reject(new Error(obj.error)) : resolve());
-
-});
-
-
-const create = (key, value) => new Promise((resolve, reject) => {
-
-    const cmd = amendBznApi({
-        cmd: 'create',
-        data: {
-            key, value
-        }
-    });
-
-    send(cmd, obj =>
-        obj.error ? reject(new Error(obj.error)) : resolve());
-
-});
-
-
-
-const remove = key => new Promise((resolve, reject) => {
-
-    const cmd = amendBznApi({
-        cmd: 'delete',
-        data: {
-            key
-        }
-    });
-
-
-    send(cmd, obj =>
-        obj.error ? reject(new Error(obj.error)) : resolve());
-
-});
-
+// Non-polling actions
 
 const read = key => new Promise((resolve, reject) => {
 
@@ -220,6 +194,137 @@ const keys = () => new Promise(resolve => {
 
 });
 
+
+
+const poll = action => new Promise((resolve, reject) => {
+
+    const pollRate = 200; // ms
+    const pollTimeout = 2000;
+
+    const start = new Date().getTime();
+
+
+    (function loop() {
+
+        action().then(v => {
+
+            if(v) {
+
+                resolve();
+
+            } else {
+
+                if(new Date.getTime() - start > pollTimeout) {
+
+                    reject();
+
+                } else {
+
+                    loop();
+
+                }
+
+            }
+
+        }, reject);
+
+    })();
+
+});
+
+
+// Polling actions
+
+const update = (key, value) => new Promise((resolve, reject) => {
+
+    const cmd = amendBznApi({
+        cmd: 'update',
+        data: {
+            key, value
+        }
+    });
+
+    send(cmd, obj => {
+
+        if(obj.error) {
+
+            reject(new Error(obj.error));
+
+        } else {
+
+            const pollingFunc = () => 
+                new Promise((res, rej) => 
+                    read(key).then(v => res(v === value), rej));
+
+            poll(pollingFunc).then(resolve, reject);
+
+        }
+
+    });
+
+});
+
+
+const create = (key, value) => new Promise((resolve, reject) => {
+
+    const cmd = amendBznApi({
+        cmd: 'create',
+        data: {
+            key, value
+        }
+    });
+
+    send(cmd, obj => {
+
+        if(obj.error) {
+
+            reject(new Error(obj.error));
+
+        } else {
+
+            const pollingFunc = () => 
+                new Promise((res, rej) => 
+                    has(key).then(v => res(v), rej));
+
+            poll(pollingFunc).then(resolve, reject);
+
+        }
+
+    });
+
+});
+
+
+
+const remove = key => new Promise((resolve, reject) => {
+
+    const cmd = amendBznApi({
+        cmd: 'delete',
+        data: {
+            key
+        }
+    });
+
+
+    send(cmd, obj => {
+
+        if(obj.error) {
+
+            reject(new Error(obj.error));
+
+        } else {
+
+            const pollingFunc = () => 
+                new Promise((res, rej) => 
+                    has(key).then(v => res(!v), rej));
+
+            poll(pollingFunc).then(resolve, reject);
+
+        }
+
+    });
+
+});
 
 
 module.exports = {
