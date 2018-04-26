@@ -22,10 +22,10 @@ const api2 = require('../api');
 
         beforeEach(reset);
 
-        beforeEach(async () => {
-            await api1.connect('ws://localhost:8100', '4982e0b0-0b2f-4c3a-b39f-26878e2ac814');
+        beforeEach(() => {
+            api1.connect('ws://localhost:8100', '4982e0b0-0b2f-4c3a-b39f-26878e2ac814');
 
-            await api2.connect('ws://localhost:8100', '45a61b71-7f20-4355-99d4-3780bad17d84');
+            api2.connect('ws://localhost:8100', '45a61b71-7f20-4355-99d4-3780bad17d84');
         });
 
         // it('api1 should be able to ping the connection', () =>
@@ -154,10 +154,10 @@ const api2 = require('../api');
 
         beforeEach(reset);
 
-        beforeEach(async () => {
-            await api1.connect('ws://localhost:8100', '4982e0b0-0b2f-4c3a-b39f-26878e2ac814');
+        beforeEach(() => {
+            api1.connect('ws://localhost:8100', '4982e0b0-0b2f-4c3a-b39f-26878e2ac814');
 
-            await api2.connect('ws://localhost:8100', '4982e0b0-0b2f-4c3a-b39f-26878e2ac814');
+            api2.connect('ws://localhost:8100', '4982e0b0-0b2f-4c3a-b39f-26878e2ac814');
         });
 
 

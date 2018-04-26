@@ -40,9 +40,6 @@ let address;
 const connect = (addr, id) => {
     uuid = id;
     address = addr;
-
-    return Promise.resolve();
-
 };
 
 
@@ -65,11 +62,10 @@ const onMessage = (event, socket) => {
 
         const addressAndPort = 'ws://' + event.data['leader-url'] + ':' + event.data['leader-port'];
 
-        connect(addressAndPort, uuid).then(() => {
+        connect(addressAndPort, uuid);
 
-            send(request, resolver);
+        send(request, resolver);
 
-        });
 
     } else {
 
@@ -214,7 +210,7 @@ const poll = action => new Promise((resolve, reject) => {
 
             } else {
 
-                if(new Date.getTime() - start > pollTimeout) {
+                if(new Date().getTime() - start > pollTimeout) {
 
                     reject();
 

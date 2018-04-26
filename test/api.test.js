@@ -7,19 +7,19 @@ describe('bluzelle api', () => {
 
     beforeEach(reset);
 
-    beforeEach( async () => {
-        await api.connect('ws://localhost:8100', '71e2cd35-b606-41e6-bb08-f20de30df76c');
+    beforeEach( () => {
+        api.connect('ws://localhost:8100', '71e2cd35-b606-41e6-bb08-f20de30df76c');
     });
 
 
     const isEqual = (a, b) =>
         a.length === b.length && !a.some((v, i) => b[i] !== v);
 
-    it('should be able to connect many times', async () => {
+    it('should be able to connect many times', () => {
 
-        await api.connect('ws://localhost:8100', '71e2cd35-b606-41e6-bb08-f20de30df76c');
-        await api.connect('ws://localhost:8100', '71e2cd35-b606-41e6-bb08-f20de30df76c');
-        await api.connect('ws://localhost:8100', '71e2cd35-b606-41e6-bb08-f20de30df76c');
+        api.connect('ws://localhost:8100', '71e2cd35-b606-41e6-bb08-f20de30df76c');
+        api.connect('ws://localhost:8100', '71e2cd35-b606-41e6-bb08-f20de30df76c');
+        api.connect('ws://localhost:8100', '71e2cd35-b606-41e6-bb08-f20de30df76c');
 
     });
 

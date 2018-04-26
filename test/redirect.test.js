@@ -54,7 +54,7 @@ const assert = require('assert');
 
 	it('should follow a redirect and send the command to a different socket', async () => {
 
-		await api.connect('ws://127.0.0.1:' + followerPort, '71e2cd35-b606-41e6-bb08-f20de30df76c');
+		api.connect('ws://127.0.0.1:' + followerPort, '71e2cd35-b606-41e6-bb08-f20de30df76c');
 
         await api.create('hey', 123);
         assert(await api.read('hey') === 123);
