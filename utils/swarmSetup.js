@@ -11,10 +11,10 @@ module.exports = {
         before('swarm startup hook', async function () {
             this.timeout(3000);
 
-            exec('cd ./scripts; ./run-daemon.sh bluzelle.json');
+            exec('cd ./daemon-resources/scripts; ./run-daemon.sh bluzelle.json');
 
             // Waiting briefly before starting second Daemon ensures the first starts as leader
-            setTimeout(() => {exec('cd ./scripts; ./run-daemon.sh bluzelle2.json')}, 1000);
+            setTimeout(() => {exec('cd ./daemon-resources/scripts; ./run-daemon.sh bluzelle2.json')}, 1000);
 
 
             await waitUntil(() => logFileName = logFileExists());

@@ -7,7 +7,9 @@
     "test-node": "port=50000 emulatorQuiet=true mocha test/*.js --exit",
     "test-browser": "node browser-test/test",
     "test": "emulatorQuiet=true mocha test/*.js --exit; node browser-test/test",
-    "run-daemon": "./resources/run-daemon.sh"
+    "run-daemon": "./resources/run-daemon.sh",
+    "setup-daemon": "cp -R ./daemon-resources/configs/. ../../daemon-build/output/"
+
   },
   "devDependencies": {
     "async-wait-until": "^1.1.7",
