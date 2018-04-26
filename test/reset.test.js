@@ -12,9 +12,6 @@ describe('reset', () => {
         await communication.connect('ws://localhost:8100', '71e2cd35-b606-41e6-bb08-f20de30df76c');
     });
 
-    afterEach(() =>
-        communication.disconnect());
-
     it('can add a key', async () => {
         await communication.create('myKey', 'abc');
         assert(await communication.has('myKey'));

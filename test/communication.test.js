@@ -11,17 +11,14 @@ describe('bluzelle connection', () => {
         await communication.connect('ws://localhost:8100', '71e2cd35-b606-41e6-bb08-f20de30df76c');
     });
 
-    afterEach(() =>
-        communication.disconnect());
-
 
     it('should be able to connect to 8100', () => {});
 
 
-    it('should be able to ping the connection', async () => {
-        return communication.ping();
+    // it('should be able to ping the connection', async () => {
+    //     return communication.ping();
 
-    });
+    // });
 
     it('should be able to read and update base64 strings', async () => {
 

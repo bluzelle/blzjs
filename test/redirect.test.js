@@ -59,8 +59,6 @@ const assert = require('assert');
         await api.create('hey', 123);
         assert(await api.read('hey') === 123);
 
-        await api.disconnect();
-
 	});
 
 });

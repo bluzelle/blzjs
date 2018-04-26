@@ -5,43 +5,25 @@ const connections = new Set();
 const resolvers = new Map();
 const messages = new Map();
 
+
+// const ping = () => new Promise(resolve => {
+
+//     send({
+//         cmd: 'ping',
+//         'bzn-api': 'ping'
+//     }, obj => resolve());
+
+// });
+
+
 let uuid;
-
-const ping = () => new Promise(resolve => {
-
-    send({
-        cmd: 'ping',
-        'bzn-api': 'ping'
-    }, obj => resolve());
-
-});
-
+let address;
 
 const connect = (addr, id) => {
     uuid = id;
+    address = addr;
 
-    return new Promise(resolve => {
-
-        const s = new WebSocket(addr);
-
-        s.onopen = () => {
-
-            connections.add(s);
-            resolve(s);
-
-        };
-
-        s.onerror = e =>  {
-
-            s.close();
-            console.error(e);
-
-        }
-
-        s.onmessage = e =>
-            onMessage(JSON.parse(e.data), s)
-
-    });
+    return Promise.resolve();
 
 };
 
@@ -63,18 +45,11 @@ const onMessage = (event, socket) => {
 
     if(event.error && event.error === 'NOT_THE_LEADER') {
 
-        disconnect().then(() => {
+        const addressAndPort = 'ws://' + event.data['leader-url'] + ':' + event.data['leader-port'];
 
-            assert(connections.size === 0);
+        connect(addressAndPort, uuid).then(() => {
 
-
-            const addressAndPort = 'ws://' + event.data['leader-url'] + ':' + event.data['leader-port'];
-
-            connect(addressAndPort, uuid).then(() => {
-
-                send(request, resolver);
-
-            });
+            send(request, resolver);
 
         });
 
@@ -88,20 +63,20 @@ const onMessage = (event, socket) => {
 
 
 
-const disconnect = () => 
-    Promise.all(Array.from(connections).map(con => 
-        new Promise(resolve => {
+// const disconnect = () => 
+//     Promise.all(Array.from(connections).map(con => 
+//         new Promise(resolve => {
 
-        con.onclose = () => {
+//         con.onclose = () => {
 
-            connections.delete(con);
-            resolve();
+//             connections.delete(con);
+//             resolve();
 
-        };
+//         };
 
-        con.close();
+//         con.close();
 
-    })));
+//     })));
 
 
 const amendBznApi = obj =>
@@ -133,9 +108,27 @@ const send = (obj, resolver) => {
     resolvers.set(message['request-id'], resolver);
     messages.set(message['request-id'], message);
 
-    for(let connection of connections.values()) {
-        connection.send(JSON.stringify(message));
-    }
+
+    const s = new WebSocket(address);
+
+    s.onopen = () => {
+
+        s.send(JSON.stringify(message));
+
+    };
+
+    s.onerror = e =>  {
+
+        s.close();
+        console.error(e);
+
+    };
+
+    s.onmessage = e => {
+        onMessage(JSON.parse(e.data), s);
+        s.close();
+    };
+
 };
 
 
@@ -232,8 +225,6 @@ const keys = () => new Promise(resolve => {
 module.exports = {
     getUuid: () => uuid,
     connect,
-    disconnect,
-    ping,
     create,
     read,
     update,
