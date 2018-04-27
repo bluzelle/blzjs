@@ -15,6 +15,20 @@ describe('bluzelle connection', () => {
     it('should be able to connect to 8100', () => {});
 
 
+    it('should reject bad connections', done => {
+
+        communication.connect('fdsfdas', 'fdsafsd');
+        communication.keys().catch(() => done());
+
+    });
+
+    it('should reject connection to a bad port', done => {
+
+        communication.connect('ws://localhost:123', '71e2cd35-b606-41e6-bb08-f20de30df76c');
+        communication.keys().catch(() => done());
+
+    });
+
     // it('should be able to ping the connection', async () => {
     //     return communication.ping();
 

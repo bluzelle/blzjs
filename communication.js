@@ -60,7 +60,11 @@ const onMessage = (event, socket) => {
 
     if(event.error && event.error === 'NOT_THE_LEADER') {
 
-        const addressAndPort = 'ws://' + event.data['leader-host'] + ':' + event.data['leader-port'];
+        const isSecure = address.startsWith('wss://');
+
+        const prefix = isSecure ? 'wss://' : 'ws://';
+
+        const addressAndPort = prefix + event.data['leader-host'] + ':' + event.data['leader-port'];
 
         connect(addressAndPort, uuid);
 
@@ -116,7 +120,7 @@ const amendRequestID = (() => {
 })();
 
 
-const send = (obj, resolver) => {
+const send = (obj, resolver, rejecter) => {
 
     const message = amendUuid(uuid , amendRequestID(obj));
     resolvers.set(message['request-id'], resolver);
@@ -134,7 +138,7 @@ const send = (obj, resolver) => {
     s.onerror = e =>  {
 
         s.close();
-        console.error(e);
+        rejecter(e);
 
     };
 
@@ -160,12 +164,12 @@ const read = key => new Promise((resolve, reject) => {
 
 
     send(cmd, obj =>
-        obj.error ? reject(new Error(obj.error)) : resolve(obj.data.value));
+        obj.error ? reject(new Error(obj.error)) : resolve(obj.data.value), reject);
 
 });
 
 
-const has = key => new Promise(resolve => {
+const has = key => new Promise((resolve, reject) => {
 
     const cmd = amendBznApi({
         cmd: 'has',
@@ -175,18 +179,18 @@ const has = key => new Promise(resolve => {
     });
 
 
-    send(cmd, obj => resolve(obj.data['key-exists']));
+    send(cmd, obj => resolve(obj.data['key-exists']), reject);
 
 });
 
 
-const keys = () => new Promise(resolve => {
+const keys = () => new Promise((resolve, reject) => {
 
     const cmd = amendBznApi({
         cmd: 'keys'
     });
 
-    send(cmd, obj => resolve(obj.data.keys));
+    send(cmd, obj => resolve(obj.data.keys), reject);
 
 });
 
@@ -256,7 +260,7 @@ const update = (key, value) => new Promise((resolve, reject) => {
 
         }
 
-    });
+    }, reject);
 
 });
 
@@ -286,7 +290,7 @@ const create = (key, value) => new Promise((resolve, reject) => {
 
         }
 
-    });
+    }, reject);
 
 });
 
@@ -318,7 +322,7 @@ const remove = key => new Promise((resolve, reject) => {
 
         }
 
-    });
+    }, reject);
 
 });
 
