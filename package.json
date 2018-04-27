@@ -4,7 +4,7 @@
   "description": "Bluzelle Database for JavaScript",
   "main": "api.js",
   "scripts": {
-    "test-node": "port=50000 emulatorQuiet=true mocha test/*.js --exit",
+    "test-node": "port=50000 emulatorQuiet=true mocha test/*.js --exit --timeout 5000",
     "test-browser": "node browser-test/test",
     "test": "emulatorQuiet=true mocha test/*.js --exit; node browser-test/test",
     "run-daemon": "./resources/run-daemon.sh",

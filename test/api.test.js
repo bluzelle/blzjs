@@ -12,9 +12,6 @@ describe('bluzelle api', () => {
         await api.connect(`ws://localhost:${process.env.port}`, '71e2cd35-b606-41e6-bb08-f20de30df76c');
     });
 
-    afterEach(() =>
-        api.disconnect());
-
 
     const isEqual = (a, b) =>
         a.length === b.length && !a.some((v, i) => b[i] !== v);
@@ -24,6 +21,16 @@ describe('bluzelle api', () => {
         api.connect(`ws://localhost:${process.env.port}`, '71e2cd35-b606-41e6-bb08-f20de30df76c');
         api.connect(`ws://localhost:${process.env.port}`, '71e2cd35-b606-41e6-bb08-f20de30df76c');
         api.connect(`ws://localhost:${process.env.port}`, '71e2cd35-b606-41e6-bb08-f20de30df76c');
+
+    });
+
+    it('should be able to get a list of keys', async () => {
+
+        await api.create('hello123', 10);
+        await api.create('test', 11);
+
+        assert(isEqual(await api.keys(), ['test','hello123']));
+        assert(!isEqual(await api.keys(), ['blah', 'bli']));
 
     });
 
@@ -51,14 +58,6 @@ describe('bluzelle api', () => {
 
     });
 
-    it('should be able to get a list of keys', async () => {
 
-        await api.create('hello123', 10);
-        await api.create('test', 11);
-
-        assert(isEqual(await api.keys(), ['hello123', 'test']));
-        assert(!isEqual(await api.keys(), ['blah', 'bli']));
-
-    });
 
 });

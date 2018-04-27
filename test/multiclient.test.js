@@ -46,7 +46,7 @@ const api2 = require('../api');
 
         describe('number fields', async () => {
 
-            beforeEach(async () => {
+            it('creates keys for tests', async () => {
                 await api1.create('myKey00001', 123);
                 await api2.create('myKey00001', 345);
             });
@@ -72,7 +72,7 @@ const api2 = require('../api');
 
         describe('text fields', async () => {
 
-            beforeEach(async () => {
+            it('creates keys for tests', async () => {
                 await api1.create('myKey00004', 'hello world');
                 await api2.create('myKey00004', 'good morning');
             });
@@ -99,7 +99,7 @@ const api2 = require('../api');
 
         describe('object fields', async () => {
 
-            beforeEach(async () => {
+            it('creates keys for tests', async () => {
                 await api1.create('myKey00005', {a: 5});
                 await api2.create('myKey00005', {b: 9});
             });
@@ -126,7 +126,7 @@ const api2 = require('../api');
 
         describe('attempting to access keys of another client', () => {
 
-            beforeEach(async () => {
+            it('creates keys for tests', async () => {
                 await api1.create('onlyInOne', 'something');
             });
 
@@ -140,7 +140,7 @@ const api2 = require('../api');
             });
 
             it('should throw an error when trying to update a key not in its database', done => {
-                api2.remove('onlyInOne').catch(() => done());
+                api2.update('onlyInOne', '123').catch(() => done());
             });
 
             it('should throw an error when trying to delete a key not in its database', done => {
@@ -168,22 +168,22 @@ const api2 = require('../api');
         //     api2.ping());
 
         it('api1 should be able to write to database', async () => {
-            await api1.create('myKey', 123);
-            assert(await api1.read('myKey') === 123);
+            await api1.create('myKey00006', 123);
+            assert(await api1.read('myKey00006') === 123);
         });
 
-        it('api2 should be able to write to database', async () => {
-            await api2.create('myKey', 345);
-            assert(await api2.read('myKey') === 345);
+        it.skip('api2 should be able to write to database', async () => {
+            await api2.create('myKey00006', 345);
+            assert(await api2.read('myKey00006') === 345);
         });
 
         describe('api1\'s key should be mutated by api2\'s call', async () => {
 
-            describe('creating, updating, and then reading', () => {
+            describe.skip('creating, updating, and then reading', () => {
 
                 describe('number fields', () => {
 
-                    beforeEach(async () => {
+                    it('creates keys for tests', async () => {
                         await api1.create('myNumKey', 123);
                         await api2.create('myNumKey', 345);
                     });
@@ -196,7 +196,7 @@ const api2 = require('../api');
 
                 describe('text fields', () => {
 
-                    beforeEach(async () => {
+                    it('creates keys for tests', async () => {
                         await api1.create('myTextKey', 'hello world');
                         await api2.create('myTextKey', 'goodbye world');
                     });
@@ -209,7 +209,7 @@ const api2 = require('../api');
 
                 describe('object fields', () => {
 
-                    beforeEach(async () => {
+                    it('creates keys for tests', async () => {
                         await api1.create('myObjKey', { a : 5 });
                         await api2.create('myObjKey', { a : 100});
                     });
@@ -226,7 +226,7 @@ const api2 = require('../api');
 
                 describe('number field', () => {
 
-                    beforeEach(async () => {
+                    it('creates keys for tests', async () => {
                         await api1.create('myNumKey2', 123);
                         await api2.remove('myNumKey2');
                     });
@@ -239,7 +239,7 @@ const api2 = require('../api');
 
                 describe('text field', () => {
 
-                    beforeEach(async () => {
+                    it('creates keys for tests', async () => {
                         await api1.create('myTextKey2', 'hello world');
                         await api2.remove('myTextKey2');
                     });
@@ -252,7 +252,7 @@ const api2 = require('../api');
 
                 describe('object field', () => {
 
-                    beforeEach(async () => {
+                    it('creates keys for tests', async () => {
                         await api1.create('myObjKey3', { a : 5 });
                         await api2.remove('myObjKey3');
                     });

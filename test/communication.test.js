@@ -8,7 +8,7 @@ describe('bluzelle connection', () => {
     beforeStartSwarm();
     afterKillSwarm();
 
-    beforeEach( () => communication.connect(`ws://localhost:${process.env.port}`, '71e2cd35-b606-41e6-bb08-f20de30df76c');
+    beforeEach( () => communication.connect(`ws://localhost:${process.env.port}`, '71e2cd35-b606-41e6-bb08-f20de30df76c'));
 
 
 
@@ -81,7 +81,7 @@ describe('bluzelle connection', () => {
 
     });
 
-    it('should throw an error when creating the same key twice', done => {
+    it.skip('should throw an error when creating the same key twice', done => {
 
         communication.create('mykey', 123).then(() => {
 
