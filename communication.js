@@ -45,14 +45,14 @@ const connect = (addr, id) => {
 
 const onMessage = (event, socket) => {
 
-    const request = messages.get(event['response-to']);
-    const resolver = resolvers.get(event['response-to']);
+    const request = messages.get(event['request-id']);
+    const resolver = resolvers.get(event['request-id']);
 
-    resolvers.delete(event['response-to']);
-    messages.delete(event['response-to']);
+    resolvers.delete(event['request-id']);
+    messages.delete(event['request-id']);
 
 
-    if(event['response-to'] === undefined) {
+    if(event['request-id'] === undefined) {
 
         throw new Error('Received non-response message.');
 
@@ -60,7 +60,7 @@ const onMessage = (event, socket) => {
 
     if(event.error && event.error === 'NOT_THE_LEADER') {
 
-        const addressAndPort = 'ws://' + event.data['leader-url'] + ':' + event.data['leader-port'];
+        const addressAndPort = 'ws://' + event.data['leader-host'] + ':' + event.data['leader-port'];
 
         connect(addressAndPort, uuid);
 

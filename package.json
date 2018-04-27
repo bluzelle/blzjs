@@ -1,6 +1,6 @@
 {
   "name": "bluzelle",
-  "version": "0.6.2",
+  "version": "0.8.0",
   "description": "Bluzelle Database for JavaScript",
   "main": "api.js",
   "scripts": {
