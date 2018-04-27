@@ -85,7 +85,7 @@ describe('bluzelle connection', () => {
 
     });
 
-    it.skip('should throw an error when creating the same key twice', done => {
+    it('should throw an error when creating the same key twice', done => {
 
         communication.create('mykey', 123).then(() => {
 
