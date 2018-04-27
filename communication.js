@@ -186,7 +186,7 @@ const keys = () => new Promise(resolve => {
         cmd: 'keys'
     });
 
-    send(cmd, obj => resolve(obj.data.value));
+    send(cmd, obj => resolve(obj.data.keys));
 
 });
 
@@ -212,7 +212,7 @@ const poll = action => new Promise((resolve, reject) => {
 
                 if(new Date().getTime() - start > pollTimeout) {
 
-                    reject();
+                    reject(new Error('Bluzelle poll timeout - command not commited to swarm.'));
 
                 } else {
 
