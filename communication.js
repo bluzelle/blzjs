@@ -196,6 +196,18 @@ const keys = () => new Promise((resolve, reject) => {
 
 });
 
+const size = () => new Promise(resolve => {
+
+    const cmd = amendBznApi({
+        cmd: 'size'
+    });
+
+    send(cmd, obj => resolve(obj.data.size));
+
+});
+
+
+
 
 
 const poll = action => new Promise((resolve, reject) => {
@@ -337,7 +349,8 @@ module.exports = {
     update,
     remove,
     has,
-    keys
+    keys,
+    size
 };
 
 

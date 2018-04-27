@@ -69,6 +69,10 @@ describe('bluzelle connection', () => {
 
     });
 
+    it('should be able to return size', async () => {
+        assert(await communication.size() >= 0);
+    });
+
     it('should throw an error when trying to read a non-existent key', done => {
 
         communication.read('abc123').catch(() => done());
