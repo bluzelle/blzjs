@@ -216,7 +216,7 @@ const poll = action => new Promise((resolve, reject) => {
 
                 } else {
 
-                    loop();
+                    setTimeout(loop, pollTimeout);
 
                 }
 
