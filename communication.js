@@ -175,7 +175,7 @@ const has = key => new Promise(resolve => {
     });
 
 
-    send(cmd, obj => resolve(obj.data.value));
+    send(cmd, obj => resolve(obj.data['key-exists']));
 
 });
 
