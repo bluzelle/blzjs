@@ -4,7 +4,8 @@ const WebSocketServer = require('websocket').server;
 const http = require('http');
 const reset = require('../utils/reset');
 const assert = require('assert');
-const {beforeStartSwarm, afterKillSwarm} = require('../utils/swarmSetup');
+const {startSwarm, killSwarm} = require('../utils/swarmSetup');
+
 
 
 
@@ -15,9 +16,8 @@ const {beforeStartSwarm, afterKillSwarm} = require('../utils/swarmSetup');
 
 	let httpServer;
 
-	beforeStartSwarm();
-	afterKillSwarm();
-
+    before(startSwarm);
+    after(killSwarm);
 
 	// beforeEach(reset);
 

@@ -1,7 +1,8 @@
 const reset = require('../utils/reset');
 const assert = require('assert');
 const path = require('path');
-const {beforeStartSwarm, afterKillSwarm} = require('../utils/swarmSetup');
+const {startSwarm, killSwarm} = require('../utils/swarmSetup');
+
 
 
 const api1 = require('../api');
@@ -16,8 +17,8 @@ const api2 = require('../api');
 // Run if testing in node, otherwise skip
 (typeof window === 'undefined' ? describe : describe.skip)('multi-client bluzelle api', () => {
 
-    beforeStartSwarm();
-    afterKillSwarm();
+    beforeEach(startSwarm);
+    afterEach(killSwarm);
 
     describe('two clients with different UUID\'s interacting with the same key', () => {
 
@@ -46,7 +47,7 @@ const api2 = require('../api');
 
         describe('number fields', async () => {
 
-            it('creates keys for tests', async () => {
+            beforeEach('creates keys for tests', async () => {
                 await api1.create('myKey00001', 123);
                 await api2.create('myKey00001', 345);
             });
@@ -72,7 +73,7 @@ const api2 = require('../api');
 
         describe('text fields', async () => {
 
-            it('creates keys for tests', async () => {
+            beforeEach('creates keys for tests', async () => {
                 await api1.create('myKey00004', 'hello world');
                 await api2.create('myKey00004', 'good morning');
             });
@@ -99,7 +100,7 @@ const api2 = require('../api');
 
         describe('object fields', async () => {
 
-            it('creates keys for tests', async () => {
+            beforeEach('creates keys for tests', async () => {
                 await api1.create('myKey00005', {a: 5});
                 await api2.create('myKey00005', {b: 9});
             });
@@ -126,7 +127,7 @@ const api2 = require('../api');
 
         describe('attempting to access keys of another client', () => {
 
-            it('creates keys for tests', async () => {
+            beforeEach('creates keys for tests', async () => {
                 await api1.create('onlyInOne', 'something');
             });
 
