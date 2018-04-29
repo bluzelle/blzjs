@@ -1,5 +1,4 @@
 const WebSocket = require('isomorphic-ws');
-const assert = require('assert');
 
 const connections = new Set();
 const resolvers = new Map();
