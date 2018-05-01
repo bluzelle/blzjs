@@ -38,9 +38,9 @@ describe('bluzelle connection', () => {
 
         await communication.create('mykey', 'abcdef');
 
-        await communication.update('mykey', 'newval')
+        await communication.update('mykey', 'newval');
 
-        assert(await communication.read('mykey') === 'newval')
+        assert(await communication.read('mykey') === 'newval');
 
     });
 
@@ -49,7 +49,7 @@ describe('bluzelle connection', () => {
         await communication.create('mykey', 'abcdef');
         await communication.update('mykey', 'zxcv');
 
-        assert(await communication.read('mykey') === 'zxcv')
+        assert(await communication.read('mykey') === 'zxcv');
 
     });
 
