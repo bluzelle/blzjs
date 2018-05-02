@@ -1,23 +1,27 @@
+const reset = require('../utils/reset');
 const communication = require('../communication');
 const assert = require('assert');
 const {startSwarm, killSwarm} = require('../utils/swarmSetup');
 
 describe('load testing', () => {
 
-    before(startSwarm);
-    after(killSwarm);
+    if (process.env.daemonIntegration){
+        before(startSwarm);
+        after(killSwarm)
+    } else {
+        before(reset);
+    }
 
     let arr = [...Array(12).keys()];
 
-    beforeEach(async () => {
-        await communication.connect(`ws://localhost:${process.env.port}`, '71e2cd35-b606-41e6-bb08-f20de30df76c');
-    });
+    beforeEach(() =>
+        communication.connect(`ws://${process.env.address}:${process.env.port}`, '71e2cd35-b606-41e6-bb08-f20de30df76c'));
 
     it('should be able to get keys list', async () => {
         await communication.create('firstKey', 123);
         await communication.create('secondKey', 123);
-        assert(await communication.keys) === ['firstKey', 'secondKey'];
 
+        assert.deepEqual((await communication.keys()).sort(), (['firstKey', 'secondKey']).sort());
     });
 
 

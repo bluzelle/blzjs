@@ -3,11 +3,9 @@ const assert = require('assert');
 const path = require('path');
 const {startSwarm, killSwarm} = require('../utils/swarmSetup');
 
-
-
 const api1 = require('../api');
 
-// This enables us to have two copies of the library with seperate state
+// This enables us to have two copies of the library with separate state
 delete require.cache[path.resolve(__dirname + '/../communication.js')];
 delete require.cache[path.resolve(__dirname + '/../api.js')];
 
@@ -17,16 +15,19 @@ const api2 = require('../api');
 // Run if testing in node, otherwise skip
 (typeof window === 'undefined' ? describe : describe.skip)('multi-client bluzelle api', () => {
 
-    beforeEach(startSwarm);
-    afterEach(killSwarm);
+    if (process.env.daemonIntegration){
+        beforeEach(startSwarm);
+        afterEach(killSwarm)
+    } else {
+        beforeEach(reset);
+    }
 
     describe('two clients with different UUID\'s interacting with the same key', () => {
 
+        beforeEach(() => {
+            api1.connect(`ws://${process.env.address}:${process.env.port}`, '4982e0b0-0b2f-4c3a-b39f-26878e2ac814');
 
-        beforeEach( () => {
-            api1.connect(`ws://localhost:${process.env.port}`, '4982e0b0-0b2f-4c3a-b39f-26878e2ac814');
-
-            api2.connect(`ws://localhost:${process.env.port}`, '71e2cd35-b606-41e6-bb08-f20de30df76c');
+            api2.connect(`ws://${process.env.address}:${process.env.port}`, '71e2cd35-b606-41e6-bb08-f20de30df76c');
         });
 
         // it('api1 should be able to ping the connection', () =>
@@ -153,14 +154,11 @@ const api2 = require('../api');
 
     describe('two clients with the same UUID\'s interacting with the same key', () => {
 
-        // beforeEach(reset);
+        beforeEach(() => {
+            api1.connect(`ws://${process.env.address}:${process.env.port}`, '4982e0b0-0b2f-4c3a-b39f-26878e2ac814');
 
-        beforeEach( () => {
-            api1.connect(`ws://localhost:${process.env.port}`, '4982e0b0-0b2f-4c3a-b39f-26878e2ac814');
-
-            api2.connect(`ws://localhost:${process.env.port}`, '4982e0b0-0b2f-4c3a-b39f-26878e2ac814');
+            api2.connect(`ws://${process.env.address}:${process.env.port}`, '4982e0b0-0b2f-4c3a-b39f-26878e2ac814');
         });
-
 
         // it('api1 should be able to ping the connection', () =>
         //     api1.ping());

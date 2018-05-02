@@ -5,11 +5,15 @@ const {startSwarm, killSwarm} = require('../utils/swarmSetup');
 
 describe('bluzelle connection', () => {
 
-    beforeEach(startSwarm);
-    afterEach(killSwarm);
+    if (process.env.daemonIntegration){
+        beforeEach(startSwarm);
+        afterEach(killSwarm)
+    } else {
+        beforeEach(reset);
+    }
 
-    beforeEach( () => communication.connect(`ws://localhost:${process.env.port}`, '71e2cd35-b606-41e6-bb08-f20de30df76c'));
-
+    beforeEach(() =>
+        communication.connect(`ws://${process.env.address}:${process.env.port}`, '71e2cd35-b606-41e6-bb08-f20de30df76c'));
 
 
     it('should be able to connect', () => {});
@@ -92,7 +96,6 @@ describe('bluzelle connection', () => {
             communication.create('mykey', 321).catch(() => done());
 
         });
-
     });
 
     it('should throw an error when trying to update a non-existent key', done => {

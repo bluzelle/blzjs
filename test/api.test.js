@@ -5,13 +5,15 @@ const {startSwarm, killSwarm} = require('../utils/swarmSetup');
 
 describe('bluzelle api', () => {
 
-    beforeEach(startSwarm);
-    afterEach(killSwarm);
+    if (process.env.daemonIntegration){
+        beforeEach(startSwarm);
+        afterEach(killSwarm)
+    } else {
+        beforeEach(reset);
+    }
 
-
-    beforeEach( async () => {
-        await api.connect(`ws://localhost:${process.env.port}`, '71e2cd35-b606-41e6-bb08-f20de30df76c');
-    });
+    beforeEach(() =>
+        api.connect(`ws://${process.env.address}:${process.env.port}`, '71e2cd35-b606-41e6-bb08-f20de30df76c'));
 
 
     const isEqual = (a, b) =>
@@ -19,9 +21,9 @@ describe('bluzelle api', () => {
 
     it('should be able to connect many times', () => {
 
-        api.connect(`ws://localhost:${process.env.port}`, '71e2cd35-b606-41e6-bb08-f20de30df76c');
-        api.connect(`ws://localhost:${process.env.port}`, '71e2cd35-b606-41e6-bb08-f20de30df76c');
-        api.connect(`ws://localhost:${process.env.port}`, '71e2cd35-b606-41e6-bb08-f20de30df76c');
+        api.connect(`ws://${process.env.address}:${process.env.port}`, '71e2cd35-b606-41e6-bb08-f20de30df76c');
+        api.connect(`ws://${process.env.address}:${process.env.port}`, '71e2cd35-b606-41e6-bb08-f20de30df76c');
+        api.connect(`ws://${process.env.address}:${process.env.port}`, '71e2cd35-b606-41e6-bb08-f20de30df76c');
 
     });
 
@@ -30,8 +32,10 @@ describe('bluzelle api', () => {
         await api.create('hello123', 10);
         await api.create('test', 11);
 
-        assert(isEqual(await api.keys(), ['test','hello123']));
-        assert(!isEqual(await api.keys(), ['blah', 'bli']));
+        let sortedResult = (await api.keys()).sort();
+
+        assert(isEqual(sortedResult, (['test','hello123']).sort()));
+        assert(!isEqual(sortedResult, (['blah', 'bli']).sort()));
 
     });
 
@@ -58,7 +62,5 @@ describe('bluzelle api', () => {
         assert((await api.read('myObjKey')).a === 5);
 
     });
-
-
 
 });

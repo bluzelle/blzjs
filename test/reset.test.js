@@ -3,12 +3,11 @@ const communication = require('../communication');
 const api = require('../api');
 const assert = require('assert');
 
+// Skip if testing against Daemon
+(process.env.daemonIntegration ? describe.skip : describe)('reset', () => {
 
-describe.skip('reset', () => {
-
-    // beforeEach(reset);
-
-    beforeEach( () => communication.connect(`ws://localhost:${process.env.port}`, '71e2cd35-b606-41e6-bb08-f20de30df76c'));
+    beforeEach(reset);
+    beforeEach(() => communication.connect(`ws://localhost:${process.env.port}`, '71e2cd35-b606-41e6-bb08-f20de30df76c'));
 
     it('can add a key', async () => {
         await communication.create('myKey', 'abc');
