@@ -3,23 +3,22 @@ const WebSocketServer = require('websocket').server;
 const http = require('http');
 const reset = require('./reset');
 const assert = require('assert');
-const {startSwarm, killSwarm} = require('../test-daemon/swarmSetup');
+const {killSwarm} = require('../test-daemon/swarmSetup');
 
 
-// Run if testing in node, otherwise skip
+// Run if not testing in browser
 (typeof window === 'undefined' ? describe : describe.skip)('redirect', () => {
+
+    beforeEach(reset);
 
     if (process.env.daemonIntegration) {
 
-        before(startSwarm);
-        after(killSwarm);
+        afterEach(killSwarm);
 
     } else {
 
         const followerPort = 8101;
         let httpServer;
-
-        beforeEach(reset);
 
         before(async () => {
 

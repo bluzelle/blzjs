@@ -8,7 +8,6 @@ let logFileName;
 
 module.exports = {
     startSwarm: async function () {
-        this.timeout(3000);
 
         exec('cd ./test-daemon/scripts; ./run-daemon.sh bluzelle.json');
 

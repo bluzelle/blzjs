@@ -1,16 +1,14 @@
 const reset = require('./reset');
 const communication = require('../communication');
 const assert = require('assert');
-const {startSwarm, killSwarm} = require('../test-daemon/swarmSetup');
+const {killSwarm} = require('../test-daemon/swarmSetup');
+
 
 describe('bluzelle connection', () => {
 
-    if (process.env.daemonIntegration){
-        beforeEach(startSwarm);
-        afterEach(killSwarm)
-    } else {
-        beforeEach(reset);
-    }
+    beforeEach(reset);
+
+    process.env.daemonIntegration && afterEach(killSwarm);
 
     beforeEach(() =>
         communication.connect(`ws://${process.env.address}:${process.env.port}`, '71e2cd35-b606-41e6-bb08-f20de30df76c'));

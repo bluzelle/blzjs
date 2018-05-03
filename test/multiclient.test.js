@@ -1,7 +1,7 @@
 const reset = require('./reset');
 const assert = require('assert');
 const path = require('path');
-const {startSwarm, killSwarm} = require('../test-daemon/swarmSetup');
+const {killSwarm} = require('../test-daemon/swarmSetup');
 
 const api1 = require('../api');
 
@@ -12,15 +12,12 @@ delete require.cache[path.resolve(__dirname + '/../api.js')];
 const api2 = require('../api');
 
 
-// Run if testing in node, otherwise skip
+// Run if not testing in browser
 (typeof window === 'undefined' ? describe : describe.skip)('multi-client bluzelle api', () => {
 
-    if (process.env.daemonIntegration){
-        beforeEach(startSwarm);
-        afterEach(killSwarm)
-    } else {
-        beforeEach(reset);
-    }
+    beforeEach(reset);
+
+    process.env.daemonIntegration && afterEach(killSwarm);
 
     describe('two clients with different UUID\'s interacting with the same key', () => {
 

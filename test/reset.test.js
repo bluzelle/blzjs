@@ -2,11 +2,15 @@ const reset = require('./reset');
 const communication = require('../communication');
 const api = require('../api');
 const assert = require('assert');
+const {killSwarm} = require('../test-daemon/swarmSetup');
 
-// Skip if testing against Daemon
-(process.env.daemonIntegration ? describe.skip : describe)('reset', () => {
+
+describe('reset', () => {
 
     beforeEach(reset);
+
+    process.env.daemonIntegration && afterEach(killSwarm);
+
     beforeEach(() => communication.connect(`ws://localhost:${process.env.port}`, '71e2cd35-b606-41e6-bb08-f20de30df76c'));
 
     it('can add a key', async () => {

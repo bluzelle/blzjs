@@ -1,16 +1,13 @@
 const reset = require('./reset');
 const communication = require('../communication');
 const assert = require('assert');
-const {startSwarm, killSwarm} = require('../test-daemon/swarmSetup');
+const {killSwarm} = require('../test-daemon/swarmSetup');
 
 describe('load testing', () => {
 
-    if (process.env.daemonIntegration){
-        before(startSwarm);
-        after(killSwarm)
-    } else {
-        before(reset);
-    }
+    before(reset);
+
+    process.env.daemonIntegration && after(killSwarm);
 
     let arr = [...Array(12).keys()];
 

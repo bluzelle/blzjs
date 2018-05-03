@@ -1,9 +1,18 @@
 const communication = require('../communication');
+const {startSwarm, killSwarm} = require('../test-daemon/swarmSetup');
 
-const resetInNode = () =>
-    // This eval is so that webpack doesn't bundle the emulator,
-    // if we are compiling tests for the browser.
-    eval("require('../test-emulator/emulator/Emulator')").reset(communication.getUuid());
+const resetInNode = () => {
+
+    if (process.env.daemonIntegration) {
+		return startSwarm()
+
+    } else {
+		// This eval is so that webpack doesn't bundle the emulator,
+    	// if we are compiling tests for the browser.
+    	return eval("require('../test-emulator/emulator/Emulator')").reset(communication.getUuid());
+	}
+
+}
 
 
 const resetInBrowser = () => new Promise(resolve => {
