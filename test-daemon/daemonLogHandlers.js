@@ -1,7 +1,7 @@
 const {includes, filter} = require('lodash');
 const {readFileSync, readdirSync} = require('fs');
 
-const PATH_TO_DAEMON = '../../daemon-build';
+const PATH_TO_DAEMON = './test-daemon/daemon-build';
 
 module.exports = {
     logFileExists: () => {

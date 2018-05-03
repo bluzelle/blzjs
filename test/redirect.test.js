@@ -1,9 +1,9 @@
 const api = require('../api');
 const WebSocketServer = require('websocket').server;
 const http = require('http');
-const reset = require('../utils/reset');
+const reset = require('./reset');
 const assert = require('assert');
-const {startSwarm, killSwarm} = require('../utils/swarmSetup');
+const {startSwarm, killSwarm} = require('../test-daemon/swarmSetup');
 
 
 // Run if testing in node, otherwise skip

@@ -6,10 +6,10 @@
   "scripts": {
     "test-node": "port=8100 address=localhost emulatorQuiet=true mocha test/*.js --exit --timeout 5000",
     "test-integration": "port=50000 address=localhost daemonIntegration=true mocha test/*.js --exit --timeout 5000",
-    "test-browser": "node browser-test/test",
+    "test-browser": "node test-browser/test",
     "test": "emulatorQuiet=true mocha test/*.js --exit; node browser-test/test",
     "run-daemon": "./resources/run-daemon.sh",
-    "setup-daemon": "cp -R ./daemon-resources/configs/. ../../daemon-build/output/"
+    "setup-daemon": "cp -R ./test-daemon/configs/. ./test-daemon/daemon-build/output/"
 
   },
   "devDependencies": {

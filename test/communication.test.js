@@ -1,7 +1,7 @@
-const reset = require('../utils/reset');
+const reset = require('./reset');
 const communication = require('../communication');
 const assert = require('assert');
-const {startSwarm, killSwarm} = require('../utils/swarmSetup');
+const {startSwarm, killSwarm} = require('../test-daemon/swarmSetup');
 
 describe('bluzelle connection', () => {
 

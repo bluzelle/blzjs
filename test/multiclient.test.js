@@ -1,7 +1,7 @@
-const reset = require('../utils/reset');
+const reset = require('./reset');
 const assert = require('assert');
 const path = require('path');
-const {startSwarm, killSwarm} = require('../utils/swarmSetup');
+const {startSwarm, killSwarm} = require('../test-daemon/swarmSetup');
 
 const api1 = require('../api');
 
