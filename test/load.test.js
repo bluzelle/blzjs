@@ -3,58 +3,60 @@ const communication = require('../communication');
 const assert = require('assert');
 const {killSwarm} = require('../test-daemon/swarmSetup');
 
-describe('load testing', () => {
+let NUM_OF_RECORDS = 5;
+
+describe(`load testing with ${NUM_OF_RECORDS} records`, () => {
+
+    let arr = [...Array(NUM).keys()];
 
     before(reset);
 
     process.env.daemonIntegration && after(killSwarm);
 
-    let arr = [...Array(12).keys()];
-
     beforeEach(() =>
         communication.connect(`ws://${process.env.address}:${process.env.port}`, '71e2cd35-b606-41e6-bb08-f20de30df76c'));
 
-    it('should be able to get keys list', async () => {
-        await communication.create('firstKey', 123);
-        await communication.create('secondKey', 123);
 
-        assert.deepEqual((await communication.keys()).sort(), (['firstKey', 'secondKey']).sort());
+    it(`can create keys`, async () => {
+
+        await Promise.all(arr.map((v, i) => communication.create('key' + i, 'abcdef' + i)));
     });
 
 
-    arr.forEach(k => it('should be able to create and read', async () => {
+    it('should be able to update and read', async () => {
 
-        await communication.create('key' + k, 'abcdef' + k);
+        await Promise.all(
+            arr.map((v, i) => communication.update('key' + i, 'updated' + i)));
 
-        assert(await communication.read('key' + k) === 'abcdef' + k)
+        await Promise.all(arr.map((v, i) => communication.read('key' + i)))
+            .then(v =>
+                v.map((v,i) => assert(v === 'updated' + i)))
 
-    }));
+    });
 
-    arr.forEach(k => it('should be able to update and read', async () => {
+    it('should be able to has', async () => {
 
-        await communication.update('key' + k, 'abcdef' + k + 'updated');
+        await Promise.all(arr.map((v, i) => communication.has('key' + i)))
+            .then(v =>
+                v.map( v => assert(v === true)))
+    });
 
-        assert(await communication.read('key' + k) === 'abcdef' + k + 'updated')
+    it('should be able to get keys list', async () => {
 
-    }));
+        assert.deepEqual((await communication.keys()).sort(), (arr.map((v,i) => 'key' + i).sort()));
+    });
 
-    arr.forEach(k => it('should be able to has', async () => {
 
-        assert(await communication.has('key' + k, 'abcdef' + k + 'updated') === true );
 
-    }));
+    it('should be able to delete', async () => {
 
-    arr.forEach(k => it('should be able to delete', async () => {
-
-        await communication.remove('key' + k, 'abcdef' + k + 'updated');
-
-    }));
+        await Promise.all(arr.map((v,i) => communication.remove('key' + i)));
+    });
 
 
     it('should be able to get size', async () => {
 
         assert(await communication.size() >= 0);
-
     });
 
 });

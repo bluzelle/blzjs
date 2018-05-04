@@ -12,7 +12,7 @@ const resetInNode = () => {
     	return eval("require('../test-emulator/emulator/Emulator')").reset(communication.getUuid());
 	}
 
-}
+};
 
 
 const resetInBrowser = () => new Promise(resolve => {

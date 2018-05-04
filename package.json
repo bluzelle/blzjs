@@ -5,7 +5,7 @@
   "main": "api.js",
   "scripts": {
     "test-node": "port=8100 address=localhost emulatorQuiet=true mocha test/*.js --exit --timeout 5000",
-    "test-integration": "port=50000 address=localhost daemonIntegration=true mocha test/*.js --exit --timeout 5000",
+    "test-integration": "port=50000 address=localhost emulatorQuiet=true daemonIntegration=true mocha test/*.js --exit --timeout 10000",
     "test-browser": "node test-browser/test",
     "test": "emulatorQuiet=true mocha test/*.js --exit; node browser-test/test",
     "run-daemon": "./resources/run-daemon.sh",

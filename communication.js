@@ -212,8 +212,8 @@ const size = () => new Promise(resolve => {
 
 const poll = action => new Promise((resolve, reject) => {
 
-    const pollRate = 200; // ms
-    const pollTimeout = 2000;
+    const pollRate = 500; // ms
+    const pollTimeout = 5000;
 
     const start = new Date().getTime();
 
@@ -234,7 +234,7 @@ const poll = action => new Promise((resolve, reject) => {
 
                 } else {
 
-                    setTimeout(loop, pollTimeout);
+                    setTimeout(loop, pollRate);
 
                 }
 
