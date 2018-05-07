@@ -7,7 +7,7 @@ let NUM_OF_RECORDS = 5;
 
 describe(`load testing with ${NUM_OF_RECORDS} records`, () => {
 
-    let arr = [...Array(NUM).keys()];
+    let arr = [...Array(NUM_OF_RECORDS).keys()];
 
     before(reset);
 
