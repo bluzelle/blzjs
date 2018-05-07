@@ -102,4 +102,19 @@ describe('bluzelle connection', () => {
 
     });
 
+    it('should return size >= 0 when db is not empty', async () => {
+
+        await communication.create('myKey', 123);
+        assert((await communication.size()) >= 0);
+
+    });
+
+
+    it('should return size 0 when db is empty', async () => {
+
+        assert((await communication.size()) === 0);
+
+    });
+
+
 });
