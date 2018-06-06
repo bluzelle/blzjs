@@ -4,4 +4,6 @@ See the API at [https://bluzelle.github.io/api](https://bluzelle.github.io/api).
 
 -----------
 
-bluzelle-js/swarmemulator [![Build Status](https://travis-ci.org/bluzelle/bluzelle-js.svg?branch=protobuf%2Bws)](https://travis-ci.org/bluzelle/bluzelle-js)
+[![Build Status](https://travis-ci.com/bluzelle/bluzelle-js.svg?branch=travis)](https://travis-ci.com/bluzelle/bluzelle-js)
+
+

@@ -1,7 +1,20 @@
-os: osx
-
 git:
   submodules: false
+
+sudo: required
+
+matrix:
+  include:
+    - os: linux
+      env: "daemonIntegration=true"
+      addons: 
+        apt:
+          sources:
+            - sourceline: 'deb https://bluzelle.jfrog.io/bluzelle/debian-local all stable'
+
+    - os: osx
+      env: "emulatorIntegration=true"
+
 
 language: node_js
 
@@ -9,5 +22,4 @@ node_js:
   - "node" # Use latest NodeJS
 
 before_install:
-  - echo $NPM_RC > .npmrc
-  - npm install swarmemulator --registry $BLUZELLE_NPM_PRIVATE
+  - ./travis_install.sh
