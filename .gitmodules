@@ -1,0 +1,3 @@
+[submodule "swarmDB"]
+	path = swarmDB
+	url = https://github.com/bluzelle/swarmDB

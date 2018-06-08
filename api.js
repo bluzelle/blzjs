@@ -1,23 +1,22 @@
 const communication = require('./communication');
-const {valToBase64, base64ToVal} = require('./base64convert');
+const {valToUInt8, uInt8ToVal} = require('./serialize');
 
 
-const createBase64 = communication.create;
+const createSerial = communication.create;
 
 const createWithConversion = (key, value) =>
-    createBase64(key, valToBase64(value));
+    createSerial(key, valToUInt8(value));
 
 
-const updateBase64 = communication.update;
+const updateSerial = communication.update;
 
 const updateWithConversion = (key, value) =>
-    updateBase64(key, valToBase64(value));
+    updateSerial(key, valToUInt8(value));
 
-const readBase64 = communication.read;
+const readSerial = communication.read;
 
 const readWithConversion = key =>
-    readBase64(key).then(
-    	base64ToVal);
+    readSerial(key).then(uInt8ToVal);
 
 
 module.exports = Object.assign(communication, {

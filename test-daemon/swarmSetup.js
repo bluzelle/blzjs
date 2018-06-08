@@ -18,7 +18,6 @@ module.exports = {
             exec('cd ./test-daemon/scripts; ./run-daemon.sh bluzelle2.json')
         }, 2000);
 
-
         await waitUntil(() => logFileName = logFileExists());
 
         process.env.emulatorQuiet ||

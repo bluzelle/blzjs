@@ -7,9 +7,20 @@ const resetInNode = () => {
 		return startSwarm()
 
     } else {
-		// This eval is so that webpack doesn't bundle the emulator,
+
+    	// We use eval is so that webpack doesn't bundle the emulator,
     	// if we are compiling tests for the browser.
-    	return eval("require('../test-emulator/emulator/Emulator')").reset(communication.getUuid());
+
+    	try {
+
+    		return eval("require('swarmemulator')").reset(communication.getUuid());
+
+    	} catch(e) {
+
+    		throw new Error("bluzelle-js swarmemulator not found as a package. You must install or link this package manually as it is not listed in this projects proper dependencies.");
+
+    	}
+    	
 	}
 
 };

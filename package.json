@@ -4,13 +4,11 @@
   "description": "Bluzelle Database for JavaScript",
   "main": "api.js",
   "scripts": {
-    "test-node": "port=8100 address=localhost emulatorQuiet=true mocha test/*.js --exit --timeout 5000",
+    "test": "port=8100 address=localhost emulatorQuiet=true mocha test/*.js --exit --timeout 5000",
     "test-integration": "port=50000 address=localhost emulatorQuiet=true daemonIntegration=true mocha test/*.js --exit --timeout 10000",
     "test-browser": "node test-browser/test",
-    "test": "emulatorQuiet=true mocha test/*.js --exit; node browser-test/test",
     "run-daemon": "./resources/run-daemon.sh",
     "setup-daemon": "cp -R ./test-daemon/configs/. ./test-daemon/daemon-build/output/"
-
   },
   "devDependencies": {
     "async-wait-until": "^1.1.7",
@@ -25,9 +23,11 @@
   "dependencies": {
     "base64-arraybuffer": "^0.1.5",
     "buffer": "^5.1.0",
-    "isomorphic-ws": "^4.0.0",
+    "google-protobuf": "^3.5.0",
+    "isomorphic-ws": "^4.0.1",
     "lodash": "^4.17.10",
+    "text-encoding": "^0.6.4",
     "websocket": "^1.0.25",
-    "ws": "^5.1.1"
+    "ws": "^5.2.0"
   }
 }
