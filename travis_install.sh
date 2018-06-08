@@ -28,6 +28,6 @@ else
 
   # Get the swarmemulator
 
-  npm install ssh://git@github.com/bluzelle/swarmemulator.git#protobuf+ws
+  npm install ssh://git@github.com/bluzelle/swarmemulator.git#devel
 
 fi
