@@ -23,6 +23,10 @@ const connect = (addr, id) => {
 
 const onMessage = (bin, socket) => {
 
+    if(typeof bin === 'string') {
+        throw new Error('daemon returned string instead of binary')
+    }
+
     const response = database_pb.database_response.deserializeBinary(new Uint8Array(bin));
     const response_json = response.toObject();
 
