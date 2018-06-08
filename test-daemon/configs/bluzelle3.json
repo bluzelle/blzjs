@@ -1,7 +1,8 @@
 {
   "listener_address" : "127.0.0.1",
   "listener_port" : 50002,
-  "ethereum" : "0x006eae72077449caca91078ef78552c0cd9bce8f",
+  "ethereum" : "0xddbd2b932c763ba5b1b7ae3b362eac3e8d40121a",
+  "ethereum_io_api_token" : "*****************************",
   "bootstrap_file" : "./peers.json",
   "uuid" : "3726ec5f-72b4-4ce6-9e60-f5c47f619a41",
   "debug_logging" : true,

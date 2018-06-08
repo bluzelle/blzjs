@@ -8,13 +8,15 @@ let logFileName;
 
 module.exports = {
     startSwarm: async function () {
+        // Daemon state is persisted in .state directory, wipe it to ensure clean slate
+        exec('cd ./test-daemon/daemon-build/output/; rm -rf .state');
 
         exec('cd ./test-daemon/scripts; ./run-daemon.sh bluzelle.json');
 
         // Waiting briefly before starting second Daemon ensures the first starts as leader
         setTimeout(() => {
             exec('cd ./test-daemon/scripts; ./run-daemon.sh bluzelle2.json')
-        }, 1000);
+        }, 2000);
 
 
         await waitUntil(() => logFileName = logFileExists());
@@ -26,9 +28,8 @@ module.exports = {
 
             let contents = fs.readFileSync('./test-daemon/daemon-build/output/' + logFileName, 'utf8');
 
-            // raft.cpp:582 stdouts 'I AM LEADER'
-            return includes(contents, 'raft.cpp:582');
-        });
+            return includes(contents, 'RAFT State: Leader');
+        }, 10000);
     },
     killSwarm: async () => {
         exec('pkill -2 swarm');

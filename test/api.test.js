@@ -61,4 +61,43 @@ describe('bluzelle api', () => {
 
     });
 
+    describe.only('max value', () => {
+
+        context('writing 225000 bytes', () => {
+
+            it('should throw VALUE_SIZE_TOO_LARGE', done => {
+
+                let str = '0'.repeat(225000);
+
+                api.create('key', str)
+                    .catch(err => {
+                        if (err.toString().includes('Error: VALUE_SIZE_TOO_LARGE')) {
+                            done();
+                        }
+                    });
+
+            });
+
+        });
+
+        context('writing 224000 bytes', () => {
+
+            it('should not throw an error', done => {
+
+                let str = '0'.repeat(224000);
+
+                api.create('key', str)
+                    .then(() => done())
+                    .catch(err => {
+                        if (err) {
+                            console.log(err);
+                        }
+                    });
+
+            })
+
+        });
+
+    });
+
 });
