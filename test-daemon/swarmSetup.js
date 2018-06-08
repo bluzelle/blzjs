@@ -9,26 +9,13 @@ let logFileName;
 module.exports = {
     startSwarm: async function () {
         // Daemon state is persisted in .state directory, wipe it to ensure clean slate
-        exec('cd ./test-daemon/daemon-build/output/; rm -rf .state', (err, stdout) => {
-            if(err) {
-                console.log(stdout);
-                throw new Error(err);
-            }
-        });
+        exec('cd ./test-daemon/daemon-build/output/; rm -rf .state');
 
-        exec('cd ./test-daemon/scripts; ./run-daemon.sh bluzelle.json', (err, stdout) => {
-            if(err) {
-                console.log(stdout);
-                throw new Error(err);
-            }
-        });
+        exec('cd ./test-daemon/scripts; ./run-daemon.sh bluzelle.json');
 
         // Waiting briefly before starting second Daemon ensures the first starts as leader
         setTimeout(() => {
-            exec('cd ./test-daemon/scripts; ./run-daemon.sh bluzelle2.json', (err, stdout) => {
-                console.log(stdout);
-                throw new Error(err);
-            });
+            exec('cd ./test-daemon/scripts; ./run-daemon.sh bluzelle2.json');
         }, 2000);
 
         await waitUntil(() => logFileName = logFileExists());

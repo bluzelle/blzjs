@@ -148,7 +148,7 @@ describe('bluzelle api', () => {
       
     });
   
-    describe.only('max value', () => {
+    describe('max value', () => {
 
         context('writing 225000 bytes', () => {
 
