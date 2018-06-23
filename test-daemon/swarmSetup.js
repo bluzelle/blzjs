@@ -28,7 +28,7 @@ module.exports = {
             let contents = fs.readFileSync('./test-daemon/daemon-build/output/' + logFileName, 'utf8');
 
             return includes(contents, 'RAFT State: Leader');
-        }, 10000);
+        }, 12000);
     },
     killSwarm: async () => {
         exec('pkill -2 swarm');

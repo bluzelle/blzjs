@@ -6,7 +6,7 @@
   "scripts": {
     "test-node": "port=8100 address=localhost emulatorQuiet=true mocha test/*.js --exit --timeout 5000",
     "setup-daemon": "cp -R ./test-daemon/configs/. ./test-daemon/daemon-build/output/",
-    "test-daemon": "npm run setup-daemon; daemonIntegration=true port=50000 address=localhost emulatorQuiet=true mocha test/*.js --exit --timeout 10000",
+    "test-daemon": "npm run setup-daemon; daemonIntegration=true port=50000 address=localhost emulatorQuiet=true mocha test/*.js --exit --timeout 12000",
     "test": "if [ \"$daemonIntegration\" = true ] ; then npm run test-daemon; else npm run test-node; fi"
   },
   "devDependencies": {
