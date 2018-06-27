@@ -1,5 +1,5 @@
 const reset = require('./reset');
-const communication = require('../communication');
+const communication = require('../src/communication');
 const assert = require('assert');
 const {killSwarm} = require('../test-daemon/swarmSetup');
 

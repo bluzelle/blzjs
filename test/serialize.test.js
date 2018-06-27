@@ -1,4 +1,4 @@
-const {valToUInt8, uInt8ToVal} = require('../serialize');
+const {valToUInt8, uInt8ToVal} = require('../src/serialize');
 const {isEqual} = require('lodash');
 const assert = require('assert');
 

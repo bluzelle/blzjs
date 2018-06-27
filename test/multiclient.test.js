@@ -3,13 +3,13 @@ const assert = require('assert');
 const path = require('path');
 const {killSwarm} = require('../test-daemon/swarmSetup');
 
-const api1 = require('../api');
+const api1 = require('../src/api');
 
 // This enables us to have two copies of the library with separate state
-delete require.cache[path.resolve(__dirname + '/../communication.js')];
-delete require.cache[path.resolve(__dirname + '/../api.js')];
+delete require.cache[path.resolve(__dirname + '/../src/communication.js')];
+delete require.cache[path.resolve(__dirname + '/../src/api.js')];
 
-const api2 = require('../api');
+const api2 = require('../src/api');
 
 
 // Run if not testing in browser
@@ -281,15 +281,15 @@ const api2 = require('../api');
 
     describe('basic multi threading test', () => {
 
-        delete require.cache[path.resolve(__dirname + '/../communication.js')];
-        delete require.cache[path.resolve(__dirname + '/../api.js')];
+        delete require.cache[path.resolve(__dirname + '/../src/communication.js')];
+        delete require.cache[path.resolve(__dirname + '/../src/api.js')];
 
-        const api3 = require('../api');
+        const api3 = require('../src/api');
 
-        delete require.cache[path.resolve(__dirname + '/../communication.js')];
-        delete require.cache[path.resolve(__dirname + '/../api.js')];
+        delete require.cache[path.resolve(__dirname + '/../src/communication.js')];
+        delete require.cache[path.resolve(__dirname + '/../src/api.js')];
 
-        const api4 = require('../api');
+        const api4 = require('../src/api');
 
         context('four clients with unique UUID\'s', () => {
             let arr = [1, 2, 3, 4];

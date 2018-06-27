@@ -1,4 +1,4 @@
-const communication = require('../communication');
+const communication = require('../src/communication');
 const {startSwarm, killSwarm} = require('../test-daemon/swarmSetup');
 
 const resetInNode = () => {

@@ -1,6 +1,6 @@
 const WebSocket = require('isomorphic-ws');
-const bluzelle_pb = require('./bluzelle_pb');
-const database_pb = require('./database_pb');
+const bluzelle_pb = require('../proto/bluzelle_pb');
+const database_pb = require('../proto/database_pb');
 const {encode} = require('base64-arraybuffer');
 const {isEqual} = require('lodash');
 

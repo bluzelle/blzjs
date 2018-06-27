@@ -570,7 +570,8 @@ proto.database_redirect_response.toObject = function(includeInstance, msg) {
     leaderId: jspb.Message.getFieldWithDefault(msg, 1, ""),
     leaderName: jspb.Message.getFieldWithDefault(msg, 2, ""),
     leaderHost: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    leaderPort: jspb.Message.getFieldWithDefault(msg, 4, 0)
+    leaderPort: jspb.Message.getFieldWithDefault(msg, 4, 0),
+    leaderHttpPort: jspb.Message.getFieldWithDefault(msg, 5, 0)
   };
 
   if (includeInstance) {
@@ -622,6 +623,10 @@ proto.database_redirect_response.deserializeBinaryFromReader = function(msg, rea
     case 4:
       var value = /** @type {number} */ (reader.readUint32());
       msg.setLeaderPort(value);
+      break;
+    case 5:
+      var value = /** @type {number} */ (reader.readUint32());
+      msg.setLeaderHttpPort(value);
       break;
     default:
       reader.skipField();
@@ -677,6 +682,13 @@ proto.database_redirect_response.serializeBinaryToWriter = function(message, wri
   if (f !== 0) {
     writer.writeUint32(
       4,
+      f
+    );
+  }
+  f = message.getLeaderHttpPort();
+  if (f !== 0) {
+    writer.writeUint32(
+      5,
       f
     );
   }
@@ -740,6 +752,21 @@ proto.database_redirect_response.prototype.getLeaderPort = function() {
 /** @param {number} value */
 proto.database_redirect_response.prototype.setLeaderPort = function(value) {
   jspb.Message.setProto3IntField(this, 4, value);
+};
+
+
+/**
+ * optional uint32 leader_http_port = 5;
+ * @return {number}
+ */
+proto.database_redirect_response.prototype.getLeaderHttpPort = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 5, 0));
+};
+
+
+/** @param {number} value */
+proto.database_redirect_response.prototype.setLeaderHttpPort = function(value) {
+  jspb.Message.setProto3IntField(this, 5, value);
 };
 
 
@@ -2293,14 +2320,14 @@ proto.database_response.response.prototype.setError = function(value) {
 
 /**
  * repeated string keys = 8;
- * @return {!Array.<string>}
+ * @return {!Array<string>}
  */
 proto.database_response.response.prototype.getKeysList = function() {
-  return /** @type {!Array.<string>} */ (jspb.Message.getRepeatedField(this, 8));
+  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 8));
 };
 
 
-/** @param {!Array.<string>} value */
+/** @param {!Array<string>} value */
 proto.database_response.response.prototype.setKeysList = function(value) {
   jspb.Message.setField(this, 8, value || []);
 };

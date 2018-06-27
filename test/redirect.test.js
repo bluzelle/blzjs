@@ -1,12 +1,12 @@
-const api = require('../api');
+const api = require('../src/api');
 const WebSocketServer = require('websocket').server;
 const http = require('http');
 const reset = require('./reset');
 const assert = require('assert');
 const {killSwarm} = require('../test-daemon/swarmSetup');
 
-const bluzelle_pb = require('../bluzelle_pb');
-const database_pb = require('../database_pb');
+const bluzelle_pb = require('../proto/bluzelle_pb');
+const database_pb = require('../proto/database_pb');
 
 const {decode} = require('base64-arraybuffer');
 
