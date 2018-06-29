@@ -113,11 +113,8 @@ const send = (database_msg, resolver, rejecter) => {
 
     };
 
-    s.onerror = e =>  {
-
-        s.close();
-        rejecter(e);
-
+    s.onerror = (e) => {
+        rejecter(new Error(e.error.message));
     };
 
     s.onmessage = e => {
