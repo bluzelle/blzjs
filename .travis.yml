@@ -11,7 +11,8 @@ matrix:
         apt:
           sources:
             - sourceline: 'deb https://bluzelle.jfrog.io/bluzelle/debian-local all stable'
-
+            - ubuntu-toolchain-r-test
+            - sourceline: 'deb http://ppa.launchpad.net/maarten-fonville/protobuf/ubuntu trusty main'
     - os: osx
       env: "emulatorIntegration=true"
 

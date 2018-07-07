@@ -1,18 +1,19 @@
 const reset = require('./reset');
 const api = require('../src/api');
 const assert = require('assert');
-const {killSwarm} = require('../test-daemon/swarmSetup');
 const {isEqual} = require('lodash');
+
+const {despawnSwarm, swarm} = require('../test-daemon/setup');
 
 
 describe('bluzelle api', () => {
 
     beforeEach(reset);
 
-    process.env.daemonIntegration && afterEach(killSwarm);
+    process.env.daemonIntegration && afterEach(despawnSwarm);
 
     beforeEach(() =>
-        api.connect(`ws://${process.env.address}:${process.env.port}`, '71e2cd35-b606-41e6-bb08-f20de30df76c'));
+        api.connect(`ws://${process.env.address}:${process.env.daemonIntegration ? swarm.list[swarm.leader] : 8100}`, '71e2cd35-b606-41e6-bb08-f20de30df76c'));
 
 
     const isEqual = (a, b) =>
@@ -20,29 +21,32 @@ describe('bluzelle api', () => {
 
     it('should be able to connect many times', () => {
 
-        api.connect(`ws://${process.env.address}:${process.env.port}`, '71e2cd35-b606-41e6-bb08-f20de30df76c');
-        api.connect(`ws://${process.env.address}:${process.env.port}`, '71e2cd35-b606-41e6-bb08-f20de30df76c');
-        api.connect(`ws://${process.env.address}:${process.env.port}`, '71e2cd35-b606-41e6-bb08-f20de30df76c');
+        api.connect(`ws://${process.env.address}:${process.env.daemonIntegration ? swarm.list[swarm.leader] : 8100}`, '71e2cd35-b606-41e6-bb08-f20de30df76c');
+        api.connect(`ws://${process.env.address}:${process.env.daemonIntegration ? swarm.list[swarm.leader] : 8100}`, '71e2cd35-b606-41e6-bb08-f20de30df76c');
+        api.connect(`ws://${process.env.address}:${process.env.daemonIntegration ? swarm.list[swarm.leader] : 8100}`, '71e2cd35-b606-41e6-bb08-f20de30df76c');
 
     });
 
+
+    it('should get an empty list of keys', async () => {
+
+        assert((await api.keys()).length === 0);
+
+    });
+
+
     it('should be able to get a list of keys', async () => {
 
-        await api.create('hello123', 10);
-        await api.create('test', 11);
+        await api.create('hello123', '10');
+        await api.create('test', '11');
 
         let sortedResult = (await api.keys()).sort();
 
-        assert(isEqual(sortedResult, (['test','hello123']).sort()));
+        assert(isEqual(sortedResult, (['test', 'hello123']).sort()));
         assert(!isEqual(sortedResult, (['blah', 'bli']).sort()));
 
     });
 
-    it('should be able to create and read number fields', async () => {
-        await api.create('myKey', 123);
-        assert(await api.read('myKey') === 123);
-
-    });
 
     it('should be able to create and read text fields', async () => {
 
@@ -54,24 +58,6 @@ describe('bluzelle api', () => {
         assert(await api.read('interestingString') === "aGVsbG8gd29ybGQNCg==");
 
     });
-
-    it('should be able to create and read object fields', async () => {
-
-        await api.create('myObjKey', { a: 5 });
-        assert((await api.read('myObjKey')).a === 5);
-
-    });
-
-    it('should be able to create and read byte data', async () => {
-
-        const val = new Uint8Array([3, 1, 4, 1, 5, 9]);
-
-        await api.create('myBinary', val);
-        
-        assert(isEqual(await api.read('myBinary'), val));
-
-    });
-
 
     it('should reject bad connections', done => {
 
@@ -121,22 +107,22 @@ describe('bluzelle api', () => {
 
     it('should throw an error when creating the same key twice', done => {
 
-        api.create('mykey', 123).then(() => {
+        api.create('mykey', '123').then(() => {
 
-            api.create('mykey', 321).catch(() => done());
+            api.create('mykey', '321').catch(() => done());
 
         });
     });
 
     it('should throw an error when trying to update a non-existent key', done => {
 
-        api.update('something', 123).catch(() => done());
+        api.update('something', '123').catch(() => done());
 
     });
 
     it('should return size > 0 when db is not empty', async () => {
 
-        await api.create('myKey', 123);
+        await api.create('myKey', '123');
         assert((await api.size()) > 0);
 
     });
@@ -145,7 +131,7 @@ describe('bluzelle api', () => {
     it('should return size 0 when db is empty', async () => {
 
         assert((await api.size()) === 0);
-      
+
     });
 
 });

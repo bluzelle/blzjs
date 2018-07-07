@@ -1,10 +1,11 @@
 const communication = require('../src/communication');
-const {startSwarm, killSwarm} = require('../test-daemon/swarmSetup');
-
+// const {startSwarm, killSwarm} = require('../test-daemon/swarmSetup');
+const {spawnSwarm, despawnSwarm} = require('../test-daemon/setup');
 const resetInNode = () => {
 
     if (process.env.daemonIntegration) {
-		return startSwarm()
+		// return startSwarm()
+		return spawnSwarm()
 
     } else {
 

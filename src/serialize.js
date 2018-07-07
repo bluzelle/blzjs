@@ -22,41 +22,22 @@ const OBJ_PREFIX = 1;
 
 const valToUInt8 = val => {
 
-	const type = typeof val;
+
+    if(typeof val !== 'string') {
+
+        throw new Error('Bluzelle: Attempting to set value as non-string.');
+
+    }
 
 
-	if(val instanceof ArrayBuffer || ArrayBuffer.isView(val)) {
-
-		return new Uint8Array([BIN_PREFIX, ... new Uint8Array(val)])
-
-	}
-
-
-	return new Uint8Array([OBJ_PREFIX, ...encode(JSON.stringify(val))]);
+    return new Uint8Array(encode(val));
 
 };
 
 
 const uInt8ToVal = arr => {
 
-	const prefix = arr[0];
-	const rest = arr.subarray(1);
-
-
-	if(prefix === BIN_PREFIX) {
-
-        return rest;
-
-	}
-
-	if(prefix === OBJ_PREFIX) {
-
-		return JSON.parse(decode(rest));
-
-	}
-
-
-    throw new Error("Response prefix not recognized as binary data or object data");
+    return decode(arr);
 
 };
 

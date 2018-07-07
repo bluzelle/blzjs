@@ -1,16 +1,16 @@
 const reset = require('./reset');
 const api = require('../src/api');
 const assert = require('assert');
-const {killSwarm} = require('../test-daemon/swarmSetup');
+const {despawnSwarm, swarm} = require('../test-daemon/setup');
 
 
 describe('reset', () => {
 
     beforeEach(reset);
 
-    process.env.daemonIntegration && afterEach(killSwarm);
+    process.env.daemonIntegration && afterEach(despawnSwarm);
 
-    beforeEach(() => api.connect(`ws://localhost:${process.env.port}`, '71e2cd35-b606-41e6-bb08-f20de30df76c'));
+    beforeEach(() => api.connect(`ws://localhost:${process.env.daemonIntegration ? swarm.list[swarm.leader] : 8100}`, '71e2cd35-b606-41e6-bb08-f20de30df76c'));
 
     it('can add a key', async () => {
         await api.create('myKey', 'abc');

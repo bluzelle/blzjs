@@ -3,7 +3,7 @@ const WebSocketServer = require('websocket').server;
 const http = require('http');
 const reset = require('./reset');
 const assert = require('assert');
-const {killSwarm} = require('../test-daemon/swarmSetup');
+const {despawnSwarm, swarm} = require('../test-daemon/setup');
 
 const bluzelle_pb = require('../proto/bluzelle_pb');
 const database_pb = require('../proto/database_pb');
@@ -21,7 +21,7 @@ const {decode} = require('base64-arraybuffer');
 
     if (process.env.daemonIntegration) {
 
-        afterEach(killSwarm);
+        afterEach(despawnSwarm);
 
     }
 
@@ -84,8 +84,8 @@ const {decode} = require('base64-arraybuffer');
 
         api.connect(`ws://${process.env.address}:${followerPort}`, '71e2cd35-b606-41e6-bb08-f20de30df76c');
 
-        await api.create('hey', 123);
-        assert(await api.read('hey') === 123);
+        await api.create('hey', '123');
+        assert(await api.read('hey') === '123');
 
     });
 

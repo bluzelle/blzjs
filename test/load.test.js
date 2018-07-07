@@ -1,7 +1,8 @@
 const reset = require('./reset');
 const communication = require('../src/communication');
 const assert = require('assert');
-const {killSwarm} = require('../test-daemon/swarmSetup');
+
+const {despawnSwarm, swarm} = require('../test-daemon/setup');
 
 let NUM_OF_RECORDS = 5;
 
@@ -11,10 +12,10 @@ describe(`load testing with ${NUM_OF_RECORDS} records`, () => {
 
     before(reset);
 
-    process.env.daemonIntegration && after(killSwarm);
+    process.env.daemonIntegration && after(despawnSwarm);
 
     beforeEach(() =>
-        communication.connect(`ws://${process.env.address}:${process.env.port}`, '71e2cd35-b606-41e6-bb08-f20de30df76c'));
+        communication.connect(`ws://${process.env.address}:${process.env.daemonIntegration ? swarm.list[swarm.leader] : 8100}`, '71e2cd35-b606-41e6-bb08-f20de30df76c'));
 
 
     it(`can create keys`, async () => {
