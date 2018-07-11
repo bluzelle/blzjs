@@ -24,3 +24,9 @@ node_js:
 
 before_install:
   - ./travis_install.sh
+
+
+after_success:
+- if [ "$TRAVIS_BRANCH" = "master" ]; then
+    npm publish;
+  fi
