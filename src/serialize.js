@@ -1,5 +1,5 @@
 const {TextEncoder, TextDecoder} = require('text-encoding');
-const {decode: decodeBase64} = require('base64-arraybuffer');
+
 
 const encode = (() => {
     

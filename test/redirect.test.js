@@ -1,4 +1,4 @@
-const api = require('../src/api');
+const api = require('../lib/bluzelle.node');
 const WebSocketServer = require('websocket').server;
 const http = require('http');
 const reset = require('./reset');

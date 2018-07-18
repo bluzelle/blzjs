@@ -1,6 +1,8 @@
-const communication = require('../src/communication');
+const bluzelle = require('../lib/bluzelle.node');
 // const {startSwarm, killSwarm} = require('../test-daemon/swarmSetup');
 const {spawnSwarm, despawnSwarm} = require('../test-daemon/setup');
+
+
 const resetInNode = () => {
 
     if (process.env.daemonIntegration) {
@@ -14,7 +16,7 @@ const resetInNode = () => {
 
     	try {
 
-    		return eval("require('swarmemulator')").reset(communication.getUuid());
+    		return eval("require('swarmemulator')").reset(bluzelle.getUuid());
 
     	} catch(e) {
 

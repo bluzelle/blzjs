@@ -1,5 +1,5 @@
 const reset = require('./reset');
-const communication = require('../src/communication');
+const communication = require('../lib/bluzelle.node');
 const assert = require('assert');
 
 const {despawnSwarm, swarm} = require('../test-daemon/setup');

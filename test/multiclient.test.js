@@ -3,13 +3,12 @@ const assert = require('assert');
 const path = require('path');
 const {despawnSwarm, swarm} = require('../test-daemon/setup');
 
-const api1 = require('../src/api');
+const api1 = require('../lib/bluzelle.node');
 
 // This enables us to have two copies of the library with separate state
-delete require.cache[path.resolve(__dirname + '/../src/communication.js')];
-delete require.cache[path.resolve(__dirname + '/../src/api.js')];
+delete require.cache[path.resolve(__dirname + '/../lib/bluzelle.node.js')];
 
-const api2 = require('../src/api');
+const api2 = require('../lib/bluzelle.node');
 
 
 // Run if not testing in browser
@@ -205,15 +204,13 @@ const api2 = require('../src/api');
 
     describe('basic multi threading test', () => {
 
-        delete require.cache[path.resolve(__dirname + '/../src/communication.js')];
-        delete require.cache[path.resolve(__dirname + '/../src/api.js')];
+        delete require.cache[path.resolve(__dirname + '/../lib/bluzelle.node.js')];
 
-        const api3 = require('../src/api');
+        const api3 = require('../lib/bluzelle.node');
 
-        delete require.cache[path.resolve(__dirname + '/../src/communication.js')];
-        delete require.cache[path.resolve(__dirname + '/../src/api.js')];
+        delete require.cache[path.resolve(__dirname + '/../lib/bluzelle.node.js')];
 
-        const api4 = require('../src/api');
+        const api4 = require('../lib/bluzelle.node');
 
         context('four clients with unique UUID\'s', () => {
             let arr = [1, 2, 3, 4];
