@@ -114,7 +114,7 @@ const send = (database_msg, resolver, rejecter) => {
     };
 
     s.onerror = (e) => {
-        rejecter(new Error(e.error.message));
+        rejecter(new Error('WebSocket error'));
     };
 
     s.onmessage = e => {
