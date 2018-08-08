@@ -31,7 +31,8 @@ before_install:
   install protobuf; fi
 before_script:
 - webpack
-
+after_success:
+- npm version "$PROJECT_VERSION"
 
 deploy:
   provider: npm
