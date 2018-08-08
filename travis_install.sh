@@ -11,7 +11,6 @@ if [ "$daemonIntegration" = true ]; then
 
 
   cd test-daemon
-  rm daemon-build
   mkdir -p daemon-build/output
   cd daemon-build/output
   ln -s `which swarm`
