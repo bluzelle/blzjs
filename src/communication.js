@@ -101,8 +101,19 @@ const send = (database_msg, resolver, rejecter) => {
     messages.set(tid, database_msg);
 
 
-    const s = new WebSocket(address);
-    s.binaryType = "arraybuffer";
+    let s;
+
+    try {
+
+        s = new WebSocket(address);
+        s.binaryType = "arraybuffer";
+
+    } catch(e) {
+
+        rejecter(e);
+        return;
+
+    }
 
     s.onopen = () => {
 
@@ -114,7 +125,10 @@ const send = (database_msg, resolver, rejecter) => {
     };
 
     s.onerror = (e) => {
-        rejecter(new Error('WebSocket error'));
+        rejecter(
+            (e.error && e.error.message) ? 
+                e.error : 
+                new Error('Bluzelle WebSocket error.'));
     };
 
     s.onmessage = e => {

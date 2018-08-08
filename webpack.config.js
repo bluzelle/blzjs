@@ -4,7 +4,7 @@ const WebpackShellPlugin = require('webpack-shell-plugin');
 
 module.exports = [
     {
-        mode: 'production',
+        mode: 'development',
         entry: './src/api.js',
         output: {
             path: path.resolve('lib'),
@@ -19,7 +19,7 @@ module.exports = [
     },
 
     {
-        mode: 'production',
+        mode: 'development',
         entry: './src/api.js',
         output: {
             path: path.resolve('lib'),
