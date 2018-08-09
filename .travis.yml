@@ -26,16 +26,12 @@ language: node_js
 node_js:
 - node
 before_install:
+- npm version "$PROJECT_VERSION"
 - "./travis_install.sh"
 - if [ "$emulatorIntegration" = "true" ] ; then brew update; brew unlink python; brew
   install protobuf; fi
 before_script:
 - webpack
-
-
-before_deploy:
-- git stash
-- npm version "$PROJECT_VERSION"
 
 deploy:
   provider: npm
