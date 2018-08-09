@@ -34,6 +34,7 @@ before_script:
 - webpack
 
 deploy:
+  skip_cleanup: true
   provider: npm
   email: devops@bluzelle.com
   api_key:
