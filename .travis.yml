@@ -33,6 +33,9 @@ before_install:
 before_script:
 - webpack
 
+before_deploy:
+- if [ "$emulatorIntegration" = "true" ] ; then npm uninstall swarmemulator; fi
+
 deploy:
   skip_cleanup: true
   provider: npm
