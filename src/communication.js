@@ -1,94 +1,143 @@
 const WebSocket = require('isomorphic-ws');
-const bluzelle_pb = require('../proto/bluzelle_pb');
-const database_pb = require('../proto/database_pb');
 const {encode} = require('base64-arraybuffer');
 const {isEqual} = require('lodash');
+const bluzelle_pb = require('../proto/bluzelle_pb');
 
 
-const connections = new Set();
-const resolvers = new Map();
-const rejecters = new Map();
-const messages = new Map();
+const tidMap = new Map();
+
+const primaryConnection = {};
+const secondaryConnection = {};
 
 
+const connect = address => {
 
-let uuid;
-let address;
+    if(primaryConnection.socket && primaryConnection.socket.readyState === 1) {
 
-const connect = (addr, id) => {
-    uuid = id;
-    address = addr;
+        return Promise.reject(new Error('bluzelle: already connected.'));
+
+    }
+
+
+    return newConnection(address, onMessage, primaryConnection);
+
 };
 
 
-const onMessage = (bin, socket) => {
+const disconnect = () => {
+
+    primaryConnection.socket && primaryConnection.socket.close();
+    secondaryConnection.socket && secondaryConnection.socket.close();
+
+    delete primaryConnection.socket;
+    delete secondaryConnection.socket;
+
+};
+
+
+const newConnection = (address, handleMessage, connectionObject = {}) => 
+    new Promise((resolve, reject) => {
+
+    connectionObject.address = address;
+
+    connectionObject.socket = new WebSocket(address);
+    connectionObject.socket.binaryType = "arraybuffer";
+
+    connectionObject.socket.onopen = () => resolve();
+
+    connectionObject.socket.onerror = (e) =>
+        reject(new Error(e.error.message));
+
+    connectionObject.socket.onmessage = e =>
+        handleMessage(e.data);
+
+});
+
+
+
+const onMessage = bin => {    
 
     if(typeof bin === 'string') {
         throw new Error('daemon returned string instead of binary')
     }
 
 
-    const response = database_pb.database_response.deserializeBinary(new Uint8Array(bin));
+    const response = bluzelle_pb.database_response.deserializeBinary(new Uint8Array(bin));
     const response_json = response.toObject();
+
+    // console.log("\nRecieving\n",response_json);
 
     const id = response_json.header.transactionId;
 
-    const message = messages.get(id);
-    const resolver = resolvers.get(id);
-    const rejecter = rejecters.get(id);
-
-    resolvers.delete(id);
-    rejecters.delete(id);
-    messages.delete(id);
 
     if(id === undefined) {
-
         throw new Error('Received non-response_json message.');
-
     }
+
+
+    const o = tidMap.get(id);
+
+    tidMap.delete(o);
+
 
     if(response_json.redirect) {
 
-        const isSecure = address.startsWith('wss://');
-
-        const prefix = isSecure ? 'wss://' : 'ws://';
+        const prefix = 'ws://';
 
         const addressAndPort = prefix + response_json.redirect.leaderHost + ':' + response_json.redirect.leaderPort;
 
-        connect(addressAndPort, uuid);
 
-        send(message, resolver, rejecter);
+        // Find a way to check if this address is going to the same node.
 
+        newConnection(addressAndPort, onMessage, secondaryConnection).then(
+            () => console.log("New connection baby") || sendSecondary(o.database_msg).then(o.resolve, o.reject),
+            o.reject
+        );
 
+        
     } else {
 
-        // We want the raw binary output, as toObject() above will automatically
-        // convert the Uint8 array to base64.
+        if(response.hasError()) {
 
-        if(response_json.resp && response_json.resp.value) {
+            o.reject(new Error(response.getError().getMessage()));
 
-            response_json.resp.value = response.getResp().getValue();
+        } else {
+
+            resolve(response_json, response, o);
 
         }
-
-
-        resolver(response_json.resp || {});
 
     }
 
 };
 
 
-const getTransactionId = (() => {
+const resolve = (response_json, response, o) => {
 
-    let counter = 0;
+    // We want the raw binary output, as toObject() above will automatically
+    // convert the Uint8 array to base64.
 
-    return () => counter++;
+    if(response_json && response_json.read) {
 
-})();
+        response_json.read.value = response.getRead().getValue();
+
+    }
 
 
-const send = (database_msg, resolver, rejecter) => {
+    if(response_json && response_json.subscriptionUpdate) {
+
+        response_json.subscriptionUpdate.value = 
+            response.getSubscriptionUpdate().getValue();
+
+    }
+
+    
+    o.resolve(response_json || {});
+
+};
+
+
+const send = (database_msg, socket) => new Promise((resolve, reject) => {
 
     const message = new bluzelle_pb.bzn_msg();
 
@@ -96,318 +145,79 @@ const send = (database_msg, resolver, rejecter) => {
 
     const tid = database_msg.getHeader().getTransactionId();
 
-    resolvers.set(tid, resolver);
-    rejecters.set(tid, rejecter);
-    messages.set(tid, database_msg);
+
+    // console.log("\nSending\n", database_msg.toObject());
 
 
-    let s;
+    tidMap.set(tid, {
+        resolve,
+        reject,
+        database_msg
+    });
 
-    try {
+    socket.send(JSON.stringify({
+        'bzn-api': 'database',
+        msg: encode(message.serializeBinary())
+    }));
 
-        s = new WebSocket(address);
-        s.binaryType = "arraybuffer";
+});
 
-    } catch(e) {
 
-        rejecter(e);
-        return;
+const sendPrimary = database_msg => 
+
+    send(database_msg, primaryConnection.socket);
+
+
+const sendSecondary = database_msg => {
+
+    if(secondaryConnection.socket) {
+
+        return send(database_msg, secondaryConnection.socket);
+
+    } else {
+
+        return sendPrimary(database_msg);
 
     }
 
-    s.onopen = () => {
-
-        s.send(JSON.stringify({
-            'bzn-api': 'database',
-            msg: encode(message.serializeBinary())
-        }));
-
-    };
-
-    s.onerror = (e) => {
-        rejecter(
-            (e.error && e.error.message) ? 
-                e.error : 
-                new Error('Bluzelle WebSocket error.'));
-    };
-
-    s.onmessage = e => {
-        onMessage(e.data, s);
-        s.close();
-    };
 
 };
 
 
+const sendObserver = (database_msg, observer) => {
 
-// Non-polling actions
+    // This function replaces the resolver and then calls the observer,
+    // as the resolver is automatically deleted after it resolves.
 
-const read = key => new Promise((resolve, reject) => {
+    const persistResolver = v => {
 
-    const database_msg = new database_pb.database_msg();
-    const header = new database_pb.database_header();
+        const tid = database_msg.getHeader().getTransactionId();
 
-    header.setDbUuid(uuid);
-    header.setTransactionId(getTransactionId());
+        tidMap.set(tid, {
+            resolve: persistResolver,
+            reject: () => {},
+            db_message: {}
+        });
 
-    database_msg.setHeader(header);
 
-    const database_read = new bluzelle_pb.database_read();
+        v.subscriptionUpdate && observer(v.subscriptionUpdate.value);
 
-    database_read.setKey(key);
+        return tid;
 
-    database_msg.setRead(database_read);
+    };
 
 
-    send(database_msg, obj => 
-        obj.error ? reject(new Error(obj.error)) : resolve(obj.value), reject);
+    return sendPrimary(database_msg).then(persistResolver);
 
-});
+};
 
-
-const has = key => new Promise((resolve, reject) => {
-
-    const database_msg = new database_pb.database_msg();
-    const header = new database_pb.database_header();
-
-    header.setDbUuid(uuid);
-    header.setTransactionId(getTransactionId());
-
-    database_msg.setHeader(header);
-
-    const database_has = new bluzelle_pb.database_has();
-
-    database_has.setKey(key);
-
-    database_msg.setHas(database_has);
-
-
-    send(database_msg, obj => 
-        obj.error ? reject(new Error(obj.error)) : resolve(obj.has), reject);
-
-});
-
-
-const keys = () => new Promise((resolve, reject) => {
-
-    const database_msg = new database_pb.database_msg();
-    const header = new database_pb.database_header();
-
-    header.setDbUuid(uuid);
-    header.setTransactionId(getTransactionId());
-
-    database_msg.setHeader(header);
-
-    const database_empty = new bluzelle_pb.database_empty();
-
-    database_msg.setKeys(database_empty);
-
-
-    send(database_msg, obj => 
-        obj.error ? reject(new Error(obj.error)) : resolve(obj.keysList), reject);
-
-});
-
-const size = () => new Promise((resolve, reject) => {
-
-    const database_msg = new database_pb.database_msg();
-    const header = new database_pb.database_header();
-
-    header.setDbUuid(uuid);
-    header.setTransactionId(getTransactionId());
-
-    database_msg.setHeader(header);
-
-    const database_empty = new bluzelle_pb.database_empty();
-
-    database_msg.setSize(database_empty);
-
-
-    send(database_msg, obj => 
-        obj.error ? reject(new Error(obj.error)) : resolve(obj.size), reject);
-
-});
-
-
-
-
-
-const poll = action => new Promise((resolve, reject) => {
-
-    const pollRate = 500; // ms
-    const pollTimeout = 5000;
-
-    const start = new Date().getTime();
-
-
-    (function loop() {
-
-        action().then(v => {
-
-            if(v) {
-
-                resolve();
-
-            } else {
-
-                if(new Date().getTime() - start > pollTimeout) {
-
-                    reject(new Error('Bluzelle poll timeout - command not commited to swarm.'));
-
-                } else {
-
-                    setTimeout(loop, pollRate);
-
-                }
-
-            }
-
-        }, reject);
-
-    })();
-
-});
-
-
-// Polling actions
-
-const update = (key, value) => new Promise((resolve, reject) => {
-
-    const database_msg = new database_pb.database_msg();
-
-    const header = new database_pb.database_header();
-
-    header.setDbUuid(uuid);
-    header.setTransactionId(getTransactionId());
-
-    database_msg.setHeader(header);
-
-
-    const database_update = new database_pb.database_update();
-
-    database_update.setKey(key);
-
-    database_update.setValue(value);
-
-
-    database_msg.setUpdate(database_update);
-
-
-    send(database_msg, obj => {
-
-        if(obj.error) {
-
-            reject(new Error(obj.error));
-
-        } else {
-
-            const pollingFunc = () => 
-                new Promise((res, rej) => 
-                    read(key).then(v => res(isEqual(v, value)), rej));
-
-            poll(pollingFunc).then(resolve, reject);
-
-        }
-
-    }, reject);
-
-});
-
-
-const create = (key, value) => new Promise((resolve, reject) => {
-
-    const database_msg = new database_pb.database_msg();
-
-    const header = new database_pb.database_header();
-
-    header.setDbUuid(uuid);
-    header.setTransactionId(getTransactionId());
-
-    database_msg.setHeader(header);
-
-
-    const database_create = new database_pb.database_create();
-
-    database_create.setKey(key);
-
-    database_create.setValue(value);
-
-
-    database_msg.setCreate(database_create);
-
-
-    send(database_msg, obj => {
-
-        if(obj.error) {
-
-            reject(new Error(obj.error));
-
-        } else {
-
-            const pollingFunc = () => 
-                new Promise((res, rej) => 
-                    has(key).then(v => res(v), rej));
-
-            poll(pollingFunc).then(resolve, reject);
-
-        }
-
-    }, reject);
-
-});
-
-
-
-const remove = key => new Promise((resolve, reject) => {
-
-    const database_msg = new database_pb.database_msg();
-
-    const header = new database_pb.database_header();
-
-    header.setDbUuid(uuid);
-    header.setTransactionId(getTransactionId());
-
-    database_msg.setHeader(header);
-
-
-    const database_delete = new database_pb.database_delete();
-
-    database_delete.setKey(key);
-
-    database_msg.setDelete(database_delete);
-
-
-    send(database_msg, obj => {
-
-        if(obj.error) {
-
-            reject(new Error(obj.error));
-
-        } else {
-
-            const pollingFunc = () => 
-                new Promise((res, rej) => 
-                    has(key).then(v => res(!v), rej));
-
-            poll(pollingFunc).then(resolve, reject);
-
-        }
-
-    }, reject);
-
-});
 
 
 module.exports = {
-    getUuid: () => uuid,
     connect,
-    create,
-    read,
-    update,
-    remove,
-    has,
-    keys,
-    size
+    disconnect,
+    sendPrimary,
+    sendSecondary,
+    sendObserver
 };
-
 

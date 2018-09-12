@@ -29,6 +29,6 @@ else
 
   # Get the swarmemulator
 
-  npm install ssh://git@github.com/bluzelle/swarmemulator.git#devel
+  npm install ssh://git@github.com/bluzelle/swarmemulator.git#task/mthibault/KEP-484
 
 fi

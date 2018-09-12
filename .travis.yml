@@ -9,19 +9,20 @@ env:
   - PROJECT_VERSION="${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}"
 matrix:
   include:
-  - os: linux
-    env: daemonIntegration=true
-    addons:
-      apt:
-        packages:
-        - protobuf-compiler
-        sources:
-        - sourceline: deb https://bluzelle.jfrog.io/bluzelle/debian-local all unstable
-        - ubuntu-toolchain-r-test
-        - sourceline: deb http://ppa.launchpad.net/maarten-fonville/protobuf/ubuntu
-            trusty main
-  - os: osx
-    env: emulatorIntegration=true
+    - os: linux
+      env: "daemonIntegration=true"
+      addons: 
+        apt:
+          packages:
+            - protobuf-compiler
+          sources:
+            - sourceline: 'deb https://bluzelle.jfrog.io/bluzelle/debian-local all unstable'
+            - ubuntu-toolchain-r-test
+            - sourceline: 'deb http://ppa.launchpad.net/maarten-fonville/protobuf/ubuntu trusty main'
+              key_url: 'http://keyserver.ubuntu.com/pks/lookup?op=get&search=0x4DEA8909DC6A13A3'
+    - os: osx
+      env: "emulatorIntegration=true"
+
 language: node_js
 node_js:
 - node

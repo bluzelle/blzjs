@@ -1,28 +1,33 @@
 const bluzelle = require('../lib/bluzelle.node');
-// const {startSwarm, killSwarm} = require('../test-daemon/swarmSetup');
-const {spawnSwarm, despawnSwarm} = require('../test-daemon/setup');
+const {spawnSwarm} = require('../test-daemon/utils/setup');
 
 
 const resetInNode = () => {
 
     if (process.env.daemonIntegration) {
-		// return startSwarm()
-		return spawnSwarm()
+
+		return spawnSwarm();
 
     } else {
 
     	// We use eval is so that webpack doesn't bundle the emulator,
     	// if we are compiling tests for the browser.
 
+        let swarmemulator; 
+
     	try {
 
-    		return eval("require('swarmemulator')").reset(bluzelle.getUuid());
+            swarmemulator = eval("require('swarmemulator')");
 
     	} catch(e) {
+
+            throw e;
 
     		throw new Error("bluzelle-js swarmemulator not found as a package. You must install or link this package manually as it is not listed in this projects proper dependencies.");
 
     	}
+
+        return swarmemulator.reset();
     	
 	}
 

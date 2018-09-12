@@ -37,7 +37,7 @@ const valToUInt8 = val => {
 
 const uInt8ToVal = arr => {
 
-    return decode(arr);
+    return arr ? decode(arr) : undefined;
 
 };
 
