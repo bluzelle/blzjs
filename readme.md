@@ -1,6 +1,6 @@
 <a href="https://bluzelle.com/"><img src='https://raw.githubusercontent.com/bluzelle/api/master/source/images/Bluzelle%20-%20Logo%20-%20Big%20-%20Colour.png' alt="Bluzelle" style="width: 100%"/></a>
 
-See the API at [https://bluzelle.github.io/api](https://bluzelle.github.io/api).
+See the API at [https://devel-docs.bluzelle.com/bluzelle-js/](https://devel-docs.bluzelle.com/bluzelle-js/).
 
 Build Status (branch devel): [![Build Status](https://travis-ci.com/bluzelle/bluzelle-js.svg?branch=devel)](https://travis-ci.com/bluzelle/bluzelle-js)
 
@@ -17,8 +17,11 @@ Build Status (branch devel): [![Build Status](https://travis-ci.com/bluzelle/blu
 
 ## Development verions.
 
-1. Run `npm install git://github.com/bluzelle/bluzelle-js.git#devel --save` to install the latest development version. 
-2. Refer to the API page above, or view the source and `/tests` directory for recent API changes.
+1. Clone this repository.
+2. Run `npm install` to install dependencies.
+3. Run `webpack` to build the project. Output files should go in the `dist/` directory.
+4. Run `npm link`.
+5. In your client project, run `npm link bluzelle-js`.
 
 
 -----------
@@ -27,10 +30,11 @@ Build Status (branch devel): [![Build Status](https://travis-ci.com/bluzelle/blu
 
 ## Integration tests against the emulator
 
-1. Fork the swarmemulator repository (private to bluzelle partners).
-2. Inside of `swarmemulator`, run `npm link`.
-3. Inside of `bluzelle-js`, run `npm link swarmemulator`.
-4. `npm run test-node`.
+1. Complete steps 1-3 in the development checklist above.
+2. Clone the swarmemulator repository (private to bluzelle partners).
+3. Inside of `swarmemulator`, run `npm link`.
+4. Inside of `bluzelle-js`, run `npm link swarmemulator`.
+5. Inside of `bluzelle-js`, run `npm run test-node`.
 
 
 ## Integration tests against the daemon
