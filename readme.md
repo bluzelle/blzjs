@@ -2,7 +2,7 @@
 
 See the API at [https://devel-docs.bluzelle.com/bluzelle-js/](https://devel-docs.bluzelle.com/bluzelle-js/).
 
-Build Status (branch devel): [![Build Status](https://travis-ci.com/bluzelle/bluzelle-js.svg?branch=devel)](https://travis-ci.com/bluzelle/bluzelle-js)
+Build Status (branch devel): [![Build Status](https://travis-ci.org/bluzelle/bluzelle-js.svg?branch=devel)](https://travis-ci.org/bluzelle/bluzelle-js)
 
 
 ---------
