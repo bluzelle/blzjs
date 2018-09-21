@@ -1,7 +1,3 @@
----
-description: Start using bluzelle in under five minutes by following this JavaScript guide.
----
-
 # Quick Start
 
 ## 1. Create an NPM Project

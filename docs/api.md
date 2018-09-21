@@ -75,7 +75,7 @@ This command does not wait until the change has been committed to the database b
 bluzelle.createAck('mykey', '{ a: 13 }').then(() => { ... }, error => { ... });
 
 // async/await syntax
-await bluzelle.create('mykey', '{ a: 13 }');
+await bluzelle.createAck('mykey', '{ a: 13 }');
 ```
 
 | Argument | Description |
@@ -231,9 +231,9 @@ Fails when a response is not received from the connection.
 
 ## subscribe\(key, observer\)
 
-Subscribe to key changes. Bluzelle supports multiple subscriptions to the same key. Unsubscribing is handled with a unique identifier that it resolved from this call.
+Subscribe to key changes. Bluzelle supports multiple subscriptions to the same key. Unsubscribing is handled with a unique identifier that is resolved from this call.
 
-It is possible to subscribe to a key that does not exist in the database.
+It is possible to subscribe to a key that does not exist in the database. Subscribing to a non-existing key is helpful if you want to be notified of its creation.
 
 ```javascript
 const observer = val => { ... };
