@@ -12,7 +12,7 @@ $ npm init
 
 ## 2. Install the `bluzelle` NPM package
 
-Run `npm install bluzelle` to get the latest and greatest Bluzelle sdk.
+Run `npm install bluzelle` to get the latest and greatest Bluzelle sdk \(see [installation](installation.md) for more details\).
 
 ## 3. Run a simple program
 
@@ -21,19 +21,19 @@ Create a file, `my-program.js`, and paste the following starter code.
 ```javascript
 const bluzelle = require('bluzelle');
 
-bluzelle.connect('ws://testnet.bluzelle.com:51010',
-'45498479–2447–47a6–8c36-efa5d251a283'); // This UUID identifies your database
+const main = async () => {
 
-bluzelle.create('myKey', 'myValue').then(() =>
-{
-     bluzelle.read('myKey').then(value =>
-     {
-     
-          console.log(value); // 'myValue'
-          
-     }).catch(e => console.log(e.message));
-     
-}).catch(e => console.log(e.message));
+    // This UUID identifies your database
+    await bluzelle.connect('ws://testnet.bluzelle.com:51010','45498479–2447–47a6–8c36-efa5d251a283');
+
+    await bluzelle.create('myKey', 'myValue');
+
+    console.log(await bluzelle.read('myKey'));
+
+};
+
+
+main().catch(e => { console.log(e.message); });
 ```
 
 Run the program with `node my-program`. The expected output is`'myValue'`. Explore the rest of the API on the [API page](api.md).
