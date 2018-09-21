@@ -54,3 +54,7 @@ While we are consistently improving the system's stability and reliability, some
 
 It is possible to launch your own swarm locally using docker by following the instructions [here](https://github.com/bluzelle/docker-swarm-deploy).
 
+### Insecure WebSockets connections over HTTPS
+
+Bluzelle does not currently implement secure WebSockets \(WSS\). If you try to create a connection in an https page, you may get an error message along the lines of "the operation is insecure." To fix, host your page over HTTP, or change your browser settings. In Firefox navigate to "about:config" in the url bar, scroll down and set the `network.websocket.allowInsecureFromHTTPS` flag to true.
+
