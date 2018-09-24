@@ -2,8 +2,8 @@
   "name": "bluzelle",
   "version": "0.2.57",
   "description": "Bluzelle Database for JavaScript",
-  "main": "lib/bluzelle.node.js",
-  "browser": "lib/bluzelle.web.js",
+  "main": "lib/bluzelle-node.js",
+  "browser": "lib/bluzelle-web.js",
   "scripts": {
     "test-node": "port=8100 address=localhost emulatorQuiet=true mocha test/*.js --exit --timeout 5000",
     "setup-daemon": "cp -R ./test-daemon/configs/. ./test-daemon/daemon-build/output/",

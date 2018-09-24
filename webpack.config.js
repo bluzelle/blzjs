@@ -8,7 +8,7 @@ module.exports = [
         entry: './src/api.js',
         output: {
             path: path.resolve('lib'),
-            filename: 'bluzelle.node.js',
+            filename: 'bluzelle-node.js',
             libraryTarget: "commonjs",
         },
         target: 'node',
@@ -23,7 +23,7 @@ module.exports = [
         entry: './src/api.js',
         output: {
             path: path.resolve('lib'),
-            filename: 'bluzelle.web.js',
+            filename: 'bluzelle-web.js',
             libraryTarget: "commonjs",
         },
         target: 'web',
