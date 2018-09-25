@@ -1,5 +1,5 @@
 const reset = require('./reset');
-const api = require('../lib/bluzelle.node');
+const api = require('../lib/bluzelle-node');
 const assert = require('assert');
 const {isEqual} = require('lodash');
 const waitUntil = require('async-wait-until');

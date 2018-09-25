@@ -1,4 +1,4 @@
-const bluzelle = require('../lib/bluzelle.node');
+const bluzelle = require('../lib/bluzelle-node');
 const {spawnSwarm} = require('../test-daemon/utils/setup');
 
 
