@@ -15,6 +15,7 @@ matrix:
         apt:
           packages:
             - protobuf-compiler
+            - libsnappy-dev
           sources:
             - sourceline: 'deb https://bluzelle.jfrog.io/bluzelle/debian-local all unstable'
             - ubuntu-toolchain-r-test
