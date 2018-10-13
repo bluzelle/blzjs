@@ -2,9 +2,21 @@ const path = require('path');
 const WebpackShellPlugin = require('webpack-shell-plugin');
 
 
+// We want to build for production (i.e. minimize 
+// the bluzelle-js code and have no sourcemaps) when
+// deploying.
+
+const mode = 
+
+    'TRAVIS_BUILD_STAGE_NAME' in process.env &&
+    process.env['TRAVIS_BUILD_STAGE_NAME'] === 'Deploy' 
+        
+        ? 'production' : 'development';
+
+
 module.exports = [
     {
-        mode: 'development',
+        mode,
         entry: './src/api.js',
         output: {
             path: path.resolve('lib'),
@@ -19,7 +31,7 @@ module.exports = [
     },
 
     {
-        mode: 'development',
+        mode,
         entry: './src/api.js',
         output: {
             path: path.resolve('lib'),

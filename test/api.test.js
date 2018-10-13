@@ -1,5 +1,5 @@
 const reset = require('./reset');
-const api = require('../lib/bluzelle-node');
+const { BluzelleClient } = require('../lib/bluzelle-node');
 const assert = require('assert');
 const {isEqual} = require('lodash');
 const waitUntil = require('async-wait-until');
@@ -13,8 +13,20 @@ describe('bluzelle api', () => {
 
     process.env.daemonIntegration && afterEach(despawnSwarm);
 
-    beforeEach(() =>
-        api.connect(`ws://${process.env.address}:${process.env.daemonIntegration ? swarm.list[swarm.leader] : 8100}`, '71e2cd35-b606-41e6-bb08-f20de30df76c'));
+
+    let api;
+
+    beforeEach(() => {
+
+        api = new BluzelleClient(
+            `ws://${process.env.address}:${process.env.daemonIntegration ? swarm.list[swarm.leader] : 8100}`, 
+            '71e2cd35-b606-41e6-bb08-f20de30df76c', 
+            false
+            );
+
+        return api.connect();
+    
+    });
 
 
     const isEqual = (a, b) =>
@@ -23,14 +35,12 @@ describe('bluzelle api', () => {
 
     it('should be able to connect', () => {});
 
-    it('should not be able to connect many times', () => {
+    it('should not be able to connect many times', async () => {
 
         const url = `ws://${process.env.address}:${process.env.daemonIntegration ? swarm.list[swarm.leader] : 8100}`,
             uuid = '71e2cd35-b606-41e6-bb08-f20de30df76c';
 
-        api.connect(url, uuid).then(
-            () => { throw new Error('Should have failed'); },
-            () => {});
+        await assert.rejects(api.connect(url, uuid));
     
     });
 
@@ -151,15 +161,6 @@ describe('bluzelle api', () => {
 
     });
 
-
-    it('should reject bad connections', done => {
-
-        api.disconnect();
-
-        api.connect('fdsfdas', 'fdsafsd').catch(() => done());
-
-    });
-
     it('should reject connection to a bad port', done => {
 
         api.connect('ws://localhost:123', '71e2cd35-b606-41e6-bb08-f20de30df76c')
@@ -229,5 +230,14 @@ describe('bluzelle api', () => {
 
     });
 
+
+});
+
+
+it('should reject a command if there is no connection', async () => {
+
+    const api = new BluzelleClient('', '');
+
+    await assert.rejects(api.read('mykey'));
 
 });

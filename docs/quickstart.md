@@ -19,12 +19,19 @@ Run `npm install bluzelle` to get the latest and greatest Bluzelle sdk \(see [in
 Create a file, `my-program.js`, and paste the following starter code.
 
 ```javascript
-const bluzelle = require('bluzelle');
+const { BluzelleClient } = require('bluzelle');
 
 const main = async () => {
 
-    // This UUID identifies your database
-    await bluzelle.connect('ws://testnet.bluzelle.com:51010','45498479–2447–47a6–8c36-efa5d251a283');
+    const bluzelle = new BluzelleClient(
+        'ws://testnet.bluzelle.com:51010',
+
+        // This UUID identifies your database and 
+        // may be changed.
+        '45498479–2447–47a6–8c36-efa5d251a283'
+    );
+
+    await bluzelle.connect();
 
     await bluzelle.create('myKey', 'myValue');
 

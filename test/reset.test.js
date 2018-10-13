@@ -1,5 +1,5 @@
 const reset = require('./reset');
-const api = require('../lib/bluzelle-node');
+const { BluzelleClient } = require('../lib/bluzelle-node');
 const assert = require('assert');
 const {despawnSwarm, swarm} = require('../test-daemon/utils/setup');
 
@@ -10,8 +10,21 @@ describe('reset', () => {
 
     process.env.daemonIntegration && afterEach(despawnSwarm);
 
-    beforeEach(() => api.disconnect());
-    beforeEach(() => api.connect(`ws://localhost:${process.env.daemonIntegration ? swarm.list[swarm.leader] : 8100}`, '71e2cd35-b606-41e6-bb08-f20de30df76c'));
+
+    let api;
+
+    beforeEach(() => api && api.disconnect());
+
+    beforeEach(() => {
+
+        api = new BluzelleClient(
+            `ws://localhost:${process.env.daemonIntegration ? swarm.list[swarm.leader] : 8100}`, 
+            '71e2cd35-b606-41e6-bb08-f20de30df76c');
+
+        return api.connect();
+
+    });
+
 
     it('can add a key', async () => {
         await api.create('myKey', 'abc');
