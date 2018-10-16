@@ -33,7 +33,15 @@ const onMessage = (client, bin) => {
         throw new Error('Bluzelle: (internal) daemon returned string instead of binary.')
     }
 
-    const response = bluzelle_pb.database_response.deserializeBinary(new Uint8Array(bin));
+
+    let response;
+
+    try {
+        response = bluzelle_pb.database_response.deserializeBinary(new Uint8Array(bin));
+    } catch(e) {
+        throw new Error('bluzelle: protobuf assertion error (probably mismatched client-daemon protobuf files)');
+    }
+
     const response_json = response.toObject();
 
 
