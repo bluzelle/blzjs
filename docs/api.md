@@ -39,7 +39,7 @@ You must replace the UUID here with your own UUID or else you will have database
 | :--- | :--- |
 | ws | The WebSocket entry point to connect to. ex. `ws://testnet.bluzelle.com:51010` |
 | uuid | The universally unique identifier, Version 4 is recommended. |
-| verbose | When set to `true`, logs the request and response messages for debugging. Defaults to `false`. |
+| verbose | When set to `true`, logs the request and response messages with `console.log`. When passed a function, it is called instead of `console.log`. |
 
 ## connect\(\)
 

@@ -45,7 +45,7 @@ const onMessage = (client, bin) => {
     const response_json = response.toObject();
 
 
-    client.verbose && console.log("\nRecieving\n",response_json);
+    client.logger && client.logger("\nRecieving\n",response_json);
 
 
 
@@ -138,7 +138,7 @@ const send = (client, database_msg, socket) =>
     const tid = database_msg.getHeader().getTransactionId();
 
 
-    client.verbose && console.log("\nSending\n", database_msg.toObject());
+    client.logger && client.logger("\nSending\n", database_msg.toObject());
 
 
     let serializedMessage;
@@ -258,15 +258,20 @@ const getMessagePrototype = client => {
 
 class BluzelleClient {
 
-    constructor(entrypoint, uuid, verbose = false) {
+    constructor(entrypoint, uuid, log) {
 
         this.entrypoint = entrypoint;
         this.uuid = uuid;
 
 
         // Print requests and responses
+        if(log === true) {
+            this.logger = (...args) => console.log(...args);
+        }
 
-        this.verbose = verbose;
+        if(typeof log === 'function') {
+            this.logger = log;
+        }
 
 
         this.primaryConnection = {};
