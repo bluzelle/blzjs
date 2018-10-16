@@ -17,18 +17,14 @@ Because Bluzelle is a decentralized database, there are two kinds of asynchronou
 * Acknowledgement-style resolution waits until the command has been received by the node, but not for the underlying data to be changed. This is used in `createAck`, `updateAck`, and `removeAck`.
 {% endhint %}
 
-
-## BluzelleClient\(ws, uuid[, verbose]\)
-
-
+## BluzelleClient\(ws, uuid\[, verbose\]\)
 
 Configures the address, port, and UUID of the connection. This may be called multiple times, and between other API calls. Bluzelle uses `UUID`'s to identify distinct databases on a single swarm. We recommend using [Version 4 of the universally unique identifier](https://en.wikipedia.org/wiki/Universally_unique_identifier#Version_4_%28random%29).
 
-```
+```text
 const bluzelle = new BluzelleClient(
     'ws://1.2.3.4:51010', 
-    '96764e2f-2273-4404-97c0-a05b5e36ea66')
-    .then(() => { ... }, error => { ... });
+    '96764e2f-2273-4404-97c0-a05b5e36ea66');
 ```
 
 {% hint style="info" %}
@@ -39,18 +35,15 @@ You must replace the UUID here with your own UUID or else you will have database
 `BluzelleClient` is the only export of the Bluzelle library. The calls below are methods of the `BluzelleClient` object.
 {% endhint %}
 
-
 | Argument | Description |
 | :--- | :--- |
 | ws | The WebSocket entry point to connect to. ex. `ws://testnet.bluzelle.com:51010` |
 | uuid | The universally unique identifier, Version 4 is recommended. |
 | verbose | When set to `true`, logs the request and response messages for debugging. Defaults to `false`. |
 
-
 ## connect\(\)
 
 Connects to the swarm.
-
 
 ```javascript
 // promise syntax
@@ -65,7 +58,6 @@ Returns a promise resolving to nothing.
 
 Fails when the client could not connect.
 
-
 ## disconnect\(\)
 
 Terminates the current connection. This method is synchronous and does not need to be awaited.
@@ -73,12 +65,9 @@ Terminates the current connection. This method is synchronous and does not need 
 ```javascript
 // promise syntax
 bluzelle.disconnect();
-
 ```
 
 Returns undefined.
-
-
 
 ## create\(key, value\)
 
@@ -103,7 +92,7 @@ Fails when a response is not received from the connection, the key already exist
 
 ## createAck\(key, value\)
 
-Create a field in the database. 
+Create a field in the database.
 
 This command does not wait until the change has been committed to the database by the consensus protocol. It resolves once the node has acknowledged receipt of the command. Use this if you want to make sure your message was received, but you do not depend on the underlying data to have been changed yet.
 

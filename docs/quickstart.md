@@ -4,7 +4,7 @@
 
 With NodeJS and NPM installed creating a project is a straight forward process:
 
-```
+```text
 $ mkdir my-bluzelle-project
 $ cd my-bluzelle-project
 $ npm init
