@@ -70,9 +70,9 @@ const onMessage = (client, bin) => {
 
         // Find a way to check if this address is going to the same node.
 
-        newConnection(client, addressAndPort, secondaryConnection).then(
-            sendSecondary(o.database_msg).then(o.resolve, o.reject),
-            o.reject
+        newConnection(client, addressAndPort, client.secondaryConnection).then(
+            () => sendSecondary(client, o.database_msg).then(o.resolve, o.reject),
+            () => o.reject()
         );
 
         
