@@ -21,7 +21,7 @@ Because Bluzelle is a decentralized database, there are two kinds of asynchronou
 
 Configures the address, port, and UUID of the connection. This may be called multiple times, and between other API calls. Bluzelle uses `UUID`'s to identify distinct databases on a single swarm. We recommend using [Version 4 of the universally unique identifier](https://en.wikipedia.org/wiki/Universally_unique_identifier#Version_4_%28random%29).
 
-```text
+```javascript
 const bluzelle = new BluzelleClient(
     'ws://1.2.3.4:51010', 
     '96764e2f-2273-4404-97c0-a05b5e36ea66');
