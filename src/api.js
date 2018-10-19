@@ -19,7 +19,7 @@ const newConnection = (client, address, connectionObject = {}) =>
     connectionObject.socket.onopen = () => resolve();
 
     connectionObject.socket.onerror = (e) =>
-        reject(new Error(e.error.message));
+        reject("Websocket connection error");
 
     connectionObject.socket.onmessage = e =>
         onMessage(client, e.data);
@@ -45,7 +45,8 @@ const onMessage = (client, bin) => {
     const response_json = response.toObject();
 
 
-    client.logger && client.logger("\nRecieving\n",response_json);
+    client.logger && 
+        setTimeout(() => client.logger("\nRecieving\n",response_json), 0);
 
 
 
@@ -138,7 +139,8 @@ const send = (client, database_msg, socket) =>
     const tid = database_msg.getHeader().getTransactionId();
 
 
-    client.logger && client.logger("\nSending\n", database_msg.toObject());
+    client.logger && 
+        setTimeout(() => client.logger("\nSending\n", database_msg.toObject()), 0);
 
 
     let serializedMessage;
