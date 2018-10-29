@@ -2029,8 +2029,8 @@ globby@^8.0.0, globby@^8.0.1:
     slash "^1.0.0"
 
 google-protobuf@^3.5.0:
-  version "3.6.0"
-  resolved "https://registry.yarnpkg.com/google-protobuf/-/google-protobuf-3.6.0.tgz#e2bafb00c20a8734174d8f89e0a842709e2ceed0"
+  version "3.6.1"
+  resolved "https://registry.yarnpkg.com/google-protobuf/-/google-protobuf-3.6.1.tgz#7ef58e2bea137a93cdaf5cfd5afa5f6abdd92025"
 
 got@^7.0.0:
   version "7.1.0"

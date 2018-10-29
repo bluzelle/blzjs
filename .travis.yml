@@ -21,8 +21,6 @@ matrix:
             - ubuntu-toolchain-r-test
             - sourceline: 'deb http://ppa.launchpad.net/maarten-fonville/protobuf/ubuntu trusty main'
               key_url: 'http://keyserver.ubuntu.com/pks/lookup?op=get&search=0x4DEA8909DC6A13A3'
-    - os: osx
-      env: "emulatorIntegration=true"
 
 language: node_js
 node_js:
@@ -30,13 +28,9 @@ node_js:
 before_install:
 - npm version "$PROJECT_VERSION"
 - "./travis_install.sh"
-- if [ "$emulatorIntegration" = "true" ] ; then brew update; brew unlink python; brew
-  install protobuf; fi
+
 before_script:
 - webpack
-
-before_deploy:
-- if [ "$emulatorIntegration" = "true" ] ; then npm uninstall swarmemulator; fi
 
 deploy:
   skip_cleanup: true
