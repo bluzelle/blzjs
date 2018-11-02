@@ -187,9 +187,18 @@ const sendPrimary = (client, database_msg) => {
 
     }
 
+
+    if(client.primaryConnection.socket.readyState !== 1) {
+
+        return Promise.reject(new Error(
+            "Bluzelle: connection closed. Recall connect()."))
+
+    }
+
     return send(client, database_msg, client.primaryConnection.socket);
 
 };
+
 
 
 // Attempts to send to the secondary connection and otherwise
@@ -197,7 +206,8 @@ const sendPrimary = (client, database_msg) => {
 
 const sendSecondary = (client, database_msg) => {
 
-    if(client.secondaryConnection.socket) {
+    if(client.secondaryConnection.socket &&
+        client.secondaryConnection.socket.readyState === 1) {
 
         return send(client, database_msg, client.secondaryConnection.socket);
 
