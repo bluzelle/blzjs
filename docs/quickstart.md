@@ -21,15 +21,16 @@ Create a file, `my-program.js`, and paste the following starter code.
 ```javascript
 const { BluzelleClient } = require('bluzelle');
 
+const bluzelle = new BluzelleClient(
+    'ws://test.network.bluzelle.com:51010',
+
+    // This UUID identifies your database and
+    // may be changed.
+    '4f493479–2447–47g6–3c36-efa5d251a283'
+);
+
+
 const main = async () => {
-
-    const bluzelle = new BluzelleClient(
-        'ws://testnet.bluzelle.com:51010',
-
-        // This UUID identifies your database and 
-        // may be changed.
-        '45498479–2447–47a6–8c36-efa5d251a283'
-    );
 
     await bluzelle.connect();
 
@@ -37,13 +38,18 @@ const main = async () => {
 
     console.log(await bluzelle.read('myKey'));
 
+    await bluzelle.disconnect();
+
 };
 
 
-main().catch(e => { console.log(e.message); });
+main().catch(e => { 
+    console.log(e.message); 
+    bluzelle.disconnect();
+});
 ```
 
-Run the program with `node my-program`. The expected output is`'myValue'`. Explore the rest of the API on the [API page](api.md).
+Run the program with `node my-program`. The expected output is`'myValue'`. If you run the program multiple times on the same uuid, it will fail with `RECORD_EXISTS`. Explore the rest of the API on the [API page](api.md).
 
 ## Troubleshooting
 
