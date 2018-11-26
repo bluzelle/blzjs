@@ -4,7 +4,7 @@ sudo: required
 env:
   global:
   - PROJECT_VERSION_MAJOR="0"
-  - PROJECT_VERSION_MINOR="3"
+  - PROJECT_VERSION_MINOR="4"
   - PROJECT_VERSION_PATCH="${TRAVIS_BUILD_NUMBER}"
   - PROJECT_VERSION="${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}"
 matrix:
@@ -28,6 +28,9 @@ node_js:
 before_install:
 - npm version "$PROJECT_VERSION"
 - "./travis_install.sh"
+
+script:
+- npm run test-node
 
 before_script:
 - webpack

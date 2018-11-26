@@ -1,0 +1,11 @@
+1. Make sure tests are passing `yarn test-node`/`yarn test-browser`.
+
+Note: TRAVIS ONLY TESTS NODE, NOT BROWSER. YOU MUST VERIFY `yarn test-browser` YOURSELF.
+
+2. Update major/minor versions in package.json & .travis.yml. (the package.json will be overwritten by the travis deploy script, but it's good to have it set in the repo anyways)
+
+3. Push to Travis-CI on branch master.
+
+Note: Travis will automatically update the package version to match the major, minor, and patch version. The patch version always corresponds to the travis build number. 
+
+4. Verify that the NPM package has been published successfully.

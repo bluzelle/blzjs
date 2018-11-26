@@ -1,20 +1,17 @@
 {
   "name": "bluzelle",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Bluzelle Database for JavaScript",
   "main": "lib/bluzelle-node.js",
   "browser": "lib/bluzelle-web.js",
   "scripts": {
-    "test-node": "port=8100 address=localhost emulatorQuiet=true mocha test/*.js --exit --timeout 5000",
     "setup-daemon": "cp -R ./test-daemon/configs/. ./test-daemon/daemon-build/output/",
-    "test-daemon": "npm run setup-daemon; daemonIntegration=true port=50000 address=localhost emulatorQuiet=true mocha test/*.js --exit --timeout 8000",
-    "test": "if [ \"$daemonIntegration\" = true ] ; then npm run test-daemon; else npm run test-node; fi",
+    "test-node": "npm run setup-daemon; daemonIntegration=true port=50000 address=localhost mocha `git rev-parse --show-toplevel`/src/*.test.js --exit --timeout 8000",
+    "test-browser": "cd `git rev-parse --show-toplevel`/src/test-browser; webpack main.test.js -o main.test.pack.js --mode=\"development\"; open mocha.html",
     "build": "webpack"
   },
   "devDependencies": {
-    "async-wait-until": "^1.2.4",
     "fs": "^0.0.1-security",
-    "lodash": "^4.17.10",
     "mocha": "^5.0.4",
     "webpack": "^4.3.0",
     "webpack-cli": "^2.0.13",
@@ -23,12 +20,10 @@
   "author": "Monty Thibault, John Lam",
   "license": "ISC",
   "dependencies": {
-    "base64-arraybuffer": "^0.1.5",
-    "buffer": "^5.1.0",
     "google-protobuf": "^3.5.0",
+    "hash.js": "^1.1.5",
     "isomorphic-ws": "^4.0.1",
     "lodash": "^4.17.10",
-    "text-encoding": "^0.6.4",
     "websocket": "^1.0.25",
     "ws": "^6.0.0"
   }
