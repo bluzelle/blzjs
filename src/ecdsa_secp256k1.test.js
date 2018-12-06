@@ -1,5 +1,20 @@
+// Copyright (C) 2018 Bluzelle
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License, version 3,
+// as published by the Free Software Foundation.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+
 const assert = require('assert');
-const { verify, sign } = require('./ecdsa_secp256k1');
+const { verify, sign, pub_from_priv } = require('./ecdsa_secp256k1');
 
 
 describe('ECDSA Verification', () => {
@@ -91,5 +106,20 @@ describe('ECDSA Signing', () => {
         const sig_bin = sign(msg_bin, priv_key_base64);
 
     };
+
+});
+
+
+describe('ECDSA Generate Public PEM from Private PEM', () => {
+
+    it('', () => {
+
+        const priv_key_base64 = "MHQCAQEEIFH0TCvEu585ygDovjHE9SxW5KztFhbm4iCVOC67h0tEoAcGBSuBBAAKoUQDQgAE9Icrml+X41VC6HTX21HulbJo+pV1mtWn4+evJAi8ZeeLEJp4xg++JHoDm8rQbGWfVM84eqnb/RVuIXqoz6F9Bg==";
+
+        const pub_key_base64 = pub_from_priv(priv_key_base64);
+
+        // No further testing
+
+    });
 
 });

@@ -6,7 +6,7 @@
   "browser": "lib/bluzelle-web.js",
   "scripts": {
     "setup-daemon": "cp -R ./test-daemon/configs/. ./test-daemon/daemon-build/output/",
-    "test-node": "npm run setup-daemon; daemonIntegration=true port=50000 address=localhost mocha `git rev-parse --show-toplevel`/src/*.test.js --exit --timeout 8000",
+    "test-node": "npm run setup-daemon; daemonIntegration=true port=50000 address=localhost mocha \"`git rev-parse --show-toplevel`/src/**/*.test.js\" --exit --timeout 8000",
     "test-browser": "cd `git rev-parse --show-toplevel`/src/test-browser; webpack main.test.js -o main.test.pack.js --mode=\"development\"; open mocha.html",
     "build": "webpack"
   },
@@ -24,6 +24,7 @@
     "hash.js": "^1.1.5",
     "isomorphic-ws": "^4.0.1",
     "lodash": "^4.17.10",
+    "text-encoding": "^0.7.0",
     "websocket": "^1.0.25",
     "ws": "^6.0.0"
   }

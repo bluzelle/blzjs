@@ -17,7 +17,7 @@ const mode =
 module.exports = [
     {
         mode,
-        entry: './src/api.js',
+        entry: './src/main.js',
         output: {
             path: path.resolve('lib'),
             filename: 'bluzelle-node.js',
@@ -32,7 +32,7 @@ module.exports = [
 
     {
         mode,
-        entry: './src/api.js',
+        entry: './src/main.js',
         output: {
             path: path.resolve('lib'),
             filename: 'bluzelle-web.js',

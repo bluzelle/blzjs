@@ -7,5 +7,7 @@
   "bootstrap_file" : "./peers.json",
   "uuid" : "60ba0788-9992-4cdb-b1f7-9f68eef52ab9",
   "debug_logging" : true,
-  "log_to_stdout" : true
+  "log_to_stdout" : true,
+  "use_pbft": true,
+  "crypto_enabled_outgoing": false
 }
