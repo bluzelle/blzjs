@@ -35,15 +35,31 @@ module.exports = class Crypto {
         assert(msg instanceof database_pb.database_msg);
 
 
-        const bin = msg.serializeBinary();
+        const empty_msg = new database_pb.database_msg();
+
+        // msg
+        const payload = msg.serializeBinary();
 
         const bzn_envelope = new bluzelle_pb.bzn_envelope();
 
-        bzn_envelope.setSender(pub_from_priv(this.private_pem));
-        bzn_envelope.setSignature(new Uint8Array(sign(bin, this.private_pem)));
-        bzn_envelope.setTimestamp(new Date().getTime());
 
-        bzn_envelope.setDatabaseMsg(bin);
+        const timestamp = new Date().getTime();
+        const sender = pub_from_priv(this.private_pem);
+        
+
+        const bin_for_the_win = Buffer.concat([
+            sender, 
+            bluzelle_pb.bzn_envelope.PayloadCase.DATABASE_MSG, 
+            Buffer.from(payload), 
+            timestamp
+        ].map(deterministic_serialize));
+
+
+        bzn_envelope.setSender(sender);
+        bzn_envelope.setSignature(new Uint8Array(sign(bin_for_the_win, this.private_pem)));
+        bzn_envelope.setTimestamp(timestamp);
+
+        bzn_envelope.setDatabaseMsg(payload);
 
         const ultimate_bin = bzn_envelope.serializeBinary();
 
@@ -80,5 +96,26 @@ module.exports = class Crypto {
         this.onIncomingMsg(database_response);
 
     }
+
+};
+
+
+// see crypto.cpp in daemon
+
+const deterministic_serialize = obj => {
+
+    if(obj instanceof Buffer) {
+
+        return Buffer.concat([
+            Buffer.from(obj.length.toString() + '|', 'ascii'),
+            obj
+        ]);
+
+    }
+
+
+    // numbers and strings
+
+    return Buffer.from(obj.toString().length + '|' + obj.toString(), 'ascii');
 
 };

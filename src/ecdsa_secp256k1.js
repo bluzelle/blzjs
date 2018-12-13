@@ -53,12 +53,20 @@ const pub_from_priv = priv_key_base64 => {
 
     const ec_key = import_private_key_from_base64(priv_key_base64);
 
-    const pub = ec_key.getPublic(true, 'base64');
+    // This is the only way we get the long-form encoding found in PEM's.
+
+    // It returns a buffer and not base64 for God-knows why.
+
+    const pub = ec_key.getPublic(false, 'base64');
 
 
+    // Strip the first byte since those are present
+    // in the base64 header we've provided.
+
+    const pub_hex = Buffer.from(pub).toString('hex');
 
     return "MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAE" + 
-        Buffer.from(pub).toString('base64');
+        Buffer.from(pub_hex.substring(2), 'hex').toString('base64');
 
 };
 
@@ -136,20 +144,25 @@ const import_private_key_from_base64 = priv_key_base64 => {
 
     const key_hex = key_bin.toString('hex');
 
-
-    // Like the header above. This one encodes:
+     // Like the header above. This one encodes:
 
     // - INTEGER 1
-    // - OCTET STRING (32 byte) 51F44C2BC4BB9F39CA00E8BE31C4F52C56E4ACED1616E6E22095382EBB874B44
+    // - OCTET STRING (32 byte) - variable
     // - OBJECT IDENTIFIER 1.3.132.0.10 secp256k1 (SECG (Certicom) named elliptic curve)
 
-    const header = key_hex.substring(0, 106);
+    const header1 = key_hex.substring(0, 14);
 
-    assert.equal(header, "3074020101042051f44c2bc4bb9f39ca00e8be31c4f52c56e4aced1616e6e22095382ebb874b44a00706052b8104000aa144034200",
+    assert.equal(header1, "30740201010420",
+        "ECDSA Private Key Import: private key header is malformed.");
+
+    const header2 = key_hex.substring(78, 78 + 26)
+
+
+    assert.equal(header2, "a00706052b8104000aa1440342",
         "ECDSA Private Key Import: private key header is malformed.");
 
 
-    const body = key_hex.substring(106, key_hex.length);
+    const body = key_hex.substring(104, key_hex.length);
 
     const ec = new EC('secp256k1');
 

@@ -59,6 +59,16 @@ describe('ECDSA Verification', () => {
 
     });
 
+    it('3', () => {
+
+        msg_base64 = "Ch8KEzAuMDgxMjI4NjM4Nzg4MDE4MTEQpOOq/aLj890oYgA=";
+        sig_base64 = "MEQCIDdm3ORyB/jjTUJRdPbGu5VdxDuv2ilsbyAASJAax6u6AiB0DA7lSfPA1zPqKMQAk+zAN/tPO/3GnASb7wzqSWMx/A==";
+        pub_key_base64 = "MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEY6L6fb2Xd9KZi05LQlZ83+0pIrjOIFvy0azEA+cDf7L7hMgRXrXj5+u6ys3ZSp2Wj58hTXsiiEPrRMMO1pwjRg==";
+    
+        f();
+
+    });
+
 
     const f = () => {
 
@@ -87,14 +97,27 @@ describe('ECDSA Signing', () => {
     it('1', () => {
 
         msg_base64 = "ChQKEEJlc3REYXRhYmFzZUV2ZXIQKiIqCghzb21lIGtleRIedmVyeSBpbXBvcnRhbnQgZGF0YSBhbmQgc3R1ZmZz";
-        priv_key_base64 = "MHQCAQEEIFH0TCvEu585ygDovjHE9SxW5KztFhbm4iCVOC67h0tEoAcGBSuBBAAKoUQDQgAE9Icrml+X41VC6HTX21HulbJo+pV1mtWn4+evJAi8ZeeLEJp4xg++JHoDm8rQbGWfVM84eqnb/RVuIXqoz6F9Bg==";
+        priv_key_base64 = "MHQCAQEEIJGS3Ehg1rsVG5MKIfPZ/hWOoBR6hwfWCeQ6cNvSZqWGoAcGBSuBBAAKoUQDQgAEgWZh744sleHAQFvLz3vNFXeE27KMNMjtZqdPfw4kapIIHXSMpyTgvrN3g2hTc3Iaf4ZkuOVJKwwIjTMMgpyC0g==";
+
+        f();
 
     });
 
     it('2', () => {
 
         msg_base64 = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
-        priv_key_base64 = "MHQCAQEEIGzNsYCQnX3CBhopIF+lDhdoeYKGlAmHlxnNlMH4fqbtoAcGBSuBBAAKoUQDQgAEWljBLMpG1y0GQJ36h11+YZkpxlbF0gqRQw9dKVkPKzRmOHTH2HXzMjMpEI+aUKHTVDDl3+ADaM5lCcT0HfqXsw==";
+        priv_key_base64 = "MHQCAQEEID1CnLSlzpRdv0JT9B9zTLAtQ3U75tgaF1zdkJbRCMF/oAcGBSuBBAAKoUQDQgAEOXPEdTs23dLC+DhWxoYX6TAft/Y3zXRfdAZi/VpFsmkI042sbF1uxQ3APtfFNmPFYlBW7blw/BisrkPPJFCxEQ==";
+
+        f();
+
+    });
+
+    it('3', () => {
+
+        msg_base64 = "120|MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAE2FcxJdkJ+nrjhkDRiPQ6mFf5OOAKeWedOukyim0UveUVt0CvE1UAQHTBlQLN2CRhiKdStOduOU6IjCYcFdX+rg==2|100|1|0";
+        priv_key_base64 = "MHQCAQEEIPf6MgiFUbvtT+wLCDKrFdO6QPOb9S4lbrhsF3DOhOjhoAcGBSuBBAAKoUQDQgAE2FcxJdkJ+nrjhkDRiPQ6mFf5OOAKeWedOukyim0UveUVt0CvE1UAQHTBlQLN2CRhiKdStOduOU6IjCYcFdX+rg==";
+
+        f();
 
     });
 
@@ -105,20 +128,31 @@ describe('ECDSA Signing', () => {
 
         const sig_bin = sign(msg_bin, priv_key_base64);
 
+
+        const pub_key_base64 = pub_from_priv(priv_key_base64);
+
+        assert(verify(msg_bin, sig_bin, pub_key_base64));
+
+        // Mutate signature 
+        sig_bin[43] += 1;
+
+        assert(!verify(msg_bin, sig_bin, pub_key_base64));
+
     };
 
 });
+
+
 
 
 describe('ECDSA Generate Public PEM from Private PEM', () => {
 
     it('', () => {
 
-        const priv_key_base64 = "MHQCAQEEIFH0TCvEu585ygDovjHE9SxW5KztFhbm4iCVOC67h0tEoAcGBSuBBAAKoUQDQgAE9Icrml+X41VC6HTX21HulbJo+pV1mtWn4+evJAi8ZeeLEJp4xg++JHoDm8rQbGWfVM84eqnb/RVuIXqoz6F9Bg==";
+        const priv_key_base64 = "MHQCAQEEIFNmJHEiGpgITlRwao/CDki4OS7BYeI7nyz+CM8NW3xToAcGBSuBBAAKoUQDQgAEndHOcS6bE1P9xjS/U+SM2a1GbQpPuH9sWNWtNYxZr0JcF+sCS2zsD+xlCcbrRXDZtfeDmgD9tHdWhcZKIy8ejQ==";
+        const pub_key_base64 = "MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEndHOcS6bE1P9xjS/U+SM2a1GbQpPuH9sWNWtNYxZr0JcF+sCS2zsD+xlCcbrRXDZtfeDmgD9tHdWhcZKIy8ejQ==";
 
-        const pub_key_base64 = pub_from_priv(priv_key_base64);
-
-        // No further testing
+        const pub = pub_from_priv(priv_key_base64);
 
     });
 

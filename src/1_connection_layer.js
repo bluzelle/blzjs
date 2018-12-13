@@ -33,7 +33,7 @@ module.exports = class Connection {
 
         this.connection.onmessage = bin => {
 
-            logIncoming(Buffer.from(bin.data));
+            this.log && logIncoming(Buffer.from(bin.data));
             this.onIncomingMsg(Buffer.from(bin.data));
 
         };
@@ -41,10 +41,10 @@ module.exports = class Connection {
     }
 
     sendOutgoingMsg(bin) {
-
+        
         if(this.connection.readyState === 1) {
 
-            logOutgoing(bin);
+            this.log && logOutgoing(bin);
             this.connection.send(bin);
 
         } else {

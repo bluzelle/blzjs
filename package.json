@@ -20,6 +20,7 @@
   "author": "Monty Thibault, John Lam",
   "license": "ISC",
   "dependencies": {
+    "big-integer": "^1.6.40",
     "google-protobuf": "^3.5.0",
     "hash.js": "^1.1.5",
     "isomorphic-ws": "^4.0.1",

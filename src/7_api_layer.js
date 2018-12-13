@@ -1,7 +1,7 @@
 // Copyright (C) 2018 Bluzelle
 //
 // This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Affero General Public License, version 3,
+// it under the terms of the GNU Affero General Public License, ver=on 3,
 // as published by the Free Software Foundation.
 //
 // This program is distributed in the hope that it will be useful,
@@ -147,7 +147,7 @@ module.exports = class API {
             const msg = new database_pb.database_msg();
 
             const _delete = new database_pb.database_delete();
-            msg.setRead(_delete);
+            msg.setDelete(_delete);
 
             _delete.setKey(key);
 
@@ -246,6 +246,39 @@ module.exports = class API {
     }
 
 
+    size() {
+
+        return new Promise((resolve, reject) => {
+
+            const msg = new database_pb.database_msg();
+
+            const size = new database_pb.database_request();
+            msg.setSize(size);
+
+
+            this.sendOutgoingMsg(msg, incoming_msg => {
+
+                if(incoming_msg.hasError()) {
+
+                    reject(new Error(incoming_msg.getError().getMessage()));
+                    return true;
+
+                }
+
+                assert(incoming_msg.hasSize(),
+                    "A response other than size has been returned from daemon for size.");
+
+                resolve(incoming_msg.getSize().getBytes());
+
+                return true;
+
+            });
+
+        });
+
+    }
+
+
     createDB() {
 
         return new Promise((resolve, reject) => {
@@ -320,7 +353,7 @@ module.exports = class API {
 
             const msg = new database_pb.database_msg();
 
-            const has = new database_pb.database_had_db();
+            const has = new database_pb.database_has_db();
             msg.setHasDb(has);
 
 
