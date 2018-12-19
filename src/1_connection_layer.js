@@ -17,6 +17,7 @@ const WebSocket = require('isomorphic-ws');
 const assert = require('assert');
 const bluzelle_pb = require('../proto/bluzelle_pb');
 const database_pb = require('../proto/database_pb');
+const status_pb = require('../proto/status_pb');
 
 
 module.exports = class Connection {
@@ -33,23 +34,33 @@ module.exports = class Connection {
 
         this.connection.onmessage = bin => {
 
-            this.log && logIncoming(Buffer.from(bin.data));
-            this.onIncomingMsg(Buffer.from(bin.data));
+            const actual_bin = Buffer.from(bin.data);
+
+            this.log && logIncoming(actual_bin, this.log);
+
+            this.onIncomingMsg(actual_bin);
 
         };
 
     }
 
     sendOutgoingMsg(bin) {
-        
+
         if(this.connection.readyState === 1) {
 
-            this.log && logOutgoing(bin);
+            this.log && logOutgoing(bin, this.log);
             this.connection.send(bin);
 
         } else {
 
-            this.onIncomingMsg(connection_closed_error_response(bin));
+            // Send an error response, but not for status requests
+            const bzn_envelope = bluzelle_pb.bzn_envelope.deserializeBinary(bin);
+
+            if(bzn_envelope.hasDatabaseMsg()) {
+
+                this.onIncomingMsg(connection_closed_error_response(bin));
+
+            }
 
         }
 
@@ -62,16 +73,14 @@ const connection_closed_error_response = bin => {
 
     const bzn_envelope = bluzelle_pb.bzn_envelope.deserializeBinary(bin);
 
-    assert(bzn_envelope.getPayloadCase() === bluzelle_pb.bzn_envelope.PayloadCase.DATABASE_MSG);
-
 
     const bzn_envelope_payload = bzn_envelope.getDatabaseMsg();
-    
+
     const database_msg = database_pb.database_msg.deserializeBinary(bzn_envelope_payload);
-    
+
     const header = database_msg.getHeader();
 
-    
+
     const response = new database_pb.database_response();
 
     response.setHeader(header);
@@ -87,41 +96,82 @@ const connection_closed_error_response = bin => {
 };
 
 
-const logIncoming = bin => {
+const logIncoming = (bin, log) => {
 
     const bzn_envelope = bluzelle_pb.bzn_envelope.deserializeBinary(new Uint8Array(bin));
 
     assert(bzn_envelope instanceof bluzelle_pb.bzn_envelope);
 
-    assert(bzn_envelope.hasDatabaseResponse());
+    assert(bzn_envelope.hasDatabaseResponse() || bzn_envelope.hasStatusResponse());
 
 
-    const database_response = database_pb.database_response.deserializeBinary(bzn_envelope.getDatabaseResponse());
+    if(bzn_envelope.hasDatabaseResponse()) {
 
-    assert(database_response instanceof database_pb.database_response);
+        const database_response = database_pb.database_response.deserializeBinary(bzn_envelope.getDatabaseResponse());
 
-    console.log('Incoming\n', filterUndefined(database_response.toObject()));
+        assert(database_response instanceof database_pb.database_response);
+
+        // Make sure errors don't mess up this thread
+        setTimeout(() => 
+            log('Incoming database_response\n', filterUndefined(database_response.toObject())),
+            0);
+
+    }
+
+    if(bzn_envelope.hasStatusResponse()) {
+
+        const status_response = status_pb.status_response.deserializeBinary(bzn_envelope.getStatusResponse());
+
+        assert(status_response instanceof status_pb.status_response);
+
+        setTimeout(() => 
+            log('Incoming status_response\n', filterUndefined(status_response.toObject())),
+            0);
+
+    }
 
 };
 
 
-const logOutgoing = bin => {
+const logOutgoing = (bin, log) => {
 
     const bzn_envelope = bluzelle_pb.bzn_envelope.deserializeBinary(bin);
 
     assert(bzn_envelope instanceof bluzelle_pb.bzn_envelope);
 
-    assert(bzn_envelope.hasDatabaseMsg());
+    assert(bzn_envelope.hasDatabaseMsg() || bzn_envelope.hasStatusRequest());
 
 
-    const database_msg = database_pb.database_msg.deserializeBinary(bzn_envelope.getDatabaseMsg());
+    if(bzn_envelope.hasDatabaseMsg()) {
 
-    assert(database_msg instanceof database_pb.database_msg);
+        const database_msg = database_pb.database_msg.deserializeBinary(bzn_envelope.getDatabaseMsg());
 
-    console.log('Outgoing\n', filterUndefined(database_msg.toObject()));
+        assert(database_msg instanceof database_pb.database_msg);
+
+
+        setTimeout(() => 
+            log('Outgoing database_msg\n', filterUndefined(database_msg.toObject())),
+            0);
+
+    }
+
+    if(bzn_envelope.hasStatusRequest()) {
+
+        const status_request = status_pb.status_request.deserializeBinary(bzn_envelope.getStatusRequest());
+
+        assert(status_request instanceof status_pb.status_request);
+
+        setTimeout(() => 
+            log('Outgoing status_request\n', filterUndefined(status_request.toObject())),
+            0);
+
+    }
 
 };
 
+
+// Removes keys that map to undefined in an object,
+// otherwise they show up in log output
 
 const filterUndefined = obj => {
 
