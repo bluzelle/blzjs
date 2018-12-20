@@ -19,37 +19,36 @@ Run `npm install bluzelle` to get the latest and greatest Bluzelle sdk \(see [in
 Create a file, `my-program.js`, and paste the following starter code.
 
 ```javascript
-const { BluzelleClient } = require('bluzelle');
+const { bluzelle } = require('bluzelle');
 
-const bluzelle = new BluzelleClient(
-    'ws://test.network.bluzelle.com:51010',
+const bz = bluzelle({
+    entry: 'ws://test.network.bluzelle.com:51010',
 
-    // This UUID identifies your database and
-    // may be changed.
-    '4f493479–2447–47g6–3c36-efa5d251a283'
-);
+    // This UUID identifies your database and may be changed.
+    uuid: '4f493479–2447–47g6–3c36-efa5d251a283',
+    
+    // This is the private key used for signing off database operations
+    private_pem: 'MHQCAQEEIFNmJHEiGpgITlRwao/CDki4OS7BYeI7nyz+CM8NW3xToAcGBSuBBAAKoUQDQgAEndHOcS6bE1P9xjS/U+SM2a1GbQpPuH9sWNWtNYxZr0JcF+sCS2zsD+xlCcbrRXDZtfeDmgD9tHdWhcZKIy8ejQ=='
+});
 
 
 const main = async () => {
 
-    await bluzelle.connect();
+    await bz.createDB();
 
-    await bluzelle.create('myKey', 'myValue');
+    await bz.create('myKey', 'myValue');
 
-    console.log(await bluzelle.read('myKey'));
-
-    await bluzelle.disconnect();
+    console.log('The value of myKey is: ', await bz.read('myKey'));
 
 };
 
 
 main().catch(e => { 
-    console.log(e.message); 
-    bluzelle.disconnect();
+    throw e;
 });
 ```
 
-Run the program with `node my-program`. The expected output is`'myValue'`. If you run the program multiple times on the same uuid, it will fail with `RECORD_EXISTS`. Explore the rest of the API on the [API page](api.md).
+Run the program with `node my-program`. The expected output is `The value of myKey is: myValue`. If you run the program multiple times on the same uuid, it will fail with `RECORD_EXISTS`. Explore the rest of the API on the [API page](api.md).
 
 ## Troubleshooting
 

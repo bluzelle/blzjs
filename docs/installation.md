@@ -2,7 +2,7 @@
 
 ## NPM
 
-The recommended way of getting bluzelle-js is through the npm package manager. Simply run `npm install bluzelle` and require it in your project with `const bluzelle = require('bluzelle');`.
+The recommended way of getting bluzelle-js is through the npm package manager. Simply run `npm install bluzelle` and require it in your project with `require('bluzelle');`.
 
 The NPM release reflects the bluzelle-js master branch.
 
