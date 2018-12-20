@@ -1,9 +1,17 @@
-const {bluzelle} = require('../main');
+const {bluzelle, version} = require('../main');
 const assert = require('assert');
 const {pub_from_priv} = require('../ecdsa_secp256k1');
 
 
 describe('integration', () => {
+
+    it('version', () => {
+
+        assert(typeof version === 'string');
+        assert(version.length > 0);
+
+    });
+
 
     it('create and read', async () => {
 

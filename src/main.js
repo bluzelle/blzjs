@@ -78,7 +78,9 @@ module.exports = {
 
         return api;
 
-    }
+    },
+
+    version: require('../package.json').version
 };
 
 
