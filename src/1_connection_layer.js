@@ -66,6 +66,10 @@ module.exports = class Connection {
 
     }
 
+    close() {
+        this.connection.close();
+    }
+
 };
 
 

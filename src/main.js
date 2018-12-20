@@ -52,7 +52,6 @@ module.exports = {
 
 
         // Status is special because it bypasses all the normal API stuff
-
         api.status = () => new Promise((resolve, reject) => {
 
             const switch_layer = layers[2];
@@ -72,8 +71,10 @@ module.exports = {
 
 
         // This one is also special
-
         api.publicKey = () => pub_from_priv(private_pem);
+
+
+        api.close = () => layers[0].close();
 
 
         return api;
