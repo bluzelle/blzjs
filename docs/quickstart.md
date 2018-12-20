@@ -22,33 +22,29 @@ Create a file, `my-program.js`, and paste the following starter code.
 const { bluzelle } = require('bluzelle');
 
 const bz = bluzelle({
-    entry: 'ws://test.network.bluzelle.com:51010',
-
+    entry: 'ws://localhost:50000',
+    
     // This UUID identifies your database and may be changed.
-    uuid: '4f493479–2447–47g6–3c36-efa5d251a283',
+    uuid: '5f493479–2447–47g6–1c36-efa5d251a283',
     
     // This is the private key used for signing off database operations
     private_pem: 'MHQCAQEEIFNmJHEiGpgITlRwao/CDki4OS7BYeI7nyz+CM8NW3xToAcGBSuBBAAKoUQDQgAEndHOcS6bE1P9xjS/U+SM2a1GbQpPuH9sWNWtNYxZr0JcF+sCS2zsD+xlCcbrRXDZtfeDmgD9tHdWhcZKIy8ejQ=='
 });
 
-
 const main = async () => {
-
     await bz.createDB();
-
     await bz.create('myKey', 'myValue');
-
     console.log('The value of myKey is: ', await bz.read('myKey'));
-
+    bz.close();
 };
 
-
 main().catch(e => { 
+    bz.close();
     throw e;
 });
 ```
 
-Run the program with `node my-program`. The expected output is `The value of myKey is: myValue`. If you run the program multiple times on the same uuid, it will fail with `RECORD_EXISTS`. Explore the rest of the API on the [API page](api.md).
+Run the program with `node my-program`. The expected output is `The value of myKey is: myValue`. If you run the program multiple times on the same uuid, it will fail with `DATABASE_EXISTS`. Explore the rest of the API on the [API page](api.md).
 
 ## Troubleshooting
 

@@ -85,6 +85,18 @@ You must replace the UUID here with your own UUID or else you will have database
   </tbody>
 </table>## Administrative Functions
 
+### close\(\)
+
+Closes the connection.
+
+```javascript
+api.close();
+```
+
+Returns nothing. Never fails.
+
+
+
 ### createDB\(\)
 
 Creates a new database at the given uuid.
