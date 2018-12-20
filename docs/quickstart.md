@@ -54,7 +54,7 @@ Sometimes running a "hello world" program does not produce expected results. Com
 
 ### Your NodeJS installation is out of date
 
-Make sure that your NodeJS installation is modern. Running `node -v` will print your current version. As of the time of writing, the current version is `10.10.0`. Some operating systems ship with outdated versions of node. Follow [this guide](https://www.hostingadvice.com/how-to/update-node-js-latest-version/) to update your installation.
+Make sure that your NodeJS installation is modern. Running `node -v` will print your current version. As of the time of writing, the current version is `11.4.0`. Some operating systems ship with outdated versions of node. Follow [this guide](https://www.hostingadvice.com/how-to/update-node-js-latest-version/) to update your installation.
 
 ### The testnet is down
 
