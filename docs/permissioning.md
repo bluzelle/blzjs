@@ -2,7 +2,11 @@
 
 ## Cryptographic Keys
 
-To use the database, you need to provide your own private key. With OpenSSL installed, you can generate a new key with the following command:
+To use the database, you need to provide your own private key. 
+
+We will provide instructions on how to generate a private key using OpenSSL. OpenSSL comes installed by default on OSX and many linux machines. Otherwise, you will have to install it through your particular package management system.
+
+With OpenSSL installed, you can generate a new key with the following command:
 
 ```text
 openssl ecparam -name secp256k1 -genkey -noout
