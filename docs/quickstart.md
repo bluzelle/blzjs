@@ -1,5 +1,12 @@
 # Quick Start
 
+<style>
+._13gjrqj {
+    color: black;
+    transform: translateX(-10px) scale(2);
+}
+</style>
+
 ## 1. Create an NPM Project
 
 With NodeJS and NPM installed creating a project is a straight forward process:
