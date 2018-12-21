@@ -22,7 +22,7 @@ QgIbZ11XAWXnUdtOXJHUOkzSyK7yeQ==
 -----END EC PRIVATE KEY-----
 ```
 
-The string `MHQCAQ...yeQ==` is the private key in an encoding called PEM. It is fed into the `private_pem` field of the library constructor.
+The string `MHQCAQ...yeQ==` is the private key in an encoding called PEM. It is fed into the `private_pem` field of the [bluzelle constructor](api.md#bluzelle-entry-uuid-private_pem).
 
 {% hint style="info" %}
 The private key is synonymous with identity. Multiple users may be emulated with multiple keys. If a private key is made public, the security for that user becomes compromised. 
