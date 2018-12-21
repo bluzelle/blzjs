@@ -2,10 +2,6 @@
 
 ## Cryptographic Keys
 
-Cryptography secures the database content from bad actors. Your identity is a private key. `bluzelle-js` uses your private key to sign off database operations. The decentralized swarm then verifies your signatures to enforce security and permissioning.
-
-Bluzelle uses the Elliptic Curve Digital Signature Algorithm \(**ECDSA**\) on the curve **secp256k1** with an **SHA-512** hash. But you don't need to know worry about this because it's all built-in to the system. 
-
 To use the database, you need to provide your own private key. With OpenSSL installed, you can generate a new key with the following command:
 
 ```text
@@ -27,6 +23,10 @@ The string `MHQCAQ...yeQ==` is the private key in an encoding called PEM. It is 
 {% hint style="info" %}
 The private key is synonymous with identity. Multiple users may be emulated with multiple keys. If a private key is made public, the security for that user becomes compromised. 
 {% endhint %}
+
+`bluzelle-js` uses your private key to sign off database operations. The decentralized swarm then verifies your signatures to enforce security and permissioning.
+
+Bluzelle uses the Elliptic Curve Digital Signature Algorithm \(**ECDSA**\) on the curve **secp256k1** with an **SHA-512** hash. But you don't need to know worry about this because it's all built-in to the system. 
 
 ## Database Permissions
 
