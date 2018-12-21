@@ -18,6 +18,10 @@ Run `npm install bluzelle` to get the latest and greatest Bluzelle sdk \(see [in
 
 Create a file, `my-program.js`, and paste the following starter code. \(Click the copy button in the top-right corner of the code window to preserve line endings\)
 
+Run the program with `node my-program`. The expected output is `The value of myKey is: myValue`. If you run the program multiple times on the same uuid, it will fail with `DATABASE_EXISTS` . Change the uuid to get a fresh database.
+
+Explore the rest of the API on the [API page](api.md) and read about [cryptographic permissioning](permissioning.md).
+
 ```javascript
 const { bluzelle } = require('bluzelle');
 
@@ -43,8 +47,6 @@ main().catch(e => {
     throw e;
 });
 ```
-
-Run the program with `node my-program`. The expected output is `The value of myKey is: myValue`. If you run the program multiple times on the same uuid, it will fail with `DATABASE_EXISTS`. Explore the rest of the API on the [API page](api.md).
 
 ## Troubleshooting
 
