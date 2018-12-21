@@ -16,17 +16,17 @@ Run `npm install bluzelle` to get the latest and greatest Bluzelle sdk \(see [in
 
 ## 3. Run a simple program
 
-Create a file, `my-program.js`, and paste the following starter code.
+Create a file, `my-program.js`, and paste the following starter code. \(Click the copy button in the top-right corner of the code window to preserve line endings\)
 
 ```javascript
 const { bluzelle } = require('bluzelle');
 
 const bz = bluzelle({
     entry: 'ws://bernoulli.bluzelle.com:51010',
-    
+
     // This UUID identifies your database and may be changed.
     uuid: '5f493479–2447–47g6–1c36-efa5d251a283',
-    
+
     // This is the private key used for signing off database operations
     private_pem: 'MHQCAQEEIFNmJHEiGpgITlRwao/CDki4OS7BYeI7nyz+CM8NW3xToAcGBSuBBAAKoUQDQgAEndHOcS6bE1P9xjS/U+SM2a1GbQpPuH9sWNWtNYxZr0JcF+sCS2zsD+xlCcbrRXDZtfeDmgD9tHdWhcZKIy8ejQ=='
 });

@@ -67,10 +67,7 @@ You must replace the UUID here with your own UUID or else you will have database
     </tr>
     <tr>
       <td style="text-align:left">private_pem</td>
-      <td style="text-align:left">Bluzelle uses the elliptic curve digital signature algorithm (<b>ECDSA</b>)
-        on the curve <b>secp256k1</b> with an <b>SHA-512</b> hash. With OpenSSL installed,
-        you can generate a new key with <code>openssl ecparam -name secp256k1 -genkey -noout -out my_private_key.pem</code>
-      </td>
+      <td style="text-align:left">The private key for this user in PEM format.</td>
     </tr>
     <tr>
       <td style="text-align:left">log</td>
@@ -165,7 +162,7 @@ Returns a string containing the base64 PEM encoding of the public key.
 
 ### getWriters\(\)
 
-Gets the owner and writers of the given database. Fields are 
+Gets the owner and writers of the given database. The owner is the public key of the user that created the database. The writers array lists the public keys of users that are allowed to make changes to the database.
 
 ```javascript
 // promise syntax
