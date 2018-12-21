@@ -22,7 +22,7 @@ Create a file, `my-program.js`, and paste the following starter code.
 const { bluzelle } = require('bluzelle');
 
 const bz = bluzelle({
-    entry: 'ws://test.network.bluzelle.com:51010',
+    entry: 'ws://bernoulli.bluzelle.com:51010',
     
     // This UUID identifies your database and may be changed.
     uuid: '5f493479–2447–47g6–1c36-efa5d251a283',
