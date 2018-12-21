@@ -150,7 +150,7 @@ Fails when a response is not received.
 
 ### publicKey\(\)
 
-Returns a public key from the `private_pem` given in the constructor.
+Generates a public key from the `private_pem` given in the constructor.
 
 ```javascript
 const pk = api.publicKey();
