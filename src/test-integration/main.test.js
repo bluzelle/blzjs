@@ -27,6 +27,8 @@ describe('integration', () => {
 
         assert.equal(await bz.read('hello'), 'world');
 
+        assert.equal(await bz.quickread('hello'), 'world');
+
     });
 
 

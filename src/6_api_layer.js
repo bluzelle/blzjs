@@ -139,6 +139,42 @@ module.exports = class API {
 
     }
 
+    quickread(key) {
+
+        return new Promise((resolve, reject) => {
+
+            const msg = new database_pb.database_msg();
+
+            const read = new database_pb.database_read();
+            msg.setQuickRead(read);
+
+            read.setKey(key);
+
+
+            this.sendOutgoingMsg(msg, incoming_msg => {
+
+                if(incoming_msg.hasError()) {
+
+                    reject(new Error(incoming_msg.getError().getMessage()));
+                    return true;
+
+                }
+
+                assert(incoming_msg.hasRead(),
+                    "A response other than error or read has been returned from daemon for quickread.");
+
+                assert(incoming_msg.getRead().getKey() === key,
+                    "Key in response does not match key in request for read.");
+
+                resolve(decode(incoming_msg.getRead().getValue()));
+
+                return true;
+
+            });
+
+        });
+
+    }
 
     delete(key) {
 
