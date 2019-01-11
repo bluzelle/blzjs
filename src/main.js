@@ -17,9 +17,8 @@ const Connection = require('./1_connection_layer');
 const Crypto = require('./2_crypto_layer');
 const Switch = require('./3_switch_layer');
 const Redirect = require('./4_redirect_layer');
-const Cache = require('./5_cache_layer');
-const Metadata = require('./7_metadata_layer');
-const API = require('./8_api_layer');
+const Metadata = require('./5_metadata_layer');
+const API = require('./6_api_layer');
 
 const { pub_from_priv } = require('./ecdsa_secp256k1');
 
@@ -41,7 +40,6 @@ module.exports = {
             new Crypto({ private_pem, }),  
             new Switch({ onIncomingStatusResponse: () => {} }),      
             new Redirect({}),
-            new Cache({}),
             new Metadata({ uuid, }),
         ];
 
@@ -75,6 +73,46 @@ module.exports = {
 
 
         api.close = () => layers[0].close();
+
+
+        api.useFastestConnection = async () => {
+
+            const stat = await api.status();
+
+            const peer_index = JSON.parse(stat.moduleStatusJson).module[0].status.peer_index;
+
+
+            const entries = peer_index.map(({host, port}) => 'ws://' + host + ':' + port);
+
+            const connections = entries.map(entry => new Connection({entry, log}));
+
+            const ps = connections.map(connection => 
+                new Promise(resolve => {
+                    connection.socket.addEventListener('open', () => resolve(connection))
+                })
+            );
+
+            const best_connection = await Promise.race(ps);
+
+
+            // Close out all other connections
+
+            connections.filter(c => c !== best_connection).forEach(connection => 
+                connection.readyState === 1 ? 
+
+                    connection.close() : // In case two connections open very closely to one-another
+
+                    connection.socket.onopen = () => connection.socket.close());
+
+
+            // Replace existing connection with best connection
+
+            layers[0].socket.close();
+            
+            layers[0] = best_connection;
+            connect_layers(layers);
+
+        };
 
 
         return api;

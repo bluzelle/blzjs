@@ -24,15 +24,19 @@ module.exports = class Connection {
 
     constructor({entry, log, onIncomingMsg}) {
 
-        this.connection = new WebSocket(entry);
+        this.socket = new WebSocket(entry);
 
-        this.connection.binaryType = 'arraybuffer';
+        this.socket.binaryType = 'arraybuffer';
 
         this.log = log;
         this.onIncomingMsg = onIncomingMsg;
 
 
-        this.connection.onmessage = bin => {
+        // queue up messages and send them when the connection opens
+        this.queue = [];
+
+
+        this.socket.addEventListener('message', bin => {
 
             const actual_bin = Buffer.from(bin.data);
 
@@ -40,64 +44,35 @@ module.exports = class Connection {
 
             this.onIncomingMsg(actual_bin);
 
-        };
+        });
+
+        this.socket.addEventListener('open', () => 
+            this.queue.forEach(bin => this.sendOutgoingMsg(bin))
+        );
 
     }
 
     sendOutgoingMsg(bin) {
 
-        if(this.connection.readyState === 1) {
+        if(this.socket.readyState === 1) {
 
             this.log && logOutgoing(bin, this.log);
-            this.connection.send(bin);
+            this.socket.send(bin);
 
         } else {
 
-            // Send an error response, but not for status requests
-            const bzn_envelope = bluzelle_pb.bzn_envelope.deserializeBinary(bin);
-
-            if(bzn_envelope.hasDatabaseMsg()) {
-
-                this.onIncomingMsg(connection_closed_error_response(bin));
-
-            }
+            this.queue.push(bin);
 
         }
 
     }
 
     close() {
-        this.connection.close();
+        this.socket.close();
     }
 
 };
 
-
-const connection_closed_error_response = bin => {
-
-    const bzn_envelope = bluzelle_pb.bzn_envelope.deserializeBinary(bin);
-
-
-    const bzn_envelope_payload = bzn_envelope.getDatabaseMsg();
-
-    const database_msg = database_pb.database_msg.deserializeBinary(bzn_envelope_payload);
-
-    const header = database_msg.getHeader();
-
-
-    const response = new database_pb.database_response();
-
-    response.setHeader(header);
-
-    const error = new database_pb.database_error();
-    error.setMessage("CONNECTION NOT OPEN");
-
-    response.setError(error);
-
-
-    return response;
-
-};
 
 
 const logIncoming = (bin, log) => {

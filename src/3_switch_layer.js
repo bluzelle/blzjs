@@ -28,7 +28,7 @@ module.exports = class Switch {
 
 
         // This one gets called and bypasses the rest of the layered system if it's
-        // a status response.
+        // a status response. (since status responses don't have the whole nonce system)
         this.onIncomingStatusResponse = onIncomingStatusResponse;
 
     }

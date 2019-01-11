@@ -9,3 +9,15 @@ Note: TRAVIS ONLY TESTS NODE, NOT BROWSER. YOU MUST VERIFY `yarn test-browser` Y
 Note: Travis will automatically update the package version to match the major, minor, and patch version. The patch version always corresponds to the travis build number. 
 
 4. Verify that the NPM package has been published successfully.
+
+
+
+-----
+
+Manual release checklist
+========================
+
+1. As above
+2. As above
+3. Run `webpack` again, so that the new build has the correct version.
+4. npm publish
