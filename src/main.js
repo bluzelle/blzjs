@@ -112,6 +112,13 @@ module.exports = {
             layers[0] = best_connection;
             connect_layers(layers);
 
+
+            // Return peer information
+
+            const i = connections.indexOf(best_connection);
+
+            return peer_index[i];
+
         };
 
 

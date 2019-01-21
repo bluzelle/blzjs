@@ -238,7 +238,7 @@ describe('integration', () => {
 
 
 
-    it('fastest connection', async () => {
+    it.only('fastest connection', async () => {
 
         const bz = bluzelle({
             entry: 'ws://localhost:50000', 
@@ -246,7 +246,7 @@ describe('integration', () => {
             uuid: Math.random().toString()
         });
 
-        await bz.useFastestConnection();
+        assert(typeof await bz.useFastestConnection() === 'object');
 
         assert(await bz.status());
 
