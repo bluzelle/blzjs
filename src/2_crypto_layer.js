@@ -1,4 +1,4 @@
-// Copyright (C) 2018 Bluzelle
+// Copyright (C) 2019 Bluzelle
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License, version 3,
@@ -17,6 +17,7 @@ const assert = require('assert');
 const { verify, sign, pub_from_priv } = require('./ecdsa_secp256k1');
 const database_pb = require('../proto/database_pb');
 const bluzelle_pb = require('../proto/bluzelle_pb');
+const status_pb = require('../proto/status_pb');
 
 
 module.exports = class Crypto {
@@ -32,10 +33,21 @@ module.exports = class Crypto {
 
     sendOutgoingMsg(msg) {
 
-        assert(msg instanceof bluzelle_pb.bzn_envelope);
-        assert(msg.hasDatabaseMsg() || msg.hasStatusRequest());
+        assert(msg instanceof database_pb.database_msg || msg instanceof status_pb.status_request);
 
-        const payload = msg.hasDatabaseMsg() ? msg.getDatabaseMsg() : msg.getStatusRequest();
+        const bzn_envelope = new bluzelle_pb.bzn_envelope();
+
+
+        const payload = msg.serializeBinary();
+
+        if(msg instanceof database_pb.database_msg) {
+            bzn_envelope.setDatabaseMsg(payload);
+        }
+
+        if(msg instanceof status_pb.status_request) {
+            bzn_envelope.setStatusRequest(payload);
+        }
+
 
 
         const timestamp = new Date().getTime();
@@ -44,41 +56,51 @@ module.exports = class Crypto {
         
         const bin_for_the_win = Buffer.concat([
             sender, 
-            msg.getPayloadCase(), 
+            bzn_envelope.getPayloadCase(), 
             Buffer.from(payload), 
             timestamp
         ].map(deterministic_serialize));
 
 
-        msg.setSender(sender);
-        msg.setSignature(new Uint8Array(sign(bin_for_the_win, this.private_pem)));
-        msg.setTimestamp(timestamp);
+        bzn_envelope.setSender(sender);
+        bzn_envelope.setSignature(new Uint8Array(sign(bin_for_the_win, this.private_pem)));
+        bzn_envelope.setTimestamp(timestamp);
 
-        const ultimate_bin = msg.serializeBinary();
+        const ultimate_bin = bzn_envelope.serializeBinary();
 
         this.onOutgoingMsg(ultimate_bin);
 
     }
 
 
-    sendIncomingMsg(msg) {
+    sendIncomingMsg(bin) {
 
-        // If the connection layer sends an error, skip this layer.
+        assert(bin instanceof Buffer);
 
-        if(msg instanceof database_pb.database_response) {
-            this.onIncomingMsg(msg);
-            return;
-        }   
-
-        assert(msg instanceof Buffer);
-
-
-        // Verification not implemented
-
-
-        const bzn_envelope = bluzelle_pb.bzn_envelope.deserializeBinary(new Uint8Array(msg));
+        const bzn_envelope = bluzelle_pb.bzn_envelope.deserializeBinary(new Uint8Array(bin));
 
         assert(bzn_envelope.hasDatabaseResponse() || bzn_envelope.hasStatusResponse());
+
+
+        // Verification of incoming messages
+
+        const payload = 
+            bzn_envelope.hasDatabaseResponse() ? 
+                bzn_envelope.getDatabaseResponse() : 
+                bzn_envelope.getStatusResponse();
+
+        const bin_for_the_win = Buffer.concat([
+            bzn_envelope.getSender(), 
+            bzn_envelope.getPayloadCase(), 
+            Buffer.from(payload), 
+            bzn_envelope.getTimestamp()
+        ].map(deterministic_serialize));
+
+
+        assert(
+            verify(Buffer.from(bin_for_the_win), Buffer.from(bzn_envelope.getSignature()), bzn_envelope.getSender()), 
+            'Signature failed to verify.\n' + Buffer.from(bin).toString('hex'));
+        
 
         this.onIncomingMsg(bzn_envelope);
 

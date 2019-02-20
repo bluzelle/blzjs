@@ -1,4 +1,4 @@
-// Copyright (C) 2018 Bluzelle
+// Copyright (C) 2019 Bluzelle
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License, version 3,
@@ -14,6 +14,8 @@
 
 
 const database_pb = require('../proto/database_pb');
+const status_pb = require('../proto/status_pb');
+
 const assert = require('assert');
 
 
@@ -28,7 +30,7 @@ module.exports = class Redirect {
 
     sendOutgoingMsg(msg) {
 
-        assert(msg instanceof database_pb.database_msg);
+        assert(msg instanceof database_pb.database_msg || msg instanceof status_pb.status_request);
 
         // Pass through
         this.onOutgoingMsg(msg);
@@ -37,9 +39,9 @@ module.exports = class Redirect {
 
     sendIncomingMsg(msg) {
 
-        assert(msg instanceof database_pb.database_response);
+        assert(msg instanceof database_pb.database_response || msg instanceof status_pb.status_response);
 
-        assert(!msg.hasRedirect(), 
+        assert(msg instanceof status_pb.status_response || !msg.hasRedirect(), 
             'Daemon returned redirection.');
 
         this.onIncomingMsg(msg);

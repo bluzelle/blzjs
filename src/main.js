@@ -1,4 +1,4 @@
-// Copyright (C) 2018 Bluzelle
+// Copyright (C) 2019 Bluzelle
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License, version 3,
@@ -15,10 +15,10 @@
 
 const Connection = require('./1_connection_layer');
 const Crypto = require('./2_crypto_layer');
-const Switch = require('./3_switch_layer');
-const Redirect = require('./4_redirect_layer');
-const Metadata = require('./5_metadata_layer');
-const API = require('./6_api_layer');
+const Collation = require('./3_collation_layer');
+const Redirect = require('./5_redirect_layer');
+const Metadata = require('./6_metadata_layer');
+const API = require('./7_api_layer');
 
 const { pub_from_priv } = require('./ecdsa_secp256k1');
 
@@ -35,10 +35,12 @@ module.exports = {
         }
 
 
+        const connection_layer = new Connection({ entry, log });
+
         const layers = [
-            new Connection({ entry, log }),
-            new Crypto({ private_pem, }),  
-            new Switch({ onIncomingStatusResponse: () => {} }),      
+            connection_layer,
+            new Crypto({ private_pem, }), 
+            new Collation({ connection_layer, }), 
             new Redirect({}),
             new Metadata({ uuid, }),
         ];
@@ -46,80 +48,13 @@ module.exports = {
         const sandwich = connect_layers(layers);
 
         api = new API(sandwich.sendOutgoingMsg);
+        
 
+        // These API functions aren't actual database operations
 
-
-        // Status is special because it bypasses all the normal API stuff
-        api.status = () => new Promise((resolve, reject) => {
-
-            const switch_layer = layers[2];
-
-            const status_request = new status_pb.status_request();
-
-            switch_layer.sendOutgoingMsg(status_request);
-
-
-            switch_layer.onIncomingStatusResponse = status_response => {
-
-                resolve(status_response.toObject());
-
-            };
-
-        });
-
-
-        // This one is also special
         api.publicKey = () => pub_from_priv(private_pem);
 
-
         api.close = () => layers[0].close();
-
-
-        api.useFastestConnection = async () => {
-
-            const stat = await api.status();
-
-            const peer_index = JSON.parse(stat.moduleStatusJson).module[0].status.peer_index;
-
-
-            const entries = peer_index.map(({host, port}) => 'ws://' + host + ':' + port);
-
-            const connections = entries.map(entry => new Connection({entry, log}));
-
-            const ps = connections.map(connection => 
-                new Promise(resolve => {
-                    connection.socket.addEventListener('open', () => resolve(connection))
-                })
-            );
-
-            const best_connection = await Promise.race(ps);
-
-
-            // Close out all other connections
-
-            connections.filter(c => c !== best_connection).forEach(connection => 
-                connection.readyState === 1 ? 
-
-                    connection.close() : // In case two connections open very closely to one-another
-
-                    connection.socket.onopen = () => connection.socket.close());
-
-
-            // Replace existing connection with best connection
-
-            layers[0].socket.close();
-            
-            layers[0] = best_connection;
-            connect_layers(layers);
-
-
-            // Return peer information
-
-            const i = connections.indexOf(best_connection);
-
-            return peer_index[i];
-
-        };
 
 
         return api;

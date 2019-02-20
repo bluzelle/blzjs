@@ -1,4 +1,4 @@
-// Copyright (C) 2018 Bluzelle
+// Copyright (C) 2019 Bluzelle
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License, version 3,
@@ -14,6 +14,8 @@
 
 
 const database_pb = require('../proto/database_pb');
+const status_pb = require('../proto/status_pb');
+
 const bigInt = require('big-integer');
 const assert = require('assert');
 
@@ -26,6 +28,7 @@ module.exports = class Metadata {
         this.onOutgoingMsg = onOutgoingMsg;
 
         this.nonceMap = new Map();
+        this.status_fns = [];
 
     }
 
@@ -37,7 +40,16 @@ module.exports = class Metadata {
 
     sendOutgoingMsg(msg, fn) {
 
-        assert(msg instanceof database_pb.database_msg);
+        assert(msg instanceof database_pb.database_msg || msg instanceof status_pb.status_request);
+
+
+        if(msg instanceof status_pb.status_request) {
+            this.status_fns.push(fn);
+            this.onOutgoingMsg(msg);
+
+            return;
+        }
+
 
         const header = new database_pb.database_header();
 
@@ -59,7 +71,16 @@ module.exports = class Metadata {
 
     sendIncomingMsg(msg) {
 
-        assert(msg instanceof database_pb.database_response);
+        assert(msg instanceof database_pb.database_response || msg instanceof status_pb.status_response);
+
+        if(msg instanceof status_pb.status_response) {
+            const s = this.status_fns;
+            this.status_fns = [];
+            s.forEach(fn => fn(msg));
+
+            return;
+        }
+
 
         const header = msg.getHeader();
 

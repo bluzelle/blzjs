@@ -1,4 +1,4 @@
-// Copyright (C) 2018 Bluzelle
+// Copyright (C) 2019 Bluzelle
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License, ver=on 3,
@@ -14,6 +14,8 @@
 
 
 const database_pb = require('../proto/database_pb');
+const status_pb = require('../proto/status_pb');
+
 const assert = require('assert');
 
 
@@ -26,6 +28,23 @@ module.exports = class API {
     constructor(sendOutgoingMsg) {
 
         this.sendOutgoingMsg = sendOutgoingMsg;
+
+    }
+
+
+    status() {
+
+        return new Promise((resolve, reject) => {
+
+            const status_request = new status_pb.status_request();
+
+            this.sendOutgoingMsg(status_request, msg => {
+
+                resolve(msg.toObject());
+
+            }); 
+
+        });
 
     }
 
