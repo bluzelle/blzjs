@@ -3,6 +3,8 @@ const assert = require('assert');
 const {pub_from_priv} = require('../ecdsa_secp256k1');
 
 
+const log = false;
+
 describe('integration', () => {
 
     it('version', () => {
@@ -18,7 +20,8 @@ describe('integration', () => {
         const bz = bluzelle({
             entry: 'ws://localhost:50000', 
             private_pem: 'MHQCAQEEIFH0TCvEu585ygDovjHE9SxW5KztFhbm4iCVOC67h0tEoAcGBSuBBAAKoUQDQgAE9Icrml+X41VC6HTX21HulbJo+pV1mtWn4+evJAi8ZeeLEJp4xg++JHoDm8rQbGWfVM84eqnb/RVuIXqoz6F9Bg==', 
-            uuid: Math.random().toString()
+            uuid: Math.random().toString(),
+            log
         });
 
         await bz.createDB();
@@ -29,6 +32,8 @@ describe('integration', () => {
 
         assert.equal(await bz.quickread('hello'), 'world');
 
+        bz.close();
+
     });
 
 
@@ -37,7 +42,8 @@ describe('integration', () => {
         const bz = bluzelle({
             entry: 'ws://localhost:50000', 
             private_pem: 'MHQCAQEEIFH0TCvEu585ygDovjHE9SxW5KztFhbm4iCVOC67h0tEoAcGBSuBBAAKoUQDQgAE9Icrml+X41VC6HTX21HulbJo+pV1mtWn4+evJAi8ZeeLEJp4xg++JHoDm8rQbGWfVM84eqnb/RVuIXqoz6F9Bg==', 
-            uuid: Math.random().toString()
+            uuid: Math.random().toString(),
+            log
         });
 
         await bz.createDB();
@@ -48,6 +54,7 @@ describe('integration', () => {
 
         assert.equal(await bz.read('hello'), 'earth');
 
+        bz.close();
 
     });
 
@@ -57,7 +64,8 @@ describe('integration', () => {
         const bz = bluzelle({
             entry: 'ws://localhost:50000', 
             private_pem: 'MHQCAQEEIFH0TCvEu585ygDovjHE9SxW5KztFhbm4iCVOC67h0tEoAcGBSuBBAAKoUQDQgAE9Icrml+X41VC6HTX21HulbJo+pV1mtWn4+evJAi8ZeeLEJp4xg++JHoDm8rQbGWfVM84eqnb/RVuIXqoz6F9Bg==', 
-            uuid: Math.random().toString()
+            uuid: Math.random().toString(),
+            log
         });
 
         await bz.createDB();
@@ -68,7 +76,10 @@ describe('integration', () => {
 
         assert(await bz.has('hello'));
 
+        bz.close();
+
     });
+
 
 
     it('delete', async () => {
@@ -76,7 +87,8 @@ describe('integration', () => {
         const bz = bluzelle({
             entry: 'ws://localhost:50000', 
             private_pem: 'MHQCAQEEIFH0TCvEu585ygDovjHE9SxW5KztFhbm4iCVOC67h0tEoAcGBSuBBAAKoUQDQgAE9Icrml+X41VC6HTX21HulbJo+pV1mtWn4+evJAi8ZeeLEJp4xg++JHoDm8rQbGWfVM84eqnb/RVuIXqoz6F9Bg==', 
-            uuid: Math.random().toString()
+            uuid: Math.random().toString(),
+            log
         });
 
         await bz.createDB();
@@ -87,6 +99,8 @@ describe('integration', () => {
 
         assert(!await bz.has('hello'));
 
+        bz.close();
+
     });
 
 
@@ -95,7 +109,8 @@ describe('integration', () => {
         const bz = bluzelle({
             entry: 'ws://localhost:50000', 
             private_pem: 'MHQCAQEEIFH0TCvEu585ygDovjHE9SxW5KztFhbm4iCVOC67h0tEoAcGBSuBBAAKoUQDQgAE9Icrml+X41VC6HTX21HulbJo+pV1mtWn4+evJAi8ZeeLEJp4xg++JHoDm8rQbGWfVM84eqnb/RVuIXqoz6F9Bg==', 
-            uuid: Math.random().toString()
+            uuid: Math.random().toString(),
+            log
         });
 
         await bz.createDB();
@@ -106,6 +121,8 @@ describe('integration', () => {
 
         assert(await bz.size() > 0);
 
+        bz.close();
+
     });
 
 
@@ -114,7 +131,8 @@ describe('integration', () => {
         const bz = bluzelle({
             entry: 'ws://localhost:50000', 
             private_pem: 'MHQCAQEEIFH0TCvEu585ygDovjHE9SxW5KztFhbm4iCVOC67h0tEoAcGBSuBBAAKoUQDQgAE9Icrml+X41VC6HTX21HulbJo+pV1mtWn4+evJAi8ZeeLEJp4xg++JHoDm8rQbGWfVM84eqnb/RVuIXqoz6F9Bg==', 
-            uuid: Math.random().toString()
+            uuid: Math.random().toString(),
+            log
         });
 
         await bz.createDB();
@@ -124,6 +142,8 @@ describe('integration', () => {
         await bz.create('a', 'b');
 
         assert.deepEqual(await bz.keys(), ['a']);
+        
+        bz.close();
 
     });
 
@@ -134,6 +154,7 @@ describe('integration', () => {
             entry: 'ws://localhost:50000', 
             private_pem: 'MHQCAQEEIFH0TCvEu585ygDovjHE9SxW5KztFhbm4iCVOC67h0tEoAcGBSuBBAAKoUQDQgAE9Icrml+X41VC6HTX21HulbJo+pV1mtWn4+evJAi8ZeeLEJp4xg++JHoDm8rQbGWfVM84eqnb/RVuIXqoz6F9Bg==', 
             uuid: Math.random().toString(),
+            log
         });
 
 
@@ -147,6 +168,8 @@ describe('integration', () => {
 
         assert(!await bz.hasDB());
 
+        bz.close();
+
     });
 
 
@@ -158,7 +181,8 @@ describe('integration', () => {
         const bz = bluzelle({
             entry: 'ws://localhost:50000', 
             private_pem: my_pem, 
-            uuid: Math.random().toString()
+            uuid: Math.random().toString(),
+            log
         });
 
 
@@ -204,6 +228,8 @@ describe('integration', () => {
             }
         );
 
+        bz.close();
+
     });
 
 
@@ -212,13 +238,16 @@ describe('integration', () => {
         const bz = bluzelle({
             entry: 'ws://localhost:50000', 
             private_pem: 'MHQCAQEEIFH0TCvEu585ygDovjHE9SxW5KztFhbm4iCVOC67h0tEoAcGBSuBBAAKoUQDQgAE9Icrml+X41VC6HTX21HulbJo+pV1mtWn4+evJAi8ZeeLEJp4xg++JHoDm8rQbGWfVM84eqnb/RVuIXqoz6F9Bg==', 
-            uuid: Math.random().toString()
+            uuid: Math.random().toString(),
+            log
         });
 
         const status = await bz.status();
 
         assert(status.swarmGitCommit);
         assert(status.uptime);
+
+        bz.close();
 
     });
 
@@ -228,11 +257,33 @@ describe('integration', () => {
         const bz = bluzelle({
             entry: 'ws://localhost:50000', 
             private_pem: 'MHQCAQEEIFH0TCvEu585ygDovjHE9SxW5KztFhbm4iCVOC67h0tEoAcGBSuBBAAKoUQDQgAE9Icrml+X41VC6HTX21HulbJo+pV1mtWn4+evJAi8ZeeLEJp4xg++JHoDm8rQbGWfVM84eqnb/RVuIXqoz6F9Bg==', 
-            uuid: Math.random().toString()
+            uuid: Math.random().toString(),
+            log
         });
 
 
         assert.equal(bz.publicKey(), "MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEY6L6fb2Xd9KZi05LQlZ83+0pIrjOIFvy0azEA+cDf7L7hMgRXrXj5+u6ys3ZSp2Wj58hTXsiiEPrRMMO1pwjRg==");
+
+        bz.close();
+
+    });
+
+    it('type assertions', async () => {
+
+        const bz = bluzelle({
+            entry: 'ws://localhost:50000', 
+            private_pem: 'MHQCAQEEIFH0TCvEu585ygDovjHE9SxW5KztFhbm4iCVOC67h0tEoAcGBSuBBAAKoUQDQgAE9Icrml+X41VC6HTX21HulbJo+pV1mtWn4+evJAi8ZeeLEJp4xg++JHoDm8rQbGWfVM84eqnb/RVuIXqoz6F9Bg==', 
+            uuid: Math.random().toString(),
+            log
+        });
+
+        await bz.createDB();
+
+        assert.throws(() => bz.create('hello', 3));
+        assert.throws(() => bz.addWriters(3));
+        assert.throws(() => bz.addWriters(['w1', 'w2', {}]));
+
+        bz.close();
 
     });
 

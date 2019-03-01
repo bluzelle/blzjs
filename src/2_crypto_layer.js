@@ -22,7 +22,9 @@ const status_pb = require('../proto/status_pb');
 
 module.exports = class Crypto {
 
-    constructor({private_pem, onIncomingMsg, onOutgoingMsg}) {
+    constructor({private_pem, onIncomingMsg, onOutgoingMsg, log}) {
+
+        this.log = log;
 
         this.private_pem = private_pem;
         this.onIncomingMsg = onIncomingMsg;
@@ -97,10 +99,9 @@ module.exports = class Crypto {
         ].map(deterministic_serialize));
 
 
-        assert(
-            verify(Buffer.from(bin_for_the_win), Buffer.from(bzn_envelope.getSignature()), bzn_envelope.getSender()), 
-            'Signature failed to verify.\n' + Buffer.from(bin).toString('hex'));
-        
+        if(!verify(Buffer.from(bin_for_the_win), Buffer.from(bzn_envelope.getSignature()), bzn_envelope.getSender())) {
+            this.log && this.log('Bluzelle: signature failed to verify: ' + Buffer.from(bin).toString('hex'));
+        }
 
         this.onIncomingMsg(bzn_envelope);
 

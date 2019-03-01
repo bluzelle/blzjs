@@ -44,7 +44,7 @@ module.exports = class Collation {
 
         this.connection_layer = connection_layer;
 
-        this.connection_layer.socket_info.observe(v => {
+        this.connection_layer.primary_socket.socket_info.observe(v => {
             const q = this.outgoingQueue;
             this.outgoingQueue = [];
             q.forEach(msg => this.sendOutgoingMsg(msg));
@@ -70,7 +70,7 @@ module.exports = class Collation {
         }
 
 
-        if(!this.connection_layer.socket_info.get()) {
+        if(!this.connection_layer.primary_socket.socket_info.get()) {
 
             // Without the necessary metadata, queue the message
 
@@ -78,7 +78,7 @@ module.exports = class Collation {
 
         } else {
 
-            const node_uuid = this.connection_layer.socket_info.get().uuid;
+            const node_uuid = this.connection_layer.primary_socket.socket_info.get().uuid;
 
             assert(node_uuid);
             
@@ -86,8 +86,6 @@ module.exports = class Collation {
 
 
             const nonce = msg.getHeader().getNonce();
-            assert(!this.nonceMap.has(nonce),
-                "Sending duplicate nonce. " + nonce);
 
 
             // quickreads do not need collation
@@ -175,7 +173,6 @@ module.exports = class Collation {
             if(!senders.includes(sender)) {
                 senders.push(sender);
             }
-
 
             // On success
             if(senders.length >= this.f) {

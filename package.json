@@ -24,9 +24,6 @@
     "google-protobuf": "^3.6.1",
     "hash.js": "^1.1.5",
     "isomorphic-ws": "^4.0.1",
-    "lodash": "^4.17.10",
-    "text-encoding": "^0.7.0",
-    "websocket": "^1.0.25",
     "ws": "^6.0.0"
   }
 }

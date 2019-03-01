@@ -51,6 +51,9 @@ module.exports = class API {
 
     create(key, value) {
 
+        assert(typeof key === 'string', 'Key must be a string');
+        assert(typeof value === 'string', 'Value must be a string');
+
         return new Promise((resolve, reject) => {
 
             const msg = new database_pb.database_msg();
@@ -87,6 +90,9 @@ module.exports = class API {
 
     update(key, value) {
 
+        assert(typeof key === 'string', 'Key must be a string');
+        assert(typeof value === 'string', 'Value must be a string');
+
         return new Promise((resolve, reject) => {
 
             const msg = new database_pb.database_msg();
@@ -122,6 +128,8 @@ module.exports = class API {
 
 
     read(key) {
+
+        assert(typeof key === 'string', 'Key must be a string');
 
         return new Promise((resolve, reject) => {
 
@@ -160,6 +168,8 @@ module.exports = class API {
 
     quickread(key) {
 
+        assert(typeof key === 'string', 'Key must be a string');
+
         return new Promise((resolve, reject) => {
 
             const msg = new database_pb.database_msg();
@@ -197,6 +207,8 @@ module.exports = class API {
 
     delete(key) {
 
+        assert(typeof key === 'string', 'Key must be a string');
+
         return new Promise((resolve, reject) => {
 
             const msg = new database_pb.database_msg();
@@ -231,6 +243,8 @@ module.exports = class API {
 
 
     has(key) {
+
+        assert(typeof key === 'string', 'Key must be a string');
 
         return new Promise((resolve, reject) => {
 
@@ -475,6 +489,9 @@ module.exports = class API {
 
     addWriters(writers) {
 
+        assert(typeof writers === 'string' || (Array.isArray(writers) && writers.every(writer => typeof writer === 'string')),
+            'Writers must be a string or an array of strings');
+
         return new Promise((resolve, reject) => {
 
             const msg = new database_pb.database_msg();
@@ -509,6 +526,9 @@ module.exports = class API {
 
 
     deleteWriters(writers) {
+
+        assert(typeof writers === 'string' || (Array.isArray(writers) && writers.every(writer => typeof writer === 'string')),
+            'Writers must be a string or an array of strings');
 
         return new Promise((resolve, reject) => {
 
