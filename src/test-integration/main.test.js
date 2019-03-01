@@ -4,6 +4,8 @@ const {pub_from_priv} = require('../ecdsa_secp256k1');
 
 
 const log = false;
+const entry = 'ws://localhost:50000';
+const p2p_latency_bound = 100;
 
 describe('integration', () => {
 
@@ -18,10 +20,11 @@ describe('integration', () => {
     it('create and read', async () => {
 
         const bz = bluzelle({
-            entry: 'ws://localhost:50000', 
+            entry, 
             private_pem: 'MHQCAQEEIFH0TCvEu585ygDovjHE9SxW5KztFhbm4iCVOC67h0tEoAcGBSuBBAAKoUQDQgAE9Icrml+X41VC6HTX21HulbJo+pV1mtWn4+evJAi8ZeeLEJp4xg++JHoDm8rQbGWfVM84eqnb/RVuIXqoz6F9Bg==', 
             uuid: Math.random().toString(),
-            log
+            log,
+            p2p_latency_bound,
         });
 
         await bz.createDB();
@@ -40,10 +43,11 @@ describe('integration', () => {
     it('update', async () => {
 
         const bz = bluzelle({
-            entry: 'ws://localhost:50000', 
+            entry, 
             private_pem: 'MHQCAQEEIFH0TCvEu585ygDovjHE9SxW5KztFhbm4iCVOC67h0tEoAcGBSuBBAAKoUQDQgAE9Icrml+X41VC6HTX21HulbJo+pV1mtWn4+evJAi8ZeeLEJp4xg++JHoDm8rQbGWfVM84eqnb/RVuIXqoz6F9Bg==', 
             uuid: Math.random().toString(),
-            log
+            log,
+            p2p_latency_bound,
         });
 
         await bz.createDB();
@@ -62,10 +66,11 @@ describe('integration', () => {
     it('has', async () => {
 
         const bz = bluzelle({
-            entry: 'ws://localhost:50000', 
+            entry, 
             private_pem: 'MHQCAQEEIFH0TCvEu585ygDovjHE9SxW5KztFhbm4iCVOC67h0tEoAcGBSuBBAAKoUQDQgAE9Icrml+X41VC6HTX21HulbJo+pV1mtWn4+evJAi8ZeeLEJp4xg++JHoDm8rQbGWfVM84eqnb/RVuIXqoz6F9Bg==', 
             uuid: Math.random().toString(),
-            log
+            log,
+            p2p_latency_bound,
         });
 
         await bz.createDB();
@@ -85,10 +90,11 @@ describe('integration', () => {
     it('delete', async () => {
 
         const bz = bluzelle({
-            entry: 'ws://localhost:50000', 
+            entry, 
             private_pem: 'MHQCAQEEIFH0TCvEu585ygDovjHE9SxW5KztFhbm4iCVOC67h0tEoAcGBSuBBAAKoUQDQgAE9Icrml+X41VC6HTX21HulbJo+pV1mtWn4+evJAi8ZeeLEJp4xg++JHoDm8rQbGWfVM84eqnb/RVuIXqoz6F9Bg==', 
             uuid: Math.random().toString(),
-            log
+            log,
+            p2p_latency_bound,
         });
 
         await bz.createDB();
@@ -107,10 +113,11 @@ describe('integration', () => {
     it('size', async () => {
 
         const bz = bluzelle({
-            entry: 'ws://localhost:50000', 
+            entry, 
             private_pem: 'MHQCAQEEIFH0TCvEu585ygDovjHE9SxW5KztFhbm4iCVOC67h0tEoAcGBSuBBAAKoUQDQgAE9Icrml+X41VC6HTX21HulbJo+pV1mtWn4+evJAi8ZeeLEJp4xg++JHoDm8rQbGWfVM84eqnb/RVuIXqoz6F9Bg==', 
             uuid: Math.random().toString(),
-            log
+            log,
+            p2p_latency_bound,
         });
 
         await bz.createDB();
@@ -129,10 +136,11 @@ describe('integration', () => {
     it('keys', async () => {    
 
         const bz = bluzelle({
-            entry: 'ws://localhost:50000', 
+            entry, 
             private_pem: 'MHQCAQEEIFH0TCvEu585ygDovjHE9SxW5KztFhbm4iCVOC67h0tEoAcGBSuBBAAKoUQDQgAE9Icrml+X41VC6HTX21HulbJo+pV1mtWn4+evJAi8ZeeLEJp4xg++JHoDm8rQbGWfVM84eqnb/RVuIXqoz6F9Bg==', 
             uuid: Math.random().toString(),
-            log
+            log,
+            p2p_latency_bound,
         });
 
         await bz.createDB();
@@ -151,10 +159,11 @@ describe('integration', () => {
     it('hasDB/createDB/deleteDB', async () => {    
 
         const bz = bluzelle({
-            entry: 'ws://localhost:50000', 
+            entry, 
             private_pem: 'MHQCAQEEIFH0TCvEu585ygDovjHE9SxW5KztFhbm4iCVOC67h0tEoAcGBSuBBAAKoUQDQgAE9Icrml+X41VC6HTX21HulbJo+pV1mtWn4+evJAi8ZeeLEJp4xg++JHoDm8rQbGWfVM84eqnb/RVuIXqoz6F9Bg==', 
             uuid: Math.random().toString(),
-            log
+            log,
+            p2p_latency_bound,
         });
 
 
@@ -179,10 +188,11 @@ describe('integration', () => {
         const my_pem = 'MHQCAQEEIFH0TCvEu585ygDovjHE9SxW5KztFhbm4iCVOC67h0tEoAcGBSuBBAAKoUQDQgAE9Icrml+X41VC6HTX21HulbJo+pV1mtWn4+evJAi8ZeeLEJp4xg++JHoDm8rQbGWfVM84eqnb/RVuIXqoz6F9Bg==';
 
         const bz = bluzelle({
-            entry: 'ws://localhost:50000', 
+            entry, 
             private_pem: my_pem, 
             uuid: Math.random().toString(),
-            log
+            log,
+            p2p_latency_bound,
         });
 
 
@@ -236,10 +246,11 @@ describe('integration', () => {
     it('status', async () => {
 
         const bz = bluzelle({
-            entry: 'ws://localhost:50000', 
+            entry, 
             private_pem: 'MHQCAQEEIFH0TCvEu585ygDovjHE9SxW5KztFhbm4iCVOC67h0tEoAcGBSuBBAAKoUQDQgAE9Icrml+X41VC6HTX21HulbJo+pV1mtWn4+evJAi8ZeeLEJp4xg++JHoDm8rQbGWfVM84eqnb/RVuIXqoz6F9Bg==', 
             uuid: Math.random().toString(),
-            log
+            log,
+            p2p_latency_bound,
         });
 
         const status = await bz.status();
@@ -255,7 +266,7 @@ describe('integration', () => {
     it('public key', () => {
 
         const bz = bluzelle({
-            entry: 'ws://localhost:50000', 
+            entry, 
             private_pem: 'MHQCAQEEIFH0TCvEu585ygDovjHE9SxW5KztFhbm4iCVOC67h0tEoAcGBSuBBAAKoUQDQgAE9Icrml+X41VC6HTX21HulbJo+pV1mtWn4+evJAi8ZeeLEJp4xg++JHoDm8rQbGWfVM84eqnb/RVuIXqoz6F9Bg==', 
             uuid: Math.random().toString(),
             log
@@ -271,10 +282,11 @@ describe('integration', () => {
     it('type assertions', async () => {
 
         const bz = bluzelle({
-            entry: 'ws://localhost:50000', 
+            entry, 
             private_pem: 'MHQCAQEEIFH0TCvEu585ygDovjHE9SxW5KztFhbm4iCVOC67h0tEoAcGBSuBBAAKoUQDQgAE9Icrml+X41VC6HTX21HulbJo+pV1mtWn4+evJAi8ZeeLEJp4xg++JHoDm8rQbGWfVM84eqnb/RVuIXqoz6F9Bg==', 
             uuid: Math.random().toString(),
-            log
+            log,
+            p2p_latency_bound,
         });
 
         await bz.createDB();

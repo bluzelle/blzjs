@@ -219,7 +219,7 @@ class PrimarySocket extends GenericSocket {
 
                     return w;
 
-                } catch {
+                } catch(e) {
                     return undefined;
                 }
            
