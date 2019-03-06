@@ -30,6 +30,11 @@ module.exports = class Crypto {
         this.onIncomingMsg = onIncomingMsg;
         this.onOutgoingMsg = onOutgoingMsg;
 
+
+        // set of nonces for outstanding quickreads to ignore verification
+        // quickreads only get one response, so we can delete from here on receipt
+        this.quickreads = new Set();
+
     }
 
 
@@ -51,12 +56,11 @@ module.exports = class Crypto {
         }
 
 
-
         const timestamp = new Date().getTime();
         const sender = pub_from_priv(this.private_pem);
         
         
-        const bin_for_the_win = Buffer.concat([
+        const signed_bin = Buffer.concat([
             sender, 
             bzn_envelope.getPayloadCase(), 
             Buffer.from(payload), 
@@ -64,9 +68,20 @@ module.exports = class Crypto {
         ].map(deterministic_serialize));
 
 
-        bzn_envelope.setSender(sender);
-        bzn_envelope.setSignature(new Uint8Array(sign(bin_for_the_win, this.private_pem)));
         bzn_envelope.setTimestamp(timestamp);
+        //bzn_envelope.setSender(sender);
+        // bzn_envelope.setSignature(new Uint8Array(sign(signed_bin, this.private_pem)));
+
+
+        // quickreads are not signed
+        const isQuickread = msg instanceof database_pb.database_msg && msg.hasQuickRead();
+
+        if(isQuickread) {
+            this.quickreads.add(msg.getHeader().getNonce());
+        } else {
+            bzn_envelope.setSender(sender);
+            bzn_envelope.setSignature(new Uint8Array(sign(signed_bin, this.private_pem)));
+        }
 
         const ultimate_bin = bzn_envelope.serializeBinary();
 
@@ -91,7 +106,7 @@ module.exports = class Crypto {
                 bzn_envelope.getDatabaseResponse() : 
                 bzn_envelope.getStatusResponse();
 
-        const bin_for_the_win = Buffer.concat([
+        const signed_bin = Buffer.concat([
             bzn_envelope.getSender(), 
             bzn_envelope.getPayloadCase(), 
             Buffer.from(payload), 
@@ -99,7 +114,20 @@ module.exports = class Crypto {
         ].map(deterministic_serialize));
 
 
-        if(!verify(Buffer.from(bin_for_the_win), Buffer.from(bzn_envelope.getSignature()), bzn_envelope.getSender())) {
+
+        // quickreads skip verification
+        if(bzn_envelope.hasDatabaseResponse()) {
+            const nonce = database_pb.database_response.deserializeBinary(new Uint8Array(bzn_envelope.getDatabaseResponse())).getHeader().getNonce();
+
+            if(this.quickreads.has(nonce)) {
+                this.quickreads.delete(nonce);
+                this.onIncomingMsg(bzn_envelope);
+                return;
+            }
+        }
+
+
+        if(!verify(Buffer.from(signed_bin), Buffer.from(bzn_envelope.getSignature()), bzn_envelope.getSender())) {            
             this.log && this.log('Bluzelle: signature failed to verify: ' + Buffer.from(bin).toString('hex'));
         }
 

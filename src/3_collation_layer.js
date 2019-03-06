@@ -127,12 +127,6 @@ module.exports = class Collation {
             const sender = bzn_envelope.getSender();
 
 
-            // Discard senders that aren't on the peers list
-            if(!this.peers.map(p => p.uuid).includes(sender)) {
-                return;
-            }
-
-
             const payload = bzn_envelope.getDatabaseResponse();
             const hex_payload = Buffer.from(payload).toString('hex');
 
@@ -157,6 +151,11 @@ module.exports = class Collation {
 
                 return;
 
+            }
+
+            // Discard senders that aren't on the peers list
+            if(!this.peers.map(p => p.uuid).includes(sender)) {
+                return;
             }
 
 
