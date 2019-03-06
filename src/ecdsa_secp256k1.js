@@ -15,14 +15,14 @@
 
 const assert = require('assert');
 const EC = require('elliptic').ec;
-const sha512 = require('hash.js/lib/hash/sha/512');
+const sha256 = require('hash.js/lib/hash/sha/256');
 
 
 const verify = (msg_bin, sig_bin, pub_key_base64) => {
 
     const ec_key = import_public_key_from_base64(pub_key_base64);
 
-    const msg_hash = sha512().update(msg_bin).digest();
+    const msg_hash = sha256().update(msg_bin).digest();
 
 
     // Signature base64 decoding handled by elliptic.
@@ -36,7 +36,7 @@ const sign = (msg_bin, priv_key_base64) => {
 
     const ec_key = import_private_key_from_base64(priv_key_base64);
 
-    const msg_hash = sha512().update(msg_bin).digest();
+    const msg_hash = sha256().update(msg_bin).digest();
 
     const sig_bin = ec_key.sign(msg_hash).toDER();
 

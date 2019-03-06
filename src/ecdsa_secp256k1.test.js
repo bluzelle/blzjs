@@ -30,7 +30,7 @@ describe('ECDSA Verification', () => {
     // > openssl ec -in alice_priv_key.pem -pubout -out alice_pub_key.pem
 
     // > echo "my secret message" > msg.txt
-    // > openssl dgst -sha512 -sign alice_priv_key.pem msg.txt > signature.bin
+    // > openssl dgst -sha256 -sign alice_priv_key.pem msg.txt > signature.bin
 
     // > openssl base64 < msg.txt
     // > openssl base64 < signature.bin
@@ -40,9 +40,9 @@ describe('ECDSA Verification', () => {
 
     it('1', () => {
 
-        msg_base64 = "ChQKEEJlc3REYXRhYmFzZUV2ZXIQKiIqCghzb21lIGtleRIedmVyeSBpbXBvcnRhbnQgZGF0YSBhbmQgc3R1ZmZz";
-        sig_base64 = "MEYCIQD/D2RTOA1i04ww1+745SKiDA1DfF/mc25rShe1ZIv5VwIhANCLAk637b4y/KvUtFf9pr6nRIXlaFd3Gx9XOqwNWgK8";
-        pub_key_base64 = "MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAE9Icrml+X41VC6HTX21HulbJo+pV1mtWn4+evJAi8ZeeLEJp4xg++JHoDm8rQbGWfVM84eqnb/RVuIXqoz6F9Bg==";
+        msg_base64 = "ZG9uYWxkIHRydW1wIGlzIHRoZSBiZXN0Cg==";
+        sig_base64 = "MEYCIQCHkESsvomyxnjc3GG8hr619ZdRuP3CNG52DVjwATD5qAIhANLp3FRrr7+Se1a9DiwndLxaroLUF6bGpPX/j/6oJKgx";
+        pub_key_base64 = "MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEY7jTcTgJy+vW1Jl+vXw6Ful9qRwqAOQY0lRu+kgp6i1Y7eTviDIW80AxItNvTz25vyfW64uo0KAtKrW0WKQeyg==";
 
         f();
 
@@ -51,24 +51,13 @@ describe('ECDSA Verification', () => {
 
     it('2', () => {
 
-        msg_base64 = "bXkgc2VjcmV0ZSBtZXNzYWdlCg==";
-        sig_base64 = "MEUCIQDcFecgbEKL7WR8WiIM229/8A+NhKXeTlAq+f1BZugDvQIgELnNkuXBRKpfn5aoPhgyCSp8DTBk6MMl2Ar6xLg61CM=";
-        pub_key_base64 = "MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEWljBLMpG1y0GQJ36h11+YZkpxlbF0gqRQw9dKVkPKzRmOHTH2HXzMjMpEI+aUKHTVDDl3+ADaM5lCcT0HfqXsw==";
+        msg_base64 = "aSBob3BlIG5vYm9keSByZWFkcyB0aGlzCg==";
+        sig_base64 = "MEQCIESUT3lwahQjzoXxHzivhMdQqI4hlTgbseQlfsRz8GjTAiAaGyUVhiyQgZd1YXOstXC/5fG4cCK2NhESLkfMwwChTg==";
+        pub_key_base64 = "MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEY7jTcTgJy+vW1Jl+vXw6Ful9qRwqAOQY0lRu+kgp6i1Y7eTviDIW80AxItNvTz25vyfW64uo0KAtKrW0WKQeyg==";
 
         f();
 
     });
-
-    it('3', () => {
-
-        msg_base64 = "Ch8KEzAuMDgxMjI4NjM4Nzg4MDE4MTEQpOOq/aLj890oYgA=";
-        sig_base64 = "MEQCIDdm3ORyB/jjTUJRdPbGu5VdxDuv2ilsbyAASJAax6u6AiB0DA7lSfPA1zPqKMQAk+zAN/tPO/3GnASb7wzqSWMx/A==";
-        pub_key_base64 = "MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEY6L6fb2Xd9KZi05LQlZ83+0pIrjOIFvy0azEA+cDf7L7hMgRXrXj5+u6ys3ZSp2Wj58hTXsiiEPrRMMO1pwjRg==";
-    
-        f();
-
-    });
-
 
     const f = () => {
 
