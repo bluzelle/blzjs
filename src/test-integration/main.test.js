@@ -2,7 +2,6 @@ const {bluzelle, version} = require('../main');
 const assert = require('assert');
 const {pub_from_priv} = require('../ecdsa_secp256k1');
 
-
 it('version', () => {
 
     assert(typeof version === 'string');

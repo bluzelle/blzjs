@@ -35,6 +35,8 @@ module.exports = class Crypto {
         // quickreads only get one response, so we can delete from here on receipt
         this.quickreads = new Set();
 
+        this.public_key = pub_from_priv(this.private_pem);
+
     }
 
 
@@ -56,12 +58,10 @@ module.exports = class Crypto {
         }
 
 
-        const timestamp = new Date().getTime();
-        const sender = pub_from_priv(this.private_pem);
-        
+        const timestamp = new Date().getTime();        
         
         const signed_bin = Buffer.concat([
-            sender, 
+            this.public_key, 
             bzn_envelope.getPayloadCase(), 
             Buffer.from(payload), 
             timestamp
@@ -79,7 +79,7 @@ module.exports = class Crypto {
         if(isQuickread) {
             this.quickreads.add(msg.getHeader().getNonce());
         } else {
-            bzn_envelope.setSender(sender);
+            bzn_envelope.setSender(this.public_key);
             bzn_envelope.setSignature(new Uint8Array(sign(signed_bin, this.private_pem)));
         }
 
