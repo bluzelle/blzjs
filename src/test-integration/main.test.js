@@ -3,29 +3,42 @@ const assert = require('assert');
 const {pub_from_priv} = require('../ecdsa_secp256k1');
 
 
+it('version', () => {
+
+    assert(typeof version === 'string');
+    assert(version.length > 0);
+
+});
+
+
 const log = false;
 const entry = 'ws://localhost:50000';
 const p2p_latency_bound = 100;
+const private_pem = 'MHQCAQEEIFH0TCvEu585ygDovjHE9SxW5KztFhbm4iCVOC67h0tEoAcGBSuBBAAKoUQDQgAE9Icrml+X41VC6HTX21HulbJo+pV1mtWn4+evJAi8ZeeLEJp4xg++JHoDm8rQbGWfVM84eqnb/RVuIXqoz6F9Bg==';
+
 
 describe('integration', () => {
 
-    it('version', () => {
+    let bz;
 
-        assert(typeof version === 'string');
-        assert(version.length > 0);
+    beforeEach(() => {
 
-    });
-
-
-    it('create and read', async () => {
-
-        const bz = bluzelle({
+        bz = bluzelle({
             entry, 
-            private_pem: 'MHQCAQEEIFH0TCvEu585ygDovjHE9SxW5KztFhbm4iCVOC67h0tEoAcGBSuBBAAKoUQDQgAE9Icrml+X41VC6HTX21HulbJo+pV1mtWn4+evJAi8ZeeLEJp4xg++JHoDm8rQbGWfVM84eqnb/RVuIXqoz6F9Bg==', 
+            private_pem, 
             uuid: Math.random().toString(),
             log,
             p2p_latency_bound,
         });
+
+    });
+
+    afterEach(() => {
+        bz.close();
+    });
+
+
+    it('create and read', async () => {
 
         await bz.createDB();
 
@@ -35,20 +48,10 @@ describe('integration', () => {
 
         assert.equal(await bz.quickread('hello'), 'world');
 
-        bz.close();
-
     });
 
 
     it('update', async () => {
-
-        const bz = bluzelle({
-            entry, 
-            private_pem: 'MHQCAQEEIFH0TCvEu585ygDovjHE9SxW5KztFhbm4iCVOC67h0tEoAcGBSuBBAAKoUQDQgAE9Icrml+X41VC6HTX21HulbJo+pV1mtWn4+evJAi8ZeeLEJp4xg++JHoDm8rQbGWfVM84eqnb/RVuIXqoz6F9Bg==', 
-            uuid: Math.random().toString(),
-            log,
-            p2p_latency_bound,
-        });
 
         await bz.createDB();
 
@@ -58,20 +61,10 @@ describe('integration', () => {
 
         assert.equal(await bz.read('hello'), 'earth');
 
-        bz.close();
-
     });
 
 
     it('has', async () => {
-
-        const bz = bluzelle({
-            entry, 
-            private_pem: 'MHQCAQEEIFH0TCvEu585ygDovjHE9SxW5KztFhbm4iCVOC67h0tEoAcGBSuBBAAKoUQDQgAE9Icrml+X41VC6HTX21HulbJo+pV1mtWn4+evJAi8ZeeLEJp4xg++JHoDm8rQbGWfVM84eqnb/RVuIXqoz6F9Bg==', 
-            uuid: Math.random().toString(),
-            log,
-            p2p_latency_bound,
-        });
 
         await bz.createDB();
 
@@ -81,21 +74,11 @@ describe('integration', () => {
 
         assert(await bz.has('hello'));
 
-        bz.close();
-
     });
 
 
 
     it('delete', async () => {
-
-        const bz = bluzelle({
-            entry, 
-            private_pem: 'MHQCAQEEIFH0TCvEu585ygDovjHE9SxW5KztFhbm4iCVOC67h0tEoAcGBSuBBAAKoUQDQgAE9Icrml+X41VC6HTX21HulbJo+pV1mtWn4+evJAi8ZeeLEJp4xg++JHoDm8rQbGWfVM84eqnb/RVuIXqoz6F9Bg==', 
-            uuid: Math.random().toString(),
-            log,
-            p2p_latency_bound,
-        });
 
         await bz.createDB();
 
@@ -105,20 +88,10 @@ describe('integration', () => {
 
         assert(!await bz.has('hello'));
 
-        bz.close();
-
     });
 
 
     it('size', async () => {
-
-        const bz = bluzelle({
-            entry, 
-            private_pem: 'MHQCAQEEIFH0TCvEu585ygDovjHE9SxW5KztFhbm4iCVOC67h0tEoAcGBSuBBAAKoUQDQgAE9Icrml+X41VC6HTX21HulbJo+pV1mtWn4+evJAi8ZeeLEJp4xg++JHoDm8rQbGWfVM84eqnb/RVuIXqoz6F9Bg==', 
-            uuid: Math.random().toString(),
-            log,
-            p2p_latency_bound,
-        });
 
         await bz.createDB();
 
@@ -128,20 +101,10 @@ describe('integration', () => {
 
         assert(await bz.size() > 0);
 
-        bz.close();
-
     });
 
 
     it('keys', async () => {    
-
-        const bz = bluzelle({
-            entry, 
-            private_pem: 'MHQCAQEEIFH0TCvEu585ygDovjHE9SxW5KztFhbm4iCVOC67h0tEoAcGBSuBBAAKoUQDQgAE9Icrml+X41VC6HTX21HulbJo+pV1mtWn4+evJAi8ZeeLEJp4xg++JHoDm8rQbGWfVM84eqnb/RVuIXqoz6F9Bg==', 
-            uuid: Math.random().toString(),
-            log,
-            p2p_latency_bound,
-        });
 
         await bz.createDB();
 
@@ -151,21 +114,10 @@ describe('integration', () => {
 
         assert.deepEqual(await bz.keys(), ['a']);
         
-        bz.close();
-
     });
 
 
     it('hasDB/createDB/deleteDB', async () => {    
-
-        const bz = bluzelle({
-            entry, 
-            private_pem: 'MHQCAQEEIFH0TCvEu585ygDovjHE9SxW5KztFhbm4iCVOC67h0tEoAcGBSuBBAAKoUQDQgAE9Icrml+X41VC6HTX21HulbJo+pV1mtWn4+evJAi8ZeeLEJp4xg++JHoDm8rQbGWfVM84eqnb/RVuIXqoz6F9Bg==', 
-            uuid: Math.random().toString(),
-            log,
-            p2p_latency_bound,
-        });
-
 
         assert(!await bz.hasDB());
 
@@ -177,19 +129,14 @@ describe('integration', () => {
 
         assert(!await bz.hasDB());
 
-        bz.close();
-
     });
 
 
     it('writers', async () => {
 
-
-        const my_pem = 'MHQCAQEEIFH0TCvEu585ygDovjHE9SxW5KztFhbm4iCVOC67h0tEoAcGBSuBBAAKoUQDQgAE9Icrml+X41VC6HTX21HulbJo+pV1mtWn4+evJAi8ZeeLEJp4xg++JHoDm8rQbGWfVM84eqnb/RVuIXqoz6F9Bg==';
-
         const bz = bluzelle({
             entry, 
-            private_pem: my_pem, 
+            private_pem, 
             uuid: Math.random().toString(),
             log,
             p2p_latency_bound,
@@ -201,7 +148,7 @@ describe('integration', () => {
         assert.deepEqual(
             await bz.getWriters(), 
             {
-                owner: pub_from_priv(my_pem),
+                owner: bz.publicKey(),
                 writers: []
             }
         );
@@ -233,7 +180,7 @@ describe('integration', () => {
         assert.deepEqual(
             await bz.getWriters(),
             {
-                owner: pub_from_priv(my_pem),
+                owner: bz.publicKey(),
                 writers: [writers[1]]
             }
         );
@@ -245,57 +192,27 @@ describe('integration', () => {
 
     it('status', async () => {
 
-        const bz = bluzelle({
-            entry, 
-            private_pem: 'MHQCAQEEIFH0TCvEu585ygDovjHE9SxW5KztFhbm4iCVOC67h0tEoAcGBSuBBAAKoUQDQgAE9Icrml+X41VC6HTX21HulbJo+pV1mtWn4+evJAi8ZeeLEJp4xg++JHoDm8rQbGWfVM84eqnb/RVuIXqoz6F9Bg==', 
-            uuid: Math.random().toString(),
-            log,
-            p2p_latency_bound,
-        });
-
         const status = await bz.status();
 
         assert(status.swarmGitCommit);
         assert(status.uptime);
-
-        bz.close();
 
     });
 
 
     it('public key', () => {
 
-        const bz = bluzelle({
-            entry, 
-            private_pem: 'MHQCAQEEIFH0TCvEu585ygDovjHE9SxW5KztFhbm4iCVOC67h0tEoAcGBSuBBAAKoUQDQgAE9Icrml+X41VC6HTX21HulbJo+pV1mtWn4+evJAi8ZeeLEJp4xg++JHoDm8rQbGWfVM84eqnb/RVuIXqoz6F9Bg==', 
-            uuid: Math.random().toString(),
-            log
-        });
-
-
         assert.equal(bz.publicKey(), "MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEY6L6fb2Xd9KZi05LQlZ83+0pIrjOIFvy0azEA+cDf7L7hMgRXrXj5+u6ys3ZSp2Wj58hTXsiiEPrRMMO1pwjRg==");
-
-        bz.close();
 
     });
 
     it('type assertions', async () => {
-
-        const bz = bluzelle({
-            entry, 
-            private_pem: 'MHQCAQEEIFH0TCvEu585ygDovjHE9SxW5KztFhbm4iCVOC67h0tEoAcGBSuBBAAKoUQDQgAE9Icrml+X41VC6HTX21HulbJo+pV1mtWn4+evJAi8ZeeLEJp4xg++JHoDm8rQbGWfVM84eqnb/RVuIXqoz6F9Bg==', 
-            uuid: Math.random().toString(),
-            log,
-            p2p_latency_bound,
-        });
 
         await bz.createDB();
 
         assert.throws(() => bz.create('hello', 3));
         assert.throws(() => bz.addWriters(3));
         assert.throws(() => bz.addWriters(['w1', 'w2', {}]));
-
-        bz.close();
 
     });
 
