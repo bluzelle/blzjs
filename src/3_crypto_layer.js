@@ -40,46 +40,38 @@ module.exports = class Crypto {
     }
 
 
-    sendOutgoingMsg(msg) {
+    sendOutgoingMsg(bzn_envelope) {
 
-        assert(msg instanceof database_pb.database_msg || msg instanceof status_pb.status_request);
-
-        const bzn_envelope = new bluzelle_pb.bzn_envelope();
+        assert(bzn_envelope instanceof bluzelle_pb.bzn_envelope);
 
 
-        const payload = msg.serializeBinary();
-
-        if(msg instanceof database_pb.database_msg) {
-            bzn_envelope.setDatabaseMsg(payload);
-        }
-
-        if(msg instanceof status_pb.status_request) {
-            bzn_envelope.setStatusRequest(payload);
+        if(bzn_envelope.hasStatusRequest()) {
+            this.onOutgoingMsg(bzn_envelope);
         }
 
 
-        const timestamp = new Date().getTime();        
+        const database_msg = database_pb.database_msg.deserializeBinary(new Uint8Array(bzn_envelope.getDatabaseMsg()));
         
-        const signed_bin = Buffer.concat([
-            this.public_key, 
-            bzn_envelope.getPayloadCase(), 
-            Buffer.from(payload), 
-            timestamp
-        ].map(deterministic_serialize));
-
-
-        bzn_envelope.setTimestamp(timestamp);
-        //bzn_envelope.setSender(sender);
-        // bzn_envelope.setSignature(new Uint8Array(sign(signed_bin, this.private_pem)));
-
-
         // quickreads are not signed
-        const isQuickread = msg instanceof database_pb.database_msg && msg.hasQuickRead();
+        const isQuickread = database_msg.hasQuickRead();
+
 
         if(isQuickread) {
-            this.quickreads.add(msg.getHeader().getNonce());
+
+            this.quickreads.add(database_msg.getHeader().getNonce());
+
         } else {
+
             bzn_envelope.setSender(this.public_key);
+
+
+            const signed_bin = Buffer.concat([
+                bzn_envelope.getSender(), 
+                bzn_envelope.getPayloadCase(), 
+                Buffer.from(bzn_envelope.getDatabaseMsg()), 
+                bzn_envelope.getTimestamp()
+            ].map(deterministic_serialize));
+
             bzn_envelope.setSignature(new Uint8Array(sign(signed_bin, this.private_pem)));
         }
 

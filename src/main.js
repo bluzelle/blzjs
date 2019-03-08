@@ -19,8 +19,9 @@ const Crypto = require('./3_crypto_layer');
 const Collation = require('./4_collation_layer');
 const Broadcast = require('./5_broadcast_layer');
 const Redirect = require('./6_redirect_layer');
-const Metadata = require('./7_metadata_layer');
-const API = require('./8_api_layer');
+const Envelope = require('./7_envelope_layer');
+const Metadata = require('./8_metadata_layer');
+const API = require('./9_api_layer');
 
 const { pub_from_priv } = require('./ecdsa_secp256k1');
 
@@ -49,6 +50,7 @@ module.exports = {
             new Collation({ connection_layer, }), 
             new Broadcast({ p2p_latency_bound, connection_layer, log, }),
             new Redirect({}),
+            new Envelope({}),
             new Metadata({ uuid, }),
         ];
 

@@ -57,15 +57,15 @@ module.exports = class Collation {
     }
 
 
-    sendOutgoingMsg(msg) {
+    sendOutgoingMsg(bzn_envelope) {
 
-        assert(msg instanceof database_pb.database_msg || msg instanceof status_pb.status_request);
+        assert(bzn_envelope instanceof bluzelle_pb.bzn_envelope);
 
 
         // Skip status requests
 
-        if(msg instanceof status_pb.status_request) {
-            this.onOutgoingMsg(msg);
+        if(bzn_envelope.hasStatusRequest()) {
+            this.onOutgoingMsg(bzn_envelope);
             return;
         }
 
@@ -74,27 +74,31 @@ module.exports = class Collation {
 
             // Without the necessary metadata, queue the message
 
-            this.outgoingQueue.push(msg);
+            this.outgoingQueue.push(bzn_envelope);
 
         } else {
 
             const node_uuid = this.connection_layer.primary_socket.socket_info.get().uuid;
+            const database_msg = database_pb.database_msg.deserializeBinary(new Uint8Array(bzn_envelope.getDatabaseMsg()));
+
 
             assert(node_uuid);
             
-            msg.getHeader().setPointOfContact(node_uuid);
+            database_msg.getHeader().setPointOfContact(node_uuid);
+            bzn_envelope.setDatabaseMsg(database_msg.serializeBinary());
 
 
-            const nonce = msg.getHeader().getNonce();
+
+            const nonce = database_msg.getHeader().getNonce();
 
 
             // quickreads do not need collation
-            const nonceMap_value = msg.hasQuickRead() ? true : new Map();
+            const nonceMap_value = database_msg.hasQuickRead() ? true : new Map();
 
             this.nonceMap.set(nonce, nonceMap_value);
 
 
-            this.onOutgoingMsg(msg);
+            this.onOutgoingMsg(bzn_envelope);
 
         }
 
@@ -116,7 +120,7 @@ module.exports = class Collation {
             this.peers = JSON.parse(status_response.toObject().moduleStatusJson).module[0].status.peer_index;
             this.f = Math.floor(this.peers.length / 3) + 1;
 
-            this.onIncomingMsg(status_response);
+            this.onIncomingMsg(bzn_envelope)
 
 
         } else {
@@ -130,7 +134,7 @@ module.exports = class Collation {
             const payload = bzn_envelope.getDatabaseResponse();
             const hex_payload = Buffer.from(payload).toString('hex');
 
-            const database_response = database_pb.database_response.deserializeBinary(new Uint8Array(payload));
+            const database_response = database_pb.database_response.deserializeBinary(new Uint8Array(bzn_envelope.getDatabaseResponse()));
 
             const header = database_response.getHeader();
 
@@ -147,7 +151,7 @@ module.exports = class Collation {
             if(this.nonceMap.get(nonce) === true) {
 
                 this.nonceMap.delete(nonce);
-                this.onIncomingMsg(database_response);
+                this.onIncomingMsg(bzn_envelope);
 
                 return;
 
@@ -177,7 +181,7 @@ module.exports = class Collation {
             if(senders.length >= this.f) {
 
                 this.nonceMap.delete(nonce);
-                this.onIncomingMsg(database_response);
+                this.onIncomingMsg(bzn_envelope);
 
                 return;
 

@@ -14,7 +14,7 @@
 
 
 const database_pb = require('../proto/database_pb');
-const status_pb = require('../proto/status_pb');
+const bluzelle_pb = require('../proto/bluzelle_pb');
 
 const assert = require('assert');
 
@@ -28,23 +28,27 @@ module.exports = class Redirect {
 
     }
 
-    sendOutgoingMsg(msg) {
+    sendOutgoingMsg(bzn_envelope) {
 
-        assert(msg instanceof database_pb.database_msg || msg instanceof status_pb.status_request);
+        assert(bzn_envelope instanceof bluzelle_pb.bzn_envelope);
 
         // Pass through
-        this.onOutgoingMsg(msg);
+        this.onOutgoingMsg(bzn_envelope);
 
     }
 
-    sendIncomingMsg(msg) {
+    sendIncomingMsg(bzn_envelope) {
 
-        assert(msg instanceof database_pb.database_response || msg instanceof status_pb.status_response);
+        assert(bzn_envelope instanceof bluzelle_pb.bzn_envelope);
 
-        assert(msg instanceof status_pb.status_response || !msg.hasRedirect(), 
-            'Daemon returned redirection.');
+        if(!bzn_envelope.hasDatabaseResponse()) {
 
-        this.onIncomingMsg(msg);
+            const database_response = database_pb.database_response.deserializeBinary(new Uint8Array(bzn_envelope.getDatabaseResponse()));
+            assert(!database_response.hasRedirect(), 'Daemon returned redirection');
+
+        }
+
+        this.onIncomingMsg(bzn_envelope);
 
     }
 

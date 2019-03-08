@@ -42,13 +42,16 @@ module.exports = class Broadcast {
     }
 
 
-    sendOutgoingMsg(msg) {
+    sendOutgoingMsg(bzn_envelope) {
 
-        assert(msg instanceof database_pb.database_msg || msg instanceof status_pb.status_request);
+        assert(bzn_envelope instanceof bluzelle_pb.bzn_envelope);
 
-        if(msg instanceof database_pb.database_msg) {
+        if(bzn_envelope.hasDatabaseMsg()) {
 
-            const nonce = msg.getHeader().getNonce();
+            const database_msg = database_pb.database_msg.deserializeBinary(new Uint8Array(bzn_envelope.getDatabaseMsg()));
+
+
+            const nonce = database_msg.getHeader().getNonce();
             setTimeout(() => {
                     
                 const fn = this.timeoutFns.get(nonce);
@@ -61,29 +64,32 @@ module.exports = class Broadcast {
             // This gets overwritten when the messages comes back
             // so a properly-responded message does not execute a broadcast
 
-            this.timeoutFns.set(nonce, () => this.broadcast(msg)); 
+            this.timeoutFns.set(nonce, () => this.broadcast(bzn_envelope)); 
 
         } 
 
-        this.onOutgoingMsg(msg);
+        this.onOutgoingMsg(bzn_envelope);
 
     }
 
 
-    sendIncomingMsg(msg) {
+    sendIncomingMsg(bzn_envelope) {
 
-        assert(msg instanceof database_pb.database_response || msg instanceof status_pb.status_response);
+        assert(bzn_envelope instanceof bluzelle_pb.bzn_envelope);
 
-        if(msg instanceof status_pb.status_response) {
+        if(bzn_envelope.hasStatusResponse()) {
 
-            this.peers = JSON.parse(msg.toObject().moduleStatusJson).module[0].status.peer_index;
+            const status_response = status_pb.status_response.deserializeBinary(new Uint8Array(bzn_envelope.getStatusResponse()));
+            this.peers = JSON.parse(status_response.toObject().moduleStatusJson).module[0].status.peer_index;
 
         }
 
 
-        if(msg instanceof database_pb.database_response) {
+         if(bzn_envelope.hasDatabaseResponse()) {
 
-            const nonce = msg.getHeader().getNonce();
+            const database_response = database_pb.database_response.deserializeBinary(new Uint8Array(bzn_envelope.getDatabaseResponse()));
+
+            const nonce = database_response.getHeader().getNonce();
 
             if(this.timeoutFns.has(nonce)) {
                 this.timeoutFns.set(nonce, () => {});
@@ -94,7 +100,7 @@ module.exports = class Broadcast {
 
         }
 
-        this.onIncomingMsg(msg);
+        this.onIncomingMsg(bzn_envelope);
 
     }
 
