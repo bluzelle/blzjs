@@ -14,12 +14,13 @@
 
 
 const {Connection} = require('./1_connection_layer');
-const Crypto = require('./2_crypto_layer');
-const Collation = require('./3_collation_layer');
-const Broadcast = require('./4_broadcast_layer');
-const Redirect = require('./5_redirect_layer');
-const Metadata = require('./6_metadata_layer');
-const API = require('./7_api_layer');
+const Serialization = require('./2_serialization_layer');
+const Crypto = require('./3_crypto_layer');
+const Collation = require('./4_collation_layer');
+const Broadcast = require('./5_broadcast_layer');
+const Redirect = require('./6_redirect_layer');
+const Metadata = require('./7_metadata_layer');
+const API = require('./8_api_layer');
 
 const { pub_from_priv } = require('./ecdsa_secp256k1');
 
@@ -43,6 +44,7 @@ module.exports = {
 
         const layers = [
             connection_layer,
+            new Serialization({}),
             new Crypto({ private_pem, log, }), 
             new Collation({ connection_layer, }), 
             new Broadcast({ p2p_latency_bound, connection_layer, log, }),

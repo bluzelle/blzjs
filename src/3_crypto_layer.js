@@ -83,20 +83,15 @@ module.exports = class Crypto {
             bzn_envelope.setSignature(new Uint8Array(sign(signed_bin, this.private_pem)));
         }
 
-        const ultimate_bin = bzn_envelope.serializeBinary();
 
-        this.onOutgoingMsg(ultimate_bin);
+        this.onOutgoingMsg(bzn_envelope);
 
     }
 
 
-    sendIncomingMsg(bin) {
+    sendIncomingMsg(bzn_envelope) {
 
-        assert(bin instanceof Buffer);
-
-        const bzn_envelope = bluzelle_pb.bzn_envelope.deserializeBinary(new Uint8Array(bin));
-
-        assert(bzn_envelope.hasDatabaseResponse() || bzn_envelope.hasStatusResponse());
+        assert(bzn_envelope instanceof bluzelle_pb.bzn_envelope);
 
 
         // Verification of incoming messages
