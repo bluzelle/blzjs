@@ -105,9 +105,9 @@ module.exports = class Broadcast {
     }
 
 
-    broadcast(msg) {
+    broadcast(bzn_envelope) {
 
-        this.log && this.log('Rebroadcasting msg ' + msg.getHeader().getNonce());
+        this.log && this.log('Rebroadcasting msg');
 
         assert(this.peers.length > 0);
 
@@ -123,7 +123,7 @@ module.exports = class Broadcast {
 
         }
 
-        this.sendOutgoingMsg(msg);
+        this.sendOutgoingMsg(bzn_envelope);
 
     }
 
