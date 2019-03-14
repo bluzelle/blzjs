@@ -17,7 +17,7 @@ const assert = require('assert');
 const database_pb = require('../proto/database_pb');
 const bluzelle_pb = require('../proto/bluzelle_pb');
 const status_pb = require('../proto/status_pb');
-const {GenericSocket} = require('./1_connection_layer');
+const {BroadcastSocket} = require('./1_connection_layer');
 
 
 module.exports = class Broadcast {
@@ -49,6 +49,14 @@ module.exports = class Broadcast {
         if(bzn_envelope.hasDatabaseMsg()) {
 
             const database_msg = database_pb.database_msg.deserializeBinary(new Uint8Array(bzn_envelope.getDatabaseMsg()));
+
+
+            // Do not broadcast quickreads
+
+            if(database_msg.hasQuickRead()) {
+                this.onOutgoingMsg(bzn_envelope);
+                return;
+            }
 
 
             const nonce = database_msg.getHeader().getNonce();
@@ -114,7 +122,7 @@ module.exports = class Broadcast {
 
         if(!this.sockets) { 
 
-            this.sockets = this.peers.map(peer => new GenericSocket({
+            this.sockets = this.peers.map(peer => new BroadcastSocket({
                 onmessage: m => this.connection_layer.sendIncomingMsg(m),
                 entry: 'ws://' + peer.host + ':' + peer.port,
                 connection_pool: this.connection_layer.connection_pool,

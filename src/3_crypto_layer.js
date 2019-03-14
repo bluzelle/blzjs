@@ -111,8 +111,7 @@ module.exports = class Crypto {
                 this.onIncomingMsg(bzn_envelope);
                 return;
             }
-        }
-
+        }   
 
         if(!verify(Buffer.from(signed_bin), Buffer.from(bzn_envelope.getSignature()), bzn_envelope.getSender())) {            
             this.log && this.log('Bluzelle: signature failed to verify: ' + Buffer.from(bin).toString('hex'));

@@ -266,9 +266,45 @@ class PrimarySocket extends GenericSocket {
 }
 
 
+class BroadcastSocket extends GenericSocket {
+
+    send(bin) {
+
+        const bzn_envelope = bluzelle_pb.bzn_envelope.deserializeBinary(new Uint8Array(bin));
+        
+        if(bzn_envelope.hasDatabaseRequest()) {
+
+            const database_response = database_pb.database_response.deserializeBinary(new Uint8Array(bzn_envelope.getDatabaseResponse()));
+
+            if(database_response.hasQuickRead()) {
+
+                // Don't send quickreads
+                return;
+
+            }
+
+        }     
+
+        if(bzn_envelope.hasStatusRequest()) {
+
+            // Don't send status requests
+            return;
+            
+        }   
+
+        super.send(bin);
+
+    }
+
+}
+
+
+
+
 module.exports = {
     Connection,
-    GenericSocket
+    GenericSocket,
+    BroadcastSocket
 };
 
 
@@ -349,6 +385,7 @@ const logOutgoing = (bin, log) => {
 
         const bzn_stuff = bzn_envelope.toObject();
         const stuff = filterUndefined(database_msg.toObject());
+
         stuff.bzn = {};
 
         stuff.bzn.sender = bzn_stuff.sender;
