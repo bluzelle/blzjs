@@ -51,7 +51,7 @@ module.exports = {
             new Broadcast({ p2p_latency_bound, connection_layer, log, }),
             new Redirect({}),
             new Envelope({}),
-            new Metadata({ uuid, }),
+            new Metadata({ uuid, log, }),
         ];
 
         const sandwich = connect_layers(layers);

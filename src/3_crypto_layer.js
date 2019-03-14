@@ -30,11 +30,6 @@ module.exports = class Crypto {
         this.onIncomingMsg = onIncomingMsg;
         this.onOutgoingMsg = onOutgoingMsg;
 
-
-        // set of nonces for outstanding quickreads to ignore verification
-        // quickreads only get one response, so we can delete from here on receipt
-        this.quickreads = new Set();
-
         this.public_key = pub_from_priv(this.private_pem);
 
     }
@@ -56,11 +51,7 @@ module.exports = class Crypto {
         const isQuickread = database_msg.hasQuickRead();
 
 
-        if(isQuickread) {
-
-            this.quickreads.add(database_msg.getHeader().getNonce());
-
-        } else {
+        if(!isQuickread) {
 
             bzn_envelope.setSender(this.public_key);
 
@@ -104,10 +95,10 @@ module.exports = class Crypto {
 
         // quickreads skip verification
         if(bzn_envelope.hasDatabaseResponse()) {
-            const nonce = database_pb.database_response.deserializeBinary(new Uint8Array(bzn_envelope.getDatabaseResponse())).getHeader().getNonce();
+            
+            const database_response = database_pb.database_response.deserializeBinary(new Uint8Array(bzn_envelope.getDatabaseResponse()));
 
-            if(this.quickreads.has(nonce)) {
-                this.quickreads.delete(nonce);
+            if(database_response.hasQuickRead()) {
                 this.onIncomingMsg(bzn_envelope);
                 return;
             }

@@ -22,10 +22,12 @@ const assert = require('assert');
 
 module.exports = class Metadata {
 
-    constructor({uuid, onOutgoingMsg}) {
+    constructor({uuid, onOutgoingMsg, log}) {
 
         this.uuid = uuid;
         this.onOutgoingMsg = onOutgoingMsg;
+
+        this.log = log;
 
         this.nonceMap = new Map();
         this.status_fns = [];
@@ -89,9 +91,11 @@ module.exports = class Metadata {
         const nonce = header.getNonce();
 
 
-        assert(this.nonceMap.has(nonce), 
-            'Metadata layer: nonce doesn\'t belong to map. Was it terminated too early?');
-
+        if(!this.nonceMap.has(nonce)) {
+            this.log && this.log('Metadata layer: nonce ' + nonce + ' doesn\'t belong to an outstanding operation.');
+            return;
+        }
+        
 
         const fn = this.nonceMap.get(nonce);
 
