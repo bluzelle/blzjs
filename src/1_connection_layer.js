@@ -272,11 +272,11 @@ class BroadcastSocket extends GenericSocket {
 
         const bzn_envelope = bluzelle_pb.bzn_envelope.deserializeBinary(new Uint8Array(bin));
         
-        if(bzn_envelope.hasDatabaseRequest()) {
+        if(bzn_envelope.hasDatabaseMsg()) {
 
-            const database_response = database_pb.database_response.deserializeBinary(new Uint8Array(bzn_envelope.getDatabaseResponse()));
+            const database_msg = database_pb.database_msg.deserializeBinary(new Uint8Array(bzn_envelope.getDatabaseMsg()));
 
-            if(database_response.hasQuickRead()) {
+            if(database_msg.hasQuickRead()) {
 
                 // Don't send quickreads
                 return;
