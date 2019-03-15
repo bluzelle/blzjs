@@ -39,9 +39,14 @@ describe('integration', () => {
 
     it('create and read', async () => {
 
+        await assert.rejects(bz.quickread('blah'));
+        await assert.rejects(bz.read('blah'));
+
         await bz.createDB();
 
         await bz.create('hello', 'world');
+
+        await assert.rejects(bz.create('hello', 'whence'));
 
         assert.equal(await bz.read('hello'), 'world');
 
@@ -50,9 +55,12 @@ describe('integration', () => {
     });
 
 
+
     it('update', async () => {
 
         await bz.createDB();
+
+        await assert.rejects(bz.update('hello', 'whence'));
 
         await bz.create('hello', 'world');
 
@@ -81,6 +89,8 @@ describe('integration', () => {
 
         await bz.createDB();
 
+        await assert.rejects(bz.delete('hello'));
+
         await bz.create('hello', 'world');
 
         await bz.delete('hello');
@@ -105,6 +115,8 @@ describe('integration', () => {
 
     it('keys', async () => {    
 
+        await assert.rejects(bz.keys());
+
         await bz.createDB();
 
         assert.deepEqual(await bz.keys(), []);
@@ -118,9 +130,13 @@ describe('integration', () => {
 
     it('hasDB/createDB/deleteDB', async () => {    
 
+        await assert.rejects(bz.deleteDB());
+
         assert(!await bz.hasDB());
 
         await bz.createDB();
+
+        await assert.rejects(bz.createDB());
 
         assert(await bz.hasDB());
 

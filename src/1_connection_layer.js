@@ -336,10 +336,13 @@ const logIncoming = (bin, log) => {
         stuff.bzn.timestamp = bzn_stuff.timestamp;
 
 
+        log('Incoming database_response\n', stuff);
+
         // Make sure errors don't mess up this thread
-        setTimeout(() => 
-            log('Incoming database_response\n', stuff),
-            0);
+        
+        // setTimeout(() => 
+        //     log('Incoming database_response\n', stuff),
+        //     0);
 
     }
 
