@@ -182,20 +182,23 @@ module.exports = class API {
 
             this.sendOutgoingMsg(msg, incoming_msg => {
 
-                if(incoming_msg.hasError()) {
+                assert(incoming_msg.hasQuickRead(),
+                    "A response other quickread has been returned from daemon for quickread.");
 
-                    reject(new Error(incoming_msg.getError().getMessage()));
-                    return true;
+
+                if(incoming_msg.getQuickRead().getError() === '') {
+
+                    assert(incoming_msg.getQuickRead().getKey() === key,
+                        "Key in response does not match key in request for read.");
+
+                    resolve(decode(incoming_msg.getQuickRead().getValue()));
+
+                } else {
+
+                    reject(new Error(incoming_msg.getQuickRead().getError()));
 
                 }
 
-                assert(incoming_msg.hasQuickRead(),
-                    "A response other than error or read has been returned from daemon for quickread.");
-
-                assert(incoming_msg.getQuickRead().getKey() === key,
-                    "Key in response does not match key in request for read.");
-
-                resolve(decode(incoming_msg.getQuickRead().getValue()));
 
                 return true;
 
