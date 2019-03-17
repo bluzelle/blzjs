@@ -19,7 +19,7 @@ The bluzelle-js version.
 ```javascript
 const {version} = require('bluzelle');
 
-assert(version === '0.4.472');
+assert(version === '0.5.522'); // your version may be different
 ```
 
 ### 
@@ -57,7 +57,7 @@ You must replace the UUID here with your own UUID or else you will have database
   </thead>
   <tbody>
     <tr>
-      <td style="text-align:left">ws</td>
+      <td style="text-align:left">entry</td>
       <td style="text-align:left">The WebSocket entry point to connect to. ex. <code>ws://testnet.bluzelle.com:51010</code>
       </td>
     </tr>
@@ -78,6 +78,17 @@ You must replace the UUID here with your own UUID or else you will have database
             function.</li>
         </ul>
       </td>
+    </tr>
+    <tr>
+      <td style="text-align:left">p2p_latency_bound</td>
+      <td style="text-align:left">The upper bound for node-to-node latency on the Bluzelle network in ms.
+        The client uses this number for its internal failure timing. Default is
+        100.</td>
+    </tr>
+    <tr>
+      <td style="text-align:left">onclose</td>
+      <td style="text-align:left">A function that&apos;s called when the main connection closes or receives
+        an error.</td>
     </tr>
   </tbody>
 </table>## Administrative Functions
@@ -281,15 +292,37 @@ const value = await api.read('mykey');
 
 | Argument | Description |
 | :--- | :--- |
-| ws | The key to retrieve |
+| key | The key to retrieve |
+
+Returns a promise resolving the string value of the key.
+
+Fails when a response is not received or the key does not exist in the database.
+
+### update\(key, value\)
+
+
+
+### quickread\(key\)
+
+Retrieve the value of a key. Has the same interface as read. The difference with quickread is that it bypasses the consensus and cryptography mechanisms in favor of speed.
+
+```javascript
+// promise syntax
+api.quickread('mykey').then(value => { ... }, error => { ... });
+
+// async/await syntax
+const value = await api.read('mykey');
+```
+
+| Argument | Description |
+| :--- | :--- |
+| key | The key to retrieve |
 
 Returns a promise resolving the string value of the key.
 
 Fails when a response is not received or the key does not exist in the database.
 
 
-
-### update\(key, value\)
 
 Update a field in the database.
 

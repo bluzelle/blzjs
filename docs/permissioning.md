@@ -30,7 +30,7 @@ The private key is synonymous with identity. Multiple users may be emulated with
 
 `bluzelle-js` uses your private key to sign off database operations. The decentralized swarm then verifies your signatures to enforce security and permissioning.
 
-Bluzelle uses the Elliptic Curve Digital Signature Algorithm \(**ECDSA**\) on the curve **secp256k1** with an **SHA-512** hash. But you don't need to know worry about this because it's all built-in to the system. 
+Bluzelle uses the Elliptic Curve Digital Signature Algorithm \(**ECDSA**\) on the curve **secp256k1** with an **SHA-256** hash. But you don't need to know worry about this because it's all built-in to the system. 
 
 ## Database Permissions
 
