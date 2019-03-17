@@ -82,6 +82,16 @@ You must replace the UUID here with your own UUID or else you will have database
   </tbody>
 </table>## Administrative Functions
 
+### status\(\)
+
+Returns the status of the daemon.
+
+```javascript
+await api.status();
+```
+
+Returns JSON-encoded swarm status.
+
 ### close\(\)
 
 Closes the connection.
