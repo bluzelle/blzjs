@@ -26,7 +26,7 @@ Explore the rest of the API on the [API page](api.md) and read about [cryptograp
 const { bluzelle } = require('bluzelle');
 
 const bz = bluzelle({
-    entry: 'ws://bernoulli.bluzelle.com:51010',
+    entry: 'ws://testnet.bluzelle.com:51010',
 
     // This UUID identifies your database and may be changed.
     uuid: '5f493479–2447–47g6–1c36-efa5d251a283',
