@@ -40,7 +40,7 @@ const observable = () => {
 
 class Connection {
 
-    constructor({log, entry, onIncomingMsg}) {
+    constructor({log, entry, onIncomingMsg, onclose}) {
 
         this.log = log;
         this.onIncomingMsg = onIncomingMsg;
@@ -52,7 +52,8 @@ class Connection {
             entry, 
             log,
             onmessage: this.sendIncomingMsg.bind(this), 
-            connection_pool: this.connection_pool
+            connection_pool: this.connection_pool,
+            onclose
         });
 
     }
@@ -88,11 +89,13 @@ class Connection {
 
 class GenericSocket {
 
-    constructor({entry, onmessage, connection_pool, log}) {
+    constructor({entry, onmessage, connection_pool, log, onclose}) {
 
         this.log = log;
 
         this.log && this.log('Opening socket at ' + entry);
+
+        this.onclose = onclose || (() => {});
 
         this.entry = entry;
         this.onmessage = onmessage;
@@ -153,7 +156,7 @@ class PrimarySocket extends GenericSocket {
     constructor(...args) {
 
         super(...args);
-        
+    
         this.socket_info = observable();
 
     }
@@ -172,7 +175,6 @@ class PrimarySocket extends GenericSocket {
 
         const entrySocket = new WebSocket(this.entry);
         entrySocket.binaryType = 'arraybuffer';
-
 
         // Send a status request
         entrySocket.addEventListener('open', () => {
@@ -252,6 +254,9 @@ class PrimarySocket extends GenericSocket {
             this.socket_info.set(peer_index[connections.indexOf(best_connection)]);
 
             this.socket.addEventListener('message', bin => this.onmessage(bin));
+            this.socket.addEventListener('error', this.onclose);
+            this.socket.addEventListener('close', this.onclose);
+
             this.socket.addEventListener('error', () => this.die());
 
             // Flush messages

@@ -30,7 +30,7 @@ const status_pb = require('../proto/status_pb');
 
 
 module.exports = {
-    bluzelle: ({entry, private_pem, uuid, log, p2p_latency_bound}) => {
+    bluzelle: ({entry, private_pem, uuid, log, p2p_latency_bound, onclose}) => {
 
         p2p_latency_bound = p2p_latency_bound || 100;
 
@@ -41,7 +41,7 @@ module.exports = {
         }
 
 
-        const connection_layer = new Connection({ entry, log });
+        const connection_layer = new Connection({ entry, log, onclose });
 
         const layers = [
             connection_layer,
