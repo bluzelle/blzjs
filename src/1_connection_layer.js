@@ -176,8 +176,12 @@ class PrimarySocket extends GenericSocket {
         const entrySocket = new WebSocket(this.entry);
         entrySocket.binaryType = 'arraybuffer';
 
+
         // Send a status request
         entrySocket.addEventListener('open', () => {
+
+            this.log && this.log('connected to entrypoint ' + this.entry + '...');
+
 
             const bzn_envelope = new bluzelle_pb.bzn_envelope();
             bzn_envelope.setStatusRequest(new status_pb.status_request().serializeBinary());
@@ -191,6 +195,9 @@ class PrimarySocket extends GenericSocket {
         });
 
         entrySocket.addEventListener('message', async bin => {    
+
+            this.log && this.log('fetched status from entry. finding fastest node...');
+
 
             entrySocket.close();
 
@@ -248,6 +255,9 @@ class PrimarySocket extends GenericSocket {
                     connection.close() : // In case two connections open very closely to one-another
 
                     connection.onopen = () => connection.close());
+
+
+            this.log && this.log('established connection with fastest node: ' + entries[connections.indexOf(best_connection)]);
 
 
             this.socket = best_connection;
@@ -341,11 +351,8 @@ const logIncoming = (bin, log) => {
         stuff.bzn.timestamp = bzn_stuff.timestamp;
 
 
-        // Make sure errors don't mess up this thread
         
-        setTimeout(() => 
-            log('Incoming database_response\n', stuff),
-            0);
+        log('Incoming database_response\n', stuff);
 
     }
 
@@ -364,9 +371,7 @@ const logIncoming = (bin, log) => {
         stuff.bzn.timestamp = bzn_stuff.timestamp;
 
 
-        setTimeout(() => 
-            log('Incoming status_response\n', stuff),
-            0);
+        log('Incoming status_response\n', stuff);
 
     }
 
@@ -398,9 +403,7 @@ const logOutgoing = (bin, log) => {
         stuff.bzn.signature = bzn_stuff.signature;
         stuff.bzn.timestamp = bzn_stuff.timestamp;
 
-        setTimeout(() => 
-            log('Outgoing database_msg\n', stuff),
-            0);
+        log('Outgoing database_msg\n', stuff);
 
     }
 
@@ -419,9 +422,7 @@ const logOutgoing = (bin, log) => {
         };
 
 
-        setTimeout(() => 
-            log('Outgoing status_request\n', bzn_stuff_filtered),
-            0);
+        log('Outgoing status_request\n', bzn_stuff_filtered);
 
     }
 
