@@ -49,7 +49,7 @@ module.exports = class API {
     }
 
 
-    create(key, value) {
+    create(key, value, expire=0) {
 
         assert(typeof key === 'string', 'Key must be a string');
         assert(typeof value === 'string', 'Value must be a string');
@@ -63,6 +63,7 @@ module.exports = class API {
 
             create.setKey(key);
             create.setValue(encode(value));
+            create.setExpire(expire);
 
 
             this.sendOutgoingMsg(msg, incoming_msg => {
@@ -88,7 +89,7 @@ module.exports = class API {
     }
 
 
-    update(key, value) {
+    update(key, value, expire=0) {
 
         assert(typeof key === 'string', 'Key must be a string');
         assert(typeof value === 'string', 'Value must be a string');
@@ -102,6 +103,7 @@ module.exports = class API {
 
             update.setKey(key);
             update.setValue(encode(value));
+            update.setExpire(expire);
 
 
             this.sendOutgoingMsg(msg, incoming_msg => {
@@ -351,14 +353,139 @@ module.exports = class API {
     }
 
 
-    createDB() {
+    expire(key, expire) {
+
+        assert(typeof key === 'string', 'Key must be a string');
+        assert(typeof value === 'number', 'Expiry must be a number');
 
         return new Promise((resolve, reject) => {
 
             const msg = new database_pb.database_msg();
 
-            const create = new database_pb.database_request();
-            msg.setCreateDb(create);
+            const update = new database_pb.database_expire();
+            msg.setExpire(update);
+
+            update.setKey(key);
+            update.setExpire(expire);
+
+
+            this.sendOutgoingMsg(msg, incoming_msg => {
+
+                if(incoming_msg.hasError()) {
+
+                    reject(new Error(incoming_msg.getError().getMessage()));
+                    return true;
+
+                }
+
+                assert(incoming_msg.getResponseCase() === 0,
+                    "A response other than error or ack has been returned from daemon for expire.");
+
+                resolve();
+
+                return true;
+
+            });
+
+        });
+
+    }
+
+
+    persist(key) {
+
+        assert(typeof key === 'string', 'Key must be a string');
+
+        return new Promise((resolve, reject) => {
+
+            const msg = new database_pb.database_msg();
+
+            const read = new database_pb.database_read();
+            msg.setPersist(read);
+
+            read.setKey(key);
+
+
+            this.sendOutgoingMsg(msg, incoming_msg => {
+
+                if(incoming_msg.hasError()) {
+
+                    reject(new Error(incoming_msg.getError().getMessage()));
+                    return true;
+
+                }
+
+                assert(incoming_msg.getResponseCase() === 0,
+                    "A response other than error or ack has been returned from daemon for persist.");
+
+                resolve();
+
+                return true;
+
+            });
+
+        });
+
+    }
+
+
+    ttl(key) {
+
+        assert(typeof key === 'string', 'Key must be a string');
+
+        return new Promise((resolve, reject) => {
+
+            const msg = new database_pb.database_msg();
+
+            const read = new database_pb.database_read();
+            msg.setRead(read);
+
+            read.setKey(key);
+
+
+            this.sendOutgoingMsg(msg, incoming_msg => {
+
+                if(incoming_msg.hasError()) {
+
+                    reject(new Error(incoming_msg.getError().getMessage()));
+                    return true;
+
+                }
+
+                assert(incoming_msg.hasTtl(),
+                    "A response other than error or read has been returned from daemon for ttl.");
+
+                assert(incoming_msg.getTtl().getKey() === key,
+                    "Key in response does not match key in request for ttl.");
+
+                resolve(decode(incoming_msg.getTtl().getTtl()));
+
+                return true;
+
+            });
+
+        });
+
+    }
+
+
+    createDB(maxsize=0, policy_type='none') {
+
+        return new Promise((resolve, reject) => {
+
+            const msg = new database_pb.database_msg();
+
+            const createDB = new database_pb.database_create_db();
+
+            createDB.setMaxSize(maxsize);
+
+            const x = policy_type === 'random' ? database_pb.database_create_db.eviction_policy_type.RANDOM :
+                      database_pb.database_create_db.eviction_policy_type.NONE;
+
+            createDB.setEvictionPolicy(x);
+
+
+            msg.setCreateDb(createDB);
 
 
             this.sendOutgoingMsg(msg, incoming_msg => {
@@ -372,6 +499,48 @@ module.exports = class API {
 
                 assert(incoming_msg.getResponseCase() === 0,
                     "A response other than error or ack has been returned from daemon for createDB.");
+
+                resolve();
+
+                return true;
+
+            });
+
+        });
+
+    }
+
+
+    updateDB(maxsize=0, policy_type='none') {
+
+        return new Promise((resolve, reject) => {
+
+            const msg = new database_pb.database_msg();
+
+            const createDB = new database_pb.database_create_db();
+
+            createDB.setMaxSize(maxsize);
+
+            const x = policy_type === 'random' ? database_pb.database_create_db.eviction_policy_type.RANDOM :
+                      database_pb.database_create_db.eviction_policy_type.NONE;
+
+            createDB.setEvictionPolicy(x);
+
+
+            msg.setUpdateDb(createDB);
+
+
+            this.sendOutgoingMsg(msg, incoming_msg => {
+
+                if(incoming_msg.hasError()) {
+
+                    reject(new Error(incoming_msg.getError().getMessage()));
+                    return true;
+
+                }
+
+                assert(incoming_msg.getResponseCase() === 0,
+                    "A response other than error or ack has been returned from daemon for updateDB.");
 
                 resolve();
 

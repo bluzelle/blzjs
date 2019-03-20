@@ -205,6 +205,20 @@ describe('integration', () => {
     });
 
 
+    it('ttl', async () => {
+
+        await bz.createDB();
+
+        await bz.create('1', '2', 1);
+        // or await bz.expire('1', 1);
+
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        await assert.rejects(bz.read('1'));
+
+    });
+
+
     it('status', async () => {
 
         const status = await bz.status();
