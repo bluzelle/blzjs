@@ -1,6 +1,8 @@
 const {bluzelle, version} = require('../main');
 const assert = require('assert');
-const {pub_from_priv} = require('../ecdsa_secp256k1');
+const {pub_from_priv, random_key} = require('../ecdsa_secp256k1');
+const elliptic = require('elliptic');
+
 
 it('version', () => {
 
@@ -13,7 +15,6 @@ it('version', () => {
 const log = false;
 const entry = 'ws://localhost:50000';
 const p2p_latency_bound = 100;
-const private_pem = 'MHQCAQEEIFH0TCvEu585ygDovjHE9SxW5KztFhbm4iCVOC67h0tEoAcGBSuBBAAKoUQDQgAE9Icrml+X41VC6HTX21HulbJo+pV1mtWn4+evJAi8ZeeLEJp4xg++JHoDm8rQbGWfVM84eqnb/RVuIXqoz6F9Bg==';
 
 
 describe('integration', () => {
@@ -24,8 +25,7 @@ describe('integration', () => {
 
         bz = bluzelle({
             entry, 
-            private_pem, 
-            uuid: Math.random().toString(),
+            private_pem: random_key(),
             log,
             p2p_latency_bound,
         });
@@ -147,64 +147,6 @@ describe('integration', () => {
     });
 
 
-    it('writers', async () => {
-
-        const bz = bluzelle({
-            entry, 
-            private_pem, 
-            uuid: Math.random().toString(),
-            log,
-            p2p_latency_bound,
-        });
-
-
-        await bz.createDB();
-
-        assert.deepEqual(
-            await bz.getWriters(), 
-            {
-                owner: bz.publicKey(),
-                writers: []
-            }
-        );
-
-
-        const writers = [
-            'MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEndHOcS6bE1P9xjS/U+SM2a1GbQpPuH9sWNWtNYxZr0JcF+sCS2zsD+xlCcbrRXDZtfeDmgD9tHdWhcZKIy8ejQ==',
-            'MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAE2cEPEoomeszFPuHzo2q45mfFkipLSCqc+pMlHCsGnZ5rJ4Bo27SZncCmwoazcYjoV9DjJjqi+p7IfSPRZCygaQ=='
-        ];
-
-        await bz.addWriters(writers);
-
-        const writers_output = (await bz.getWriters()).writers;
-
-        assert(writers_output.length === 2);
-        assert(writers_output.includes(writers[0]));
-        assert(writers_output.includes(writers[1]));
-
-
-        // No duplicates 
-
-        await bz.addWriters(writers);
-
-        assert((await bz.getWriters()).writers.length === 2);
-
-
-        await bz.deleteWriters(writers[0]);
-
-        assert.deepEqual(
-            await bz.getWriters(),
-            {
-                owner: bz.publicKey(),
-                writers: [writers[1]]
-            }
-        );
-
-        bz.close();
-
-    });
-
-
     it('ttl', async () => {
 
         await bz.createDB();
@@ -228,12 +170,6 @@ describe('integration', () => {
 
     });
 
-
-    it('public key', () => {
-
-        assert.equal(bz.publicKey(), "MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEY6L6fb2Xd9KZi05LQlZ83+0pIrjOIFvy0azEA+cDf7L7hMgRXrXj5+u6ys3ZSp2Wj58hTXsiiEPrRMMO1pwjRg==");
-
-    });
 
     it('type assertions', async () => {
 

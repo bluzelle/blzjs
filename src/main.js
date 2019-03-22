@@ -30,7 +30,7 @@ const status_pb = require('../proto/status_pb');
 
 
 module.exports = {
-    bluzelle: ({entry, private_pem, uuid, log, p2p_latency_bound, onclose}) => {
+    bluzelle: ({entry, private_pem, log, p2p_latency_bound, onclose}) => {
 
         p2p_latency_bound = p2p_latency_bound || 100;
 
@@ -40,6 +40,7 @@ module.exports = {
             log = console.log.bind(console);
         }
 
+        const pub_key = pub_from_priv(private_pem);
 
         const connection_layer = new Connection({ entry, log, onclose });
 
@@ -51,7 +52,7 @@ module.exports = {
             new Broadcast({ p2p_latency_bound, connection_layer, log, }),
             new Redirect({}),
             new Envelope({}),
-            new Metadata({ uuid, log, }),
+            new Metadata({ uuid: pub_key, log, }),
         ];
 
         const sandwich = connect_layers(layers);
@@ -61,7 +62,7 @@ module.exports = {
 
         // These API functions aren't actual database operations
 
-        api.publicKey = () => pub_from_priv(private_pem);
+        api.publicKey = () => pub_key;
 
         api.close = () => layers[0].close();
 

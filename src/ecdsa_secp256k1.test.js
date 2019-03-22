@@ -14,7 +14,7 @@
 
 
 const assert = require('assert');
-const { verify, sign, pub_from_priv } = require('./ecdsa_secp256k1');
+const { verify, sign, pub_from_priv, import_private_key_from_base64, get_pem_private_key } = require('./ecdsa_secp256k1');
 
 
 describe('ECDSA Verification', () => {
@@ -146,3 +146,19 @@ describe('ECDSA Generate Public PEM from Private PEM', () => {
     });
 
 });
+
+
+describe('ECDSA Generate Private PEM', () => {
+
+    it('', () => {
+
+        const priv_key_base64 = "MHQCAQEEIFNmJHEiGpgITlRwao/CDki4OS7BYeI7nyz+CM8NW3xToAcGBSuBBAAKoUQDQgAEndHOcS6bE1P9xjS/U+SM2a1GbQpPuH9sWNWtNYxZr0JcF+sCS2zsD+xlCcbrRXDZtfeDmgD9tHdWhcZKIy8ejQ==";
+
+        const ec = import_private_key_from_base64(priv_key_base64);
+
+
+        assert.equal(get_pem_private_key(ec), priv_key_base64);
+
+    });
+
+}); 

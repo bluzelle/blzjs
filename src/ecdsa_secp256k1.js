@@ -71,13 +71,6 @@ const pub_from_priv = priv_key_base64 => {
 };
 
 
-module.exports = {
-    verify,
-    sign,
-    pub_from_priv
-};
-
-
 // Returns an elliptic key from base64 PEM encoding with braces removes
 
 // ex. If this is your key:
@@ -147,8 +140,11 @@ const import_private_key_from_base64 = priv_key_base64 => {
      // Like the header above. This one encodes:
 
     // - INTEGER 1
-    // - OCTET STRING (32 byte) - variable
+    // - OCTET STRING (32 byte) - PRIVATE KEY
     // - OBJECT IDENTIFIER 1.3.132.0.10 secp256k1 (SECG (Certicom) named elliptic curve)
+    // - PUBLIC KEY
+
+    // specified here: https://tools.ietf.org/html/rfc5915
 
     const header1 = key_hex.substring(0, 14);
 
@@ -162,7 +158,7 @@ const import_private_key_from_base64 = priv_key_base64 => {
         "ECDSA Private Key Import: private key header is malformed.");
 
 
-    const body = key_hex.substring(104, key_hex.length);
+    const body = key_hex.substring(14, 14 + 64);
 
     const ec = new EC('secp256k1');
 
@@ -171,4 +167,34 @@ const import_private_key_from_base64 = priv_key_base64 => {
 
     return ec.keyFromPrivate(body, 'hex');
 
+};
+
+
+const get_pem_private_key = ec => {
+
+    return Buffer.from(
+            '30740201010420' + ec.getPrivate('hex') + 'a00706052b8104000aa144034200' + ec.getPublic('hex'),
+            'hex').toString('base64');
+
+};
+
+
+const random_key = entropy => {
+
+    const ecdsa = new EC('secp256k1');
+    const keys = ecdsa.genKeyPair({
+        entropy
+    });
+
+    return get_pem_private_key(keys);
+
+};  
+
+module.exports = {
+    verify,
+    sign,
+    pub_from_priv,
+    import_private_key_from_base64,
+    get_pem_private_key,
+    random_key
 };
