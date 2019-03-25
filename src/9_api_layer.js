@@ -356,17 +356,17 @@ module.exports = class API {
     expire(key, expire) {
 
         assert(typeof key === 'string', 'Key must be a string');
-        assert(typeof value === 'number', 'Expiry must be a number');
+        assert(typeof expire === 'number', 'Expiry must be a number');
 
         return new Promise((resolve, reject) => {
 
             const msg = new database_pb.database_msg();
 
-            const update = new database_pb.database_expire();
-            msg.setExpire(update);
+            const expire = new database_pb.database_expire();
+            msg.setExpire(expire);
 
-            update.setKey(key);
-            update.setExpire(expire);
+            expire.setKey(key);
+            expire.setExpire(expire.toString());
 
 
             this.sendOutgoingMsg(msg, incoming_msg => {
@@ -438,8 +438,7 @@ module.exports = class API {
             const msg = new database_pb.database_msg();
 
             const read = new database_pb.database_read();
-            msg.setRead(read);
-
+            msg.setTtl(read);
             read.setKey(key);
 
 
@@ -453,12 +452,12 @@ module.exports = class API {
                 }
 
                 assert(incoming_msg.hasTtl(),
-                    "A response other than error or read has been returned from daemon for ttl.");
+                    "A response other than error or ttl has been returned from daemon for ttl.");
 
                 assert(incoming_msg.getTtl().getKey() === key,
                     "Key in response does not match key in request for ttl.");
 
-                resolve(decode(incoming_msg.getTtl().getTtl()));
+                resolve(incoming_msg.getTtl().getTtl());
 
                 return true;
 
