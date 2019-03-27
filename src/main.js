@@ -30,7 +30,7 @@ const status_pb = require('../proto/status_pb');
 
 
 module.exports = {
-    bluzelle: ({entry, private_pem, log, p2p_latency_bound, onclose}) => {
+    bluzelle: ({entry, private_pem, uuid, log, p2p_latency_bound, onclose}) => {
 
         p2p_latency_bound = p2p_latency_bound || 100;
 
@@ -52,7 +52,7 @@ module.exports = {
             new Broadcast({ p2p_latency_bound, connection_layer, log, }),
             new Redirect({}),
             new Envelope({}),
-            new Metadata({ uuid: pub_key, log, }),
+            new Metadata({ uuid: uuid || pub_key, log, }),
         ];
 
         const sandwich = connect_layers(layers);

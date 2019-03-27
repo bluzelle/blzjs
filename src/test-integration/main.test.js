@@ -147,16 +147,86 @@ describe('integration', () => {
     });
 
 
-    it('ttl', async () => {
+    it('ttl with create', async () => {
 
         await bz.createDB();
 
         await bz.create('1', '2', 1);
-        // or await bz.expire('1', 1);
+        assert.equal(await bz.read('1'),'2');
+
+        assert(await bz.ttl('1') > 0);
 
         await new Promise(resolve => setTimeout(resolve, 1000));
 
         await assert.rejects(bz.read('1'));
+
+    });
+
+    it('ttl with expire', async () => {
+
+        await bz.createDB();
+
+        await bz.create('3', '4');
+        await bz.expire('3', 1); // never resolves
+
+        assert(await bz.ttl('3') > 0);
+
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        await assert.rejects(bz.read('3'));
+
+    });
+
+    it('persist 1', async () => {
+
+        await bz.createDB();
+
+        await bz.create('5', '6', 1);
+        await bz.persist('5');
+
+        assert.equal(await bz.read('5'), '6');
+
+
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        assert.equal(await bz.read('5'), '6');
+
+    });
+
+
+    it('persist 2', async () => {
+
+        await bz.createDB();
+
+        await bz.create('5', '6');
+        await bz.persist('5');
+
+        assert.equal(await bz.read('5'), '6');
+
+        assert.equal(await bz.ttl('5'), 0);
+
+
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        assert.equal(await bz.read('5'), '6');
+
+    });
+
+    it('persist 3', async () => {
+
+        await bz.createDB();
+
+        await bz.create('5', '6');
+        await bz.ttl('5');
+
+        assert.equal(await bz.read('5'), '6');
+
+        assert.equal(await bz.ttl('5'), 0);
+
+
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        assert.equal(await bz.read('5'), '6');
 
     });
 
@@ -178,6 +248,55 @@ describe('integration', () => {
         assert.throws(() => bz.create('hello', 3));
         assert.throws(() => bz.addWriters(3));
         assert.throws(() => bz.addWriters(['w1', 'w2', {}]));
+
+    });
+
+
+    it('writers', async () => {
+
+        await bz.createDB();
+
+        assert.deepEqual(
+            await bz._getWriters(), 
+            {
+                owner: bz.publicKey(),
+                writers: []
+            }
+        );
+
+
+        const writers = [
+            'MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEndHOcS6bE1P9xjS/U+SM2a1GbQpPuH9sWNWtNYxZr0JcF+sCS2zsD+xlCcbrRXDZtfeDmgD9tHdWhcZKIy8ejQ==',
+            'MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAE2cEPEoomeszFPuHzo2q45mfFkipLSCqc+pMlHCsGnZ5rJ4Bo27SZncCmwoazcYjoV9DjJjqi+p7IfSPRZCygaQ=='
+        ];
+
+        await bz._addWriters(writers);
+
+        const writers_output = (await bz._getWriters()).writers;
+
+        assert(writers_output.length === 2);
+        assert(writers_output.includes(writers[0]));
+        assert(writers_output.includes(writers[1]));
+
+
+        // No duplicates 
+
+        await bz._addWriters(writers);
+
+        assert((await bz._getWriters()).writers.length === 2);
+
+
+        await bz._deleteWriters(writers[0]);
+
+        assert.deepEqual(
+            await bz._getWriters(),
+            {
+                owner: bz.publicKey(),
+                writers: [writers[1]]
+            }
+        );
+
+        bz.close();
 
     });
 
