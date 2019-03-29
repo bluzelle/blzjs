@@ -17,6 +17,32 @@ const entry = 'ws://localhost:50000';
 const p2p_latency_bound = 100;
 
 
+it('public key validation', () => {
+
+    const key = random_key();
+
+    const bz = bluzelle({
+        entry, 
+        private_pem: key,
+        public_pem: pub_from_priv(key),
+        log,
+        p2p_latency_bound,
+    });
+
+    bz.close();
+
+
+    assert.throws(() => bluzelle({
+        entry, 
+        private_pem: key,
+        public_pem: 'I am invalid',
+        log,
+        p2p_latency_bound,
+    }));
+
+});
+
+
 describe('integration', () => {
 
     let bz;
@@ -246,7 +272,6 @@ describe('integration', () => {
         assert(status.uptime);
 
     });
-
 
     it('type assertions', async () => {
 

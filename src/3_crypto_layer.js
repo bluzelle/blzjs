@@ -14,7 +14,7 @@
 
 
 const assert = require('assert');
-const { verify, sign, pub_from_priv } = require('./ecdsa_secp256k1');
+const { verify, sign } = require('./ecdsa_secp256k1');
 const database_pb = require('../proto/database_pb');
 const bluzelle_pb = require('../proto/bluzelle_pb');
 const status_pb = require('../proto/status_pb');
@@ -22,15 +22,15 @@ const status_pb = require('../proto/status_pb');
 
 module.exports = class Crypto {
 
-    constructor({private_pem, onIncomingMsg, onOutgoingMsg, log}) {
+    constructor({private_pem, public_pem, onIncomingMsg, onOutgoingMsg, log}) {
 
         this.log = log;
 
         this.private_pem = private_pem;
+        this.public_pem = public_pem;
+
         this.onIncomingMsg = onIncomingMsg;
         this.onOutgoingMsg = onOutgoingMsg;
-
-        this.public_key = pub_from_priv(this.private_pem);
 
     }
 
@@ -53,7 +53,7 @@ module.exports = class Crypto {
 
         if(!isQuickread) {
 
-            bzn_envelope.setSender(this.public_key);
+            bzn_envelope.setSender(this.public_pem);
 
 
             const signed_bin = Buffer.concat([

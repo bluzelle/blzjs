@@ -23,14 +23,15 @@ const Envelope = require('./7_envelope_layer');
 const Metadata = require('./8_metadata_layer');
 const API = require('./9_api_layer');
 
-const { pub_from_priv } = require('./ecdsa_secp256k1');
+const { pub_from_priv, import_private_key_from_base64, import_public_key_from_base64 } = require('./ecdsa_secp256k1');
+const assert = require('assert');
 
 const bluzelle_pb = require('../proto/bluzelle_pb');
 const status_pb = require('../proto/status_pb');
 
 
 module.exports = {
-    bluzelle: ({entry, private_pem, uuid, log, p2p_latency_bound, onclose}) => {
+    bluzelle: ({entry, private_pem, public_pem, uuid, log, p2p_latency_bound, onclose}) => {
 
         p2p_latency_bound = p2p_latency_bound || 100;
 
@@ -40,19 +41,25 @@ module.exports = {
             log = console.log.bind(console);
         }
 
-        const pub_key = pub_from_priv(private_pem);
+        if(public_pem) {
+            // throws an error if key is malformed
+            import_public_key_from_base64(public_pem);
+        }
+
+
+        public_pem = public_pem || pub_from_priv(private_pem);
 
         const connection_layer = new Connection({ entry, log, onclose });
 
         const layers = [
             connection_layer,
             new Serialization({}),
-            new Crypto({ private_pem, log, }), 
+            new Crypto({ private_pem, public_pem, log, }), 
             new Collation({ connection_layer, }), 
             new Broadcast({ p2p_latency_bound, connection_layer, log, }),
             new Redirect({}),
             new Envelope({}),
-            new Metadata({ uuid: uuid || pub_key, log, }),
+            new Metadata({ uuid: uuid || public_pem, log, }),
         ];
 
         const sandwich = connect_layers(layers);
@@ -62,7 +69,7 @@ module.exports = {
 
         // These API functions aren't actual database operations
 
-        api.publicKey = () => pub_key;
+        api.publicKey = () => public_pem;
 
         api.close = () => layers[0].close();
 
