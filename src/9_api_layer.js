@@ -342,7 +342,11 @@ module.exports = class API {
                 assert(incoming_msg.hasSize(),
                     "A response other than size has been returned from daemon for size.");
 
-                resolve(incoming_msg.getSize().getBytes());
+                resolve({
+                    bytes: incoming_msg.getSize().getBytes(),
+                    keys: incoming_msg.getSize().getKeys(),
+                    remainingBytes: incoming_msg.getSize().getRemainingBytes(),
+                });
 
                 return true;
 

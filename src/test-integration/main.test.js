@@ -104,11 +104,18 @@ describe('integration', () => {
 
         await bz.createDB();
 
-        assert.equal(await bz.size(), 0);
+        assert.deepEqual(await bz.size(), {
+            bytes: 0,
+            keys: 0,
+            remainingBytes: 0
+        });
 
         await bz.create('this', 'that');
 
-        assert(await bz.size() > 0);
+        const sz = await bz.size();
+        assert(sz.bytes > 0);
+        assert(sz.keys === 1);
+        assert(sz.remainingBytes === 0);
 
     });
 
