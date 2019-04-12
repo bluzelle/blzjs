@@ -200,7 +200,12 @@ describe('integration', () => {
         await bz.createDB();
 
         await bz.create('3', '4');
-        await bz.expire('3', 1); // never resolves
+
+        await assert.rejects(bz.ttl('3'));
+        await assert.rejects(bz.persist('3'));
+
+
+        await bz.expire('3', 1);
 
         assert(await bz.ttl('3') > 0);
 
@@ -209,60 +214,6 @@ describe('integration', () => {
         await assert.rejects(bz.read('3'));
 
     });
-
-    it('persist 1', async () => {
-
-        await bz.createDB();
-
-        await bz.create('5', '6', 1);
-        await bz.persist('5');
-
-        assert.equal(await bz.read('5'), '6');
-
-
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        assert.equal(await bz.read('5'), '6');
-
-    });
-
-
-    it('persist 2', async () => {
-
-        await bz.createDB();
-
-        await bz.create('5', '6');
-        await bz.persist('5');
-
-        assert.equal(await bz.read('5'), '6');
-
-        assert.equal(await bz.ttl('5'), 0);
-
-
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        assert.equal(await bz.read('5'), '6');
-
-    });
-
-    it('persist 3', async () => {
-
-        await bz.createDB();
-
-        await bz.create('5', '6');
-        await bz.ttl('5');
-
-        assert.equal(await bz.read('5'), '6');
-
-        assert.equal(await bz.ttl('5'), 0);
-
-
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        assert.equal(await bz.read('5'), '6');
-
-    });
-
 
     it('status', async () => {
 

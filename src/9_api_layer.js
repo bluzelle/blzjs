@@ -366,11 +366,11 @@ module.exports = class API {
 
             const msg = new database_pb.database_msg();
 
-            const expire = new database_pb.database_expire();
-            msg.setExpire(expire);
+            const expire_ = new database_pb.database_expire();
+            msg.setExpire(expire_);
 
-            expire.setKey(key);
-            expire.setExpire(expire.toString());
+            expire_.setKey(key);
+            expire_.setExpire(expire.toString());
 
 
             this.sendOutgoingMsg(msg, incoming_msg => {
