@@ -4,6 +4,8 @@
 # 2. BluzelleESR is compiled
 # 3. ganache-cli is running
 
+# npx ganache-cli --account="0x1f0d511e990ddbfec302e266d62542384f755f6cc6b3161b2e49a2a4e6c4be3d,100000000000000000000"
+
 
 if(ARGV.length == 0)
   raise "No swarms given. Example: run './run-swarm.rb 4 3' to create one swarm with four nodes and one swarm with three nodes."
@@ -37,13 +39,13 @@ base_dir = `pwd`.strip
 
 i = 0
 
-ARGV.each do |n|
+(0...ARGV.length).each do |n|
 
-  peers_file = base_dir + "/swarmDB/local/nodes/peers${n}.json"
+  peers_file = base_dir + "/swarmDB/local/nodes/peers#{n}.json"
 
   peers = []
 
-  (0...n.to_i).each do 
+  (0...ARGV[n].to_i).each do 
 
     node_name = "node" + i.to_s
     node_dir = base_dir + "/swarmDB/" + "local/nodes/#{node_name}"
@@ -102,3 +104,9 @@ end
 $execute_commands.each do |command|
   `#{command}`
 end
+
+
+Dir.chdir base_dir + '/BluzelleESR'
+puts `./node_modules/.bin/truffle exec ../scripts/deploy-ethereum.js`;
+
+
