@@ -196,7 +196,7 @@ describe('integration', () => {
     });
 
     it('ttl with expire', async () => {
-
+        
         await bz.createDB();
 
         await bz.create('3', '4');
@@ -205,13 +205,9 @@ describe('integration', () => {
         await assert.rejects(bz.persist('3'));
 
 
-        await bz.expire('3', 1);
+        await bz.expire('3', 10);
 
         assert(await bz.ttl('3') > 0);
-
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        await assert.rejects(bz.read('3'));
 
     });
 
