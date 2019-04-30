@@ -14,12 +14,17 @@ function recordTransaction(description, receipt, display) {
 }
 
 
+const rndString = () => new Array(10).fill(0).map(() => Math.floor(Math.random() * 10)).join('');
+
+
 const addSwarm = async (json, BluzelleESRInstance) => {
 
-    await BluzelleESRInstance.addSwarm("BluzelleSwarm",7,"Canada",true,"Disk",0,[],{ from: myAccount });
+    const swarm_id = rndString();
+
+    await BluzelleESRInstance.addSwarm(swarm_id,7,"Canada",true,"Disk",0,[],{ from: myAccount });
 
     for(var i=0; i<json.length; i++){
-        await BluzelleESRInstance.addNode("BluzelleSwarm",
+        await BluzelleESRInstance.addNode(swarm_id,
             json[i].host,
             json[i].name,
             json[i].http_port,
@@ -28,7 +33,6 @@ const addSwarm = async (json, BluzelleESRInstance) => {
             );
     }
 
-    //console.log(await BluzelleESRInstance.getSwarmInfo("BluzelleSwarm"));
 
 };
 

@@ -33,7 +33,7 @@ def run_in_tab(cmd)
 end
 
 
-`rm -rf local/nodes/`
+`rm -rf swarmDB/local/nodes/`
 base_dir = `pwd`.strip
 
 
