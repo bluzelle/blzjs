@@ -22,7 +22,7 @@ const {random_key} = require('../swarmClient/ecdsa_secp256k1');
 const ethereum_rpc = 'http://127.0.0.1:8545';
 const contract_address = '0xBBcAd9D022691109F2FBe02dC7bA6c78Ace91361';
 
-const log = true;
+const log = false;
 const p2p_latency_bound = 100;
 
 
@@ -39,7 +39,9 @@ describe('', () => {
             p2p_latency_bound,
         });
 
-        assert(!await api.hasDB('no db'));
+        assert(!await api.hasDB());
+
+        api.close();
 
     });
 

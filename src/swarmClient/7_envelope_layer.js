@@ -41,7 +41,7 @@ module.exports = class Crypto {
         const timestamp = new Date().getTime();
 
         bzn_envelope.setTimestamp(timestamp);
-        //bzn_envelope.setSwarmId(this.swarm_id);
+        bzn_envelope.setSwarmId(this.swarm_id);
 
         this.onOutgoingMsg(bzn_envelope, msg);
 

@@ -54,16 +54,17 @@ module.exports = class Crypto {
         // quickreads are not signed
         const isQuickread = msg.hasQuickRead();
 
+        bzn_envelope.setDatabaseMsg(msg.serializeBinary());
+
 
         if(!isQuickread) {
 
             bzn_envelope.setSender(this.public_pem);
 
-
             const signed_bin = Buffer.concat([
                 bzn_envelope.getSender(), 
                 bzn_envelope.getPayloadCase(),                 
-                msg.serializeBinary(),
+                Buffer.from(bzn_envelope.getDatabaseMsg()),
                 bzn_envelope.getTimestamp()
             ].map(deterministic_serialize));
 
@@ -71,7 +72,6 @@ module.exports = class Crypto {
         }
 
 
-        bzn_envelope.setDatabaseMsg(msg.serializeBinary());
 
         this.onOutgoingMsg(bzn_envelope);
 

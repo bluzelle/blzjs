@@ -350,6 +350,7 @@ const logIncoming = (bin, log) => {
         stuff.bzn.sender = bzn_stuff.sender;
         stuff.bzn.signature = bzn_stuff.signature;
         stuff.bzn.timestamp = bzn_stuff.timestamp;
+        stuff.bzn.swarm_id = bzn_stuff.swarmId;
 
 
         
@@ -370,6 +371,8 @@ const logIncoming = (bin, log) => {
         stuff.bzn.sender = bzn_stuff.sender;
         stuff.bzn.signature = bzn_stuff.signature;
         stuff.bzn.timestamp = bzn_stuff.timestamp;
+        stuff.bzn.swarm_id = bzn_stuff.swarmId;
+
 
 
         log('Incoming status_response\n', stuff);
@@ -403,6 +406,7 @@ const logOutgoing = (bin, log) => {
         stuff.bzn.sender = bzn_stuff.sender;
         stuff.bzn.signature = bzn_stuff.signature;
         stuff.bzn.timestamp = bzn_stuff.timestamp;
+        stuff.bzn.swarm_id = bzn_stuff.swarmId;
 
         log('Outgoing database_msg\n', stuff);
 
@@ -420,6 +424,7 @@ const logOutgoing = (bin, log) => {
             sender: bzn_stuff.sender,
             signature: bzn_stuff.signature,
             timestamp: bzn_stuff.timestamp,
+            swarm_id: bzn_stuff.swarmId
         };
 
 
