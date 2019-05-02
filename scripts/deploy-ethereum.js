@@ -19,7 +19,7 @@ const rndString = () => new Array(10).fill(0).map(() => Math.floor(Math.random()
 
 const addSwarm = async (json, BluzelleESRInstance) => {
 
-    const swarm_id = rndString();
+    const swarm_id = "12345";
 
     await BluzelleESRInstance.addSwarm(swarm_id,7,"Canada",true,"Disk",0,[],{ from: myAccount });
 

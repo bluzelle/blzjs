@@ -15,9 +15,9 @@
 
 const assert = require('assert');
 const { verify, sign } = require('./ecdsa_secp256k1');
-const database_pb = require('../proto/database_pb');
-const bluzelle_pb = require('../proto/bluzelle_pb');
-const status_pb = require('../proto/status_pb');
+const bluzelle_pb = require('../../proto/bluzelle_pb');
+const database_pb = require('../../proto/database_pb');
+const status_pb = require('../../proto/status_pb');
 
 
 module.exports = class Crypto {
@@ -35,20 +35,24 @@ module.exports = class Crypto {
     }
 
 
-    sendOutgoingMsg(bzn_envelope) {
+    sendOutgoingMsg(bzn_envelope, msg) {
 
         assert(bzn_envelope instanceof bluzelle_pb.bzn_envelope);
 
 
-        if(bzn_envelope.hasStatusRequest()) {
+        // Skip status requests
+
+        if(msg instanceof status_pb.status_request) {
+
+            bzn_envelope.setStatusRequest(msg.serializeBinary());
+
             this.onOutgoingMsg(bzn_envelope);
+            return;
         }
 
-
-        const database_msg = database_pb.database_msg.deserializeBinary(new Uint8Array(bzn_envelope.getDatabaseMsg()));
         
         // quickreads are not signed
-        const isQuickread = database_msg.hasQuickRead();
+        const isQuickread = msg.hasQuickRead();
 
 
         if(!isQuickread) {
@@ -58,14 +62,16 @@ module.exports = class Crypto {
 
             const signed_bin = Buffer.concat([
                 bzn_envelope.getSender(), 
-                bzn_envelope.getPayloadCase(), 
-                Buffer.from(bzn_envelope.getDatabaseMsg()), 
+                bzn_envelope.getPayloadCase(),                 
+                msg.serializeBinary(),
                 bzn_envelope.getTimestamp()
             ].map(deterministic_serialize));
 
             bzn_envelope.setSignature(new Uint8Array(sign(signed_bin, this.private_pem)));
         }
 
+
+        bzn_envelope.setDatabaseMsg(msg.serializeBinary());
 
         this.onOutgoingMsg(bzn_envelope);
 

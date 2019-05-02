@@ -14,18 +14,19 @@
 
 
 const assert = require('assert');
-const bluzelle_pb = require('../proto/bluzelle_pb');
-const database_pb = require('../proto/database_pb');
-const status_pb = require('../proto/status_pb');
+const bluzelle_pb = require('../../proto/bluzelle_pb');
+const database_pb = require('../../proto/database_pb');
+const status_pb = require('../../proto/status_pb');
 
 
 
 module.exports = class Crypto {
 
-    constructor({onIncomingMsg, onOutgoingMsg}) {
+    constructor({onIncomingMsg, onOutgoingMsg, swarm_id}) {
 
         this.onIncomingMsg = onIncomingMsg;
         this.onOutgoingMsg = onOutgoingMsg;
+        this.swarm_id = swarm_id;
 
     }
 
@@ -37,22 +38,12 @@ module.exports = class Crypto {
         const bzn_envelope = new bluzelle_pb.bzn_envelope();
 
 
-        const payload = msg.serializeBinary();
-
-        if(msg instanceof database_pb.database_msg) {
-            bzn_envelope.setDatabaseMsg(payload);
-        }
-
-        if(msg instanceof status_pb.status_request) {
-            bzn_envelope.setStatusRequest(payload);
-        }
-
-
         const timestamp = new Date().getTime();
 
         bzn_envelope.setTimestamp(timestamp);
+        //bzn_envelope.setSwarmId(this.swarm_id);
 
-        this.onOutgoingMsg(bzn_envelope);
+        this.onOutgoingMsg(bzn_envelope, msg);
 
     }
 

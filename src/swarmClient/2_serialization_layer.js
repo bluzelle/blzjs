@@ -14,8 +14,9 @@
 
 
 const assert = require('assert');
-const bluzelle_pb = require('../proto/bluzelle_pb');
-
+const bluzelle_pb = require('../../proto/bluzelle_pb');
+const database_pb = require('../../proto/database_pb');
+const status_pb = require('../../proto/status_pb');
 
 module.exports = class Crypto {
 

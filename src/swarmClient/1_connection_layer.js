@@ -15,9 +15,9 @@
 
 const WebSocket = require('isomorphic-ws');
 const assert = require('assert');
-const bluzelle_pb = require('../proto/bluzelle_pb');
-const database_pb = require('../proto/database_pb');
-const status_pb = require('../proto/status_pb');
+const bluzelle_pb = require('../../proto/bluzelle_pb');
+const database_pb = require('../../proto/database_pb');
+const status_pb = require('../../proto/status_pb');
 
 
 
@@ -48,7 +48,8 @@ class Connection {
         this.connection_pool = [];
 
 
-        this.primary_socket = new PrimarySocket({
+        //this.primary_socket = new PrimarySocket({
+        this.primary_socket = new GenericSocket({
             entry, 
             log,
             onmessage: this.sendIncomingMsg.bind(this), 

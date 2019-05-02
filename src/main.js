@@ -12,106 +12,94 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-
-const {Connection} = require('./1_connection_layer');
-const Serialization = require('./2_serialization_layer');
-const Crypto = require('./3_crypto_layer');
-const Collation = require('./4_collation_layer');
-const Broadcast = require('./5_broadcast_layer');
-const Redirect = require('./6_redirect_layer');
-const Envelope = require('./7_envelope_layer');
-const Metadata = require('./8_metadata_layer');
-const API = require('./9_api_layer');
-
-const { pub_from_priv, import_private_key_from_base64, import_public_key_from_base64 } = require('./ecdsa_secp256k1');
-const assert = require('assert');
-
-const bluzelle_pb = require('../proto/bluzelle_pb');
-const status_pb = require('../proto/status_pb');
-
+const {swarmClient} = require('./swarmClient/main');
+const Web3 = require('web3');
+const abi = require('../BluzelleESR/build/contracts/BluzelleESR.json').abi;
 
 module.exports = {
-    bluzelle: ({entry, private_pem, public_pem, uuid, log, p2p_latency_bound, onclose}) => {
+    
+    bluzelle: async ({ethereum_rpc, contract_address, ...args}) => {
 
-        p2p_latency_bound = p2p_latency_bound || 100;
+        // fetch peerslist data
 
+        const web3 = new Web3(ethereum_rpc); //new Web3.providers.HttpProvider('mainnet.infura.io/v3/1c197bf729ee454a8ab7f4e80a1ea628'));
 
-        // Default log is console.log, but you can pass any other function.
-        if(log && typeof log !== 'function') {
-            log = console.log.bind(console);
-        }
+        const BluzelleESR = web3.eth.Contract(abi, contract_address);
 
-        if(public_pem) {
-            // throws an error if key is malformed
-            import_public_key_from_base64(public_pem);
-        }
+        let swarms = await getSwarms(BluzelleESR);
 
-
-        public_pem = public_pem || pub_from_priv(private_pem);
-
-        const connection_layer = new Connection({ entry, log, onclose });
-
-        const layers = [
-            connection_layer,
-            new Serialization({}),
-            new Crypto({ private_pem, public_pem, log, }), 
-            new Collation({ connection_layer, }), 
-            new Broadcast({ p2p_latency_bound, connection_layer, log, }),
-            new Redirect({}),
-            new Envelope({}),
-            new Metadata({ uuid: uuid || public_pem, log, }),
-        ];
-
-        const sandwich = connect_layers(layers);
-
-        api = new API(sandwich.sendOutgoingMsg);
-        
-
-        // These API functions aren't actual database operations
-
-        api.publicKey = () => public_pem;
-
-        api.close = () => layers[0].close();
+        swarms = Object.entries(swarms).map(([swarm_id, swarm]) =>
+            swarmClient({
+                peerslist: swarm.peers,
+                swarm_id,
+                ...args
+            }));
 
 
-        return api;
+        // default to first swarm for now
+        return swarms[0];
 
     },
 
     version: require('../package.json').version
+
 };
 
 
-const connect_layers = layers => {
 
-    layers.forEach((layer, i) => {
+const getSwarms = async BluzelleESR => {
 
-        const precedessor = 
-            i === 0 ? 
-                undefined : 
-                layers[i - 1];
+    const swarmList = await BluzelleESR.methods.getSwarmList().call();
 
-        const successor = 
-            i === layers.length - 1 ? 
-                undefined : 
-                layers[i + 1];
+    const swarmPromises = swarmList.map(getSwarm.bind(null, BluzelleESR));
 
+    const swarms = await Promise.all(swarmPromises);
+    
 
-        if(precedessor) {
-            layer.onOutgoingMsg = precedessor.sendOutgoingMsg.bind(precedessor);
-        }
+    const out = {};
 
-        if(successor) {
-            layer.onIncomingMsg = successor.sendIncomingMsg.bind(successor);
-        }
+    swarmList.forEach((swarm, i) => out[swarm] = swarms[i]);
 
-    });
+    return out;
+
+};
 
 
-    const last = layers[layers.length - 1];
+const getSwarm = async (BluzelleESR, swarm) => {
 
-    return {
-        sendOutgoingMsg: last.sendOutgoingMsg.bind(last)
+    const swarmInfo = await BluzelleESR.methods.getSwarmInfo(swarm).call();
+
+    const nodePromises = swarmInfo.nodelist.map(node => 
+            BluzelleESR.methods.getNodeInfo(swarm, node).call());
+
+    let nodes = await Promise.all(nodePromises);
+
+    // Convert from bigInts to js ints
+    nodes = nodes.map(node => ({
+        nodeCount: Number(node.nodeCount),
+        nodeHost: node.nodeHost,
+        nodeHttpPort: Number(node.nodeHttpPort),
+        nodeName: node.nodeName,
+        nodePort: Number(node.nodePort),
+    }));
+
+
+    const out = {
+        peers: {}
     };
 
+    swarmInfo.nodelist.forEach((node, i) => out.peers[node] = nodes[i]);
+
+    out.metadata = {
+        size: Number(swarmInfo.size),
+        geo: swarmInfo.geo,
+        trust: swarmInfo.trust,
+        swarmtype: swarmInfo.swarmtype,
+        cost: Number(swarmInfo.cost)
+    };
+
+    return out;
+
 };
+
+

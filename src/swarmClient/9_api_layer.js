@@ -13,8 +13,9 @@
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
-const database_pb = require('../proto/database_pb');
-const status_pb = require('../proto/status_pb');
+const bluzelle_pb = require('../../proto/bluzelle_pb');
+const database_pb = require('../../proto/database_pb');
+const status_pb = require('../../proto/status_pb');
 
 const assert = require('assert');
 

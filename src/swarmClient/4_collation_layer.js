@@ -14,22 +14,23 @@
 
 
 const assert = require('assert');
-const database_pb = require('../proto/database_pb');
-const bluzelle_pb = require('../proto/bluzelle_pb');
-const status_pb = require('../proto/status_pb');
+const bluzelle_pb = require('../../proto/bluzelle_pb');
+const database_pb = require('../../proto/database_pb');
+const status_pb = require('../../proto/status_pb');
 
 
 
 module.exports = class Collation {
 
-    constructor({onIncomingMsg, onOutgoingMsg, connection_layer}) {
+    constructor({onIncomingMsg, onOutgoingMsg, peerslist, point_of_contact}) {
 
         this.onIncomingMsg = onIncomingMsg;
         this.onOutgoingMsg = onOutgoingMsg;
 
+        this.peerslist = peerslist;
+        this.point_of_contact = point_of_contact;
 
-        // Queue messages when we don't have the node uuid in socket_info.
-        this.outgoingQueue = [];
+        this.f = Object.keys(peerslist).length;
 
 
         // Maps nonces to the number of signatures they have accumulated.
@@ -41,66 +42,34 @@ module.exports = class Collation {
 
         this.nonceMap = new Map();
 
-
-        this.connection_layer = connection_layer;
-
-        this.connection_layer.primary_socket.socket_info.observe(v => {
-            const q = this.outgoingQueue;
-            this.outgoingQueue = [];
-            q.forEach(msg => this.sendOutgoingMsg(msg));
-        });
-
-
-        this.peers;
-        this.f;
-
     }
 
 
-    sendOutgoingMsg(bzn_envelope) {
+    sendOutgoingMsg(bzn_envelope, msg) {
 
         assert(bzn_envelope instanceof bluzelle_pb.bzn_envelope);
 
 
         // Skip status requests
 
-        if(bzn_envelope.hasStatusRequest()) {
-            this.onOutgoingMsg(bzn_envelope);
+        if(msg instanceof status_pb.status_request) {
+            this.onOutgoingMsg(bzn_envelope, msg);
             return;
         }
 
 
-        if(!this.connection_layer.primary_socket.socket_info.get()) {
+        msg.getHeader().setPointOfContact(this.point_of_contact);
 
-            // Without the necessary metadata, queue the message
-
-            this.outgoingQueue.push(bzn_envelope);
-
-        } else {
-
-            const node_uuid = this.connection_layer.primary_socket.socket_info.get().uuid;
-            const database_msg = database_pb.database_msg.deserializeBinary(new Uint8Array(bzn_envelope.getDatabaseMsg()));
+        const nonce = msg.getHeader().getNonce();
 
 
-            assert(node_uuid);
-            
-            database_msg.getHeader().setPointOfContact(node_uuid);
-            bzn_envelope.setDatabaseMsg(database_msg.serializeBinary());
+        // quickreads do not need collation
+        const nonceMap_value = msg.hasQuickRead() ? true : new Map();
+
+        this.nonceMap.set(nonce, nonceMap_value);
 
 
-
-            const nonce = database_msg.getHeader().getNonce();
-
-
-            // quickreads do not need collation
-            const nonceMap_value = database_msg.hasQuickRead() ? true : new Map();
-
-            this.nonceMap.set(nonce, nonceMap_value);
-
-
-            this.onOutgoingMsg(bzn_envelope);
-
-        }
+        this.onOutgoingMsg(bzn_envelope, msg);
 
     }
 
@@ -111,22 +80,12 @@ module.exports = class Collation {
 
         if(bzn_envelope.hasStatusResponse()) {
 
-            const status_response = status_pb.status_response.deserializeBinary(new Uint8Array(bzn_envelope.getStatusResponse()));
-
-            // Collation logic: update number of required signatures
-            // f = floor( |peers list| / 3 ) + 1
-
-
-            this.peers = JSON.parse(status_response.toObject().moduleStatusJson).module[0].status.peer_index;
-            this.f = Math.floor(this.peers.length / 3) + 1;
-
-            this.onIncomingMsg(bzn_envelope)
-
+            this.onIncomingMsg(bzn_envelope);
+            return;
 
         } else {
 
             assert(bzn_envelope.hasDatabaseResponse());
-            assert(this.f && this.peers);
 
             const sender = bzn_envelope.getSender();
 
@@ -158,7 +117,7 @@ module.exports = class Collation {
             }
 
             // Discard senders that aren't on the peers list
-            if(!this.peers.map(p => p.uuid).includes(sender)) {
+            if(!Object.keys(this.peerslist).includes(sender)) {
                 return;
             }
 
@@ -166,6 +125,9 @@ module.exports = class Collation {
             // Collation logic: increment the signature counter and resolve when we have received enough
             
             const payloadMap = this.nonceMap.get(nonce);
+
+
+            // we can hash the hex_payload if necessary
 
             if(!payloadMap.has(hex_payload)) {
                 payloadMap.set(hex_payload, []);
