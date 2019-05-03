@@ -18,11 +18,12 @@ const abi = require('../BluzelleESR/build/contracts/BluzelleESR.json').abi;
 
 module.exports = {
     
-    bluzelle: async ({ethereum_rpc, contract_address, ...args}) => {
+    bluzelle: async ({ethereum_rpc, contract_address, _connect_to_all, ...args}) => {
+
 
         // fetch peerslist data
 
-        const web3 = new Web3(ethereum_rpc); //new Web3.providers.HttpProvider('mainnet.infura.io/v3/1c197bf729ee454a8ab7f4e80a1ea628'));
+        const web3 = new Web3(ethereum_rpc);
 
         const BluzelleESR = web3.eth.Contract(abi, contract_address);
 
@@ -36,8 +37,42 @@ module.exports = {
             }));
 
 
-        // default to first swarm for now
-        return swarms[0];
+        if(_connect_to_all) {
+            return swarms;
+        }
+
+
+        // 1. merge Isabel's branch
+        // 2. reimplement fastest connection
+
+        const resolveIfTruthy = p => new Promise(res => p.then(v => v.has && console.log('has!') || res(v.has)));
+        const resolveIfFalsy = p => new Promise(res => p.then(v => v.has || console.log('doesnt have!') || res(v.has)));
+
+
+        const hasDbs = swarms.map(swarm => promise_const(resolveIfTruthy(swarm.hasDB()), swarm));
+
+        // resolves with swarm client if uuid exists
+        const swarm_with_uuid = Promise.race(hasDbs);
+
+
+        // resolves to false if uuid doesn't exist
+        const uuid_doesnt_exist = promise_const(Promise.all(hasDbs.map(resolveIfFalsy)), false);
+
+
+        let swarm = await Promise.race([swarm_with_uuid, uuid_doesnt_exist]);
+
+        if(!swarm) {
+
+            throw new Error('UUID does not exist in the Bluzelle swarm. Contact us at https://gitter.im/bluzelle/Lobby.');
+
+        }
+
+
+        // close all other swarms & return client
+
+        swarms.forEach(s => s !== swarm && s.close());
+
+        return swarm;
 
     },
 
@@ -45,6 +80,8 @@ module.exports = {
 
 };
 
+
+const promise_const = (p, v) => new Promise(resolve => p.then(v => resolve(p)));
 
 
 const getSwarms = async BluzelleESR => {
