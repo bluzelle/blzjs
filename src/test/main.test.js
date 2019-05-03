@@ -23,7 +23,6 @@ const ethereum_rpc = 'http://127.0.0.1:8545';
 const contract_address = '0xd47D86f9d4E641dbe1FfFB200Af5EE75b453198E';
 
 const log = false;
-const p2p_latency_bound = 100;
 
 
 describe('', () => {
@@ -36,7 +35,6 @@ describe('', () => {
             private_pem: random_key(), 
             uuid: Math.random().toString(),
             log,
-            p2p_latency_bound,
         });
 
 

@@ -40,7 +40,7 @@ const observable = () => {
 
 class Connection {
 
-    constructor({log, entry, onIncomingMsg, onclose}) {
+    constructor({log, entry, onIncomingMsg, onclose, peerslist}) {
 
         this.log = log;
         this.onIncomingMsg = onIncomingMsg;
@@ -90,7 +90,7 @@ class Connection {
 
 class GenericSocket {
 
-    constructor({entry, onmessage, connection_pool, log, onclose}) {
+    constructor({entry, onmessage, connection_pool, log, peerslist, onclose}) {
 
         this.log = log;
 
@@ -101,6 +101,7 @@ class GenericSocket {
         this.entry = entry;
         this.onmessage = onmessage;
         this.connection_pool = connection_pool;
+        this.peerslist = peerslist;
 
         this.queue = [];
 
@@ -157,125 +158,84 @@ class PrimarySocket extends GenericSocket {
     constructor(...args) {
 
         super(...args);
-    
+
         this.socket_info = observable();
 
     }
 
 
-    createSocket() {
+    async createSocket() {
 
 
-        // This message establishes a websocket with the entry, gets the peers list,
-        // attempts to establish connections with every node, and sets this.socket to
-        // be the one that opens first.
-
-        // We could have this socket be passed as an argument to enable us to 
-        // run the bootstrap multiple times over the lifetime of the client.
+        // This message establishes websockets with all the peers and keeps the one
+        // that opens first.
 
 
         const entrySocket = new WebSocket(this.entry);
         entrySocket.binaryType = 'arraybuffer';
 
 
-        // Send a status request
-        entrySocket.addEventListener('open', () => {
 
-            this.log && this.log('connected to entrypoint ' + this.entry + '...');
+        // Attempts to establish connections with all the nodes and chooses the fastest one
 
+        const peers = Object.entries(this.peerslist);
+        const entries = peers.map(([_, {nodeHost, nodePort}]) => 'ws://' + nodeHost + ':' + nodePort);
 
-            const bzn_envelope = new bluzelle_pb.bzn_envelope();
-            bzn_envelope.setStatusRequest(new status_pb.status_request().serializeBinary());
+        let connections = entries.map(entry => {
+    
+            // Ignore failed connections
+            try {
+                const w = new WebSocket(entry);
+                w.onerror = e => {};
 
-            const bin = bzn_envelope.serializeBinary();
+                return w;
 
-            entrySocket.send(bin);
-
-            this.log && logOutgoing(bin, this.log);
-
+            } catch(e) {
+                return undefined;
+            }
+       
         });
 
-        entrySocket.addEventListener('message', async bin => {    
+        connections = connections.filter(c => c !== undefined);
 
-            this.log && this.log('fetched status from entry. finding fastest node...');
+        connections.forEach(ws => { ws.binaryType = 'arraybuffer'; });
 
+        const ps = connections.map(connection => 
+            new Promise(resolve => {
+                connection.addEventListener('open', () => resolve(connection))
+            })
+        );
 
-            entrySocket.close();
-
-            const bzn_envelope = bluzelle_pb.bzn_envelope.deserializeBinary(bin.data);
-
-            assert(bzn_envelope.hasStatusResponse());
-
-
-            // Propagate status response for the collation layer
-            this.onmessage(bin);
+        const best_connection = await Promise.race(ps);
 
 
-            const stat = status_pb.status_response.deserializeBinary(new Uint8Array(bzn_envelope.getStatusResponse())).toObject();
+        // Close out all other connections
+
+        connections.filter(c => c !== best_connection).forEach(connection => 
+            connection.readyState === 1 ? 
+
+                connection.close() : // In case two connections open very closely to one-another
+
+                connection.onopen = () => connection.close());
 
 
-            // Attempts to establish connections with all the nodes and chooses the fastest one
-
-            const peer_index = JSON.parse(stat.moduleStatusJson).module[0].status.peer_index;
-
-            const entries = peer_index.map(({host, port}) => 'ws://' + host + ':' + port);
-
-            let connections = entries.map(entry => {
-        
-                // Ignore failed connections
-                try {
-                    const w = new WebSocket(entry);
-                    w.onerror = e => {};
-
-                    return w;
-
-                } catch(e) {
-                    return undefined;
-                }
-           
-            });
-
-            connections = connections.filter(c => c !== undefined);
-
-            connections.forEach(ws => { ws.binaryType = 'arraybuffer'; });
-
-            const ps = connections.map(connection => 
-                new Promise(resolve => {
-                    connection.addEventListener('open', () => resolve(connection))
-                })
-            );
-
-            const best_connection = await Promise.race(ps);
+        this.log && this.log('established connection with fastest node: ' + entries[connections.indexOf(best_connection)]);
 
 
-            // Close out all other connections
+        this.socket = best_connection;
+        this.socket_info.set(peers[connections.indexOf(best_connection)]);
 
-            connections.filter(c => c !== best_connection).forEach(connection => 
-                connection.readyState === 1 ? 
+        this.socket.addEventListener('message', bin => this.onmessage(bin));
+        this.socket.addEventListener('error', this.onclose);
+        this.socket.addEventListener('close', this.onclose);
 
-                    connection.close() : // In case two connections open very closely to one-another
+        this.socket.addEventListener('error', () => this.die());
 
-                    connection.onopen = () => connection.close());
+        // Flush messages
 
+        this.queue.forEach(bin => this.send(bin));
+        this.queue = [];
 
-            this.log && this.log('established connection with fastest node: ' + entries[connections.indexOf(best_connection)]);
-
-
-            this.socket = best_connection;
-            this.socket_info.set(peer_index[connections.indexOf(best_connection)]);
-
-            this.socket.addEventListener('message', bin => this.onmessage(bin));
-            this.socket.addEventListener('error', this.onclose);
-            this.socket.addEventListener('close', this.onclose);
-
-            this.socket.addEventListener('error', () => this.die());
-
-            // Flush messages
-
-            this.queue.forEach(bin => this.send(bin));
-            this.queue = [];
-
-        });
 
     }
 

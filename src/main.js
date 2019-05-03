@@ -41,25 +41,34 @@ module.exports = {
             return swarms;
         }
 
+        // 1. The swarmID's are copied in each of the config files and not part of the main script
+        // 2. The secret key needs a way to be communicated
 
-        // 1. merge Isabel's branch
-        // 2. reimplement fastest connection
-
-        const resolveIfTruthy = p => new Promise(res => p.then(v => v.has && console.log('has!') || res(v.has)));
-        const resolveIfFalsy = p => new Promise(res => p.then(v => v.has || console.log('doesnt have!') || res(v.has)));
+        // -> 2. can just be a const copied in run-swarms and the test script
+        // -> 1. we can make another file for our own use.
 
 
-        const hasDbs = swarms.map(swarm => promise_const(resolveIfTruthy(swarm.hasDB()), swarm));
+        // 2. reimplement fastest connection to not use status (should be a simplification)
+
+
+        const resolveIfTruthy = p => new Promise(res => p.then(v => v && res(v)));
+        const resolveIfFalsy = p => new Promise(res => p.then(v => v || res(v)));
+
+
+
+        const hasDbs = swarms.map(swarm => swarm.hasDB());
+
+        const hasDbSwarms = hasDbs.map((hasDB, i) => promise_const(resolveIfTruthy(hasDB), swarms[i]));
 
         // resolves with swarm client if uuid exists
-        const swarm_with_uuid = Promise.race(hasDbs);
+        const swarm_with_uuid = Promise.race(hasDbSwarms);
 
 
         // resolves to false if uuid doesn't exist
         const uuid_doesnt_exist = promise_const(Promise.all(hasDbs.map(resolveIfFalsy)), false);
 
 
-        let swarm = await Promise.race([swarm_with_uuid, uuid_doesnt_exist]);
+        const swarm = await Promise.race([swarm_with_uuid, uuid_doesnt_exist]);
 
         if(!swarm) {
 
@@ -81,8 +90,10 @@ module.exports = {
 };
 
 
-const promise_const = (p, v) => new Promise(resolve => p.then(v => resolve(p)));
-
+const promise_const = async (p, v) => {
+    await p;
+    return v;
+};
 
 const getSwarms = async BluzelleESR => {
 

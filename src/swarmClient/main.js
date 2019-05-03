@@ -51,22 +51,26 @@ module.exports = {
 
         const connection_layer = new Connection({ 
             entry: entry_url, 
+            peerslist,
             log, 
             onclose });
+
+        const broadcast_layer = new Broadcast({ 
+            p2p_latency_bound, 
+            peerslist, 
+            connection_layer, 
+            log, });
 
 
         const layers = [
 
             connection_layer,
+
             new Serialization({}),
             new Crypto({ private_pem, public_pem, log, }), 
             new Collation({ peerslist, point_of_contact: entry_uuid, }), 
 
-            new Broadcast({ 
-                p2p_latency_bound, 
-                peerslist, 
-                connection_layer, 
-                log, }),
+            broadcast_layer,
 
             new Redirect({}),
             new Envelope({ swarm_id }),
@@ -84,7 +88,10 @@ module.exports = {
 
         api.publicKey = () => public_pem;
 
-        api.close = () => layers[0].close();
+        api.close = () => {
+            connection_layer.close();
+            broadcast_layer.close();
+        }
 
 
         return api;
