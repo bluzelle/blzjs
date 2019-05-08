@@ -19,17 +19,15 @@ const rndString = () => new Array(10).fill(0).map(() => Math.floor(Math.random()
 
 const addSwarm = async (json, BluzelleESRInstance) => {
 
-    const swarm_id = "12345";
+    await BluzelleESRInstance.addSwarm(json.swarm_id,7,"Canada",true,"Disk",0,[],{ from: myAccount });
 
-    await BluzelleESRInstance.addSwarm(swarm_id,7,"Canada",true,"Disk",0,[],{ from: myAccount });
-
-    for(var i=0; i<json.length; i++){
-        await BluzelleESRInstance.addNode(swarm_id,
-            json[i].host,
-            json[i].name,
-            json[i].http_port,
-            json[i].port,
-            json[i].uuid
+    for(var i=0; i<json.peers.length; i++){
+        await BluzelleESRInstance.addNode(json.swarm_id,
+            json.peers[i].host,
+            json.peers[i].name,
+            json.peers[i].http_port,
+            json.peers[i].port,
+            json.peers[i].uuid
             );
     }
 
@@ -60,7 +58,7 @@ const main = async () => {
     recordTransaction("BluzelleESR.new", receiptTx, true);
 
 
-    const ps = fs.readdirSync('../swarmDB/local/nodes').filter(s => /^peers.*\.json$/.exec(s)).map(async file => {
+    const ps = fs.readdirSync('../swarmDB/local/nodes').filter(s => /^swarm.*\.json$/.exec(s)).map(async file => {
 
         const f = '../swarmDB/local/nodes/' + file;
         const json = JSON.parse(fs.readFileSync(f, 'utf8'));

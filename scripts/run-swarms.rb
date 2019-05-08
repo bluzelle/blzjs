@@ -42,8 +42,11 @@ i = 0
 (0...ARGV.length).each do |n|
 
   peers_file = base_dir + "/swarmDB/local/nodes/peers#{n}.json"
+  swarm_file = base_dir + "/swarmDB/local/nodes/swarm#{n}.json"
 
   peers = []
+
+  swarm_id = 'swarm' + n.to_s
 
   (0...ARGV[n].to_i).each do 
 
@@ -86,7 +89,7 @@ i = 0
       "monitor_address": "localhost",
       "monitor_port": 8125,
       "ws_idle_timeout": 10000,
-      "swarm_id": 12345
+      "swarm_id": "#{swarm_id}"
       }))
 
 
@@ -95,8 +98,14 @@ i = 0
     i += 1
   end
 
-  File.write(peers_file, '[' + peers.join(",\n") + ']')
 
+  peers_json = '[' + peers.join(",\n") + ']'
+
+  File.write(peers_file, peers_json)
+
+  swarm_json = %({"swarm_id":"#{swarm_id}","peers":#{peers_json}})
+
+  File.write(swarm_file, swarm_json)
 
 end
 
