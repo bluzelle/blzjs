@@ -2,9 +2,16 @@
 
 # 1. swarmDB is compiled
 # 2. BluzelleESR is compiled
-# 3. ganache-cli is running
+# 3. ganache is running (see deploy-ethereum.js)
 
 # npx ganache-cli --account="0x1f0d511e990ddbfec302e266d62542384f755f6cc6b3161b2e49a2a4e6c4be3d,100000000000000000000"
+
+
+#these mirror the keys in src/test/main.test.js
+master_pub_key = "MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEE/Yeq9sYdyeou+TnNEJjMnuntrzqcFIfIHd49LW461d55TY4hVX66ZXXGvAWRqMVMeELtYuKGYU44bPaxTb1ig=="
+
+# this private key is included here only for reference purposes
+master_priv_key = "MHQCAQEEIEOd7E9zSxgJjtpGzK/gHl0vVSOZ2iF3TY50InD67BnHoAcGBSuBBAAKoUQDQgAEE/Yeq9sYdyeou+TnNEJjMnuntrzqcFIfIHd49LW461d55TY4hVX66ZXXGvAWRqMVMeELtYuKGYU44bPaxTb1ig=="
 
 
 if(ARGV.length == 0)
@@ -12,6 +19,7 @@ if(ARGV.length == 0)
 end
 
 Dir.chdir '..'
+
 
 
 
@@ -89,7 +97,8 @@ i = 0
       "monitor_address": "localhost",
       "monitor_port": 8125,
       "ws_idle_timeout": 10000,
-      "swarm_id": "#{swarm_id}"
+      "swarm_id": "#{swarm_id}",
+      "owner_public_key": "#{master_pub_key}"
       }))
 
 

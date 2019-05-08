@@ -18,17 +18,7 @@ const {pub_from_priv, random_key} = require('../ecdsa_secp256k1');
 const elliptic = require('elliptic');
 
 
-it('version', () => {
-
-    assert(typeof version === 'string');
-    assert(version.length > 0);
-
-});
-
-
 const log = false;
-const entry = 'ws://localhost:50000';
-const p2p_latency_bound = 100;
 
 
 it('public key validation', () => {
@@ -40,7 +30,6 @@ it('public key validation', () => {
         private_pem: key,
         public_pem: pub_from_priv(key),
         log,
-        p2p_latency_bound,
     });
 
     bz.close();
@@ -51,10 +40,27 @@ it('public key validation', () => {
         private_pem: key,
         public_pem: 'I am invalid',
         log,
-        p2p_latency_bound,
     }));
 
 });
+
+it('type assertions', async () => {
+
+    const bz = bluzelle({
+        entry, 
+        private_pem: key,
+        public_pem: pub_from_priv(key),
+        log,
+    });
+
+    assert.throws(() => bz.create('hello', 3));
+    assert.throws(() => bz.addWriters(3));
+    assert.throws(() => bz.addWriters(['w1', 'w2', {}]));
+
+    bz.close();
+
+});
+
 
 
 describe('integration', () => {
@@ -234,15 +240,7 @@ describe('integration', () => {
 
     });
 
-    it('type assertions', async () => {
-
-        await bz.createDB();
-
-        assert.throws(() => bz.create('hello', 3));
-        assert.throws(() => bz.addWriters(3));
-        assert.throws(() => bz.addWriters(['w1', 'w2', {}]));
-
-    });
+    
 
 
     it('writers', async () => {

@@ -93,6 +93,8 @@ module.exports = {
             broadcast_layer.close();
         }
 
+        api.swarm_id = swarm_id;
+
 
         return api;
 

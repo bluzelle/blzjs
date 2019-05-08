@@ -1,3 +1,12 @@
+// Run this first:
+// npx ganache-cli --account="0x1f0d511e990ddbfec302e266d62542384f755f6cc6b3161b2e49a2a4e6c4be3d,100000000000000000000"
+// account: 0xaa81f360c6bbef505b28760fee25443f9d33e499
+
+// or if with ganache-gui, copy one of the keys
+const myAccount = "0xdD178A20eF01d76cC2066F16a155F4134A68A170";
+
+
+
 var BluzelleESR = artifacts.require("./BluzelleESR.sol");
 var fs = require('fs');
 
@@ -33,17 +42,6 @@ const addSwarm = async (json, BluzelleESRInstance) => {
 
 
 };
-
-
-
-// Run this first:
-// npx ganache-cli --account="0x1f0d511e990ddbfec302e266d62542384f755f6cc6b3161b2e49a2a4e6c4be3d,100000000000000000000"
-
-// account: 0xaa81f360c6bbef505b28760fee25443f9d33e499
-
-//owner
-//const myAccount = "0xaa81f360c6bbef505b28760fee25443f9d33e499";
-const myAccount = "0xdD178A20eF01d76cC2066F16a155F4134A68A170";
 
 
 module.exports = async () => main().catch(e => console.error(e));
