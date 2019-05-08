@@ -17,6 +17,18 @@ const assert = require('assert');
 const {random_key} = require('../swarmClient/ecdsa_secp256k1');
 
 
+// assert.rejects polyfill (doesn't work in browser for some reason)
+assert.rejects = assert.rejects || (async (p, e) => {
+
+    try {
+        await p;
+        return Promise.reject(new Error('expected rejection'));
+    } catch(e2) {
+        e && e.message && assert.equal(e.message, e2.message);
+        return Promise.resolve();
+    }
+
+});
 
 
 const ethereum_rpc = 'http://127.0.0.1:8545';
@@ -106,7 +118,8 @@ it('rejects operations on a non-extant database', async () => {
 
 });
 
-describe('api', () => {
+describe('api', function() {
+    this.timeout(5000);
 
     let uuid, bz;
 
