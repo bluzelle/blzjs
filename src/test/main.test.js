@@ -32,7 +32,7 @@ assert.rejects = assert.rejects || (async (p, e) => {
 
 
 const ethereum_rpc = 'http://127.0.0.1:8545';
-const contract_address = '0x6Cb639637166304A4D8969D05e47a4c36A334c9D';
+const contract_address = '0x91d7efF59C0053c3648DF8d1B332F4348DD7b094';
 
 const log = false;
 
@@ -269,13 +269,13 @@ describe('api', function() {
 
         assert(await bz.ttl('1') > 0);
 
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 2000));
 
         await assert.rejects(bz.read('1'));
 
     });
 
-    it('ttl with expire', async () => {
+    it('ttl with expire & persist', async () => {
         
         await bz.create('3', '4');
 
@@ -287,7 +287,20 @@ describe('api', function() {
 
         assert(await bz.ttl('3') > 0);
 
+        await bz.persist('3');
+
+        await assert.rejects(bz.ttl('3'));
+
     });
+
+
+    it('changing expiry', async () => {
+
+        await bz.create('4', '5', 6)
+        await bz.expire('4', 10)
+
+    });
+
 
     it('status', async () => {
 
