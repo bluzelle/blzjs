@@ -28,7 +28,7 @@ const assert = require('assert');
 
 
 module.exports = {
-    swarmClient: ({private_pem, public_pem, uuid, swarm_id, peerslist, log, p2p_latency_bound, onclose}) => {
+    swarmClient: ({private_pem, public_pem, uuid, swarm_id, peerslist, log, logDetailed, p2p_latency_bound, onclose}) => {
 
         p2p_latency_bound = p2p_latency_bound || 100;
 
@@ -37,6 +37,17 @@ module.exports = {
         if(log && typeof log !== 'function') {
             log = console.log.bind(console);
         }
+
+        // Add timestamp to logs
+        const timestamp = () => {
+            const d = new Date();
+            return '[' + d.getMinutes().toString().padStart(2, '0') + ':' + 
+                         d.getSeconds().toString().padStart(2, '0') + ':' + 
+                         d.getMilliseconds().toString().padEnd(3, '0') + '] ';
+        };
+
+        const log_ = log && ((a, ...args) => log(timestamp() + a, ...args));
+
 
         if(public_pem) {
             // throws an error if key is malformed
@@ -52,14 +63,15 @@ module.exports = {
         const connection_layer = new Connection({ 
             entry: entry_url, 
             peerslist,
-            log, 
+            log: log_, 
+            logDetailed,
             onclose });
 
         const broadcast_layer = new Broadcast({ 
             p2p_latency_bound, 
             peerslist, 
             connection_layer, 
-            log, });
+            log: log_, });
 
 
         const layers = [
@@ -67,14 +79,14 @@ module.exports = {
             connection_layer,
 
             new Serialization({}),
-            new Crypto({ private_pem, public_pem, log, }), 
+            new Crypto({ private_pem, public_pem, log: log_, }), 
             new Collation({ peerslist, point_of_contact: entry_uuid, }), 
 
             broadcast_layer,
 
             new Redirect({}),
             new Envelope({ swarm_id }),
-            new Metadata({ uuid: uuid || public_pem, log, }),
+            new Metadata({ uuid: uuid || public_pem, log: log_, }),
 
         ];
 

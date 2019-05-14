@@ -18,7 +18,7 @@ const assert = require('assert');
 const bluzelle_pb = require('../../proto/bluzelle_pb');
 const database_pb = require('../../proto/database_pb');
 const status_pb = require('../../proto/status_pb');
-
+const {coloredNonce, coloredString} = require('./log');
 
 
 const observable = () => {
@@ -40,9 +40,10 @@ const observable = () => {
 
 class Connection {
 
-    constructor({log, entry, onIncomingMsg, onclose, peerslist}) {
+    constructor({log, logDetailed, entry, onIncomingMsg, onclose, peerslist}) {
 
         this.log = log;
+        this.logDetailed = logDetailed;
         this.onIncomingMsg = onIncomingMsg;
 
         this.connection_pool = [];
@@ -61,7 +62,7 @@ class Connection {
 
     sendOutgoingMsg(bin) {
 
-        this.log && logOutgoing(bin, this.log);
+        this.log && logOutgoing(bin, this);
 
         this.connection_pool.forEach(connection => connection.send(bin));
 
@@ -73,7 +74,7 @@ class Connection {
 
         const actual_bin = Buffer.from(bin.data);
 
-        this.log && logIncoming(actual_bin, this.log);
+        this.log && logIncoming(actual_bin, this);
 
         this.onIncomingMsg(actual_bin);
 
@@ -285,9 +286,9 @@ module.exports = {
 
 
 
+const highlight = str => '\x1b[4m' + str + '\x1b[0m';
 
-
-const logIncoming = (bin, log) => {
+const logIncoming = (bin, obj) => {
 
     const bzn_envelope = bluzelle_pb.bzn_envelope.deserializeBinary(new Uint8Array(bin));
 
@@ -303,18 +304,21 @@ const logIncoming = (bin, log) => {
         assert(database_response instanceof database_pb.database_response);
 
 
-        const bzn_stuff = bzn_envelope.toObject();
-        const stuff = filterUndefined(database_response.toObject());
-        stuff.bzn = {};
+        const bzn_json = bzn_envelope.toObject();
+        const database_response_json = filterUndefined(database_response.toObject());
+        database_response_json.bzn = {};
 
-        stuff.bzn.sender = bzn_stuff.sender;
-        stuff.bzn.signature = bzn_stuff.signature;
-        stuff.bzn.timestamp = bzn_stuff.timestamp;
-        stuff.bzn.swarm_id = bzn_stuff.swarmId;
+        database_response_json.bzn.sender = bzn_json.sender;
+        database_response_json.bzn.signature = bzn_json.signature;
+        database_response_json.bzn.timestamp = bzn_json.timestamp;
+        database_response_json.bzn.swarm_id = bzn_json.swarmId;
 
 
+        obj.log(highlight('Incoming') + ' ' + coloredNonce(database_response_json.header.nonce) + ' with sender ' + coloredString('...' + bzn_json.sender.slice(100)));
         
-        log('Incoming database_response\n', stuff);
+        if(obj.logDetailed) {
+            obj.log(database_response_json);
+        }
 
     }
 
@@ -324,25 +328,28 @@ const logIncoming = (bin, log) => {
 
         assert(status_response instanceof status_pb.status_response);
 
-        const bzn_stuff = bzn_envelope.toObject();
-        const stuff = filterUndefined(status_response.toObject());
-        stuff.bzn = {};
+        const bzn_json = bzn_envelope.toObject();
+        const status_response_json = filterUndefined(status_response.toObject());
+        status_response_json.bzn = {};
 
-        stuff.bzn.sender = bzn_stuff.sender;
-        stuff.bzn.signature = bzn_stuff.signature;
-        stuff.bzn.timestamp = bzn_stuff.timestamp;
-        stuff.bzn.swarm_id = bzn_stuff.swarmId;
+        status_response_json.bzn.sender = bzn_json.sender;
+        status_response_json.bzn.signature = bzn_json.signature;
+        status_response_json.bzn.timestamp = bzn_json.timestamp;
+        status_response_json.bzn.swarm_id = bzn_json.swarmId;
 
 
+        obj.log(highlight('Incoming') + ' status_response');
 
-        log('Incoming status_response\n', stuff);
+        if(obj.loadDetailed) {
+            obj.log(status_response_json);
+        }
 
     }
 
 };
 
 
-const logOutgoing = (bin, log) => {
+const logOutgoing = (bin, obj) => {
 
     const bzn_envelope = bluzelle_pb.bzn_envelope.deserializeBinary(bin);
 
@@ -358,17 +365,21 @@ const logOutgoing = (bin, log) => {
         assert(database_msg instanceof database_pb.database_msg);
 
 
-        const bzn_stuff = bzn_envelope.toObject();
-        const stuff = filterUndefined(database_msg.toObject());
+        const bzn_json = bzn_envelope.toObject();
+        const database_msg_json = filterUndefined(database_msg.toObject());
 
-        stuff.bzn = {};
+        database_msg_json.bzn = {};
 
-        stuff.bzn.sender = bzn_stuff.sender;
-        stuff.bzn.signature = bzn_stuff.signature;
-        stuff.bzn.timestamp = bzn_stuff.timestamp;
-        stuff.bzn.swarm_id = bzn_stuff.swarmId;
+        database_msg_json.bzn.sender = bzn_json.sender;
+        database_msg_json.bzn.signature = bzn_json.signature;
+        database_msg_json.bzn.timestamp = bzn_json.timestamp;
+        database_msg_json.bzn.swarm_id = bzn_json.swarmId;
 
-        log('Outgoing database_msg\n', stuff);
+        obj.log(highlight('Outgoing') + ' ' + coloredNonce(database_msg_json.header.nonce));
+
+        if(obj.logDetailed) {
+            obj.log(database_msg_json);
+        }
 
     }
 
@@ -388,7 +399,11 @@ const logOutgoing = (bin, log) => {
         };
 
 
-        log('Outgoing status_request\n', bzn_stuff_filtered);
+        obj.log(highlight('Outgoing') + ' status_request');
+
+        if(obj.loadDetailed) {
+            obj.log(bzn_stuff_filtered);
+        }
 
     }
 
