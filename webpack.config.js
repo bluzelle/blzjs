@@ -40,8 +40,18 @@ module.exports = [
         },
         target: 'web',
 
+
         plugins: [
-            new WebpackShellPlugin({onBuildStart: ['proto/updateProto.sh']})
-        ]
+            new WebpackShellPlugin({onBuildStart: ['proto/updateProto.sh', 'scripts/scrypt.rb']}),
+        ],
+
+        module: { 
+            rules: [   
+                {
+                    test: /\.node$/,
+                    use: "node-loader"
+                }
+            ],
+        }
     }
 ];
