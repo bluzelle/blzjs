@@ -27,7 +27,11 @@ module.exports = [
 
         plugins: [
             new WebpackShellPlugin({onBuildStart: ['proto/updateProto.sh']})
-        ]
+        ],
+
+        stats: {
+            warnings: false
+        }
     },
 
     {
@@ -52,6 +56,10 @@ module.exports = [
                     use: "node-loader"
                 }
             ],
+        },
+
+        stats: {
+            warnings: false
         }
     }
 ];
