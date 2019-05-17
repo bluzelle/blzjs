@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Bluzelle
+ // Copyright (C) 2019 Bluzelle
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License, version 3,
@@ -32,9 +32,11 @@ assert.rejects = assert.rejects || (async (p, e) => {
 
 
 const ethereum_rpc = 'http://127.0.0.1:8545';
-const contract_address = '0x91d7efF59C0053c3648DF8d1B332F4348DD7b094';
+const contract_address = '0x8d22b2E44b31882ADa115889c964F593c41961dc';
 
-const log = false;
+
+const log = true;
+const logDetailed = false;
 
 
 // these mirror the keys in scripts/run-swarms.rb
@@ -56,6 +58,7 @@ describe('Secret master key database creation', () => {
 
             uuid: Math.random().toString(),
             log,
+            logDetailed,
 
             _connect_to_all: true
         });
@@ -76,6 +79,7 @@ describe('Secret master key database creation', () => {
 
             uuid: Math.random().toString(),
             log,
+            logDetailed,
 
             _connect_to_all: true
         });
@@ -112,6 +116,7 @@ it('rejects operations on a non-extant database', async () => {
 
         uuid: Math.random().toString(),
         log,
+        logDetailed,
     }), {
         message: "UUID does not exist in the Bluzelle swarm. Contact us at https://gitter.im/bluzelle/Lobby."
     });
@@ -137,6 +142,7 @@ describe('api', function() {
 
             uuid,
             log,
+            logDetailed,
 
             _connect_to_all: true
         });
@@ -156,6 +162,7 @@ describe('api', function() {
 
             uuid,
             log,
+            logDetailed,
         });
 
     });
@@ -387,6 +394,7 @@ describe('api', function() {
 
             uuid,
             log,
+            logDetailed,
         });
 
         bz2.close();
@@ -401,6 +409,7 @@ describe('api', function() {
 
             uuid,
             log,
+            logDetailed,
         }));
 
     });
