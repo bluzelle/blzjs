@@ -317,7 +317,7 @@ const logIncoming = (bin, obj) => {
         obj.log(highlight('Incoming') + ' ' + coloredNonce(database_response_json.header.nonce) + ' with sender ' + coloredString('...' + bzn_json.sender.slice(100)));
         
         if(obj.logDetailed) {
-            obj.log(database_response_json);
+            obj.log(JSON.stringify(database_response_json));
         }
 
     }
@@ -341,7 +341,7 @@ const logIncoming = (bin, obj) => {
         obj.log(highlight('Incoming') + ' status_response');
 
         if(obj.loadDetailed) {
-            obj.log(status_response_json);
+            obj.log(JSON.stringify(status_response_json));
         }
 
     }
@@ -378,7 +378,7 @@ const logOutgoing = (bin, obj) => {
         obj.log(highlight('Outgoing') + ' ' + coloredNonce(database_msg_json.header.nonce));
 
         if(obj.logDetailed) {
-            obj.log(database_msg_json);
+            obj.log(JSON.stringify(database_msg_json));
         }
 
     }
@@ -402,7 +402,7 @@ const logOutgoing = (bin, obj) => {
         obj.log(highlight('Outgoing') + ' status_request');
 
         if(obj.loadDetailed) {
-            obj.log(bzn_stuff_filtered);
+            obj.log(JSON.stringify(bzn_stuff_filtered));
         }
 
     }
