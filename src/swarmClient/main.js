@@ -80,7 +80,7 @@ module.exports = {
 
             new Serialization({}),
             new Crypto({ private_pem, public_pem, log: log_, }), 
-            new Collation({ peerslist, point_of_contact: entry_uuid, }), 
+            new Collation({ peerslist, point_of_contact: entry_uuid, log: log_, }), 
 
             broadcast_layer,
 

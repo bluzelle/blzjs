@@ -18,21 +18,33 @@ const abi = require('../BluzelleESR/build/contracts/BluzelleESR.json').abi;
 
 module.exports = {
     
-    bluzelle: async ({ethereum_rpc, contract_address, _connect_to_all, ...args}) => {
+    bluzelle: async ({ethereum_rpc, contract_address, _connect_to_all, log, ...args}) => {
 
 
         // fetch peerslist data
 
-        const web3 = new Web3(ethereum_rpc);
+        let web3js;
 
-        const BluzelleESR = web3.eth.Contract(abi, contract_address);
+        // Checking if Web3 has been injected by the browser (Mist/MetaMask)
+        if (typeof web3 !== 'undefined') {
+            // Use Mist/MetaMask's provider
+            web3js = new Web3(web3.currentProvider);
+        } else {
+            web3js = new Web3(new Web3.providers.HttpProvider(ethereum_rpc));
+        }
+
+
+        const BluzelleESR = web3js.eth.Contract(abi, contract_address);
 
         let swarms = await getSwarms(BluzelleESR);
+
+        log && console.log('ESR swarms:', JSON.stringify(swarms, null, 4));
 
         swarms = Object.entries(swarms).map(([swarm_id, swarm]) =>
             swarmClient({
                 peerslist: swarm.peers,
                 swarm_id,
+                log,
                 ...args
             }));
 
@@ -97,9 +109,11 @@ const promise_const = async (p, v) => {
 
 const getSwarms = async BluzelleESR => {
 
-    const swarmList = await BluzelleESR.methods.getSwarmList().call();
+    let swarmList = await BluzelleESR.methods.getSwarmList().call();
 
-    const swarmPromises = swarmList.map(getSwarm.bind(null, BluzelleESR));
+    swarmList = swarmList.filter(v => v !== '');
+
+    const swarmPromises = swarmList.map(swarm => getSwarm(BluzelleESR, swarm));
 
     const swarms = await Promise.all(swarmPromises);
     
@@ -116,6 +130,8 @@ const getSwarms = async BluzelleESR => {
 const getSwarm = async (BluzelleESR, swarm) => {
 
     const swarmInfo = await BluzelleESR.methods.getSwarmInfo(swarm).call();
+
+    swarmInfo.nodelist = swarmInfo.nodelist.filter(v => v !== '');
 
     const nodePromises = swarmInfo.nodelist.map(node => 
             BluzelleESR.methods.getNodeInfo(swarm, node).call());

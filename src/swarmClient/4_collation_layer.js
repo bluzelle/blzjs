@@ -22,7 +22,7 @@ const status_pb = require('../../proto/status_pb');
 
 module.exports = class Collation {
 
-    constructor({onIncomingMsg, onOutgoingMsg, peerslist, point_of_contact}) {
+    constructor({onIncomingMsg, onOutgoingMsg, peerslist, point_of_contact, log}) {
 
         this.onIncomingMsg = onIncomingMsg;
         this.onOutgoingMsg = onOutgoingMsg;
@@ -30,8 +30,11 @@ module.exports = class Collation {
         this.peerslist = peerslist;
         this.point_of_contact = point_of_contact;
 
-        this.f = Object.keys(peerslist).length;
 
+
+        this.f = Math.floor(Object.keys(peerslist).length / 3) + 1;
+
+        log && log('Collation threshold: ', this.f);
 
         // Maps nonces to the number of signatures they have accumulated.
         // A field in this map means an outgoing message is awaiting a reply
