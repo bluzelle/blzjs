@@ -23,15 +23,7 @@ module.exports = {
 
         // fetch peerslist data
 
-        let web3js;
-
-        // Checking if Web3 has been injected by the browser (Mist/MetaMask)
-        if (typeof web3 !== 'undefined') {
-            // Use Mist/MetaMask's provider
-            web3js = new Web3(web3.currentProvider);
-        } else {
-            web3js = new Web3(new Web3.providers.HttpProvider(ethereum_rpc));
-        }
+        const web3js = new Web3(new Web3.providers.HttpProvider(ethereum_rpc));
 
 
         const BluzelleESR = web3js.eth.Contract(abi, contract_address);
