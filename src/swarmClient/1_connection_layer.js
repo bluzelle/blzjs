@@ -124,6 +124,7 @@ class GenericSocket {
 
         this.socket.addEventListener('message', bin => this.onmessage(bin));
         this.socket.addEventListener('error', () => this.die());
+        this.socket.addEventListener('close', () => this.die());
 
     }
 
@@ -148,6 +149,8 @@ class GenericSocket {
         this.connection_pool.indexOf(this) !== -1 && this.connection_pool.splice(this.connection_pool.indexOf(this), 1);
 
         this.socket && this.socket.close();
+
+        this.onclose();
 
     }
 
