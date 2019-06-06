@@ -32,7 +32,7 @@ assert.rejects = assert.rejects || (async (p, e) => {
 
 
 const ethereum_rpc = 'http://127.0.0.1:8545';
-const contract_address = '0x911B65A779f2Fb5d9812b104705178AFbF1728Fb';
+const contract_address = '0xBb1F6AC2Ac284650075b11A62a78d9486f176c19';
 
 
 const log = true;
@@ -414,5 +414,30 @@ describe('api', function() {
 
     });
 
+
+
+    it('onclose', async () => {
+
+        let closed = false;
+
+        const bz2 = await bluzelle({
+            ethereum_rpc, 
+            contract_address,
+
+            private_pem: master_priv_key,
+            public_pem: master_pub_key,
+
+            uuid,
+            log,
+            logDetailed,
+
+            onclose: () => { closed = true; }
+        });
+
+        bz2.close();
+
+        assert(closed);
+
+    });
 
 });
