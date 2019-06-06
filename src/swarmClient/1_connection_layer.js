@@ -89,24 +89,6 @@ class Connection {
 };
 
 
-// runs function only once
-const once = f => {
-
-    let called = false;
-
-    return (...args) => {
-
-        if(!called) {
-
-            f(...args);
-            called = true;
-
-        }        
-
-    }
-
-};  
-
 
 
 class GenericSocket {
@@ -117,7 +99,7 @@ class GenericSocket {
 
         this.log && this.log('Opening socket at ' + entry);
 
-        this.onclose = (onclose && once(onclose)) || (() => {});
+        this.onclose = onclose;
 
         this.entry = entry;
         this.onmessage = onmessage;

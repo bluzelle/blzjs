@@ -32,6 +32,8 @@ module.exports = {
 
         p2p_latency_bound = p2p_latency_bound || 100;
 
+        onclose = (onclose && once(onclose)) || (() => {});
+
 
         // Default log is console.log, but you can pass any other function.
         if(log && typeof log !== 'function') {
@@ -147,3 +149,22 @@ const connect_layers = layers => {
     };
 
 };
+
+
+// runs function only once
+const once = f => {
+
+    let called = false;
+
+    return (...args) => {
+
+        if(!called) {
+
+            f(...args);
+            called = true;
+
+        }        
+
+    }
+
+};  
