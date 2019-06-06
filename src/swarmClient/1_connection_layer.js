@@ -99,7 +99,7 @@ class GenericSocket {
 
         this.log && this.log('Opening socket at ' + entry);
 
-        this.onclose = onclose || () => {};
+        this.onclose = onclose || (() => {});
 
         this.entry = entry;
         this.onmessage = onmessage;
