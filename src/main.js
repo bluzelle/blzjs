@@ -17,7 +17,7 @@ const Web3 = require('web3');
 const abi = require('../BluzelleESR/build/contracts/BluzelleESR.json').abi;
 
 module.exports = {
-    
+
     bluzelle: async ({ethereum_rpc, contract_address, _connect_to_all, log, ...args}) => {
 
 
@@ -26,7 +26,7 @@ module.exports = {
         const web3js = new Web3(new Web3.providers.HttpProvider(ethereum_rpc));
 
 
-        const BluzelleESR = web3js.eth.Contract(abi, contract_address);
+        const BluzelleESR = new web3js.eth.Contract(abi, contract_address);
 
         let swarms = await getSwarms(BluzelleESR);
 
@@ -108,7 +108,7 @@ const getSwarms = async BluzelleESR => {
     const swarmPromises = swarmList.map(swarm => getSwarm(BluzelleESR, swarm));
 
     const swarms = await Promise.all(swarmPromises);
-    
+
 
     const out = {};
 
@@ -125,7 +125,7 @@ const getSwarm = async (BluzelleESR, swarm) => {
 
     swarmInfo.nodelist = swarmInfo.nodelist.filter(v => v !== '');
 
-    const nodePromises = swarmInfo.nodelist.map(node => 
+    const nodePromises = swarmInfo.nodelist.map(node =>
             BluzelleESR.methods.getNodeInfo(swarm, node).call());
 
     let nodes = await Promise.all(nodePromises);
