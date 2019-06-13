@@ -17,6 +17,7 @@ const assert = require('assert');
 const bluzelle_pb = require('../../proto/bluzelle_pb');
 const database_pb = require('../../proto/database_pb');
 const status_pb = require('../../proto/status_pb');
+const {coloredNonce, coloredString} = require('./log');
 
 
 
@@ -30,6 +31,7 @@ module.exports = class Collation {
         this.peerslist = peerslist;
         this.point_of_contact = point_of_contact;
 
+        this.log = log;
 
 
         this.f = Math.floor(Object.keys(peerslist).length / 3) + 1;
@@ -119,8 +121,10 @@ module.exports = class Collation {
 
             }
 
+        
             // Discard senders that aren't on the peers list
             if(!Object.keys(this.peerslist).includes(sender)) {
+                this.log && this.log("Discarding invalid sender " + coloredString('...' + sender.slice(100)) + "; not on peerslist.");
                 return;
             }
 
@@ -141,6 +145,7 @@ module.exports = class Collation {
             if(!senders.includes(sender)) {
                 senders.push(sender);
             }
+
 
             // On success
             if(senders.length >= this.f) {

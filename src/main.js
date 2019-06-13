@@ -41,23 +41,25 @@ module.exports = {
             }));
 
 
+
+        // instead of rejecting, resolve with undefined
+        const resolveAnyCase = p => new Promise(r => p.then(r, e => console.error(e) || r()));
+
+        // wait for swarms to open
+        swarms = await Promise.all(swarms.map(resolveAnyCase));
+
+
+        // filter dead swarms
+        swarms = swarms.filter(p => p !== 'undefined');
+
+
         if(_connect_to_all) {
             return swarms;
         }
 
-        // 1. The swarmID's are copied in each of the config files and not part of the main script
-        // 2. The secret key needs a way to be communicated
-
-        // -> 2. can just be a const copied in run-swarms and the test script
-        // -> 1. we can make another file for our own use.
-
-
-        // 2. reimplement fastest connection to not use status (should be a simplification)
-
 
         const resolveIfTruthy = p => new Promise(res => p.then(v => v && res(v)));
         const resolveIfFalsy = p => new Promise(res => p.then(v => v || res(v)));
-
 
 
         const hasDbs = swarms.map(swarm => swarm.hasDB());

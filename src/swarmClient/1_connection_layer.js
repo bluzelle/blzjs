@@ -40,23 +40,15 @@ const observable = () => {
 
 class Connection {
 
-    constructor({log, logDetailed, entry, onIncomingMsg, onclose, peerslist}) {
+    constructor({log, logDetailed, ws, onIncomingMsg, }) {
 
         this.log = log;
         this.logDetailed = logDetailed;
         this.onIncomingMsg = onIncomingMsg;
 
-        this.connection_pool = [];
+        this.connection_pool = [ws];
 
-
-        //this.primary_socket = new PrimarySocket({
-        this.primary_socket = new GenericSocket({
-            entry, 
-            log,
-            onmessage: this.sendIncomingMsg.bind(this), 
-            connection_pool: this.connection_pool,
-            onclose
-        });
+        ws.addEventListener('message', bin => this.sendIncomingMsg(bin));
 
     }
 
@@ -82,7 +74,7 @@ class Connection {
 
     close() {
 
-        this.connection_pool.forEach(connection => connection.die());
+        this.connection_pool.forEach(connection => connection.close());
 
     }
 
@@ -125,8 +117,8 @@ class GenericSocket {
         });
 
         this.socket.addEventListener('message', bin => this.onmessage(bin));
-        this.socket.addEventListener('error', () => this.die());
-        this.socket.addEventListener('close', () => this.die());
+        this.socket.addEventListener('error', () => this.close());
+        this.socket.addEventListener('close', () => this.close());
 
     }
 
@@ -144,7 +136,7 @@ class GenericSocket {
 
     }
 
-    die() {
+    close() {
 
         this.log && this.log('Closing socket at ' + this.entry);
 
@@ -235,7 +227,7 @@ class PrimarySocket extends GenericSocket {
         this.socket.addEventListener('error', this.onclose);
         this.socket.addEventListener('close', this.onclose);
 
-        this.socket.addEventListener('error', () => this.die());
+        this.socket.addEventListener('error', () => this.close());
 
         // Flush messages
 

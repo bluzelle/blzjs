@@ -23,22 +23,21 @@ const Envelope = require('./7_envelope_layer');
 const Metadata = require('./8_metadata_layer');
 const API = require('./9_api_layer');
 
+const WebSocket = require('isomorphic-ws');
+
+
 const { pub_from_priv, import_private_key_from_base64, import_public_key_from_base64 } = require('./ecdsa_secp256k1');
 const assert = require('assert');
 
 
 module.exports = {
-    swarmClient: ({private_pem, public_pem, uuid, swarm_id, peerslist, log, logDetailed, p2p_latency_bound, onclose}) => {
+    swarmClient: async ({private_pem, public_pem, uuid, swarm_id, peerslist, log, logDetailed, p2p_latency_bound, onclose}) => {
 
         p2p_latency_bound = p2p_latency_bound || 100;
 
         onclose = (onclose && once(onclose)) || (() => {});
 
 
-        // Default log is console.log, but you can pass any other function.
-        if(log && typeof log !== 'function') {
-            log = console.log.bind(console);
-        }
 
         // Add timestamp to logs
         const timestamp = () => {
@@ -48,7 +47,18 @@ module.exports = {
                          d.getMilliseconds().toString().padEnd(3, '0') + '] ';
         };
 
-        const log_ = log && ((a, ...args) => log(timestamp() + a, ...args));
+
+        if(log) {   
+
+            // Default log is console.log, but you can pass any other function.
+            if(typeof log !== 'function') {
+                log = console.log.bind(console);
+            }
+
+            const log_ = log;
+            log = ((a, ...args) => log_(timestamp() + a, ...args));;
+
+        }
 
 
         if(public_pem) {
@@ -56,24 +66,25 @@ module.exports = {
             import_public_key_from_base64(public_pem);
         }
 
-        const [entry_uuid, entry_obj] = Object.entries(peerslist)[0];
-        const entry_url = 'ws://' + entry_obj.nodeHost + ':' + entry_obj.nodePort;
-
         public_pem = public_pem || pub_from_priv(private_pem);
 
 
+
+        const [ws, entry_uuid, entry_obj] = await fastest_peer(peerslist);
+        ws.addEventListener('close', () => onclose());
+
+
         const connection_layer = new Connection({ 
-            entry: entry_url, 
-            peerslist,
-            log: log_, 
+            ws,
+            log, 
             logDetailed,
-            onclose });
+        });
 
         const broadcast_layer = new Broadcast({ 
             p2p_latency_bound, 
             peerslist, 
             connection_layer, 
-            log: log_, });
+            log, });
 
 
         const layers = [
@@ -81,21 +92,21 @@ module.exports = {
             connection_layer,
 
             new Serialization({}),
-            new Crypto({ private_pem, public_pem, log: log_, }), 
-            new Collation({ peerslist, point_of_contact: entry_uuid, log: log_, }), 
+            new Crypto({ private_pem, public_pem, log, }), 
+            new Collation({ peerslist, point_of_contact: entry_uuid, log, }), 
 
             broadcast_layer,
 
             new Redirect({}),
             new Envelope({ swarm_id }),
-            new Metadata({ uuid: uuid || public_pem, log: log_, }),
+            new Metadata({ uuid: uuid || public_pem, log, }),
 
         ];
 
 
         const sandwich = connect_layers(layers);
 
-        api = new API(sandwich.sendOutgoingMsg);
+        const api = new API(sandwich.sendOutgoingMsg);
         
 
         // These API functions aren't actual database operations
@@ -108,6 +119,8 @@ module.exports = {
         }
 
         api.swarm_id = swarm_id;
+        api.entry_uuid = entry_uuid;
+        api.entry_obj = entry_obj;
 
 
         return api;
@@ -168,3 +181,51 @@ const once = f => {
     }
 
 };  
+
+
+
+const fastest_peer = async peerslist => {
+
+    const entries = Object.entries(peerslist);
+
+    let sockets = entries.map(([_, obj]) => 'ws://' + obj.nodeHost + ':' + obj.nodePort);
+
+
+    const WS = entry => {
+
+        const ws = new WebSocket(entry);
+        ws.binaryType = 'arraybuffer';
+
+
+        const p = new Promise((res, rej) => {
+        
+            ws.addEventListener('open', () => res(ws));
+
+        });
+
+        p.socket = ws;
+
+        return p;
+
+    };
+
+
+    sockets = sockets.map(WS);
+
+    const ws = await Promise.race(sockets);
+
+    sockets = sockets.map(s => s.socket);
+
+
+    // close the failures
+    sockets.forEach(w => (w !== ws) && 
+        w.readyState === 1 ? 
+            w.close() : 
+            w.addEventListener('open', () => w.close()));
+
+
+    const [entry_uuid, entry_obj] = entries[sockets.indexOf(ws)];
+
+    return [ws, entry_uuid, entry_obj];
+
+};

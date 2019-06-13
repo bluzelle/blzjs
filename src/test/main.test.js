@@ -32,10 +32,10 @@ assert.rejects = assert.rejects || (async (p, e) => {
 
 
 const ethereum_rpc = 'http://127.0.0.1:8545';
-const contract_address = '0x1C29cEB6fa40791598c06b8a293D22c8FB1445b4';
+const contract_address = '0x5a801cf5e5C02D32CdF1e8daabb0734F3C3795ff';
 
 
-const log = true;
+const log = false;
 const logDetailed = false;
 
 
@@ -65,7 +65,7 @@ describe('Secret master key database creation', () => {
 
         await apis[0].createDB();
 
-        api.close();
+        apis.forEach(api => api.close());
 
     });
 
@@ -91,7 +91,7 @@ describe('Secret master key database creation', () => {
             }    
         );
 
-        api.close();
+        apis.forEach(api => api.close());
 
     });
 
@@ -435,6 +435,8 @@ describe('api', function() {
         });
 
         bz2.close();
+
+        await new Promise(r => setTimeout(r, 50));
 
         assert(closed);
 
