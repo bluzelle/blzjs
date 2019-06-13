@@ -32,7 +32,7 @@ assert.rejects = assert.rejects || (async (p, e) => {
 
 
 const ethereum_rpc = 'http://127.0.0.1:8545';
-const contract_address = '0xBb1F6AC2Ac284650075b11A62a78d9486f176c19';
+const contract_address = '0x1C29cEB6fa40791598c06b8a293D22c8FB1445b4';
 
 
 const log = true;
@@ -437,6 +437,14 @@ describe('api', function() {
         bz2.close();
 
         assert(closed);
+
+    });
+
+
+    it('timeout', async () => {
+
+        // 1ms timeout should reject before doing anything
+        await assert.rejects(bz.create('a', 'b').timeout(1));
 
     });
 
