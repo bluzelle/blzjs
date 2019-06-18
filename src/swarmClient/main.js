@@ -197,6 +197,10 @@ const fastest_peer = async peerslist => {
         ws.binaryType = 'arraybuffer';
 
 
+        // hide errors
+        ws.addEventListener('error', () => {});
+
+
         const p = new Promise((res, rej) => {
         
             ws.addEventListener('open', () => res(ws));
