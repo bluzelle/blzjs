@@ -196,18 +196,25 @@ const fastest_peer = async peerslist => {
         const ws = new WebSocket(entry);
         ws.binaryType = 'arraybuffer';
 
+        const error_listener = () => {};
 
         // hide errors
-        ws.addEventListener('error', () => {});
+        ws.addEventListener('error', error_listener);
 
 
         const p = new Promise((res, rej) => {
         
-            ws.addEventListener('open', () => res(ws));
+            ws.addEventListener('open', () => {
+
+                ws.removeEventListener('error', error_listener);
+                res(ws);
+
+            });
 
         });
 
         p.socket = ws;
+
 
         return p;
 
