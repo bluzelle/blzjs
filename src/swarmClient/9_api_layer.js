@@ -46,7 +46,14 @@ const timeout_promise = f => {
 
     const p2 = timeout(default_timeout);
         
-    p2.timeout = t => t === 0 ? p : timeout(t);
+    p2.timeout = t => {
+            
+        // silence the default timeout error
+        p2.catch(() => {});
+        
+        return t === 0 ? p : timeout(t);
+           
+    };
 
     return p2;
 
