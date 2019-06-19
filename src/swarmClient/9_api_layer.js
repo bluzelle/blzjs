@@ -43,9 +43,9 @@ const timeout_promise = f => {
     const timeout = t => 
         Promise.race([
             p, 
-            nullify_error(new Promise((_, rej) => 
+            new Promise((_, rej) => 
                 setTimeout(() => 
-                    rej(new Error('operation timed out after ' + t + 'ms')), t)))
+                    rej(new Error('operation timed out after ' + t + 'ms')), t))
         ]);
 
 
