@@ -117,7 +117,7 @@ module.exports = class Broadcast {
             if(this.timeoutFns.has(nonce)) {
                 this.timeoutFns.set(nonce, () => {});
 
-                this.sockets && this.sockets.forEach(socket => socket.die());
+                this.sockets && this.sockets.forEach(socket => socket.close());
                 this.sockets = undefined;
             }
 

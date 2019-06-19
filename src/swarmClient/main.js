@@ -70,8 +70,10 @@ module.exports = {
 
 
 
-        const [ws, entry_uuid, entry_obj] = await fastest_peer(peerslist);
+        const [ws, entry_uuid, entry_obj] = await fastest_peer(peerslist, log);
         ws.addEventListener('close', () => onclose());
+
+        debugger;
 
 
         const connection_layer = new Connection({ 
@@ -184,7 +186,7 @@ const once = f => {
 
 
 
-const fastest_peer = async peerslist => {
+const fastest_peer = async (peerslist, log) => {
 
     const entries = Object.entries(peerslist);
 
@@ -196,7 +198,7 @@ const fastest_peer = async peerslist => {
         const ws = new WebSocket(entry);
         ws.binaryType = 'arraybuffer';
 
-        const error_listener = () => {};
+        const error_listener = e => {log && log('WS Error: ' + e.message)};
 
         // hide errors
         ws.addEventListener('error', error_listener);
@@ -206,7 +208,7 @@ const fastest_peer = async peerslist => {
         
             ws.addEventListener('open', () => {
 
-                ws.removeEventListener('error', error_listener);
+                // ws.removeEventListener('error', error_listener);
                 res(ws);
 
             });

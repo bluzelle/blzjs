@@ -56,7 +56,19 @@ class Connection {
 
         this.log && logOutgoing(bin, this);
 
-        this.connection_pool.forEach(connection => connection.send(bin));
+
+        
+
+        this.connection_pool.forEach(connection => {
+
+            try {
+                connection.send(bin)
+            } catch(e) {
+                this.log && this.log('Error ' + e.message);
+            }
+
+        });
+
 
     }
 
@@ -117,7 +129,7 @@ class GenericSocket {
         });
 
         this.socket.addEventListener('message', bin => this.onmessage(bin));
-        this.socket.addEventListener('error', () => this.close());
+        this.socket.addEventListener('error', e => this.close(e));
         this.socket.addEventListener('close', () => this.close());
 
     }
@@ -136,9 +148,15 @@ class GenericSocket {
 
     }
 
-    close() {
+    close(e) {  
 
-        this.log && this.log('Closing socket at ' + this.entry);
+        if(e) {
+            this.log && this.log('WS Error: ' + e.message);
+            return;
+        } else {
+            this.log && this.log('Closing socket at ' + this.entry);
+        }
+
 
         this.connection_pool.indexOf(this) !== -1 && this.connection_pool.splice(this.connection_pool.indexOf(this), 1);
 

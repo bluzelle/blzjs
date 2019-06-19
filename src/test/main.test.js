@@ -32,10 +32,10 @@ assert.rejects = assert.rejects || (async (p, e) => {
 
 
 const ethereum_rpc = 'http://127.0.0.1:8545';
-const contract_address = '0x901BedE051B84da725A4Ed7142F9F32c4d3DB30F';
+const contract_address = '0xa903A8b17D4707BC20Fa352CB5936cD0288759Ce';
 
 
-const log = false;
+const log = true;
 const logDetailed = false;
 
 
