@@ -34,24 +34,31 @@ const decode = binary => Buffer.from(binary).toString('utf-8');
 const timeout_promise = f => {
 
     const default_timeout = 5000;
+    
+    
+    const nullify_error = p => p.catch(() => {});
+    const unnullify_error = p => new Promise((a, b) => p.then(a, b));
 
+    
     const timeout = t => 
         Promise.race([
             p, 
-            new Promise((_, rej) => setTimeout(() => rej(new Error('operation timed out after ' + t + 'ms')), t))
+            nullify_error(new Promise((_, rej) => 
+                setTimeout(() => 
+                    rej(new Error('operation timed out after ' + t + 'ms')), t)))
         ]);
 
 
     const p = new Promise(f);
+    nullify_error(p);
 
     const p2 = timeout(default_timeout);
         
     p2.timeout = t => {
             
-        // silence the default timeout error
-        p2.catch(() => {});
+        nullify_error(p2);
         
-        return t === 0 ? p : timeout(t);
+        return t === 0 ? unnullify_error(p) : timeout(t);
            
     };
 
