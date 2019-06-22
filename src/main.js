@@ -136,7 +136,6 @@ const getSwarm = async (BluzelleESR, swarm) => {
     nodes = nodes.map(node => ({
         nodeCount: Number(node.nodeCount),
         nodeHost: node.nodeHost,
-        nodeHttpPort: Number(node.nodeHttpPort),
         nodeName: node.nodeName,
         nodePort: Number(node.nodePort),
     }));
