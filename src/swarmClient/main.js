@@ -73,8 +73,6 @@ module.exports = {
         const [ws, entry_uuid, entry_obj] = await fastest_peer(peerslist, log);
         ws.addEventListener('close', () => onclose());
 
-        debugger;
-
 
         const connection_layer = new Connection({ 
             ws,

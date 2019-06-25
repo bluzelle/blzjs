@@ -96,7 +96,7 @@ i = 0
       "crypto_enabled_incoming" : true,
       "monitor_address": "localhost",
       "monitor_port": 8125,
-      "ws_idle_timeout": 10000,
+      "ws_idle_timeout": 1000000,
       "swarm_id": "#{swarm_id}",
       "owner_public_key": "#{master_pub_key}"
       }))
