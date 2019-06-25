@@ -20,7 +20,7 @@ const abi = require('../BluzelleESR/build/contracts/BluzelleESR.json').abi;
 module.exports = {
 
     bluzelle: async ({ethereum_rpc, contract_address, _connect_to_all, log, ...args}) => {
-
+        
         ethereum_rpc = ethereum_rpc || default_connection.ethereum_rpc;
         contract_address = contract_address || default_connection.contract_address;
         

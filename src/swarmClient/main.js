@@ -109,10 +109,6 @@ module.exports = {
         const api = new API(sandwich.sendOutgoingMsg);
         
 
-        // These API functions aren't actual database operations
-
-        api.publicKey = () => public_pem;
-
         api.close = () => {
             connection_layer.close();
             broadcast_layer.close();
