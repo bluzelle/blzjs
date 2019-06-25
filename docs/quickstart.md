@@ -1,5 +1,9 @@
 # Quick Start
 
+## 0. Contact us to get your Bluzelle key pair
+
+{% embed url="https://gitter.im/bluzelle/Lobby" %}
+
 ## 1. Create an NPM Project
 
 With NodeJS and NPM installed creating a project is a straight forward process:
@@ -18,25 +22,22 @@ Run `npm install bluzelle` to get the latest and greatest Bluzelle sdk \(see [in
 
 Create a file, `my-program.js`, and paste the following starter code. \(Click the copy button in the top-right corner of the code window to preserve line endings\)
 
-Run the program with `node my-program`. The expected output is `The value of myKey is: myValue`. If you run the program multiple times on the same uuid, it will fail with `DATABASE_EXISTS` . Change the uuid to get a fresh database.
+Replace `public_pem` and `private_pem` with your personal key pair.
 
-Explore the rest of the API on the [API page](api.md) and read about [cryptographic permissioning](permissioning.md).
+Run the program with `node my-program`. The expected output is `The value of myKey is: myValue`. If you run the program multiple times, it will fail with `KEY_EXISTS` .
+
+Explore the rest of the API on the [API page](api.md) and read about [cryptographic permissioning]().
 
 ```javascript
 const { bluzelle } = require('bluzelle');
 
-const bz = bluzelle({
-    entry: 'ws://testnet.bluzelle.com:51010',
-
-    // This UUID identifies your database and may be changed.
-    uuid: '5f493479–2447–47g6–1c36-efa5d251a283',
-
-    // This is the private key used for signing off database operations
-    private_pem: 'MHQCAQEEIFNmJHEiGpgITlRwao/CDki4OS7BYeI7nyz+CM8NW3xToAcGBSuBBAAKoUQDQgAEndHOcS6bE1P9xjS/U+SM2a1GbQpPuH9sWNWtNYxZr0JcF+sCS2zsD+xlCcbrRXDZtfeDmgD9tHdWhcZKIy8ejQ=='
-});
 
 const main = async () => {
-    await bz.createDB();
+    const bz = await bluzelle({
+        public_pem: 'MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAE9bpzn2nMBJUndlgsbDH5II5zboGWq3DCfv0alLYUdPBqYIy0atSU5QuckupktqPebw28y/ZZ38k0MVfCQrYE5g==',
+        private_pem: 'MHQCAQEEIBWT/Vz7ZAxqkaBxXhjKEXfteiERFMNf2QqM7PxuXDOwoAcGBSuBBAAKoUQDQgAE9bpzn2nMBJUndlgsbDH5II5zboGWq3DCfv0alLYUdPBqYIy0atSU5QuckupktqPebw28y/ZZ38k0MVfCQrYE5g=='
+    });
+    
     await bz.create('myKey', 'myValue');
     console.log('The value of myKey is: ', await bz.read('myKey'));
     bz.close();
