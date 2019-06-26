@@ -32,11 +32,11 @@ assert.rejects = assert.rejects || (async (p, e) => {
 
 
 const ethereum_rpc = 'http://127.0.0.1:8545';
-const contract_address = '0xb17fa3827a664Eb0CB4fF827cA320944E5E34E5D';
+const contract_address = '0x5251e920Ef3bd0E38332De61093955636a63ABe4';
 
 
 const log = true;
-const logDetailed = false;
+const logDetailed = true;
 
 
 // these mirror the keys in scripts/run-swarms.rb
@@ -252,24 +252,24 @@ describe('api', function() {
     });
 
 
-    // it('hasDB/createDB/deleteDB', async () => {    
+    it.skip('hasDB/createDB/deleteDB', async () => {    
 
-    //     assert(await bz.hasDB());
+        assert(await bz.hasDB());
 
-    //     await bz.createDB();
+        await bz.createDB();
 
-    //     await assert.rejects(bz.createDB());
+        await assert.rejects(bz.createDB());
 
-    //     assert(await bz.hasDB());
+        assert(await bz.hasDB());
 
-    //     await bz.deleteDB();
+        await bz.deleteDB();
 
-    //     assert(!await bz.hasDB());
+        assert(!await bz.hasDB());
 
-    // });
+    });
 
 
-    it('ttl with create', async () => {
+    it.skip('ttl with create', async () => {
 
         await bz.create('1', '2', 1);
         assert.equal(await bz.read('1'),'2');
@@ -282,7 +282,7 @@ describe('api', function() {
 
     });
 
-    it('ttl with expire & persist', async () => {
+    it.skip('ttl with expire & persist', async () => {
         
         await bz.create('3', '4');
 
@@ -301,7 +301,7 @@ describe('api', function() {
     });
 
 
-    it('changing expiry', async () => {
+    it.skip('changing expiry', async () => {
 
         await bz.create('4', '5', 6)
         await bz.expire('4', 10)
@@ -326,7 +326,7 @@ describe('api', function() {
         assert.deepEqual(
             await bz._getWriters(), 
             {
-                owner: bz.publicKey(),
+                owner: master_pub_key,
                 writers: []
             }
         );
@@ -358,7 +358,7 @@ describe('api', function() {
         assert.deepEqual(
             await bz._getWriters(),
             {
-                owner: bz.publicKey(),
+                owner: master_pub_key,
                 writers: [writers[1]]
             }
         );

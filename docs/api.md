@@ -200,7 +200,7 @@ Returns a promise resolving to nothing.
 
 ## Database Functions
 
-### create\(key, value\[, ttl\]\)
+### create\(key, value\)
 
 Create a field in the database.
 
@@ -216,7 +216,6 @@ await api.create('mykey', '{ a: 13 }');
 | :--- | :--- |
 | key | The name of the key to create |
 | value | The string value to set the key |
-| ttl | \(Optional\) The field's time-to-live, in seconds. |
 
 Returns a promise resolving to nothing.
 
@@ -246,7 +245,7 @@ Returns a promise resolving the string value of the key.
 
 Fails when a response is not received or the key does not exist in the database.
 
-### update\(key, value\[, ttl\]\)
+### update\(key, value\)
 
 Updates a field in the database.
 
@@ -262,7 +261,6 @@ await api.update('mykey', '{ a: 13 }');
 | :--- | :--- |
 | key | The name of the key to create |
 | value | The string value to set the key |
-| ttl | \(Optional\) The field's time-to-live, in seconds. |
 
 Returns a promise resolving to nothing.
 
@@ -392,69 +390,3 @@ const size = await api.size();
 Returns a promise resolving to an integer.
 
 Fails when a response is not received from the connection.
-
-## Expiry Functions
-
-### expire\(key, expiry\)
-
-Sets an expiry on a field.
-
-```javascript
-// promise syntax
-api.expire('myKey', 100).then(() => { ... }, error => { ... });
-
-// async/await syntax
-await api.expire('myKey', 100);
-```
-
-| Argument | Description |
-| :--- | :--- |
-| key | The name of the key |
-| expiry | The number of seconds that the key will survive before being deleted. |
-
-Returns a promise resolving to a nothing.
-
-Fails when a response is not received from the connection or internal error.
-
-### persist\(key\)
-
-Removes the expiry from a field.
-
-```javascript
-// promise syntax
-api.persist('myKey').then(() => { ... }, error => { ... });
-
-// async/await syntax
-await api.persist('myKey');
-```
-
-| Argument | Description |
-| :--- | :--- |
-| key | The name of the key |
-
-Returns a promise resolving to a nothing.
-
-Fails when a response is not received from the connection or internal error.
-
-### ttl\(key\)
-
-Returns the remaining time-to-live of the given key, in seconds.
-
-```javascript
-// promise syntax
-api.ttl('myKey').then(ttl => { ... }, error => { ... });
-
-// async/await syntax
-const ttl = await api.ttl('myKey');
-```
-
-| Argument | Description |
-| :--- | :--- |
-| key | The name of the key |
-
-Returns a promise resolving to an integer.
-
-Fails when a response is not received from the connection, expiry does not exist, or internal error.
-
-
-
