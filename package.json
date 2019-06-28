@@ -1,6 +1,6 @@
 {
   "name": "bluzelle",
-  "version": "0.6.523",
+  "version": "0.6.526",
   "description": "Bluzelle Database for JavaScript",
   "main": "lib/bluzelle-node.js",
   "browser": "lib/bluzelle-web.js",

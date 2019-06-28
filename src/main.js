@@ -14,8 +14,11 @@
 
 const {swarmClient} = require('./swarmClient/main');
 const default_connection = require('../default_connection');
+
 const Web3 = require('web3');
+
 const abi = require('../BluzelleESR/build/contracts/BluzelleESR.json').abi;
+
 
 module.exports = {
 
@@ -24,7 +27,6 @@ module.exports = {
         ethereum_rpc = ethereum_rpc || default_connection.ethereum_rpc;
         contract_address = contract_address || default_connection.contract_address;
         
-
         // fetch peerslist data
 
         const web3js = new Web3(new Web3.providers.HttpProvider(ethereum_rpc));
