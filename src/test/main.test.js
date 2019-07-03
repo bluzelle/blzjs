@@ -31,8 +31,8 @@ assert.rejects = assert.rejects || (async (p, e) => {
 });
 
 
-const ethereum_rpc = 'http://127.0.0.1:8545';
-const contract_address = '0xf622e922d7bBA02373038fC0FE73d79f8Db7F1ce';
+const ethereum_rpc = ''; // 'http://127.0.0.1:8545';
+const contract_address = ''; // '0xf622e922d7bBA02373038fC0FE73d79f8Db7F1ce';
 
 
 const log = true;
@@ -47,7 +47,7 @@ const master_priv_key = "MHQCAQEEIEOd7E9zSxgJjtpGzK/gHl0vVSOZ2iF3TY50InD67BnHoAc
 describe('Secret master key database creation', () => {
    
 
-    it('Passes with master key', async () => {
+    it.only('Passes with master key', async () => {
 
         const apis = await bluzelle({
             ethereum_rpc, 
