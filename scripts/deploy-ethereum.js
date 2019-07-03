@@ -8,6 +8,7 @@ const myAccount = "0xdD178A20eF01d76cC2066F16a155F4134A68A170";
 
 
 var BluzelleESR = artifacts.require("./BluzelleESR.sol");
+
 var fs = require('fs');
 
 var receipts = []
@@ -31,12 +32,13 @@ const addSwarm = async (json, BluzelleESRInstance) => {
     await BluzelleESRInstance.addSwarm(json.swarm_id,7,"Canada",true,"Disk",0,[],{ from: myAccount });
 
     for(var i=0; i<json.peers.length; i++){
-        await BluzelleESRInstance.addNode(json.swarm_id,
+
+        await BluzelleESRInstance.addNode(
+            json.swarm_id,
             json.peers[i].host,
             json.peers[i].name,
-            json.peers[i].http_port,
             json.peers[i].port,
-            json.peers[i].uuid
+            json.peers[i].uuid,
             );
     }
 
@@ -60,6 +62,8 @@ const main = async () => {
 
         const f = '../swarmDB/local/nodes/' + file;
         const json = JSON.parse(fs.readFileSync(f, 'utf8'));
+
+        console.log(json);
 
         await addSwarm(json, BluzelleESRInstance);
 

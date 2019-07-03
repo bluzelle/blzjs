@@ -77,7 +77,6 @@ i = 0
         "name": "node#{i}", 
         "host": "127.0.0.1", 
         "port": #{50000+i}, 
-        "http_port": #{5080+i}, 
         "uuid": "#{node_uuid}"
       })
 
