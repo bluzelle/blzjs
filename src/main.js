@@ -68,7 +68,7 @@ module.exports = {
         const resolveIfFalsy = p => new Promise(res => p.then(v => v || res(v)));
 
 
-        const hasDbs = swarms.map(swarm => swarm.hasDB());
+        const hasDbs = swarms.map(swarm => swarm._hasDB());
 
         const hasDbSwarms = hasDbs.map((hasDB, i) => promise_const(resolveIfTruthy(hasDB), swarms[i]));
 

@@ -32,7 +32,7 @@ assert.rejects = assert.rejects || (async (p, e) => {
 
 
 const ethereum_rpc = 'http://127.0.0.1:8545';
-const contract_address = '0x7446a83f453808eeEEB19EC0ED9407e2b328B6aC';
+const contract_address = '0x2Bc0589Fc40F21254407966B7f39654a05a7CD34';
 
 
 const log = true;
@@ -64,7 +64,7 @@ describe('Secret master key database creation', () => {
         });
 
 
-        assert(await apis[0]._hasDB());
+        assert(!await apis[0]._hasDB());
 
         await apis[0]._createDB();
 
@@ -81,7 +81,7 @@ describe('Secret master key database creation', () => {
 
     });
 
-    it('Fails with non-master key', async () => {
+    it.skip('Fails with non-master key', async () => {
 
         const apis = await bluzelle({
             ethereum_rpc, 
