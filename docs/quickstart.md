@@ -26,27 +26,30 @@ Replace `public_pem` and `private_pem` with your personal key pair.
 
 Run the program with `node my-program`. The expected output is `The value of myKey is: myValue`. If you run the program multiple times, it will fail with `KEY_EXISTS` .
 
-Explore the rest of the API on the [API page](api.md) and read about [cryptographic permissioning]().
+Explore the rest of the API on the [API page](api.md).
 
 ```javascript
 const { bluzelle } = require('bluzelle');
 
+let bz;
 
 const main = async () => {
-    const bz = await bluzelle({
+
+    bz = await bluzelle({
         public_pem: 'MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAE9bpzn2nMBJUndlgsbDH5II5zboGWq3DCfv0alLYUdPBqYIy0atSU5QuckupktqPebw28y/ZZ38k0MVfCQrYE5g==',
         private_pem: 'MHQCAQEEIBWT/Vz7ZAxqkaBxXhjKEXfteiERFMNf2QqM7PxuXDOwoAcGBSuBBAAKoUQDQgAE9bpzn2nMBJUndlgsbDH5II5zboGWq3DCfv0alLYUdPBqYIy0atSU5QuckupktqPebw28y/ZZ38k0MVfCQrYE5g=='
     });
     
     await bz.create('myKey', 'myValue');
+    
     console.log('The value of myKey is: ', await bz.read('myKey'));
-    bz.close();
+
 };
 
-main().catch(e => { 
-    bz.close();
-    throw e;
-});
+
+main()
+    .catch(e => console.error(e.message))
+    .finally(() => bz && bz.close());
 ```
 
 ## Troubleshooting
@@ -54,6 +57,10 @@ main().catch(e => {
 {% hint style="info" %}
 Sometimes running a "hello world" program does not produce expected results. Common problems are listed below.
 {% endhint %}
+
+### UUID does not exist in the Bluzelle swarm...
+
+You have to contact us to receive your unique key pair and replace the `private_pem` and `public_pem` in the code sample given.
 
 ### Your NodeJS installation is out of date
 
