@@ -47,7 +47,7 @@ const master_priv_key = "MHQCAQEEIEOd7E9zSxgJjtpGzK/gHl0vVSOZ2iF3TY50InD67BnHoAc
 describe('Secret master key database creation', () => {
    
 
-    it('Passes with master key', async () => {
+    it('DB operations with master key', async () => {
 
         const apis = await bluzelle({
             ethereum_rpc, 
@@ -63,7 +63,19 @@ describe('Secret master key database creation', () => {
             _connect_to_all: true
         });
 
-        await apis[0].createDB();
+
+        assert(await apis[0]._hasDB());
+
+        await apis[0]._createDB();
+
+        await assert.rejects(apis[0]._createDB());
+
+        assert(await apis[0]._hasDB());
+
+        await apis[0]._deleteDB();
+
+        assert(!await apis[0]._hasDB());
+
 
         apis.forEach(api => api.close());
 
@@ -85,7 +97,7 @@ describe('Secret master key database creation', () => {
         });
 
         await assert.rejects(
-            apis[0].createDB(),
+            apis[0]._createDB(),
             {
                 message: 'ACCESS_DENIED'
             }    
@@ -147,7 +159,7 @@ describe('api', function() {
             _connect_to_all: true
         });
 
-        await apis[0].createDB();
+        await apis[0]._createDB();
 
         apis.forEach(api => api.close());
 
@@ -249,23 +261,6 @@ describe('api', function() {
 
         assert.deepEqual(await bz.keys(), ['a']);
         
-    });
-
-
-    it.skip('hasDB/createDB/deleteDB', async () => {    
-
-        assert(await bz.hasDB());
-
-        await bz.createDB();
-
-        await assert.rejects(bz.createDB());
-
-        assert(await bz.hasDB());
-
-        await bz.deleteDB();
-
-        assert(!await bz.hasDB());
-
     });
 
 

@@ -516,7 +516,7 @@ module.exports = class API {
     }
 
 
-    createDB(maxsize=0, policy_type='none') {
+    _createDB(maxsize=0, policy_type='none') {
 
         return timeout_promise((resolve, reject) => {
 
@@ -558,7 +558,7 @@ module.exports = class API {
     }
 
 
-    updateDB(maxsize=0, policy_type='none') {
+    _updateDB(maxsize=0, policy_type='none') {
 
         return timeout_promise((resolve, reject) => {
 
@@ -600,7 +600,7 @@ module.exports = class API {
     }
 
 
-    deleteDB() {
+    _deleteDB() {
 
         return timeout_promise((resolve, reject) => {
 
@@ -633,7 +633,7 @@ module.exports = class API {
     }
 
 
-    hasDB() {
+    _hasDB() {
 
         return timeout_promise((resolve, reject) => {
 

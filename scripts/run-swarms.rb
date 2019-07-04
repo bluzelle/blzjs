@@ -96,9 +96,10 @@ i = 0
       "monitor_address": "localhost",
       "monitor_port": 8125,
       "ws_idle_timeout": 1000000,
-      "swarm_id": "#{swarm_id}",
-      "owner_public_key": "#{master_pub_key}"
+      "swarm_id": "#{swarm_id}"
       }))
+
+    # "owner_public_key": "#{master_pub_key}"
 
 
     run_in_tab "cd #{node_dir}; #{node_dir}/swarm -c #{node_dir}/bluzelle.json; bash"
