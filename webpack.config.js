@@ -48,7 +48,9 @@ module.exports = [
 
 
         plugins: [
-            new WebpackShellPlugin({onBuildStart: ['proto/updateProto.sh', 'scripts/scrypt.rb']}),
+            new WebpackShellPlugin({onBuildStart: [
+                'proto/updateProto.sh', 
+                'scripts/scrypt.rb']}),
         ],
 
         module: {

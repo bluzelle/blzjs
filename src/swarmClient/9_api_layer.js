@@ -93,8 +93,7 @@ module.exports = class API {
     }
 
 
-    create(key, value, /*expire=0*/) {
-        let expire = 0;
+    create(key, value, expire=0) {
 
         assert(typeof key === 'string', 'Key must be a string');
         assert(typeof value === 'string', 'Value must be a string');
@@ -134,8 +133,7 @@ module.exports = class API {
     }
 
 
-    update(key, value, /*expire=0*/) {
-        let expire = 0;
+    update(key, value, expire=0) {
 
         assert(typeof key === 'string', 'Key must be a string');
         assert(typeof value === 'string', 'Value must be a string');
@@ -403,119 +401,119 @@ module.exports = class API {
     }
 
 
-    // expire(key, expire) {
+    expire(key, expire) {
 
-    //     assert(typeof key === 'string', 'Key must be a string');
-    //     assert(typeof expire === 'number', 'Expiry must be a number');
+        assert(typeof key === 'string', 'Key must be a string');
+        assert(typeof expire === 'number', 'Expiry must be a number');
 
-    //     return timeout_promise((resolve, reject) => {
+        return timeout_promise((resolve, reject) => {
 
-    //         const msg = new database_pb.database_msg();
+            const msg = new database_pb.database_msg();
 
-    //         const expire_ = new database_pb.database_expire();
-    //         msg.setExpire(expire_);
+            const expire_ = new database_pb.database_expire();
+            msg.setExpire(expire_);
 
-    //         expire_.setKey(key);
-    //         expire_.setExpire(expire.toString());
-
-
-    //         this.sendOutgoingMsg(msg, incoming_msg => {
-
-    //             if(incoming_msg.hasError()) {
-
-    //                 reject(new Error(incoming_msg.getError().getMessage()));
-    //                 return true;
-
-    //             }
-
-    //             assert(incoming_msg.getResponseCase() === 0,
-    //                 "A response other than error or ack has been returned from daemon for expire.");
-
-    //             resolve();
-
-    //             return true;
-
-    //         });
-
-    //     });
-
-    // }
+            expire_.setKey(key);
+            expire_.setExpire(expire.toString());
 
 
-    // persist(key) {
+            this.sendOutgoingMsg(msg, incoming_msg => {
 
-    //     assert(typeof key === 'string', 'Key must be a string');
+                if(incoming_msg.hasError()) {
 
-    //     return timeout_promise((resolve, reject) => {
+                    reject(new Error(incoming_msg.getError().getMessage()));
+                    return true;
 
-    //         const msg = new database_pb.database_msg();
+                }
 
-    //         const read = new database_pb.database_read();
-    //         msg.setPersist(read);
+                assert(incoming_msg.getResponseCase() === 0,
+                    "A response other than error or ack has been returned from daemon for expire.");
 
-    //         read.setKey(key);
+                resolve();
 
+                return true;
 
-    //         this.sendOutgoingMsg(msg, incoming_msg => {
+            });
 
-    //             if(incoming_msg.hasError()) {
+        });
 
-    //                 reject(new Error(incoming_msg.getError().getMessage()));
-    //                 return true;
-
-    //             }
-
-    //             assert(incoming_msg.getResponseCase() === 0,
-    //                 "A response other than error or ack has been returned from daemon for persist.");
-
-    //             resolve();
-
-    //             return true;
-
-    //         });
-
-    //     });
-
-    // }
+    }
 
 
-    // ttl(key) {
+    persist(key) {
 
-    //     assert(typeof key === 'string', 'Key must be a string');
+        assert(typeof key === 'string', 'Key must be a string');
 
-    //     return timeout_promise((resolve, reject) => {
+        return timeout_promise((resolve, reject) => {
 
-    //         const msg = new database_pb.database_msg();
+            const msg = new database_pb.database_msg();
 
-    //         const read = new database_pb.database_read();
-    //         msg.setTtl(read);
-    //         read.setKey(key);
+            const read = new database_pb.database_read();
+            msg.setPersist(read);
+
+            read.setKey(key);
 
 
-    //         this.sendOutgoingMsg(msg, incoming_msg => {
+            this.sendOutgoingMsg(msg, incoming_msg => {
 
-    //             if(incoming_msg.hasError()) {
+                if(incoming_msg.hasError()) {
 
-    //                 reject(new Error(incoming_msg.getError().getMessage()));
-    //                 return true;
+                    reject(new Error(incoming_msg.getError().getMessage()));
+                    return true;
 
-    //             }
+                }
 
-    //             assert(incoming_msg.hasTtl(),
-    //                 "A response other than error or ttl has been returned from daemon for ttl.");
+                assert(incoming_msg.getResponseCase() === 0,
+                    "A response other than error or ack has been returned from daemon for persist.");
 
-    //             assert(incoming_msg.getTtl().getKey() === key,
-    //                 "Key in response does not match key in request for ttl.");
+                resolve();
 
-    //             resolve(incoming_msg.getTtl().getTtl());
+                return true;
 
-    //             return true;
+            });
 
-    //         });
+        });
 
-    //     });
+    }
 
-    // }
+
+    ttl(key) {
+
+        assert(typeof key === 'string', 'Key must be a string');
+
+        return timeout_promise((resolve, reject) => {
+
+            const msg = new database_pb.database_msg();
+
+            const read = new database_pb.database_read();
+            msg.setTtl(read);
+            read.setKey(key);
+
+
+            this.sendOutgoingMsg(msg, incoming_msg => {
+
+                if(incoming_msg.hasError()) {
+
+                    reject(new Error(incoming_msg.getError().getMessage()));
+                    return true;
+
+                }
+
+                assert(incoming_msg.hasTtl(),
+                    "A response other than error or ttl has been returned from daemon for ttl.");
+
+                assert(incoming_msg.getTtl().getKey() === key,
+                    "Key in response does not match key in request for ttl.");
+
+                resolve(incoming_msg.getTtl().getTtl());
+
+                return true;
+
+            });
+
+        });
+
+    }
 
 
     createDB(maxsize=0, policy_type='none') {

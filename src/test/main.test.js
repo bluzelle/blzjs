@@ -1,4 +1,4 @@
- // Copyright (C) 2019 Bluzelle
+// Copyright (C) 2019 Bluzelle
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License, version 3,
@@ -32,7 +32,7 @@ assert.rejects = assert.rejects || (async (p, e) => {
 
 
 const ethereum_rpc = 'http://127.0.0.1:8545';
-const contract_address = '0xd95d9d899cddB1f487E37628A13460b0cb6e8F41';
+const contract_address = '0x7446a83f453808eeEEB19EC0ED9407e2b328B6aC';
 
 
 const log = true;
@@ -47,7 +47,7 @@ const master_priv_key = "MHQCAQEEIEOd7E9zSxgJjtpGzK/gHl0vVSOZ2iF3TY50InD67BnHoAc
 describe('Secret master key database creation', () => {
    
 
-    it.only('Passes with master key', async () => {
+    it('Passes with master key', async () => {
 
         const apis = await bluzelle({
             ethereum_rpc, 
@@ -269,7 +269,7 @@ describe('api', function() {
     });
 
 
-    it.skip('ttl with create', async () => {
+    it('ttl with create', async () => {
 
         await bz.create('1', '2', 1);
         assert.equal(await bz.read('1'),'2');
@@ -282,7 +282,7 @@ describe('api', function() {
 
     });
 
-    it.skip('ttl with expire & persist', async () => {
+    it('ttl with expire & persist', async () => {
         
         await bz.create('3', '4');
 
@@ -301,7 +301,7 @@ describe('api', function() {
     });
 
 
-    it.skip('changing expiry', async () => {
+    it('changing expiry', async () => {
 
         await bz.create('4', '5', 6)
         await bz.expire('4', 10)
