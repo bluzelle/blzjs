@@ -28,6 +28,31 @@ module.exports = {
         ethereum_rpc = ethereum_rpc || default_connection.ethereum_rpc;
         contract_address = contract_address || default_connection.contract_address;
         
+
+
+        // Add timestamp to logs
+        const timestamp = () => {
+            const d = new Date();
+            return '[' + d.getMinutes().toString().padStart(2, '0') + ':' + 
+                         d.getSeconds().toString().padStart(2, '0') + ':' + 
+                         d.getMilliseconds().toString().padEnd(3, '0') + '] ';
+        };
+
+
+        if(log) {   
+
+            // Default log is console.log, but you can pass any other function.
+            if(typeof log !== 'function') {
+                log = console.log.bind(console);
+            }
+
+            const log_ = log;
+            log = ((a, ...args) => log_(timestamp() + a, ...args));;
+
+        }
+
+
+
         // fetch peerslist data
 
         const web3js = new Web3(new Web3.providers.HttpProvider(ethereum_rpc));
@@ -37,7 +62,7 @@ module.exports = {
 
         let swarms = await getSwarms(BluzelleESR);
 
-        log && console.log('ESR swarms:', JSON.stringify(swarms, null, 4));
+        log && log('ESR swarms:', JSON.stringify(swarms, null, 4));
 
         swarms = Object.entries(swarms).map(([swarm_id, swarm]) =>
             swarmClient({
@@ -69,7 +94,7 @@ module.exports = {
         const resolveIfFalsy = p => new Promise(res => p.then(v => v || res(v)));
 
 
-        const hasDbs = swarms.map(swarm => swarm._hasDB());
+        const hasDbs = swarms.map(swarm => swarm._hasDB().catch(() => {}));
 
         const hasDbSwarms = hasDbs.map((hasDB, i) => promise_const(resolveIfTruthy(hasDB), swarms[i]));
 
@@ -88,6 +113,11 @@ module.exports = {
             throw new Error('UUID does not exist in the Bluzelle swarm. Contact us at https://gitter.im/bluzelle/Lobby.');
 
         }
+
+
+        log && log('Swarm "' + swarm.swarm_id + '" selected.');
+        log && log('Main entry selected.' + JSON.stringify(swarm.entry_obj));
+
 
 
         // close all other swarms & return client

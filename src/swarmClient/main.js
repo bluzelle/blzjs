@@ -40,28 +40,6 @@ module.exports = {
 
 
 
-        // Add timestamp to logs
-        const timestamp = () => {
-            const d = new Date();
-            return '[' + d.getMinutes().toString().padStart(2, '0') + ':' + 
-                         d.getSeconds().toString().padStart(2, '0') + ':' + 
-                         d.getMilliseconds().toString().padEnd(3, '0') + '] ';
-        };
-
-
-        if(log) {   
-
-            // Default log is console.log, but you can pass any other function.
-            if(typeof log !== 'function') {
-                log = console.log.bind(console);
-            }
-
-            const log_ = log;
-            log = ((a, ...args) => log_(timestamp() + a, ...args));;
-
-        }
-
-
         if(public_pem) {
             // throws an error if key is malformed
             import_public_key_from_base64(public_pem);

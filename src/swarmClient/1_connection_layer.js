@@ -356,7 +356,7 @@ const logIncoming = (bin, obj) => {
 
         obj.log(highlight('Incoming') + ' status_response');
 
-        if(obj.loadDetailed) {
+        if(obj.logDetailed) {
             obj.log(JSON.stringify(status_response_json));
         }
 
@@ -417,7 +417,7 @@ const logOutgoing = (bin, obj) => {
 
         obj.log(highlight('Outgoing') + ' status_request');
 
-        if(obj.loadDetailed) {
+        if(obj.logDetailed) {
             obj.log(JSON.stringify(bzn_stuff_filtered));
         }
 

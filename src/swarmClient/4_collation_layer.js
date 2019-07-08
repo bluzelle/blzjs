@@ -151,6 +151,8 @@ module.exports = class Collation {
             // On success
             if(senders.length >= this.f) {
 
+                this.log && this.log("Collation passed on " + coloredNonce(nonce));
+
                 this.nonceMap.delete(nonce);
                 this.onIncomingMsg(bzn_envelope);
 
