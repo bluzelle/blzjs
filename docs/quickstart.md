@@ -8,18 +8,18 @@ Currently, only the Bluzelle testnet is available.
 
 ## 0. Get your Bluzelle key pair
 
-### Mainnet
-
-Please contact us to inquire about mainnet availability.
-
-{% embed url="https://gitter.im/bluzelle/Lobby" %}
-
 ### Testnet
 
 1. Generate an ECDSA key pair on the curve secp256k1. Choose one of the following options: 
    1. With openssl installed, run   `openssl ecparam -name secp256k1 -genkey -noout -out priv_key.pem; openssl ec -in priv_key.pem -pubout -out pub_key.pem`   This will generate two files called `priv_key.pem` and `pub_key.pem`. 
    2. Visit [https://keytool.online/](https://keytool.online/). Switch the tab to "ECDSA" and select "P-256k" for the curve. Copy the public/private keys and save them into plain text files called `pub_key.pem` and `priv_key.pem` respectively. 
 2. With your key pair generated, visit [http://studio.bluzelle.com/](http://studio.bluzelle.com/) and upload both files. Hit the "go" button to create your database. You may use this interface to manually change or inspect your database contents.
+
+### Mainnet
+
+Please contact us to inquire about mainnet availability.
+
+{% embed url="https://gitter.im/bluzelle/Lobby" %}
 
 ## 1. Create an NPM Project
 
