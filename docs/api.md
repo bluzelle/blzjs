@@ -354,7 +354,7 @@ Fails when a response is not received from the connection, expiry does not exist
 ## Administrative Functions
 
 {% hint style="info" %}
-These functions may only be called by the administrative entity of the swarm. Any requests without not matching the daemon-configurable `owner_public_key` will be rejected. 
+These functions may only be called by the administrative entity of the swarm. Any requests without not matching the daemon-configurable `owner_public_key` will be rejected.
 {% endhint %}
 
 {% hint style="info" %}
