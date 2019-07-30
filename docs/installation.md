@@ -10,9 +10,18 @@ The NPM release reflects the bluzelle-js master branch.
 
 If you are interested in a cutting-edge build of bluzelle-js, or wish to use alternate feature branches, you will have to build from source. This process is very easy.
 
-1. Clone the [bluzelle-js repository](https://github.com/bluzelle/bluzelle-js) and checkout your desired branch. Run `git submodule init` and `git submodule update`. If you checkout to a new branch, be sure to rerun `git submodule update`.
-2. Run `npm install` to fetch the project's dependencies.
-3. Run `npx webpack` to build the library. The bundled versions, for browser and node environments, will be found in the `dist/` directory.
+1. Clone the [bluzelle-js repository](https://github.com/bluzelle/bluzelle-js) and checkout your desired branch. Run `git submodule init` and `git submodule update`. If you checkout to a new branch, be sure to rerun `git submodule update`. 
+2. Compile BluzelleESR 
+   1. `cd BluzelleESR`
+   2. `npm install`
+   3. `npm run truffle compile`
+   4. `cd ..` 
+3. Run `npm install` to fetch the project's dependencies.
+4. Run `npx webpack` to build the library. The bundled versions, for browser and node environments, will be found in the `dist/` directory.
+
+{% hint style="info" %}
+If you encounter errors during the build, try running `npm i --save websocket`.
+{% endhint %}
 
 ## Linking from source
 

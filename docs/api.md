@@ -26,7 +26,6 @@ assert(version === '0.6.843'); // your version may be different
 
 Configures the Bluzelle connection. This may be called multiple times to create multiple clients.
 
-
 ```javascript
 const {bluzelle} = require('bluzelle');
 
@@ -44,15 +43,14 @@ const api = await bluzelle({
 | :--- | :--- |
 | **private\_pem** | The private key for this user in PEM format. |
 | **public\_pem** | The public key for this user in PEM format. |
-| ethereum\_rpc | (Optional) The remote procedure call entry point for accessing Ethereum. Defaults to the Infura Ropsten gateway. |
-| contract\_address | (Optional) The contract address containing Bluzelle metadata. Default to our most up-to-date contract. |
-| uuid | (Optional) Bluzelle uses `UUID`'s to identify distinct databases on a single swarm. We recommend using [Version 4 of the universally unique identifier](https://en.wikipedia.org/wiki/Universally_unique_identifier#Version_4_%28random%29). Defaults to the public key. |
-| log | (Optional) When set to `true`, logs the request and response messages with `console.log`. When set to a function, logs the request and response messages by calling that function. |
-| logDetailed | (Optional) When set to true, also logs JSON-ified versions of the database messages. |
-| p2p\_latency\_bound | (Optional) The upper bound for node-to-node latency on the Bluzelle network in ms. The client uses this number for its internal failure timing. Default is 100. |
-| onclose | (Optional) Function to be called when the main connection closes or receives an error. |
-| \_connect\_to\_all | (Optional) When set to true, establishes a connection with every remote swarm rather than selecting one based upon uuid. This option is primarily used for administrative database operations, such as creating a database. |
-
+| ethereum\_rpc | \(Optional\) The remote procedure call entry point for accessing Ethereum. Defaults to the Infura Ropsten gateway. |
+| contract\_address | \(Optional\) The contract address containing Bluzelle metadata. Default to our most up-to-date contract. |
+| uuid | \(Optional\) Bluzelle uses `UUID`'s to identify distinct databases on a single swarm. We recommend using [Version 4 of the universally unique identifier](https://en.wikipedia.org/wiki/Universally_unique_identifier#Version_4_%28random%29). Defaults to the public key. |
+| log | \(Optional\) When set to `true`, logs the request and response messages with `console.log`. When set to a function, logs the request and response messages by calling that function. |
+| logDetailed | \(Optional\) When set to true, also logs JSON-ified versions of the database messages. |
+| p2p\_latency\_bound | \(Optional\) The upper bound for node-to-node latency on the Bluzelle network in ms. The client uses this number for its internal failure timing. Default is 100. |
+| onclose | \(Optional\) Function to be called when the main connection closes or receives an error. |
+| \_connect\_to\_all | \(Optional\) When set to true, establishes a connection with every remote swarm rather than selecting one based upon uuid. This option is primarily used for administrative database operations, such as creating a database. |
 
 ## Misc API Functions
 
