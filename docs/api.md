@@ -157,7 +157,7 @@ Retrieve the value of a key. Has the same interface as read. The difference with
 api.quickread('mykey').then(value => { ... }, error => { ... });
 
 // async/await syntax
-const value = await api.read('mykey');
+const value = await api.quickread('mykey');
 ```
 
 | Argument | Description |
@@ -249,13 +249,20 @@ Retrieves the size of the database in bytes.
 
 ```javascript
 // promise syntax
-api.size().then(size => { ... }, error => { ... });
+api.size().then(obj => { ... }, error => { ... });
 
 // async/await syntax
-const size = await api.size();
+const obj = await api.size();
 ```
 
-Returns a promise resolving to an integer.
+Returns an object with the following fields:
+
+| Key | Value |
+| :--- | :--- |
+| bytes | The number of bytes in the database. |
+| keys | The number of keys in the database. |
+| remainingBytes | The remaining bytes if there's a max size. |
+| maxSize | The maximum size of the database in bytes. |
 
 Fails when a response is not received from the connection.
 

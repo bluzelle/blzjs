@@ -3,7 +3,7 @@
 {% hint style="info" %}
 Bluzelle offers two networks: a mainnet and a testnet. The testnet provides more liberal permissioning policies and may be used out-of-box.
 
-Currently, only the Bluzelle testnet is available. 
+Currently, only the Bluzelle testnet is available.
 {% endhint %}
 
 ## 0. Get your Bluzelle key pair
@@ -19,7 +19,7 @@ Currently, only the Bluzelle testnet is available.
 
 Please contact us to inquire about mainnet availability.
 
-{% embed url="https://gitter.im/bluzelle/Lobby" %}
+{% embed url="https://gitter.im/bluzelle/Lobby" caption="" %}
 
 ## 1. Create an NPM Project
 
@@ -33,7 +33,7 @@ $ npm init
 
 ## 2. Install the `bluzelle` NPM package
 
-Run `npm install bluzelle` to get the latest and greatest Bluzelle sdk \(see [installation](installation.md) for more details\).
+Run `npm install bluzelle` to get the latest and greatest Bluzelle sdk \(see [installation](details/installation.md) for more details\).
 
 ## 3. Run a simple program
 
