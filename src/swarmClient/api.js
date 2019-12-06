@@ -19,7 +19,7 @@
 // const status_pb = require('../../proto/status_pb');
 
 const assert = require('assert');
-
+const tm = require('./tm');
 
 const encode = string => new Uint8Array(Buffer.from(string, 'utf-8'));
 const decode = binary => Buffer.from(binary).toString('utf-8');
@@ -69,13 +69,6 @@ const timeout_promise = f => {
 
 
 module.exports = class API {
-
-    constructor(sendOutgoingMsg) {
-
-        this.sendOutgoingMsg = sendOutgoingMsg;
-
-    }
-
 
     status() {
 
