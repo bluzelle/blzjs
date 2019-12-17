@@ -21,26 +21,10 @@ const assert = require('assert');
 
 
 module.exports = {
-    swarmClient: async ({private_pem, public_pem, uuid, swarm_id, peerslist, log, logDetailed, p2p_latency_bound, onclose}) => {
-
-        onclose = (onclose && once(onclose)) || (() => {});
-
-        if(public_pem) {
-            // throws an error if key is malformed
-            import_public_key_from_base64(public_pem);
-        }
-
-        public_pem = public_pem || pub_from_priv(private_pem);
+    swarmClient: async () => {
 
         const api = new API();
         
-        api.close = () => {
-        }
-
-        api.swarm_id = swarm_id;
-//        api.entry_uuid = entry_uuid;
-//        api.entry_obj = entry_obj;
-
         return api;
     },
 };

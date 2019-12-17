@@ -110,10 +110,9 @@ module.exports = class API {
 //        cosmos.call_endpoint(request_type.POST, 'names', data, function(){});
         cosmos.call_endpoint('post', 'names', data, function(res)
         {
+            console.log("*** result: ")
             console.log(res);
-        }).then(function() {
-            console.log("done");
-        });
+        })
 
 //        return timeout_promise((resolve, reject) => {
 
