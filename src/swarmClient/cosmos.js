@@ -22,6 +22,7 @@ const prefix = 'cosmos';
 const chainId = 'namechain';
 const path = "m/44'/118'/0'/0/0";
 
+// TODO: allow specification of private key somehow
 const mnemonic = "silver sustain impose zero appear unaware desert index broom blur very category broken field mind arm increase custom despair blame secret term upgrade there";
 
 const getECPairPriv = async function(mnemonic) {
@@ -136,9 +137,25 @@ export async function call_endpoint(req_type, ep_name, data, callback)
         headers: {'Content-type': 'application/x-www-form-urlencoded'}
     })
         .then(async function(response) {
+            console.log("*** raw transaction:" + JSON.stringify(response.data, null, 4));
             const pkey = await getECPairPriv(mnemonic);
             const res = await broadcast_tx(app_endpoint, pkey, response.data);
             cb && cb(res);
         });
+}
+
+export async function query(key, callback)
+{
+    const url = app_endpoint + app_service + '/' + "key";
+    let cb = callback;
+
+    const res = axios({
+        method: 'get',
+        url: url,
+    })
+    .then(async function(response) {
+        console.log("*** raw response:" + JSON.stringify(response.data, null, 4));
+        cb && cb(response.data);
+    });
 }
 
