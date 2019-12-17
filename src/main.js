@@ -23,12 +23,7 @@ const {swarmClient} = require('./swarmClient/main');
 
 module.exports = {
 
-    bluzelle: async ({ethereum_rpc, contract_address, _connect_to_all, log, ...args}) => {
-        
-        ethereum_rpc = ethereum_rpc;// || default_connection.ethereum_rpc;
-        contract_address = contract_address;// || default_connection.contract_address;
-        
-
+    bluzelle: async ({log, address, nmemonic, uuid, ...args}) => {
 
         // Add timestamp to logs
         const timestamp = () => {
@@ -109,11 +104,7 @@ module.exports = {
         // const swarm = await Promise.race([swarm_with_uuid, uuid_doesnt_exist]);
 
 
-        swarm = swarmClient({
-                swarm_id: "my_swarm",
-                log,
-                ...args
-            });
+        swarm = swarmClient(address, nmemonic, (uuid || address));
         if(!swarm) {
 
             throw new Error('UUID does not exist in the Bluzelle swarm. Contact us at https://gitter.im/bluzelle/Lobby.');

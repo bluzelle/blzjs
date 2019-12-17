@@ -12,7 +12,7 @@ const bip32 = require('bip32');
 const bip39 = require('bip39');
 
 const app_endpoint = "http://localhost:1317";
-const app_service = "/nameservice";
+const app_service = "/crud";
 //app_endpoint = "http://localhost:6537";
 const tx_command = "txs";
 
@@ -21,9 +21,6 @@ const secp256k1 = new ec('secp256k1');
 const prefix = 'cosmos';
 const chainId = 'namechain';
 const path = "m/44'/118'/0'/0/0";
-
-// TODO: allow specification of private key somehow
-const mnemonic = "silver sustain impose zero appear unaware desert index broom blur very category broken field mind arm increase custom despair blame secret term upgrade there";
 
 const getECPairPriv = async function(mnemonic) {
     if (typeof mnemonic !== "string") {
@@ -43,7 +40,7 @@ const getAddress = pubkey => {
 };
 
 
-const sign_tx = async (rest, privateKey, tx) => {
+const sign_tx = async (rest, privateKey, tx, chain_id) => {
     // Fetch the current state of the account that's signing the transaction
     // We will need its account number and current sequence.
 
@@ -62,7 +59,7 @@ const sign_tx = async (rest, privateKey, tx) => {
 
     let payload = {
         account_number: state.value.account_number || '0',
-        chain_id: chainId,
+        chain_id: chain_id,
         fee: sortJson(tx.value.fee),
         memo: tx.value.memo,
         msgs: sortJson(tx.value.msg),
@@ -98,7 +95,7 @@ const sign_tx = async (rest, privateKey, tx) => {
     }
 }
 
-const broadcast_tx = async (rest, privateKey, tx) => {
+const broadcast_tx = async (rest, privateKey, tx, chain_id) => {
     if (!privateKey || typeof privateKey !== 'string') {
         throw Error('Invalid private key.')
     }
@@ -109,7 +106,7 @@ const broadcast_tx = async (rest, privateKey, tx) => {
 
     tx.value.signatures = tx.value.signatures || [];
 
-    const sig = await sign_tx(rest, privateKey, tx);
+    const sig = await sign_tx(rest, privateKey, tx, chain_id);
     tx.value.signatures.push(sig);
     console.log("*** broadcasting tx..." + JSON.stringify(tx.value, null, 4));
 
@@ -126,27 +123,58 @@ const broadcast_tx = async (rest, privateKey, tx) => {
     return res.data
 }
 
-export async function call_endpoint(req_type, ep_name, data, callback)
+// export async function call_endpoint(req_type, ep_name, data, mnemonic, callback)
+// {
+//     const url = app_endpoint + app_service + '/' + ep_name;
+//     let cb = callback;
+//     let cid = data.BaseReq.chain_id;
+//     console.log("Sending request: ");
+//     console.log(JSON.stringify(data, null, 4));
+//     const tx = await axios({
+//         method: req_type,
+//         url: url,
+//         data: data,
+//         headers: {'Content-type': 'application/x-www-form-urlencoded'}
+//     }, function(response) {
+//         console.log("*** raw transaction:" + JSON.stringify(response.data, null, 4));
+//         const pkey = await getECPairPriv(mnemonic);
+//         const res = await broadcast_tx(app_endpoint, pkey, response.data, cid);
+//         cb && cb(res);
+//     });
+//
+//
+//         .then (await async function(response) {
+//             console.log("*** raw transaction:" + JSON.stringify(response.data, null, 4));
+//             const pkey = await getECPairPriv(mnemonic);
+//             const res = await broadcast_tx(app_endpoint, pkey, response.data, cid);
+//             cb && cb(res);
+//         });
+// }
+
+export async function call_endpoint(req_type, ep_name, data, mnemonic, callback)
 {
     const url = app_endpoint + app_service + '/' + ep_name;
     let cb = callback;
+    let cid = data.BaseReq.chain_id;
+    console.log("Sending request: ");
+    console.log(JSON.stringify(data, null, 4));
     const tx = axios({
         method: req_type,
         url: url,
         data: data,
         headers: {'Content-type': 'application/x-www-form-urlencoded'}
     })
-        .then(async function(response) {
+        .then (await async function(response) {
             console.log("*** raw transaction:" + JSON.stringify(response.data, null, 4));
             const pkey = await getECPairPriv(mnemonic);
-            const res = await broadcast_tx(app_endpoint, pkey, response.data);
+            const res = await broadcast_tx(app_endpoint, pkey, response.data, cid);
             cb && cb(res);
         });
 }
 
-export async function query(key, callback)
+export async function query(uuid, key, callback)
 {
-    const url = app_endpoint + app_service + '/' + "key";
+    const url = app_endpoint + app_service + '/read/' + uuid + '/' + key;
     let cb = callback;
 
     const res = axios({
@@ -156,6 +184,10 @@ export async function query(key, callback)
     .then(async function(response) {
         console.log("*** raw response:" + JSON.stringify(response.data, null, 4));
         cb && cb(response.data);
+    })
+        .catch(function(err){
+        console.log(err.response.data);
+        return;
     });
 }
 

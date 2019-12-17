@@ -26,14 +26,16 @@ const cosmos = require('./cosmos');
 const encode = string => new Uint8Array(Buffer.from(string, 'utf-8'));
 const decode = binary => Buffer.from(binary).toString('utf-8');
 
-const pub_key = "cosmos1kuhpeq7enqq36zzlwewpangf9uxkgpktxr463r";
+//const pub_key = "cosmos1kuhpeq7enqq36zzlwewpangf9uxkgpktxr463r";
+
+// TODO: allow specification of private key somehow
+const def_mnemonic = "";
+
+
 
 // returns a normal promise with a default timeout
-
 // and a method .timeout(t) that can customize the time
-
-// when t=0, the timeout is indefinite 
-
+// when t=0, the timeout is indefinite
 const timeout_promise = f => {
 
     const default_timeout = 5000;
@@ -72,6 +74,14 @@ const timeout_promise = f => {
 
 module.exports = class API {
 
+    constructor(address, nmemonic, uuid, chain_id/*, ...args*/)
+    {
+        this.nmemonic = nmemonic || def_mnemonic;
+        this.address = address;
+        this.uuid = uuid;
+        this.chain_id = chain_id || "blzchain";
+    }
+
     status() {
 
         return timeout_promise((resolve, reject) => {
@@ -90,29 +100,29 @@ module.exports = class API {
     }
 
 
-    create(key, value, expire=0) {
+    async create(key, value, expire=0) {
 
         assert(typeof key === 'string', 'Key must be a string');
         assert(typeof value === 'string', 'Value must be a string');
         console.log("create");
 
         const data = {
-            "base_req":{
-                "from": pub_key,
-                "chain_id":"namechain"
+            BaseReq:{
+                from: this.address,
+                chain_id: this.chain_id
             },
-            "name":"paul.id",
-            "amount":"5nametoken",
-            "buyer": pub_key
+//            "public_key": this.public_key,
+            UUID: this.uuid,
+            Key: key,
+            Value: value,
+            Buyer: this.address,
         };
 
-
-//        cosmos.call_endpoint(request_type.POST, 'names', data, function(){});
-        cosmos.call_endpoint('post', 'names', data, function(res)
+        await cosmos.call_endpoint('post', 'create', data, this.nmemonic, function(res)
         {
-            console.log("*** result: ")
+            console.log("*** result: ");
             console.log(res);
-        })
+        });
 
 //        return timeout_promise((resolve, reject) => {
 
@@ -146,15 +156,36 @@ module.exports = class API {
 
  //       });
 
+        console.log("done create");
     }
 
 
-    update(key, value, expire=0) {
+    async update(key, value, expire=0) {
 
         assert(typeof key === 'string', 'Key must be a string');
         assert(typeof value === 'string', 'Value must be a string');
 
         console.log("update");
+
+        const data = {
+            BaseReq:{
+                from: this.address,
+                chain_id: this.chain_id
+            },
+//            "public_key": this.public_key,
+            UUID: this.uuid,
+            Key: key,
+            Value: value,
+            Buyer: this.address,
+        };
+
+        await cosmos.call_endpoint('post', 'update', data, this.nmemonic, function(res)
+        {
+            console.log("*** result: ");
+            console.log(res);
+        });
+
+
 //        return timeout_promise((resolve, reject) => {
 
             // const msg = new database_pb.database_msg();
@@ -190,11 +221,17 @@ module.exports = class API {
     }
 
 
-    read(key) {
+    async read(key) {
 
         assert(typeof key === 'string', 'Key must be a string');
 
         console.log("read");
+
+        cosmos.query(this.uuid, key, function(res)
+        {
+            console.log("*** result: ");
+            console.log(res);
+        });
 
 //        return timeout_promise((resolve, reject) => {
 
@@ -232,9 +269,27 @@ module.exports = class API {
 
     }
 
-    delete(key) {
+    async delete(key) {
 
         assert(typeof key === 'string', 'Key must be a string');
+
+        const data = {
+            BaseReq:{
+                from: this.address,
+                chain_id: this.chain_id
+            },
+//            "public_key": this.public_key,
+            UUID: this.uuid,
+            Key: key,
+            Buyer: this.address,
+        };
+
+        await cosmos.call_endpoint('delete', 'delete', data, this.nmemonic, function(res)
+        {
+            console.log("*** result: ");
+            console.log(res);
+        });
+
 
         console.log("delete");
 //        return timeout_promise((resolve, reject) => {
