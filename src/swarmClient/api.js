@@ -19,12 +19,14 @@
 // const status_pb = require('../../proto/status_pb');
 
 const assert = require('assert');
-const tm = require('./tm');
+const cosmos = require('./cosmos');
+//import {request_type} from './cosmos';
+
 
 const encode = string => new Uint8Array(Buffer.from(string, 'utf-8'));
 const decode = binary => Buffer.from(binary).toString('utf-8');
 
-
+const pub_key = "cosmos1kuhpeq7enqq36zzlwewpangf9uxkgpktxr463r";
 
 // returns a normal promise with a default timeout
 
@@ -93,6 +95,25 @@ module.exports = class API {
         assert(typeof key === 'string', 'Key must be a string');
         assert(typeof value === 'string', 'Value must be a string');
         console.log("create");
+
+        const data = {
+            "base_req":{
+                "from": pub_key,
+                "chain_id":"namechain"
+            },
+            "name":"paul.id",
+            "amount":"5nametoken",
+            "buyer": pub_key
+        };
+
+
+//        cosmos.call_endpoint(request_type.POST, 'names', data, function(){});
+        cosmos.call_endpoint('post', 'names', data, function(res)
+        {
+            console.log(res);
+        }).then(function() {
+            console.log("done");
+        });
 
 //        return timeout_promise((resolve, reject) => {
 
