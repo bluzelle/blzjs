@@ -15,13 +15,13 @@ const main = async () => {
             bz.create(process.argv[3], process.argv[4]);
             break;
         case 'read':
-            bz.read(process.argv[3]).catch(function(err){console.log(err);});
+            bz.read(process.argv[3]);
             break;
         case 'update':
             bz.update(process.argv[3], process.argv[4]);
             break;
         case 'delete':
-            bz.delete(process.argv[3]).catch(function(err){console.log(err);});
+            bz.delete(process.argv[3]);
             break;
     }
 };
