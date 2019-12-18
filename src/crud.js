@@ -12,7 +12,8 @@ const main = async () => {
     switch (process.argv[2])
     {
         case 'create':
-            bz.create(process.argv[3], process.argv[4]);
+            res = await bz.create(process.argv[3], process.argv[4]);
+
             break;
         case 'read':
             bz.read(process.argv[3]);

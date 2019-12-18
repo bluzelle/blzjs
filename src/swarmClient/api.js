@@ -38,7 +38,7 @@ const def_mnemonic = "";
 // when t=0, the timeout is indefinite
 const timeout_promise = f => {
 
-    const default_timeout = 5000;
+    const default_timeout = 500000;
     
     
     const nullify_error = p => p.catch(() => {});
@@ -84,7 +84,7 @@ module.exports = class API {
 
     status() {
 
-        return timeout_promise((resolve, reject) => {
+        return new Promise((resolve, reject) => {
 
             console.log("status");
             // const status_request = new status_pb.status_request();
@@ -111,20 +111,32 @@ module.exports = class API {
                 from: this.address,
                 chain_id: this.chain_id
             },
-//            "public_key": this.public_key,
             UUID: this.uuid,
             Key: key,
             Value: value,
             Buyer: this.address,
         };
 
-        await cosmos.call_endpoint('post', 'create', data, this.nmemonic, function(res)
-        {
-            console.log("*** result: ");
-            console.log(res);
-        });
+        return timeout_promise((resolve, reject) => {
 
-//        return timeout_promise((resolve, reject) => {
+            cosmos.call_endpoint('post', 'create', data, this.nmemonic, function(res)
+            {
+                console.log("*** result: ");
+                console.log(res);
+
+                if (res.logs[0].success) {
+                    resolve(res.logs[0]);
+                }
+                else
+                {
+                    const jres = JSON.parse(res.logs[0].log);
+                    reject(jres.message);
+                }
+
+                return true;
+            });
+
+
 
             // const msg = new database_pb.database_msg();
             //
@@ -154,7 +166,7 @@ module.exports = class API {
             //
             // });
 
- //       });
+        });
 
         console.log("done create");
     }

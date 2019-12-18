@@ -169,6 +169,12 @@ export async function call_endpoint(req_type, ep_name, data, mnemonic, callback)
             const pkey = await getECPairPriv(mnemonic);
             const res = await broadcast_tx(app_endpoint, pkey, response.data, cid);
             cb && cb(res);
+        })
+        .catch(function(err) {
+            console.log("*** error response:")
+            console.log(err.response.data);
+            cb && cb(err.response.data);
+            return;
         });
 }
 
@@ -186,7 +192,9 @@ export async function query(uuid, key, callback)
         cb && cb(response.data);
     })
         .catch(function(err){
+            console.log("*** error response:")
         console.log(err.response.data);
+        cb && cb(err.response.data);
         return;
     });
 }
