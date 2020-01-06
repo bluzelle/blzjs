@@ -46,6 +46,8 @@ const sign_tx = async (rest, privateKey, tx, chain_id) => {
 
     let url = `${rest}/auth/accounts/${getAddress(secp256k1.keyFromPrivate(privateKey, 'hex').getPublic(true, 'hex'))}`;
     let state = (await axios.get(url)).data;
+    console.log("*** state:");
+    console.log(state);
 
     // If the account doesn't exist yet, just stub its data
     if (state) {
@@ -65,6 +67,8 @@ const sign_tx = async (rest, privateKey, tx, chain_id) => {
         msgs: sortJson(tx.value.msg),
         sequence: state.value.sequence || '0',
     };
+
+    console.log(payload);
 
     // Calculate the SHA256 of the payload object
     let jsonHash = hash(
@@ -122,34 +126,6 @@ const broadcast_tx = async (rest, privateKey, tx, chain_id) => {
 
     return res.data
 }
-
-// export async function call_endpoint(req_type, ep_name, data, mnemonic, callback)
-// {
-//     const url = app_endpoint + app_service + '/' + ep_name;
-//     let cb = callback;
-//     let cid = data.BaseReq.chain_id;
-//     console.log("Sending request: ");
-//     console.log(JSON.stringify(data, null, 4));
-//     const tx = await axios({
-//         method: req_type,
-//         url: url,
-//         data: data,
-//         headers: {'Content-type': 'application/x-www-form-urlencoded'}
-//     }, function(response) {
-//         console.log("*** raw transaction:" + JSON.stringify(response.data, null, 4));
-//         const pkey = await getECPairPriv(mnemonic);
-//         const res = await broadcast_tx(app_endpoint, pkey, response.data, cid);
-//         cb && cb(res);
-//     });
-//
-//
-//         .then (await async function(response) {
-//             console.log("*** raw transaction:" + JSON.stringify(response.data, null, 4));
-//             const pkey = await getECPairPriv(mnemonic);
-//             const res = await broadcast_tx(app_endpoint, pkey, response.data, cid);
-//             cb && cb(res);
-//         });
-// }
 
 export async function call_endpoint(req_type, ep_name, data, mnemonic, callback)
 {

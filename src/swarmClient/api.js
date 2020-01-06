@@ -79,7 +79,7 @@ module.exports = class API {
         this.nmemonic = nmemonic || def_mnemonic;
         this.address = address;
         this.uuid = uuid;
-        this.chain_id = chain_id || "blzchain";
+        this.chain_id = chain_id || "bluzelle";
     }
 
     status() {
@@ -117,7 +117,8 @@ module.exports = class API {
             Buyer: this.address,
         };
 
-        return timeout_promise((resolve, reject) => {
+//        return timeout_promise((resolve, reject) => {
+        return new Promise((resolve, reject) => {
 
             cosmos.call_endpoint('post', 'create', data, this.nmemonic, function(res)
             {
