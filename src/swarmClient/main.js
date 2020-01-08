@@ -24,7 +24,7 @@ module.exports = {
     swarmClient: async (address, nmemonic, uuid, chain_id, ...args) => {
 
         const api = new API(address, nmemonic, uuid, chain_id, ...args);
-        
+        await api.init();
         return api;
     },
 };

@@ -74,12 +74,17 @@ const timeout_promise = f => {
 
 module.exports = class API {
 
-    constructor(address, nmemonic, uuid, chain_id/*, ...args*/)
+    constructor(address, mnemonic, uuid, chain_id/*, ...args*/)
     {
-        this.nmemonic = nmemonic || def_mnemonic;
+        this.mnemonic = mnemonic || def_mnemonic;
         this.address = address;
         this.uuid = uuid;
         this.chain_id = chain_id || "bluzelle";
+    }
+
+    async init()
+    {
+        return await cosmos.init(this.mnemonic);
     }
 
     status() {
@@ -117,25 +122,27 @@ module.exports = class API {
             Buyer: this.address,
         };
 
+        return cosmos.send_transaction('post', 'create', data);
+
 //        return timeout_promise((resolve, reject) => {
-        return new Promise((resolve, reject) => {
-
-            cosmos.call_endpoint('post', 'create', data, this.nmemonic, function(res)
-            {
-                console.log("*** result: ");
-                console.log(res);
-
-                if (res.logs[0].success) {
-                    resolve(res.logs[0]);
-                }
-                else
-                {
-                    const jres = JSON.parse(res.logs[0].log);
-                    reject(jres.message);
-                }
-
-                return true;
-            });
+//         return new Promise((resolve, reject) => {
+//
+//             cosmos.call_endpoint('post', 'create', data, this.nmemonic, function(res)
+//             {
+//                 // console.log("*** result: ");
+//                 // console.log(res);
+//
+//                 if (res.logs[0].success) {
+//                     resolve(res.logs[0]);
+//                 }
+//                 else
+//                 {
+//                     const jres = JSON.parse(res.logs[0].log);
+//                     reject(jres.message);
+//                 }
+//
+//                 return true;
+//             });
 
 
 
@@ -167,7 +174,7 @@ module.exports = class API {
             //
             // });
 
-        });
+//        });
 
         console.log("done create");
     }
@@ -192,12 +199,26 @@ module.exports = class API {
             Buyer: this.address,
         };
 
-        await cosmos.call_endpoint('post', 'update', data, this.nmemonic, function(res)
-        {
-            console.log("*** result: ");
-            console.log(res);
-        });
+        return cosmos.send_transaction('post', 'update', data);
 
+//        return new Promise(async(resolve, reject) => {
+
+            // await cosmos.call_endpoint('post', 'update', data, this.nmemonic, function (res) {
+            //     // console.log("*** result: ");
+            //     // console.log(res);
+            //     console.log("got callback for update");
+            //
+            //     if (res.logs[0].success) {
+            //         resolve(res.logs[0]);
+            //     } else {
+            //         const jres = JSON.parse(res.logs[0].log);
+            //         reject(jres.message);
+            //     }
+            //
+            //     return true;
+            // });
+            // console.log("back from call_endpoint");
+//        });
 
 //        return timeout_promise((resolve, reject) => {
 
@@ -242,8 +263,8 @@ module.exports = class API {
 
         cosmos.query(this.uuid, key, function(res)
         {
-            console.log("*** result: ");
-            console.log(res);
+            // console.log("*** result: ");
+            // console.log(res);
         });
 
 //        return timeout_promise((resolve, reject) => {
@@ -299,8 +320,8 @@ module.exports = class API {
 
         await cosmos.call_endpoint('delete', 'delete', data, this.nmemonic, function(res)
         {
-            console.log("*** result: ");
-            console.log(res);
+//            console.log("*** result: ");
+//            console.log(res);
         });
 
 
