@@ -100,7 +100,7 @@ async function send_tx(url, data, chain_id)
         throw Error('Invalid transaction.');
     }
 
-    // console.log("Sending tx seq " + account_info.value.sequence);
+    //console.log("Sending tx seq " + account_info.value.sequence);
 
     // set up the signature
     data.value.signatures = data.value.signatures || [];
@@ -162,7 +162,7 @@ async function begin_tx(tx)
         let info = JSON.parse(res.raw_log);
         if (info.code == 4)
         {
-            console.log("signature fail");
+            //console.log("signature fail");
 
             // signature fail. Assume sequence number is invalid
             await send_account_query();
@@ -184,7 +184,7 @@ function poll_tx(tx, hash, timeout)
         {
             if (res.data.logs[0].success)
             {
-                tx.deferred.resolve({Result: res.data.logs[0].success});
+                tx.deferred.resolve(res);
             }
             else
             {
@@ -226,6 +226,7 @@ async function send_account_query()
 function handle_account_response(response)
 {
     let state = response.data;
+    //console.log(state);
 
     // If the account doesn't exist yet, just stub its data
     if (state)

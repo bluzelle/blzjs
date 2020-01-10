@@ -72,6 +72,13 @@ const def_mnemonic = "";
 //
 // };
 
+function hex2string(hex)
+{
+    var str = '';
+    for (var i = 0; i < hex.length; i += 2)
+        str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+    return str;
+}
 
 module.exports = class API {
 
@@ -94,7 +101,6 @@ module.exports = class API {
         console.log("status");
     }
 
-
     async create(key, value, expire=0)
     {
         assert(typeof key === 'string', 'Key must be a string');
@@ -111,6 +117,18 @@ module.exports = class API {
             Value: value,
             Owner: this.address,
         };
+
+        return new Promise(async (resolve, reject)=>
+        {
+            cosmos.send_transaction('post', 'create', data).then(function(res)
+            {
+                resolve({Result: res.data.logs[0].success});
+            })
+            .catch(function(err)
+            {
+                reject(err);
+            });
+        });
 
         return cosmos.send_transaction('post', 'create', data);
     }
@@ -134,7 +152,20 @@ module.exports = class API {
             Owner: this.address,
         };
 
-        return cosmos.send_transaction('post', 'update', data);
+        return new Promise(async (resolve, reject)=>
+        {
+            cosmos.send_transaction('post', 'update', data).then(function(res)
+            {
+                resolve({Result: res.data.logs[0].success});
+            })
+            .catch(function(err)
+            {
+                reject(err);
+            });
+        });
+
+
+        //return cosmos.send_transaction('post', 'update', data);
     }
 
     async read(key)
@@ -143,9 +174,34 @@ module.exports = class API {
 
         //console.log("read");
 
-        let res = await cosmos.query(`read/${this.uuid}/${key}`);
-        console.log("*** result: ");
-        console.log(res);
+        const uuid = this.uuid;
+        const data = {
+            BaseReq:{
+                from: this.address,
+                chain_id: this.chain_id
+            },
+            UUID: uuid,
+            Key: key,
+            Owner: this.address,
+        };
+
+        return new Promise(async (resolve, reject)=>
+        {
+            cosmos.send_transaction('post', 'read', data).then(function(res)
+            {
+                resolve({
+                    UUID: uuid,
+                    Key: key,
+                    Value: hex2string(res.data.data)
+                });
+
+            }).catch(function(err)
+            {
+                reject(err);
+            });
+        });
+
+        //return cosmos.send_transaction('post', 'read', data);
     }
 
     async delete(key)
@@ -164,7 +220,16 @@ module.exports = class API {
             Owner: this.address,
         };
 
-        return cosmos.send_transaction('delete', 'delete', data);
+        cosmos.send_transaction('delete', 'delete', data).then(function(res)
+        {
+            resolve({Result: res.data.logs[0].success});
+        })
+        .catch(function(err)
+        {
+            reject(err);
+        });
+
+        //return cosmos.send_transaction('delete', 'delete', data);
     }
 
     async quickread(key)
