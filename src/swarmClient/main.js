@@ -21,9 +21,9 @@ const assert = require('assert');
 
 
 module.exports = {
-    swarmClient: async (address, nmemonic, uuid, chain_id, ...args) => {
+    swarmClient: async (address, mnemonic, uuid, chain_id, ...args) => {
 
-        const api = new API(address, nmemonic, uuid, chain_id, ...args);
+        const api = new API(address, mnemonic, uuid, chain_id, ...args);
         await api.init();
         return api;
     },

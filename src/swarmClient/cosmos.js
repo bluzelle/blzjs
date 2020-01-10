@@ -100,7 +100,7 @@ async function send_tx(url, data, chain_id)
         throw Error('Invalid transaction.');
     }
 
-    console.log("Sending tx seq " + account_info.value.sequence);
+    // console.log("Sending tx seq " + account_info.value.sequence);
 
     // set up the signature
     data.value.signatures = data.value.signatures || [];
@@ -184,11 +184,12 @@ function poll_tx(tx, hash, timeout)
         {
             if (res.data.logs[0].success)
             {
-                tx.deferred.resolve(res.data);
+                tx.deferred.resolve({Result: res.data.logs[0].success});
             }
             else
             {
-                tx.deferred.reject(res.data.logs[0].log);
+                let err = JSON.parse(res.data.logs[0].log);
+                tx.deferred.reject({Error: err.message});
             }
         })
         .catch(function(err)
@@ -203,23 +204,6 @@ function poll_tx(tx, hash, timeout)
                 tx.deferred.reject(err.message);
             }
         });
-
-        // let res = await query_tx(hash);
-        // if (res.data.logs[0].success)
-        // {
-        //     tx.deferred.resolve(result);
-        // }
-        // else
-        // {
-        //     // if result is not ready
-        //     poll_tx(tx, hash);
-        //
-        //     // else if result is error
-        //
-        //         // if result is sequence bad
-        //
-        //         // else reject
-        // }
     }, timeout);
 }
 
@@ -234,8 +218,6 @@ async function send_account_query()
     // Fetch the current state of the account that's signing the transaction
     // We will need its account number and current sequence.
 
-    console.log("getting account info");
-
     let url = `${app_endpoint}/auth/accounts/${get_address(secp256k1.keyFromPrivate(private_key, 'hex').getPublic(true, 'hex'))}`;
     let response = await axios.get(url);
     handle_account_response(response);
@@ -244,8 +226,6 @@ async function send_account_query()
 function handle_account_response(response)
 {
     let state = response.data;
-    // console.log("*** state:");
-    // console.log(state);
 
     // If the account doesn't exist yet, just stub its data
     if (state)
@@ -265,6 +245,9 @@ async function next_tx()
 
 
 ////////////////////////////////////////////////////////
+// exported functions
+////////////////////////////////////////////////////////
+
 
 export async function init(mnemonic)
 {
@@ -285,5 +268,21 @@ export async function send_transaction(req_type, ep_name, data)
     }
 
     return def.promise;
+}
+
+export async function query(ep)
+{
+    return new Promise(async (resolve, reject)=>
+    {
+        try
+        {
+            let res = await axios.get(`${app_endpoint}${app_service}/${ep}`);
+            resolve(res.data.result);
+        }
+        catch(error)
+        {
+            reject(error);
+        }
+    });
 }
 

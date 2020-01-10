@@ -99,7 +99,7 @@ module.exports = class API {
     {
         assert(typeof key === 'string', 'Key must be a string');
         assert(typeof value === 'string', 'Value must be a string');
-        console.log("create");
+        //console.log("create");
 
         const data = {
             BaseReq:{
@@ -109,7 +109,7 @@ module.exports = class API {
             UUID: this.uuid,
             Key: key,
             Value: value,
-            Buyer: this.address,
+            Owner: this.address,
         };
 
         return cosmos.send_transaction('post', 'create', data);
@@ -121,7 +121,7 @@ module.exports = class API {
         assert(typeof key === 'string', 'Key must be a string');
         assert(typeof value === 'string', 'Value must be a string');
 
-        console.log("update");
+        //console.log("update");
 
         const data = {
             BaseReq:{
@@ -131,7 +131,7 @@ module.exports = class API {
             UUID: this.uuid,
             Key: key,
             Value: value,
-            Buyer: this.address,
+            Owner: this.address,
         };
 
         return cosmos.send_transaction('post', 'update', data);
@@ -141,20 +141,18 @@ module.exports = class API {
     {
         assert(typeof key === 'string', 'Key must be a string');
 
-        console.log("read");
+        //console.log("read");
 
-        cosmos.query(this.uuid, key, function(res)
-        {
-            // console.log("*** result: ");
-            // console.log(res);
-        });
+        let res = await cosmos.query(`read/${this.uuid}/${key}`);
+        console.log("*** result: ");
+        console.log(res);
     }
 
     async delete(key)
     {
         assert(typeof key === 'string', 'Key must be a string');
 
-        console.log("delete");
+        //console.log("delete");
 
         const data = {
             BaseReq:{
@@ -163,7 +161,7 @@ module.exports = class API {
             },
             UUID: this.uuid,
             Key: key,
-            Buyer: this.address,
+            Owner: this.address,
         };
 
         return cosmos.send_transaction('delete', 'delete', data);
@@ -173,13 +171,10 @@ module.exports = class API {
     {
         assert(typeof key === 'string', 'Key must be a string');
 
-        console.log("read");
+        //console.log("quickread");
 
-        cosmos.query(this.uuid, key, function(res)
-        {
-            // console.log("*** result: ");
-            // console.log(res);
-        });
+        return cosmos.query(`read/${this.uuid}/${key}`);
+
     }
 
 
