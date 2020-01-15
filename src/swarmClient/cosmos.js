@@ -58,6 +58,17 @@ class transaction {
     }
 }
 
+function bin2string(bin)
+{
+    var str = "";
+    for (var i = 0; i < bin.length; i++)
+    {
+        str += bin[i].toString() + ' ';
+    }
+
+    return str;
+}
+
 function sign_transaction(key, data, chain_id)
 {
     let payload = {
@@ -70,7 +81,7 @@ function sign_transaction(key, data, chain_id)
     };
 
     // Calculate the SHA256 of the payload object
-    let jsonHash = hash('sha256', Buffer.from(JSON.stringify(payload),'utf8'));
+    let jsonHash = hash('sha256', Buffer.from(JSON.stringify(payload)));
 
     return {
         pub_key: {
@@ -103,7 +114,7 @@ async function send_tx(url, data, chain_id)
     //console.log("Sending tx seq " + account_info.value.sequence);
 
     // set up the signature
-    data.value.signatures = data.value.signatures || [];
+    data.value.signatures = [];
     const sig = sign_transaction(private_key, data, chain_id);
     data.value.signatures.push(sig);
 
@@ -134,19 +145,29 @@ async function begin_tx(tx)
         headers: {'Content-type': 'application/x-www-form-urlencoded'}
     };
 
-    // get tx skeleton
-    const response = await axios(request);
+    var response;
+    var res;
+    try
+    {
+        // get tx skeleton
+        response = await axios(request);
 
-    // broadcast the tx
-    // TODO: handle errors here
-    const res = await send_tx(app_endpoint, response.data, chain_id);
+        // broadcast the tx
+        res = await send_tx(app_endpoint, response.data, chain_id);
+    }
+    catch(err)
+    {
+        tx.deferred.reject(err);
+        return;
+    }
+
     if (res.logs)
     {
+        // bump our sequence number
+        account_info.value.sequence = `${++account_info.value.sequence}`;
+
         // start polling for result
         poll_tx(tx, res.txhash, 0);
-
-        // bump our sequence number
-        account_info.value.sequence++;
 
         // kick off next tx
         tx_queue.shift();
@@ -162,8 +183,6 @@ async function begin_tx(tx)
         let info = JSON.parse(res.raw_log);
         if (info.code == 4)
         {
-            //console.log("signature fail");
-
             // signature fail. Assume sequence number is invalid
             await send_account_query();
 

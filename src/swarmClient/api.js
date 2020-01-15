@@ -97,7 +97,6 @@ module.exports = class API {
 
     status()
     {
-
         console.log("status");
     }
 
@@ -105,7 +104,6 @@ module.exports = class API {
     {
         assert(typeof key === 'string', 'Key must be a string');
         assert(typeof value === 'string', 'Value must be a string');
-        //console.log("create");
 
         const data = {
             BaseReq:{
@@ -129,8 +127,6 @@ module.exports = class API {
                 reject(err);
             });
         });
-
-        return cosmos.send_transaction('post', 'create', data);
     }
 
 
@@ -138,8 +134,6 @@ module.exports = class API {
     {
         assert(typeof key === 'string', 'Key must be a string');
         assert(typeof value === 'string', 'Value must be a string');
-
-        //console.log("update");
 
         const data = {
             BaseReq:{
@@ -163,16 +157,17 @@ module.exports = class API {
                 reject(err);
             });
         });
+    }
 
-
-        //return cosmos.send_transaction('post', 'update', data);
+    async quickread(key)
+    {
+        assert(typeof key === 'string', 'Key must be a string');
+        return cosmos.query(`read/${this.uuid}/${key}`);
     }
 
     async read(key)
     {
         assert(typeof key === 'string', 'Key must be a string');
-
-        //console.log("read");
 
         const uuid = this.uuid;
         const data = {
@@ -200,15 +195,11 @@ module.exports = class API {
                 reject(err);
             });
         });
-
-        //return cosmos.send_transaction('post', 'read', data);
     }
 
     async delete(key)
     {
         assert(typeof key === 'string', 'Key must be a string');
-
-        //console.log("delete");
 
         const data = {
             BaseReq:{
@@ -220,101 +211,91 @@ module.exports = class API {
             Owner: this.address,
         };
 
-        cosmos.send_transaction('delete', 'delete', data).then(function(res)
+        return new Promise(async (resolve, reject)=>
         {
-            resolve({Result: res.data.logs[0].success});
-        })
-        .catch(function(err)
-        {
-            reject(err);
+            cosmos.send_transaction('delete', 'delete', data).then(function (res) {
+                resolve({Result: res.data.logs[0].success});
+            })
+                .catch(function (err) {
+                    reject(err);
+                });
         });
-
-        //return cosmos.send_transaction('delete', 'delete', data);
     }
 
-    async quickread(key)
+    async quickhas(key)
     {
         assert(typeof key === 'string', 'Key must be a string');
-
-        //console.log("quickread");
-
-        return cosmos.query(`read/${this.uuid}/${key}`);
-
+        return cosmos.query(`has/${this.uuid}/${key}`);
     }
 
 
-    // has(key) {
-    //     assert(typeof key === 'string', 'Key must be a string');
-    //
-    //
-    //     return timeout_promise((resolve, reject) => {
-    //
-    //         const msg = new database_pb.database_msg();
-    //
-    //         const has = new database_pb.database_has();
-    //         msg.setHas(has);
-    //
-    //         has.setKey(key);
-    //
-    //
-    //         this.sendOutgoingMsg(msg, incoming_msg => {
-    //
-    //             if(incoming_msg.hasError()) {
-    //
-    //                 reject(new Error(incoming_msg.getError().getMessage()));
-    //                 return true;
-    //
-    //             }
-    //
-    //             assert(incoming_msg.hasHas(),
-    //                 "A response other than error or has has been returned from daemon for has.");
-    //
-    //             assert(incoming_msg.getHas().getKey() === key,
-    //                 "Key in response does not match key in request for has.");
-    //
-    //             resolve(incoming_msg.getHas().getHas());
-    //
-    //             return true;
-    //
-    //         });
-    //
-    //     });
-    //
-    // }
-    //
-    //
-    // keys() {
-    //
-    //     return timeout_promise((resolve, reject) => {
-    //
-    //         const msg = new database_pb.database_msg();
-    //
-    //         const keys = new database_pb.database_request();
-    //         msg.setKeys(keys);
-    //
-    //
-    //         this.sendOutgoingMsg(msg, incoming_msg => {
-    //
-    //             if(incoming_msg.hasError()) {
-    //
-    //                 reject(new Error(incoming_msg.getError().getMessage()));
-    //                 return true;
-    //
-    //             }
-    //
-    //             assert(incoming_msg.hasKeys(),
-    //                 "A response other than error or keys has been returned from daemon for keys.");
-    //
-    //             resolve(incoming_msg.getKeys().getKeysList());
-    //
-    //             return true;
-    //
-    //         });
-    //
-    //     });
-    //
-    // }
-    //
+    has(key) {
+        assert(typeof key === 'string', 'Key must be a string');
+
+        const uuid = this.uuid;
+        const data = {
+            BaseReq:{
+                from: this.address,
+                chain_id: this.chain_id
+            },
+            UUID: uuid,
+            Key: key,
+            Owner: this.address,
+        };
+
+        return new Promise(async (resolve, reject)=>
+        {
+            cosmos.send_transaction('post', 'has', data).then(function(res)
+            {
+                resolve({
+                    UUID: uuid,
+                    Key: key,
+                    Value: hex2string(res.data.data)
+                });
+
+            }).catch(function(err)
+            {
+                reject(err);
+            });
+        });
+    }
+
+
+    async quickkeys()
+    {
+        return cosmos.query(`keys/${this.uuid}`);
+    }
+
+
+    keys() {
+        const uuid = this.uuid;
+        const data = {
+            BaseReq:{
+                from: this.address,
+                chain_id: this.chain_id
+            },
+            UUID: uuid,
+            Owner: this.address,
+        };
+
+        return new Promise(async (resolve, reject)=>
+        {
+            cosmos.send_transaction('post', 'keys', data).then(function(res)
+            {
+                resolve({
+                    UUID: uuid,
+                    Key: key,
+                    Value: hex2string(res.data.data)
+                });
+
+            }).catch(function(err)
+            {
+                reject(err);
+            });
+        });
+    }
+
+
     //
     // size() {
     //
