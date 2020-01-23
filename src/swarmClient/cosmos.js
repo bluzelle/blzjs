@@ -11,7 +11,8 @@ const bitcoinjs = require('bitcoinjs-lib');
 const bip32 = require('bip32');
 const bip39 = require('bip39');
 
-const app_endpoint = "http://localhost:1317";
+//const app_endpoint = "http://3.15.204.96:1317";
+var app_endpoint = "http://localhost:1317";
 const app_service = "/crud";
 //app_endpoint = "http://localhost:6537";
 const tx_command = "txs";
@@ -269,8 +270,9 @@ async function next_tx()
 ////////////////////////////////////////////////////////
 
 
-export async function init(mnemonic)
+export async function init(mnemonic, endpoint)
 {
+    app_endpoint = endpoint ? endpoint : app_endpoint;
     private_key = await get_ec_private_key(mnemonic);
     await send_account_query();
 }
@@ -297,6 +299,7 @@ export async function query(ep)
         try
         {
             let res = await axios.get(`${app_endpoint}${app_service}/${ep}`);
+            console.log(res.data);
             resolve(res.data.result);
         }
         catch(error)

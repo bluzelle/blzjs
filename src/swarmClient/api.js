@@ -82,17 +82,18 @@ function hex2string(hex)
 
 module.exports = class API {
 
-    constructor(address, mnemonic, uuid, chain_id/*, ...args*/)
+    constructor(address, mnemonic, endpoint, uuid, chain_id/*, ...args*/)
     {
         this.mnemonic = mnemonic || def_mnemonic;
         this.address = address;
         this.uuid = uuid;
         this.chain_id = chain_id || "bluzelle";
+        this.endpoint = endpoint;
     }
 
     async init()
     {
-        return await cosmos.init(this.mnemonic);
+        return await cosmos.init(this.mnemonic, this.endpoint);
     }
 
     status()
@@ -284,7 +285,6 @@ module.exports = class API {
             {
                 resolve({
                     UUID: uuid,
-                    Key: key,
                     Value: hex2string(res.data.data)
                 });
 
