@@ -23,7 +23,7 @@ const {swarmClient} = require('./swarmClient/main');
 
 module.exports = {
 
-    bluzelle: async ({log, address, mnemonic, endpoint, uuid, ...args}) => {
+    bluzelle: async ({log, address, mnemonic, endpoint, uuid, chain_id, ...args}) => {
 
         // Add timestamp to logs
         const timestamp = () => {
@@ -46,7 +46,7 @@ module.exports = {
 
         }
 
-        swarm = await swarmClient(address, mnemonic, endpoint, (uuid || address));
+        swarm = await swarmClient(address, mnemonic, endpoint, (uuid || address), chain_id);
         if(!swarm) {
 
             throw new Error('UUID does not exist in the Bluzelle swarm. Contact us at https://gitter.im/bluzelle/Lobby.');
