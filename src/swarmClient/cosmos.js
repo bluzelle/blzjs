@@ -299,12 +299,12 @@ export async function query(ep)
         try
         {
             let res = await axios.get(`${app_endpoint}${app_service}/${ep}`);
-            console.log(res.data);
             resolve(res.data.result);
         }
         catch(error)
         {
-            reject(error);
+            var err = JSON.parse(error.response.data.error);
+            reject({Error: err.message});
         }
     });
 }

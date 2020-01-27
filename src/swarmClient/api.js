@@ -160,10 +160,11 @@ module.exports = class API {
         });
     }
 
-    async quickread(key)
+    async quickread(key, prove)
     {
         assert(typeof key === 'string', 'Key must be a string');
-        return cosmos.query(`read/${this.uuid}/${key}`);
+        const url = prove ? `pread/${this.uuid}/${key}` : `read/${this.uuid}/${key}`;
+        return cosmos.query(url);
     }
 
     async read(key)
