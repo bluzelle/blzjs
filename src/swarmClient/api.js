@@ -32,7 +32,6 @@ const decode = binary => Buffer.from(binary).toString('utf-8');
 const def_mnemonic = "";
 
 
-
 // returns a normal promise with a default timeout
 // and a method .timeout(t) that can customize the time
 // when t=0, the timeout is indefinite
@@ -80,7 +79,8 @@ function hex2string(hex)
     return str;
 }
 
-module.exports = class API {
+module.exports = class API
+{
 
     constructor(address, mnemonic, endpoint, uuid, chain_id/*, ...args*/)
     {
@@ -101,13 +101,13 @@ module.exports = class API {
         console.log("status");
     }
 
-    async create(key, value, expire=0)
+    async create(key, value, expire = 0)
     {
         assert(typeof key === 'string', 'Key must be a string');
         assert(typeof value === 'string', 'Value must be a string');
 
         const data = {
-            BaseReq:{
+            BaseReq: {
                 from: this.address,
                 chain_id: this.chain_id
             },
@@ -117,13 +117,12 @@ module.exports = class API {
             Owner: this.address,
         };
 
-        return new Promise(async (resolve, reject)=>
+        return new Promise(async (resolve, reject) =>
         {
-            cosmos.send_transaction('post', 'create', data).then(function(res)
+            cosmos.send_transaction('post', 'create', data).then(function (res)
             {
                 resolve({Result: res.data.logs[0].success});
-            })
-            .catch(function(err)
+            }).catch(function (err)
             {
                 reject(err);
             });
@@ -131,13 +130,13 @@ module.exports = class API {
     }
 
 
-    async update(key, value, expire=0)
+    async update(key, value, expire = 0)
     {
         assert(typeof key === 'string', 'Key must be a string');
         assert(typeof value === 'string', 'Value must be a string');
 
         const data = {
-            BaseReq:{
+            BaseReq: {
                 from: this.address,
                 chain_id: this.chain_id
             },
@@ -147,13 +146,12 @@ module.exports = class API {
             Owner: this.address,
         };
 
-        return new Promise(async (resolve, reject)=>
+        return new Promise(async (resolve, reject) =>
         {
-            cosmos.send_transaction('post', 'update', data).then(function(res)
+            cosmos.send_transaction('post', 'update', data).then(function (res)
             {
                 resolve({Result: res.data.logs[0].success});
-            })
-            .catch(function(err)
+            }).catch(function (err)
             {
                 reject(err);
             });
@@ -163,8 +161,25 @@ module.exports = class API {
     async quickread(key, prove)
     {
         assert(typeof key === 'string', 'Key must be a string');
-        const url = prove ? `pread/${this.uuid}/${key}` : `read/${this.uuid}/${key}`;
-        return cosmos.query(url);
+
+        return new Promise(async (resolve, reject) =>
+        {
+            const url = prove ? `pread/${this.uuid}/${key}` : `read/${this.uuid}/${key}`;
+            cosmos.query(url).then(function (res)
+            {
+                resolve(res);
+            }).catch(function (err)
+            {
+                if (err.Error.substr(0, 3) === '404')
+                {
+                    reject({Error: "Key not found"});
+                }
+                else
+                {
+                    reject({Error: err});
+                }
+            });
+        });
     }
 
     async read(key)
@@ -173,7 +188,7 @@ module.exports = class API {
 
         const uuid = this.uuid;
         const data = {
-            BaseReq:{
+            BaseReq: {
                 from: this.address,
                 chain_id: this.chain_id
             },
@@ -182,9 +197,9 @@ module.exports = class API {
             Owner: this.address,
         };
 
-        return new Promise(async (resolve, reject)=>
+        return new Promise(async (resolve, reject) =>
         {
-            cosmos.send_transaction('post', 'read', data).then(function(res)
+            cosmos.send_transaction('post', 'read', data).then(function (res)
             {
                 resolve({
                     UUID: uuid,
@@ -192,7 +207,7 @@ module.exports = class API {
                     Value: hex2string(res.data.data)
                 });
 
-            }).catch(function(err)
+            }).catch(function (err)
             {
                 reject(err);
             });
@@ -204,7 +219,7 @@ module.exports = class API {
         assert(typeof key === 'string', 'Key must be a string');
 
         const data = {
-            BaseReq:{
+            BaseReq: {
                 from: this.address,
                 chain_id: this.chain_id
             },
@@ -213,14 +228,15 @@ module.exports = class API {
             Owner: this.address,
         };
 
-        return new Promise(async (resolve, reject)=>
+        return new Promise(async (resolve, reject) =>
         {
-            cosmos.send_transaction('delete', 'delete', data).then(function (res) {
+            cosmos.send_transaction('delete', 'delete', data).then(function (res)
+            {
                 resolve({Result: res.data.logs[0].success});
-            })
-                .catch(function (err) {
-                    reject(err);
-                });
+            }).catch(function (err)
+            {
+                reject(err);
+            });
         });
     }
 
@@ -231,12 +247,13 @@ module.exports = class API {
     }
 
 
-    has(key) {
+    has(key)
+    {
         assert(typeof key === 'string', 'Key must be a string');
 
         const uuid = this.uuid;
         const data = {
-            BaseReq:{
+            BaseReq: {
                 from: this.address,
                 chain_id: this.chain_id
             },
@@ -245,9 +262,9 @@ module.exports = class API {
             Owner: this.address,
         };
 
-        return new Promise(async (resolve, reject)=>
+        return new Promise(async (resolve, reject) =>
         {
-            cosmos.send_transaction('post', 'has', data).then(function(res)
+            cosmos.send_transaction('post', 'has', data).then(function (res)
             {
                 resolve({
                     UUID: uuid,
@@ -255,7 +272,7 @@ module.exports = class API {
                     Value: hex2string(res.data.data)
                 });
 
-            }).catch(function(err)
+            }).catch(function (err)
             {
                 reject(err);
             });
@@ -269,10 +286,11 @@ module.exports = class API {
     }
 
 
-    keys() {
+    keys()
+    {
         const uuid = this.uuid;
         const data = {
-            BaseReq:{
+            BaseReq: {
                 from: this.address,
                 chain_id: this.chain_id
             },
@@ -280,16 +298,16 @@ module.exports = class API {
             Owner: this.address,
         };
 
-        return new Promise(async (resolve, reject)=>
+        return new Promise(async (resolve, reject) =>
         {
-            cosmos.send_transaction('post', 'keys', data).then(function(res)
+            cosmos.send_transaction('post', 'keys', data).then(function (res)
             {
                 resolve({
                     UUID: uuid,
                     Value: hex2string(res.data.data)
                 });
 
-            }).catch(function(err)
+            }).catch(function (err)
             {
                 reject(err);
             });

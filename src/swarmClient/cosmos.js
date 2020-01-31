@@ -153,6 +153,10 @@ async function begin_tx(tx)
         // get tx skeleton
         response = await axios(request);
 
+        // set the gas info
+        response.data.value.fee.gas = `${response.data.value.fee.gas * 100}`;
+//        response.data.value.fees.gas_prices = '0.0stake';
+
         // broadcast the tx
         res = await send_tx(app_endpoint, response.data, chain_id);
     }
@@ -303,8 +307,15 @@ export async function query(ep)
         }
         catch(error)
         {
-            var err = JSON.parse(error.response.data.error);
-            reject({Error: err.message});
+            if (typeof error.response.data === 'string')
+            {
+                reject({Error: error.response.data});
+            }
+            else
+            {
+                var err = JSON.parse(error.response.data.error);
+                reject({Error: err.message});
+            }
         }
     });
 }

@@ -3,6 +3,8 @@
 const { bluzelle } = require('bluzelle');
 
 var times = [];
+var payload_size = 10;
+var payload_set = false;
 
 const params = {
 
@@ -27,8 +29,9 @@ function now()
     return d.getTime();
 }
 
-async function do_func(func)
+async function do_func(label, func)
 {
+    payload_set || console.log(label);
     var start = now();
 
     try
@@ -36,7 +39,7 @@ async function do_func(func)
         res = await func();
         if (res)
         {
-            console.log("result: " + JSON.stringify(res));
+            payload_set || console.log("result: " + JSON.stringify(res));
         }
     }
     catch(err)
@@ -45,63 +48,62 @@ async function do_func(func)
     }
     time_taken = now() - start;
     times.push(time_taken);
-    console.log("time taken: " + time_taken + "ms");
+    payload_set || console.log("time taken: " + time_taken + "ms");
 }
 
 const main = async () => {
 
+    if (process.argv.length > 2)
+    {
+        payload_size = parseInt(process.argv[2]);
+        console.log("Payload size: " + payload_size);
+        payload_set = true;
+    }
+
     bz = await bluzelle(params);
 
-    console.log("*** create key/value ***");
-    await do_func(async function()
+    await do_func("*** create key/value ***", async function()
     {
-        return bz.create("mykey", "myval");
+        return bz.create("mykey", '#'.repeat(payload_size));
     });
 
-    console.log("\n*** quick-read (unverified) ***");
-    await do_func(async function()
+    await do_func("\n*** quick-read (unverified) ***", async function()
     {
         return bz.quickread("mykey");
     });
 
-    console.log("\n*** update value ***");
-    await do_func(async function()
+    await do_func("\n*** update value ***", async function()
     {
-        return bz.update("mykey", "newvalue");
+        return bz.update("mykey", '*'.repeat(payload_size));
     });
 
-    console.log("\n*** quick-read (unverified) ***");
-    await do_func(async function()
+    await do_func("\n*** quick-read (unverified) ***", async function()
     {
         return bz.quickread("mykey");
     });
 
-    console.log("\n*** quick-read (verified) ***");
-    await do_func(async function()
+    await do_func("\n*** quick-read (verified) ***", async function()
     {
         return bz.quickread("mykey", true);
     });
 
-    console.log("\n*** simultaneous unverified and verified quick-read ***");
-    p1 = do_func(async function()
+    p1 = do_func("\n*** simultaneous unverified and verified quick-read ***", async function()
     {
         return bz.quickread("mykey");
     });
-    p2 = do_func(async function()
+    p2 = do_func("", async function()
     {
         return bz.quickread("mykey", true);
     });
     await Promise.all([p1, p2]);
 
-    console.log("\n*** transactional read ***");
-    await do_func(async function()
+    await do_func("\n*** transactional read ***", async function()
     {
         return bz.read("mykey");
     });
 
 
-    console.log("\n*** delete ***");
-    await do_func(async function()
+    await do_func("\n*** delete ***", async function()
     {
         await bz.delete("mykey");
     });
