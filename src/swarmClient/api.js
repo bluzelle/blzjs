@@ -101,7 +101,7 @@ module.exports = class API
         console.log("status");
     }
 
-    async create(key, value, expire = 0)
+    async create(key, value, gas_info)
     {
         assert(typeof key === 'string', 'Key must be a string');
         assert(typeof value === 'string', 'Value must be a string');
@@ -119,7 +119,7 @@ module.exports = class API
 
         return new Promise(async (resolve, reject) =>
         {
-            cosmos.send_transaction('post', 'create', data).then(function (res)
+            cosmos.send_transaction('post', 'create', data, gas_info).then(function (res)
             {
                 resolve({Result: res.data.logs[0].success});
             }).catch(function (err)
@@ -130,7 +130,7 @@ module.exports = class API
     }
 
 
-    async update(key, value, expire = 0)
+    async update(key, value, gas_info)
     {
         assert(typeof key === 'string', 'Key must be a string');
         assert(typeof value === 'string', 'Value must be a string');
@@ -148,7 +148,7 @@ module.exports = class API
 
         return new Promise(async (resolve, reject) =>
         {
-            cosmos.send_transaction('post', 'update', data).then(function (res)
+            cosmos.send_transaction('post', 'update', data, gas_info).then(function (res)
             {
                 resolve({Result: res.data.logs[0].success});
             }).catch(function (err)
@@ -182,7 +182,7 @@ module.exports = class API
         });
     }
 
-    async read(key)
+    async read(key, gas_info)
     {
         assert(typeof key === 'string', 'Key must be a string');
 
@@ -199,7 +199,7 @@ module.exports = class API
 
         return new Promise(async (resolve, reject) =>
         {
-            cosmos.send_transaction('post', 'read', data).then(function (res)
+            cosmos.send_transaction('post', 'read', data, gas_info).then(function (res)
             {
                 resolve({
                     UUID: uuid,
@@ -214,7 +214,7 @@ module.exports = class API
         });
     }
 
-    async delete(key)
+    async delete(key, gas_info)
     {
         assert(typeof key === 'string', 'Key must be a string');
 
@@ -230,7 +230,7 @@ module.exports = class API
 
         return new Promise(async (resolve, reject) =>
         {
-            cosmos.send_transaction('delete', 'delete', data).then(function (res)
+            cosmos.send_transaction('delete', 'delete', data, gas_info).then(function (res)
             {
                 resolve({Result: res.data.logs[0].success});
             }).catch(function (err)
@@ -247,7 +247,7 @@ module.exports = class API
     }
 
 
-    has(key)
+    has(key, gas_info)
     {
         assert(typeof key === 'string', 'Key must be a string');
 
@@ -264,7 +264,7 @@ module.exports = class API
 
         return new Promise(async (resolve, reject) =>
         {
-            cosmos.send_transaction('post', 'has', data).then(function (res)
+            cosmos.send_transaction('post', 'has', data, gas_info).then(function (res)
             {
                 resolve({
                     UUID: uuid,
@@ -286,7 +286,7 @@ module.exports = class API
     }
 
 
-    keys()
+    keys(gas_info)
     {
         const uuid = this.uuid;
         const data = {
@@ -300,7 +300,7 @@ module.exports = class API
 
         return new Promise(async (resolve, reject) =>
         {
-            cosmos.send_transaction('post', 'keys', data).then(function (res)
+            cosmos.send_transaction('post', 'keys', data, gas_info).then(function (res)
             {
                 resolve({
                     UUID: uuid,

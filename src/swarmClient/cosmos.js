@@ -1,8 +1,3 @@
-//const fetch = require('node-fetch');
-//const axios = require('axios').default;
-//export const request_type = {GET: 'get', PUT: 'put', POST: 'post', DELETE: 'delete'};
-//Object.freeze(request_type);
-
 import { hash, convertSignature, sortJson } from './util'
 import axios from 'axios'
 import { ec } from 'elliptic'
@@ -11,10 +6,8 @@ const bitcoinjs = require('bitcoinjs-lib');
 const bip32 = require('bip32');
 const bip39 = require('bip39');
 
-//const app_endpoint = "http://3.15.204.96:1317";
 var app_endpoint = "http://localhost:1317";
 const app_service = "/crud";
-//app_endpoint = "http://localhost:6537";
 const tx_command = "txs";
 
 const secp256k1 = new ec('secp256k1');
@@ -25,6 +18,8 @@ const path = "m/44'/118'/0'/0/0";
 var private_key;
 var account_info;
 var tx_queue = [];
+
+const token_name = 'bnt';
 
 async function get_ec_private_key(mnemonic)
 {
@@ -56,6 +51,9 @@ class transaction {
         this.ep = ep_name;
         this.data = data;
         this.deferred = def;
+        this.gas_price = 0;
+        this.max_gas = 0;
+        this.max_fee = 0;
     }
 }
 
@@ -154,8 +152,19 @@ async function begin_tx(tx)
         response = await axios(request);
 
         // set the gas info
-        response.data.value.fee.gas = `${response.data.value.fee.gas * 100}`;
-//        response.data.value.fees.gas_prices = '0.0stake';
+        if (tx.max_gas && parseInt(response.data.value.fee.gas > tx.max_gas))
+        {
+            response.data.value.fee.gas = `${tx.max_gas}`;
+        }
+
+        if (tx.max_fee)
+        {
+            response.data.value.fee.amount = [{'denom': `${token_name}`, 'amount': `${tx.max_fee}`}];
+        }
+        else if (tx.gas_price)
+        {
+            response.data.value.fee.amount = [{'denom': `${token_name}`, 'amount': `${response.data.value.fee.gas * tx.gas_price}`}];
+        }
 
         // broadcast the tx
         res = await send_tx(app_endpoint, response.data, chain_id);
@@ -163,6 +172,7 @@ async function begin_tx(tx)
     catch(err)
     {
         tx.deferred.reject(err);
+        advance_queue();
         return;
     }
 
@@ -174,14 +184,7 @@ async function begin_tx(tx)
         // start polling for result
         poll_tx(tx, res.txhash, 0);
 
-        // kick off next tx
-        tx_queue.shift();
-        if (tx_queue.length)
-        {
-            setTimeout(function() {
-                next_tx();
-            });
-        }
+        advance_queue();
     }
     else
     {
@@ -196,6 +199,22 @@ async function begin_tx(tx)
                 begin_tx(tx);
             });
         }
+        else
+        {
+            tx.deferred.reject(res.raw_log);
+            advance_queue();
+        }
+    }
+}
+
+function advance_queue()
+{
+    tx_queue.shift();
+    if (tx_queue.length)
+    {
+        setTimeout(function() {
+            next_tx();
+        });
     }
 }
 
@@ -281,10 +300,26 @@ export async function init(mnemonic, endpoint)
     await send_account_query();
 }
 
-export async function send_transaction(req_type, ep_name, data)
+export async function send_transaction(req_type, ep_name, data, gas_info)
 {
     let def = new deferred();
     let tx = new transaction(req_type, ep_name, data, def);
+    if (gas_info)
+    {
+        if (gas_info.max_gas)
+        {
+            tx.max_gas = gas_info.max_gas;
+        }
+        if (gas_info.max_fee)
+        {
+            tx.max_fee = gas_info.max_fee;
+        }
+        if (gas_info.gas_price)
+        {
+            tx.gas_price = gas_info.gas_price;
+        }
+    }
+
     tx_queue.push(tx);
     if (tx_queue.length == 1)
     {

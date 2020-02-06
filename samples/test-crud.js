@@ -6,21 +6,15 @@ var times = [];
 var payload_size = 10;
 var payload_set = false;
 
+// const gas_params = {'max_gas': '', 'max_fee': '', 'gas_price': ''};
+const gas_params = {'gas_price': '0.01'};
+
 const params = {
-
     // local
-    address: 'cosmos17jfr2dqreyfctfga2y4p99vwrypvc4q6usapdj',
-    mnemonic: 'uniform tumble fragile define modify boy burger nose lizard hub shine novel brass document aerobic tomorrow jaguar now since sentence person auction dignity miss',
-    endpoint: "http://localhost:1317"
-
-    // us-east
-    // address: 'cosmos15sf7ymfeww4uxsq6wss39fu6uj3ul0e9z7ryyl',
-    // mnemonic: 'quiz album judge jewel expose zero illness feed tube argue protect frozen drip angry waste army spy toddler balcony sad head egg patrol burst'
-
-    // mumbai
-    // address: 'cosmos1ry4f9mus6czs2z9l9j2aaee4jpt5sqk54elpkd',
-    // mnemonic: 'perfect tag input craft stable uniform favorite dwarf exclude time way power seat dry avocado pelican rapid require slush pink surprise vehicle heavy survey'
-
+    address: 'cosmos1zuxcvpkxlzf37dh4k95e2rujmy9sxqvxhaj5pn',
+    mnemonic: 'desert maple evoke popular trumpet beach primary decline visit enhance dish drink excite setup public forward ladder girl end genre symbol alter category choose',
+    endpoint: "http://localhost:1317",
+    chain_id: "bluzelle"
 };
 
 function now()
@@ -64,7 +58,7 @@ const main = async () => {
 
     await do_func("*** create key/value ***", async function()
     {
-        return bz.create("mykey", '#'.repeat(payload_size));
+        return bz.create("mykey", '#'.repeat(payload_size), gas_params);
     });
 
     await do_func("\n*** quick-read (unverified) ***", async function()
@@ -74,7 +68,7 @@ const main = async () => {
 
     await do_func("\n*** update value ***", async function()
     {
-        return bz.update("mykey", '*'.repeat(payload_size));
+        return bz.update("mykey", '*'.repeat(payload_size), gas_params);
     });
 
     await do_func("\n*** quick-read (unverified) ***", async function()
@@ -99,13 +93,12 @@ const main = async () => {
 
     await do_func("\n*** transactional read ***", async function()
     {
-        return bz.read("mykey");
+        return bz.read("mykey", gas_params);
     });
-
 
     await do_func("\n*** delete ***", async function()
     {
-        await bz.delete("mykey");
+        await bz.delete("mykey", gas_params);
     });
 };
 
