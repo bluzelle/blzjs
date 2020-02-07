@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Bluzelle
+// Copyright (C) 2020 Bluzelle
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,35 +16,17 @@
 
 const API = require('./api');
 
-const { pub_from_priv, import_private_key_from_base64, import_public_key_from_base64 } = require('./ecdsa_secp256k1');
-const assert = require('assert');
+//const { pub_from_priv, import_private_key_from_base64, import_public_key_from_base64 } = require('./ecdsa_secp256k1');
+//const assert = require('assert');
 
 
-module.exports = {
-    swarmClient: async (address, mnemonic, endpoint, uuid, chain_id, ...args) => {
+module.exports =
+{
+    swarmClient: async (address, mnemonic, endpoint, uuid, chain_id, ...args) =>
+    {
 
         const api = new API(address, mnemonic, endpoint, uuid, chain_id, ...args);
         await api.init();
         return api;
-    },
-};
-
-
-// runs function only once
-const once = f => {
-
-    let called = false;
-
-    return (...args) => {
-
-        if(!called) {
-
-            f(...args);
-            called = true;
-
-        }        
-
     }
-
-};  
-
+};

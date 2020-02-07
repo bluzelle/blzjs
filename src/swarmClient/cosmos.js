@@ -1,7 +1,23 @@
-import { hash, convertSignature, sortJson } from './util'
+//
+// Copyright (C) 2020 Bluzelle
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import {hash, convertSignature, sortJson} from './util'
 import axios from 'axios'
-import { ec } from 'elliptic'
+import {ec} from 'elliptic'
 import bech32 from 'bech32'
+
 const bitcoinjs = require('bitcoinjs-lib');
 const bip32 = require('bip32');
 const bip39 = require('bip39');
@@ -26,7 +42,7 @@ async function get_ec_private_key(mnemonic)
     const seed = await bip39.mnemonicToSeed(mnemonic);
     const node = await bip32.fromSeed(seed);
     const child = node.derivePath(path);
-    const ecpair = bitcoinjs.ECPair.fromPrivateKey(child.privateKey, {compressed : false});
+    const ecpair = bitcoinjs.ECPair.fromPrivateKey(child.privateKey, {compressed: false});
     return ecpair.privateKey.toString('hex');
 }
 
@@ -36,17 +52,22 @@ function get_address(pubkey)
     return bech32.encode(prefix, bech32.toWords(bytes))
 }
 
-class deferred {
-    constructor() {
-        this.promise = new Promise((resolve, reject)=> {
+class deferred
+{
+    constructor()
+    {
+        this.promise = new Promise((resolve, reject) =>
+        {
             this.reject = reject
             this.resolve = resolve
         })
     }
 }
 
-class transaction {
-    constructor(req_type, ep_name, data, def) {
+class transaction
+{
+    constructor(req_type, ep_name, data, def)
+    {
         this.type = req_type;
         this.ep = ep_name;
         this.data = data;
@@ -122,12 +143,12 @@ async function send_tx(url, data, chain_id)
         headers: {'Content-type': 'application/x-www-form-urlencoded'},
         tx: data.value,
         mode: 'sync' // wait for checkTx
-    })
-    .catch(function(err)
-    {
-        console.log("error caught");
-        console.log(err);
     });
+    // .catch(function(err)
+    // {
+    //     console.log("error caught");
+    //     console.log(err);
+    // });
 
     return res.data
 }
@@ -163,13 +184,16 @@ async function begin_tx(tx)
         }
         else if (tx.gas_price)
         {
-            response.data.value.fee.amount = [{'denom': `${token_name}`, 'amount': `${response.data.value.fee.gas * tx.gas_price}`}];
+            response.data.value.fee.amount = [{
+                'denom': `${token_name}`,
+                'amount': `${response.data.value.fee.gas * tx.gas_price}`
+            }];
         }
 
         // broadcast the tx
         res = await send_tx(app_endpoint, response.data, chain_id);
     }
-    catch(err)
+    catch (err)
     {
         tx.deferred.reject(err);
         advance_queue();
@@ -195,7 +219,8 @@ async function begin_tx(tx)
             await send_account_query();
 
             // retry
-            setTimeout(function() {
+            setTimeout(function ()
+            {
                 begin_tx(tx);
             });
         }
@@ -212,7 +237,8 @@ function advance_queue()
     tx_queue.shift();
     if (tx_queue.length)
     {
-        setTimeout(function() {
+        setTimeout(function ()
+        {
             next_tx();
         });
     }
@@ -220,10 +246,10 @@ function advance_queue()
 
 function poll_tx(tx, hash, timeout)
 {
-    setTimeout(async function()
+    setTimeout(async function ()
     {
         // query the tx status
-        query_tx(hash).then(function(res)
+        query_tx(hash).then(function (res)
         {
             if (res.data.logs)
             {
@@ -244,24 +270,24 @@ function poll_tx(tx, hash, timeout)
                     const info = JSON.parse(res.data.raw_log);
                     tx.deferred.reject({Error: info.message});
                 }
-                catch(err)
+                catch (err)
                 {
                     tx.deferred.reject({Error: res.data.raw_log});
                 }
             }
         })
-        .catch(function(err)
-        {
-            if (err.response.status == 404)
+            .catch(function (err)
             {
-                // tx not committed yet, retry
-                poll_tx(tx, hash, 1000);
-            }
-            else
-            {
-                tx.deferred.reject(err.message);
-            }
-        });
+                if (err.response.status == 404)
+                {
+                    // tx not committed yet, retry
+                    poll_tx(tx, hash, 1000);
+                }
+                else
+                {
+                    tx.deferred.reject(err.message);
+                }
+            });
     }, timeout);
 }
 
@@ -293,7 +319,7 @@ function handle_account_response(response)
     }
     else
     {
-        account_info = { value: {} }
+        account_info = {value: {}}
     }
 }
 
@@ -338,7 +364,8 @@ export async function send_transaction(req_type, ep_name, data, gas_info)
     tx_queue.push(tx);
     if (tx_queue.length == 1)
     {
-        setTimeout(function() {
+        setTimeout(function ()
+        {
             next_tx();
         });
     }
@@ -348,14 +375,14 @@ export async function send_transaction(req_type, ep_name, data, gas_info)
 
 export async function query(ep)
 {
-    return new Promise(async (resolve, reject)=>
+    return new Promise(async (resolve, reject) =>
     {
         try
         {
             let res = await axios.get(`${app_endpoint}${app_service}/${ep}`);
             resolve(res.data.result);
         }
-        catch(error)
+        catch (error)
         {
             if (typeof error.response.data === 'string')
             {
@@ -368,7 +395,7 @@ export async function query(ep)
                     var err = JSON.parse(error.response.data.error);
                     reject({Error: err.message});
                 }
-                catch(e)
+                catch (e)
                 {
                     reject({Error: error.response.data.error});
                 }
