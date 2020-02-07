@@ -225,14 +225,29 @@ function poll_tx(tx, hash, timeout)
         // query the tx status
         query_tx(hash).then(function(res)
         {
-            if (res.data.logs[0].success)
+            if (res.data.logs)
             {
-                tx.deferred.resolve(res);
+                if (res.data.logs[0].success)
+                {
+                    tx.deferred.resolve(res);
+                }
+                else
+                {
+                    let err = JSON.parse(res.data.logs[0].log);
+                    tx.deferred.reject({Error: err.message});
+                }
             }
             else
             {
-                let err = JSON.parse(res.data.logs[0].log);
-                tx.deferred.reject({Error: err.message});
+                try
+                {
+                    const info = JSON.parse(res.data.raw_log);
+                    tx.deferred.reject({Error: info.message});
+                }
+                catch(err)
+                {
+                    tx.deferred.reject({Error: res.data.raw_log});
+                }
             }
         })
         .catch(function(err)
@@ -346,10 +361,17 @@ export async function query(ep)
             {
                 reject({Error: error.response.data});
             }
-            else
+            else if (typeof error.response.data.error === 'string')
             {
-                var err = JSON.parse(error.response.data.error);
-                reject({Error: err.message});
+                try
+                {
+                    var err = JSON.parse(error.response.data.error);
+                    reject({Error: err.message});
+                }
+                catch(e)
+                {
+                    reject({Error: error.response.data.error});
+                }
             }
         }
     });

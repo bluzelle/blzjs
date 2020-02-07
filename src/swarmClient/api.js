@@ -176,7 +176,7 @@ module.exports = class API
                 }
                 else
                 {
-                    reject({Error: err});
+                    prove ? reject(err) : reject({Error: err});
                 }
             });
         });
