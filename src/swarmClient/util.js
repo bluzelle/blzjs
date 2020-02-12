@@ -13,16 +13,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {createHash} from 'crypto'
-
+const crypto = require ('crypto');
 const BN = require('bn.js');
+const ec = require ('elliptic').ec;
 
-import {ec} from 'elliptic'
-
-const secp256k1 = new ec('secp256k1')
+const secp256k1 = new ec('secp256k1');
 
 const hash = (hash, data) =>
-    createHash(hash)
+    crypto.createHash(hash)
         .update(data)
         .digest()
 
@@ -78,9 +76,9 @@ const sortJson = obj =>
     }
 }
 
-export
-{
-    hash,
-    convertSignature,
-    sortJson,
-}
+module.exports =
+    {
+        hash,
+        convertSignature,
+        sortJson
+    };

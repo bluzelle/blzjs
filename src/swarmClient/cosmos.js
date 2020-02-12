@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {hash, convertSignature, sortJson} from './util'
-import axios from 'axios'
-import {ec} from 'elliptic'
-import bech32 from 'bech32'
+const util = require('./util');
+const axios = require ('axios');
+const ec = require ('elliptic').ec;
+const bech32 = require ('bech32');
 
 const bitcoinjs = require('bitcoinjs-lib');
 const bip32 = require('bip32');
@@ -48,7 +48,7 @@ async function get_ec_private_key(mnemonic)
 
 function get_address(pubkey)
 {
-    let bytes = hash('ripemd160', hash('sha256', Buffer.from(pubkey, 'hex')));
+    let bytes = util.hash('ripemd160', util.hash('sha256', Buffer.from(pubkey, 'hex')));
     return bech32.encode(prefix, bech32.toWords(bytes))
 }
 
@@ -94,14 +94,14 @@ function sign_transaction(key, data, chain_id)
     let payload = {
         account_number: account_info.value.account_number || '0',
         chain_id: chain_id,
-        fee: sortJson(data.value.fee),
+        fee: util.sortJson(data.value.fee),
         memo: data.value.memo,
-        msgs: sortJson(data.value.msg),
+        msgs: util.sortJson(data.value.msg),
         sequence: (account_info.value.sequence || '0')
     };
 
     // Calculate the SHA256 of the payload object
-    let jsonHash = hash('sha256', Buffer.from(JSON.stringify(payload)));
+    let jsonHash = util.hash('sha256', Buffer.from(JSON.stringify(payload)));
 
     return {
         pub_key: {
@@ -115,7 +115,7 @@ function sign_transaction(key, data, chain_id)
         },
 
         // We have to convert the signature to the format that Tendermint uses
-        signature: convertSignature(
+        signature: util.convertSignature(
             secp256k1.sign(jsonHash, key, 'hex', {
                 canonical: true,
             }),
@@ -333,15 +333,14 @@ async function next_tx()
 // exported functions
 ////////////////////////////////////////////////////////
 
-
-export async function init(mnemonic, endpoint)
+async function init(mnemonic, endpoint)
 {
     app_endpoint = endpoint ? endpoint : app_endpoint;
     private_key = await get_ec_private_key(mnemonic);
     await send_account_query();
 }
 
-export async function send_transaction(req_type, ep_name, data, gas_info)
+async function send_transaction(req_type, ep_name, data, gas_info)
 {
     let def = new deferred();
     let tx = new transaction(req_type, ep_name, data, def);
@@ -373,7 +372,7 @@ export async function send_transaction(req_type, ep_name, data, gas_info)
     return def.promise;
 }
 
-export async function query(ep)
+async function query(ep)
 {
     return new Promise(async (resolve, reject) =>
     {
@@ -404,3 +403,9 @@ export async function query(ep)
     });
 }
 
+module.exports =
+{
+    init,
+    send_transaction,
+    query
+};

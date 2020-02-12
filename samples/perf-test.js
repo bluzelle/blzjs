@@ -16,7 +16,7 @@
 // limitations under the License.
 
 
-const { bluzelle } = require('bluzelle');
+const { bluzelle } = require('../src/main.js');
 
 var times = [];
 var payload_size = 10;
