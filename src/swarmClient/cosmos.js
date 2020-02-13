@@ -303,7 +303,9 @@ async function send_account_query()
     // We will need its account number and current sequence.
 
     let url = `${app_endpoint}/auth/accounts/${get_address(secp256k1.keyFromPrivate(private_key, 'hex').getPublic(true, 'hex'))}`;
+    console.log("1");
     let response = await axios.get(url);
+    console.log("2");
     handle_account_response(response);
 }
 
@@ -407,5 +409,6 @@ module.exports =
 {
     init,
     send_transaction,
-    query
+    query,
+    axios
 };
