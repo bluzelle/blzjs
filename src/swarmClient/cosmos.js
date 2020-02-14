@@ -32,7 +32,7 @@ const prefix = 'cosmos';
 const path = "m/44'/118'/0'/0/0";
 
 var private_key;
-var account_info;
+var account_info = {};
 var tx_queue = [];
 
 const token_name = 'bnt';
@@ -303,26 +303,28 @@ async function send_account_query()
     // We will need its account number and current sequence.
 
     let url = `${app_endpoint}/auth/accounts/${get_address(secp256k1.keyFromPrivate(private_key, 'hex').getPublic(true, 'hex'))}`;
-    console.log("1");
-    let response = await axios.get(url);
-    console.log("2");
-    handle_account_response(response);
+    try
+    {
+        let response = await axios.get(url);
+        return handle_account_response(response);
+    }
+    catch(err)
+    {
+        return false;
+    }
 }
 
 function handle_account_response(response)
 {
     let state = response.data;
-    //console.log(state);
 
-    // If the account doesn't exist yet, just stub its data
-    if (state)
+    if (state && state.result && state.result.value.account_number && state.result.value.sequence)
     {
         account_info = state.result;
+        return true;
     }
-    else
-    {
-        account_info = {value: {}}
-    }
+
+    return false;
 }
 
 async function next_tx()
@@ -339,7 +341,7 @@ async function init(mnemonic, endpoint)
 {
     app_endpoint = endpoint ? endpoint : app_endpoint;
     private_key = await get_ec_private_key(mnemonic);
-    await send_account_query();
+    return await send_account_query();
 }
 
 async function send_transaction(req_type, ep_name, data, gas_info)
@@ -409,6 +411,5 @@ module.exports =
 {
     init,
     send_transaction,
-    query,
-    axios
+    query
 };

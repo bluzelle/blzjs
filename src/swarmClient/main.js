@@ -26,7 +26,13 @@ module.exports =
     {
 
         const api = new API(address, mnemonic, endpoint, uuid, chain_id, ...args);
-        await api.init();
-        return api;
+        if (await api.init())
+        {
+            return api;
+        }
+        else
+        {
+            return null;
+        }
     }
 };

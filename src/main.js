@@ -45,9 +45,7 @@ module.exports =
         swarm = await swarmClient(address, mnemonic, endpoint, (uuid || address), chain_id);
         if (!swarm)
         {
-
-            throw new Error('UUID does not exist in the Bluzelle swarm. Contact us at https://gitter.im/bluzelle/Lobby.');
-
+            throw new Error('Could not initialize with given parameters');
         }
 
         return swarm;
