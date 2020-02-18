@@ -44,7 +44,7 @@ async function do_init()
     return await cosmos.init(params.mnemonic, params.endpoint);
 }
 
-if (0)
+if (1)
 {
     describe('testing initialize', () =>
     {
@@ -213,7 +213,7 @@ if (0)
     });
 }
 
-if (0)
+if (1)
 {
     describe('testing query', () =>
     {
@@ -290,9 +290,6 @@ if (1)
 
         it('basic tx', async () =>
         {
-
-        debugger;
-
             // wait for account request
             const res2 = await do_init();
             expect(res2).equal(true);
@@ -317,6 +314,7 @@ if (1)
                 let request = moxios.requests.mostRecent();
                 expect(request.config.url).equal(app_endpoint + app_service + '/' + ep);
                 expect(request.config.method).equal(method);
+                expect(request.config.data).equal(JSON.stringify(create_data));
 
                 // then it should sign and broadcast it
                 moxios.wait(function ()
@@ -324,6 +322,8 @@ if (1)
                     let request = moxios.requests.mostRecent();
                     expect(request.config.method).equal('post');
                     expect(request.config.url).equal(app_endpoint + '/txs');
+                    const data = JSON.parse(request.config.data);
+                    expect(data.tx.signatures.length).equal(1);
 
                     // then it should poll for result
                     moxios.wait(function ()
@@ -358,57 +358,9 @@ if (1)
                     });
             }, WAIT_TIME);
 
-            const res = await cosmos.send_transaction(method, ep, create_data);
-
-
-
-
-            // it('basic transaction', async () =>
-            // {
-            //     // first the library should send a create request to get the tx skeleton
-            //     moxios.stubRequest(/\/crud\/create/,
-            //         {
-            //             status: 200,
-            //             response: tx_create_skeleton
-            //         });
-            //
-            //     // then it should sign and broadcast it
-            //     moxios.wait(function () {
-            //         let request = moxios.requests.mostRecent();
-            //         console.log(request);
-            //
-            //         // request.respondWith({
-            //         //     status: 200,
-            //         //     response: [
-            //         //         { id: 1, firstName: 'Fred', lastName: 'Flintstone' },
-            //         //         { id: 2, firstName: 'Wilma', lastName: 'Flintstone' }
-            //         //     ]
-            //         // }).then(function () {
-            //         //     let list = document.querySelector('.UserList__Data')
-            //         //     equal(list.rows.length, 2)
-            //         //     equal(list.rows[0].cells[0].innerHTML, 'Fred')
-            //         //     equal(list.rows[1].cells[0].innerHTML, 'Wilma')
-            //         //     done()
-            //         // });
-            //     });
-            //
-            //     const create_data = {
-            //         BaseReq: {
-            //             from: params.address,
-            //             chain_id: params.chain_id
-            //         },
-            //         UUID: params.address,
-            //         Key: "key",
-            //         Value: "value",
-            //         Owner: params.address
-            //     };
-            //
-            //     await cosmos.send_transaction('post', create_data);
-            //
-            //     // then it should poll for result
-            //
-            // })
-
+            const prom = cosmos.send_transaction(method, ep, create_data);
+            const res = await prom;
+            expect(res.data.logs[0].success).equal(true);
         });
     });
 }
