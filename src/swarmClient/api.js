@@ -70,7 +70,7 @@ module.exports = class API
 
         return new Promise(async (resolve, reject) =>
         {
-            cosmos.send_transaction('post', 'create', data, gas_info).then(function (res)
+            cosmos.send_transaction('post', 'creat', data, gas_info).then(function (res)
             {
                 resolve({Result: res.data.logs[0].success});
             }).catch(function (err)

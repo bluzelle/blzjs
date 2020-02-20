@@ -131,8 +131,6 @@ async function send_tx(url, data, chain_id)
         throw Error('Invalid transaction.');
     }
 
-    //console.log("Sending tx seq " + account_info.value.sequence);
-
     // set up the signature
     data.value.signatures = [];
     const sig = sign_transaction(private_key, data, chain_id);
@@ -144,11 +142,6 @@ async function send_tx(url, data, chain_id)
         tx: data.value,
         mode: 'sync' // wait for checkTx
     });
-    // .catch(function(err)
-    // {
-    //     console.log("error caught");
-    //     console.log(err);
-    // });
 
     return res.data
 }
@@ -195,7 +188,7 @@ async function begin_tx(tx)
     }
     catch (err)
     {
-        tx.deferred.reject(err);
+        tx.deferred.reject(err.message);
         advance_queue();
         return;
     }
