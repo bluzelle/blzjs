@@ -52,6 +52,7 @@ module.exports = class API
         console.log("status");
     }
 
+    // returns a promise resolving to nothing.
     async create(key, value, gas_info)
     {
         assert(typeof key === 'string', 'Key must be a string');
@@ -72,7 +73,7 @@ module.exports = class API
         {
             cosmos.send_transaction('post', 'create', data, gas_info).then(function (res)
             {
-                resolve({Result: res.data.logs[0].success});
+                resolve();
             }).catch(function (err)
             {
                 reject(err);
@@ -80,7 +81,7 @@ module.exports = class API
         });
     }
 
-
+    // returns a promise resolving to nothing.
     async update(key, value, gas_info)
     {
         assert(typeof key === 'string', 'Key must be a string');
@@ -101,7 +102,7 @@ module.exports = class API
         {
             cosmos.send_transaction('post', 'update', data, gas_info).then(function (res)
             {
-                resolve({Result: res.data.logs[0].success});
+                resolve();
             }).catch(function (err)
             {
                 reject(err);
@@ -109,6 +110,7 @@ module.exports = class API
         });
     }
 
+    // returns a promise resolving the string value of the key.
     async quickread(key, prove)
     {
         assert(typeof key === 'string', 'Key must be a string');
@@ -133,6 +135,7 @@ module.exports = class API
         });
     }
 
+    // returns a promise resolving the string value of the key.
     async read(key, gas_info)
     {
         assert(typeof key === 'string', 'Key must be a string');
@@ -165,6 +168,7 @@ module.exports = class API
         });
     }
 
+    // returns a promise resolving to nothing.
     async delete(key, gas_info)
     {
         assert(typeof key === 'string', 'Key must be a string');
@@ -191,13 +195,14 @@ module.exports = class API
         });
     }
 
+    // returns a promise resolving to a boolean value - true or false, representing whether the key is in the database.
     async quickhas(key)
     {
         assert(typeof key === 'string', 'Key must be a string');
         return cosmos.query(`has/${this.uuid}/${key}`);
     }
 
-
+    // returns a promise resolving to a boolean value - true or false, representing whether the key is in the database.
     has(key, gas_info)
     {
         assert(typeof key === 'string', 'Key must be a string');
@@ -230,13 +235,13 @@ module.exports = class API
         });
     }
 
-
+    // returns a promise resolving to an array of strings. ex. ["key1", "key2", ...]
     async quickkeys()
     {
         return cosmos.query(`keys/${this.uuid}`);
     }
 
-
+    // returns a promise resolving to an array of strings. ex. ["key1", "key2", ...]
     keys(gas_info)
     {
         const uuid = this.uuid;

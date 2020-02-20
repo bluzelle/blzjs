@@ -28,7 +28,7 @@ const tx_command = "txs";
 
 const secp256k1 = new ec('secp256k1');
 
-const prefix = 'cosmos';
+const prefix = 'bluzelle';
 const path = "m/44'/118'/0'/0/0";
 
 var private_key;
@@ -131,8 +131,6 @@ async function send_tx(url, data, chain_id)
         throw Error('Invalid transaction.');
     }
 
-    //console.log("Sending tx seq " + account_info.value.sequence);
-
     // set up the signature
     data.value.signatures = [];
     const sig = sign_transaction(private_key, data, chain_id);
@@ -144,11 +142,6 @@ async function send_tx(url, data, chain_id)
         tx: data.value,
         mode: 'sync' // wait for checkTx
     });
-    // .catch(function(err)
-    // {
-    //     console.log("error caught");
-    //     console.log(err);
-    // });
 
     return res.data
 }
@@ -260,19 +253,19 @@ function poll_tx(tx, hash, timeout)
                 else
                 {
                     let err = JSON.parse(res.data.logs[0].log);
-                    tx.deferred.reject({Error: err.message});
+                    tx.deferred.reject(new Error(err.message));
                 }
             }
             else
             {
                 try
                 {
-                    const info = JSON.parse(res.data.raw_log);
-                    tx.deferred.reject({Error: info.message});
+                    const err = JSON.parse(res.data.raw_log);
+                    tx.deferred.reject(new Error(err.message));
                 }
                 catch (err)
                 {
-                    tx.deferred.reject({Error: res.data.raw_log});
+                    tx.deferred.reject(new Error(res.data.raw_log));
                 }
             }
         })
@@ -389,18 +382,18 @@ async function query(ep)
         {
             if (typeof error.response.data === 'string')
             {
-                reject({Error: error.response.data});
+                reject(new Error(error.response.data));
             }
             else if (typeof error.response.data.error === 'string')
             {
                 try
                 {
                     var err = JSON.parse(error.response.data.error);
-                    reject({Error: err.message});
+                    reject(new Error(err.message));
                 }
                 catch (e)
                 {
-                    reject({Error: error.response.data.error});
+                    reject(new Error(error.response.data.error));
                 }
             }
         }

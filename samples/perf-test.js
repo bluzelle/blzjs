@@ -28,8 +28,8 @@ const gas_params = {'gas_price': '0.01'};
 const params =
 {
     // local
-    address: 'cosmos1zuxcvpkxlzf37dh4k95e2rujmy9sxqvxhaj5pn',
-    mnemonic: 'desert maple evoke popular trumpet beach primary decline visit enhance dish drink excite setup public forward ladder girl end genre symbol alter category choose',
+    address: 'bluzelle1xhz23a58mku7ch3hx8f9hrx6he6gyujq57y3kp',
+    mnemonic: 'volcano arrest ceiling physical concert sunset absent hungry tobacco canal census era pretty car code crunch inside behind afraid express giraffe reflect stadium luxury',
     endpoint: "http://localhost:1317",
     chain_id: "bluzelle"
 };
@@ -55,7 +55,7 @@ async function do_func(label, func)
     }
     catch(err)
     {
-        console.log("result: " + JSON.stringify(err));
+        console.log("result: " + err);
     }
     time_taken = now() - start;
     times.push(time_taken);
@@ -73,6 +73,8 @@ async function main()
 
     bz = await bluzelle(params);
 
+    debugger;
+
     await do_func("*** create key/value ***", async function()
     {
         return bz.create("mykey", '#'.repeat(payload_size), gas_params);
@@ -88,10 +90,10 @@ async function main()
     //     return bz.update("mykey", '*'.repeat(payload_size), gas_params);
     // });
 
-    // await do_func("\n*** quick-read (unverified) ***", async function()
-    // {
-    //     return bz.quickread("mykeyxx");
-    // });
+    await do_func("\n*** quick-read (unverified) ***", async function()
+    {
+        return bz.quickread("mykeyxx");
+    });
 
     // await do_func("\n*** quick-read (verified) ***", async function()
     // {
@@ -113,10 +115,10 @@ async function main()
     //     return bz.read("mykey", gas_params);
     // });
     //
-    await do_func("\n*** delete ***", async function()
-    {
-        await bz.delete("mykey", gas_params);
-    });
+    // await do_func("\n*** delete ***", async function()
+    // {
+    //     await bz.delete("mykey", gas_params);
+    // });
 };
 
 main().then(function()
