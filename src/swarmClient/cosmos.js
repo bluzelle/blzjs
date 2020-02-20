@@ -188,7 +188,7 @@ async function begin_tx(tx)
     }
     catch (err)
     {
-        tx.deferred.reject(err);
+        tx.deferred.reject(err.message);
         advance_queue();
         return;
     }
@@ -380,6 +380,7 @@ async function query(ep)
         }
         catch (error)
         {
+//            reject(error);
             if (typeof error.response.data === 'string')
             {
                 reject(new Error(error.response.data));
@@ -395,6 +396,10 @@ async function query(ep)
                 {
                     reject(new Error(error.response.data.error));
                 }
+            }
+            else
+            {
+                reject("An error occurred");
             }
         }
     });
