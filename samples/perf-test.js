@@ -28,8 +28,8 @@ const gas_params = {'gas_price': '0.01'};
 const params =
 {
     // local
-    address: 'cosmos1zuxcvpkxlzf37dh4k95e2rujmy9sxqvxhaj5pn',
-    mnemonic: 'desert maple evoke popular trumpet beach primary decline visit enhance dish drink excite setup public forward ladder girl end genre symbol alter category choose',
+    address: 'bluzelle1xhz23a58mku7ch3hx8f9hrx6he6gyujq57y3kp',
+    mnemonic: 'volcano arrest ceiling physical concert sunset absent hungry tobacco canal census era pretty car code crunch inside behind afraid express giraffe reflect stadium luxury',
     endpoint: "http://localhost:1317",
     chain_id: "bluzelle"
 };
@@ -77,42 +77,42 @@ async function main()
     {
         return bz.create("mykey", '#'.repeat(payload_size), gas_params);
     });
-    //
-    // await do_func("\n*** quick-read (unverified) ***", async function()
-    // {
-    //     return bz.quickread("mykey");
-    // });
-    //
-    // await do_func("\n*** update value ***", async function()
-    // {
-    //     return bz.update("mykey", '*'.repeat(payload_size), gas_params);
-    // });
 
-    // await do_func("\n*** quick-read (unverified) ***", async function()
-    // {
-    //     return bz.quickread("mykeyxx");
-    // });
+    await do_func("\n*** quick-read (unverified) ***", async function()
+    {
+        return bz.quickread("mykey");
+    });
 
-    // await do_func("\n*** quick-read (verified) ***", async function()
-    // {
-    //     return bz.quickread("mykey", true);
-    // });
-    //
-    // p1 = do_func("\n*** simultaneous unverified and verified quick-read ***", async function()
-    // {
-    //     return bz.quickread("mykey");
-    // });
-    // p2 = do_func("", async function()
-    // {
-    //     return bz.quickread("mykey", true);
-    // });
-    // await Promise.all([p1, p2]);
-    //
-    // await do_func("\n*** transactional read ***", async function()
-    // {
-    //     return bz.read("mykey", gas_params);
-    // });
-    //
+    await do_func("\n*** update value ***", async function()
+    {
+        return bz.update("mykey", '*'.repeat(payload_size), gas_params);
+    });
+
+    await do_func("\n*** quick-read (unverified) ***", async function()
+    {
+        return bz.quickread("mykeyxx");
+    });
+
+    await do_func("\n*** quick-read (verified) ***", async function()
+    {
+        return bz.quickread("mykey", true);
+    });
+
+    p1 = do_func("\n*** simultaneous unverified and verified quick-read ***", async function()
+    {
+        return bz.quickread("mykey");
+    });
+    p2 = do_func("", async function()
+    {
+        return bz.quickread("mykey", true);
+    });
+    await Promise.all([p1, p2]);
+
+    await do_func("\n*** transactional read ***", async function()
+    {
+        return bz.read("mykey", gas_params);
+    });
+
     await do_func("\n*** delete ***", async function()
     {
         await bz.delete("mykey", gas_params);

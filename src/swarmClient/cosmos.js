@@ -28,7 +28,7 @@ const tx_command = "txs";
 
 const secp256k1 = new ec('secp256k1');
 
-const prefix = 'cosmos';
+const prefix = 'bluzelle';
 const path = "m/44'/118'/0'/0/0";
 
 var private_key;
