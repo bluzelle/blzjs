@@ -28,7 +28,7 @@ const tx_command = "txs";
 
 const secp256k1 = new ec('secp256k1');
 
-const prefix = 'cosmos';
+const prefix = 'bluzelle';
 const path = "m/44'/118'/0'/0/0";
 
 var private_key;
@@ -253,19 +253,19 @@ function poll_tx(tx, hash, timeout)
                 else
                 {
                     let err = JSON.parse(res.data.logs[0].log);
-                    tx.deferred.reject({Error: err.message});
+                    tx.deferred.reject(new Error(err.message));
                 }
             }
             else
             {
                 try
                 {
-                    const info = JSON.parse(res.data.raw_log);
-                    tx.deferred.reject({Error: info.message});
+                    const err = JSON.parse(res.data.raw_log);
+                    tx.deferred.reject(new Error(err.message));
                 }
                 catch (err)
                 {
-                    tx.deferred.reject({Error: res.data.raw_log});
+                    tx.deferred.reject(new Error(res.data.raw_log));
                 }
             }
         })
@@ -380,21 +380,26 @@ async function query(ep)
         }
         catch (error)
         {
+//            reject(error);
             if (typeof error.response.data === 'string')
             {
-                reject({Error: error.response.data});
+                reject(new Error(error.response.data));
             }
             else if (typeof error.response.data.error === 'string')
             {
                 try
                 {
                     var err = JSON.parse(error.response.data.error);
-                    reject({Error: err.message});
+                    reject(new Error(err.message));
                 }
                 catch (e)
                 {
-                    reject({Error: error.response.data.error});
+                    reject(new Error(error.response.data.error));
                 }
+            }
+            else
+            {
+                reject("An error occurred");
             }
         }
     });

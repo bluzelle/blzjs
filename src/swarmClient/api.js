@@ -52,6 +52,7 @@ module.exports = class API
         console.log("status");
     }
 
+    // returns a promise resolving to nothing.
     async create(key, value, gas_info)
     {
         assert(typeof key === 'string', 'Key must be a string');
@@ -72,7 +73,7 @@ module.exports = class API
         {
             cosmos.send_transaction('post', 'creat', data, gas_info).then(function (res)
             {
-                resolve({Result: res.data.logs[0].success});
+                resolve();
             }).catch(function (err)
             {
                 reject(err);
@@ -80,7 +81,7 @@ module.exports = class API
         });
     }
 
-
+    // returns a promise resolving to nothing.
     async update(key, value, gas_info)
     {
         assert(typeof key === 'string', 'Key must be a string');
@@ -101,7 +102,7 @@ module.exports = class API
         {
             cosmos.send_transaction('post', 'update', data, gas_info).then(function (res)
             {
-                resolve({Result: res.data.logs[0].success});
+                resolve();
             }).catch(function (err)
             {
                 reject(err);
@@ -109,6 +110,7 @@ module.exports = class API
         });
     }
 
+    // returns a promise resolving the string value of the key.
     async quickread(key, prove)
     {
         assert(typeof key === 'string', 'Key must be a string');
@@ -118,21 +120,24 @@ module.exports = class API
             const url = prove ? `pread/${this.uuid}/${key}` : `read/${this.uuid}/${key}`;
             cosmos.query(url).then(function (res)
             {
-                resolve(res);
+                resolve(res.value);
             }).catch(function (err)
             {
-                if (err.Error.substr(0, 3) === '404')
+                // treat 404's specially
+                if (err.message.substr(0, 3) === '404')
                 {
-                    reject({Error: "Key not found"});
+                    reject(new Error("Key not found"));
                 }
                 else
                 {
-                    prove ? reject(err) : reject({Error: err});
+                    //prove ? reject(err) : reject({Error: err});
+                    reject(err);
                 }
             });
         });
     }
 
+    // returns a promise resolving the string value of the key.
     async read(key, gas_info)
     {
         assert(typeof key === 'string', 'Key must be a string');
@@ -152,12 +157,16 @@ module.exports = class API
         {
             cosmos.send_transaction('post', 'read', data, gas_info).then(function (res)
             {
-                resolve({
-                    UUID: uuid,
-                    Key: key,
-                    Value: hex2string(res.data.data)
-                });
-
+                try
+                {
+                    const str = hex2string(res.data.data);
+                    const json = JSON.parse(str);
+                    resolve(json.value);
+                }
+                catch(err)
+                {
+                    resolve(res.data.data);
+                }
             }).catch(function (err)
             {
                 reject(err);
@@ -165,6 +174,7 @@ module.exports = class API
         });
     }
 
+    // returns a promise resolving to nothing.
     async delete(key, gas_info)
     {
         assert(typeof key === 'string', 'Key must be a string');
@@ -183,7 +193,7 @@ module.exports = class API
         {
             cosmos.send_transaction('delete', 'delete', data, gas_info).then(function (res)
             {
-                resolve({Result: res.data.logs[0].success});
+                resolve();
             }).catch(function (err)
             {
                 reject(err);
@@ -191,13 +201,24 @@ module.exports = class API
         });
     }
 
+    // returns a promise resolving to a boolean value - true or false, representing whether the key is in the database.
     async quickhas(key)
     {
         assert(typeof key === 'string', 'Key must be a string');
-        return cosmos.query(`has/${this.uuid}/${key}`);
+
+        return new Promise(async (resolve, reject) =>
+        {
+            cosmos.query(`has/${this.uuid}/${key}`).then(function (res)
+            {
+                resolve(res.has);
+            }).catch(function (err)
+            {
+                reject(err);
+            });
+        });
     }
 
-
+    // returns a promise resolving to a boolean value - true or false, representing whether the key is in the database.
     has(key, gas_info)
     {
         assert(typeof key === 'string', 'Key must be a string');
@@ -217,12 +238,16 @@ module.exports = class API
         {
             cosmos.send_transaction('post', 'has', data, gas_info).then(function (res)
             {
-                resolve({
-                    UUID: uuid,
-                    Key: key,
-                    Value: hex2string(res.data.data)
-                });
-
+                try
+                {
+                    const str = hex2string(res.data.data);
+                    const json = JSON.parse(str);
+                    resolve(json.has);
+                }
+                catch (err)
+                {
+                    reject("An error occurred parsing the result");
+                }
             }).catch(function (err)
             {
                 reject(err);
@@ -230,13 +255,22 @@ module.exports = class API
         });
     }
 
-
+    // returns a promise resolving to an array of strings. ex. ["key1", "key2", ...]
     async quickkeys()
     {
-        return cosmos.query(`keys/${this.uuid}`);
+        return new Promise(async (resolve, reject) =>
+        {
+            cosmos.query(`keys/${this.uuid}`).then(function (res)
+            {
+                resolve(res.keys ? res.keys : []);
+            }).catch(function (err)
+            {
+                reject(err);
+            });
+        });
     }
 
-
+    // returns a promise resolving to an array of strings. ex. ["key1", "key2", ...]
     keys(gas_info)
     {
         const uuid = this.uuid;
@@ -253,11 +287,16 @@ module.exports = class API
         {
             cosmos.send_transaction('post', 'keys', data, gas_info).then(function (res)
             {
-                resolve({
-                    UUID: uuid,
-                    Value: hex2string(res.data.data)
-                });
-
+                try
+                {
+                    const str = hex2string(res.data.data);
+                    const json = JSON.parse(str);
+                    resolve(json.keys ? json.keys : []);
+                }
+                catch (err)
+                {
+                    reject("An error occurred parsing the result");
+                }
             }).catch(function (err)
             {
                 reject(err);
