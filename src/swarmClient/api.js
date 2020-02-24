@@ -15,7 +15,7 @@
 
 
 const assert = require('assert');
-const cosmos = require('./cosmos');
+cosmos = require('./cosmos');
 
 const encode = string => new Uint8Array(Buffer.from(string, 'utf-8'));
 const decode = binary => Buffer.from(binary).toString('utf-8');
@@ -71,7 +71,7 @@ module.exports = class API
 
         return new Promise(async (resolve, reject) =>
         {
-            cosmos.send_transaction('post', 'creat', data, gas_info).then(function (res)
+            cosmos.send_transaction('post', 'create', data, gas_info).then(function (res)
             {
                 resolve();
             }).catch(function (err)
