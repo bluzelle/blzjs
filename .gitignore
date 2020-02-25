@@ -5,3 +5,4 @@ yarn-error.log
 lib/*
 test-daemon/daemon-build
 yark.lock
+.nyc_output/

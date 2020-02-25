@@ -27,7 +27,7 @@ const bip32 = require('bip32');
 const bip39 = require('bip39');
 const secp256k1 = new ec('secp256k1');
 
-const gas_params = {'gas_price': '0.01'};
+const gas_params = {'gas_price': '0.01', 'max_gas': '20000'};
 
 var app_endpoint = "http://localhost:1317";
 const app_service = "/crud";
@@ -374,7 +374,7 @@ describe('testing send_transaction', () =>
             });
         }, WAIT_TIME);
 
-        const prom = cosmos.send_transaction(method, ep, create_data);
+        const prom = cosmos.send_transaction(method, ep, create_data, gas_params);
         const res = await prom;
         expect(res.data.logs[0].success).equal(true);
     });

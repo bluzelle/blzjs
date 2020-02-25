@@ -78,17 +78,6 @@ class transaction
     }
 }
 
-function bin2string(bin)
-{
-    var str = "";
-    for (var i = 0; i < bin.length; i++)
-    {
-        str += bin[i].toString() + ' ';
-    }
-
-    return str;
-}
-
 function sign_transaction(key, data, chain_id)
 {
     let payload = {
