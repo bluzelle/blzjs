@@ -40,11 +40,6 @@ function string2hex(str)
     return hex;
 }
 
-cosmos.init = async (mnemonic, endpoint) =>
-{
-    return true;
-};
-
 function validate_common_data(data)
 {
     if (typeof data.BaseReq != 'object')
@@ -63,11 +58,18 @@ function validate_common_data(data)
 
 describe('testing init', () =>
 {
+    old_init = cosmos.init;
+    cosmos.init = async (mnemonic, endpoint) =>
+    {
+        return true;
+    };
+
     it('initializes', async () =>
     {
         res = await api.init();
         expect(res).equal(true);
     });
+    cosmos.init = old_init;
 });
 
 describe('testing create', () =>
@@ -78,6 +80,7 @@ describe('testing create', () =>
     it('create success', async () =>
     {
         var send_tx_called = 0;
+        old_send = cosmos.send_transaction;
         cosmos.send_transaction = async (req_type, ep_name, data, gas_info) =>
         {
             ++send_tx_called;
@@ -97,12 +100,15 @@ describe('testing create', () =>
         res = await api.create(key, value, params.gas_info);
         expect(send_tx_called).equal(1);
         expect(typeof res).equal('undefined');
+
+        cosmos.send_transaction = old_send;
     });
 
     it('create error', async () =>
     {
         const msg = 'key already exists';
         var send_tx_called = 0;
+        old_send = cosmos.send_transaction;
         cosmos.send_transaction = async (req_type, ep_name, data, gas_info) =>
         {
             ++send_tx_called;
@@ -125,6 +131,8 @@ describe('testing create', () =>
         }
         expect(send_tx_called).equal(1);
         expect(fail).equal(true);
+
+        cosmos.send_transaction = old_send;
     });
 });
 
@@ -136,6 +144,7 @@ describe('testing read', () =>
     it('read success', async () =>
     {
         var send_tx_called = 0;
+        old_send = cosmos.send_transaction;
         cosmos.send_transaction = async (req_type, ep_name, data, gas_info) =>
         {
             ++send_tx_called;
@@ -155,12 +164,15 @@ describe('testing read', () =>
         res = await api.read(key, params.gas_info);
         expect(send_tx_called).equal(1);
         expect(res).equal(value);
+
+        cosmos.send_transaction = old_send;
     });
 
     it('read error', async () =>
     {
         const msg = 'key not found';
         var send_tx_called = 0;
+        old_send = cosmos.send_transaction;
         cosmos.send_transaction = async (req_type, ep_name, data, gas_info) =>
         {
             ++send_tx_called;
@@ -183,6 +195,8 @@ describe('testing read', () =>
         }
         expect(send_tx_called).equal(1);
         expect(fail).equal(true);
+
+        cosmos.send_transaction = old_send;
     });
 });
 
@@ -194,6 +208,7 @@ describe('testing update', () =>
     it('update success', async () =>
     {
         var send_tx_called = 0;
+        old_send = cosmos.send_transaction;
         cosmos.send_transaction = async (req_type, ep_name, data, gas_info) =>
         {
             ++send_tx_called;
@@ -213,12 +228,15 @@ describe('testing update', () =>
         res = await api.update(key, value, params.gas_info);
         expect(send_tx_called).equal(1);
         expect(typeof res).equal('undefined');
+
+        cosmos.send_transaction = old_send;
     });
 
     it('update error', async () =>
     {
         const msg = 'key not found';
         var send_tx_called = 0;
+        old_send = cosmos.send_transaction;
         cosmos.send_transaction = async (req_type, ep_name, data, gas_info) =>
         {
             ++send_tx_called;
@@ -241,6 +259,8 @@ describe('testing update', () =>
         }
         expect(send_tx_called).equal(1);
         expect(fail).equal(true);
+
+        cosmos.send_transaction = old_send;
     });
 });
 
@@ -252,6 +272,7 @@ describe('testing delete', () =>
     it('delete success', async () =>
     {
         var send_tx_called = 0;
+        old_send = cosmos.send_transaction;
         cosmos.send_transaction = async (req_type, ep_name, data, gas_info) =>
         {
             ++send_tx_called;
@@ -270,12 +291,15 @@ describe('testing delete', () =>
         res = await api.delete(key, params.gas_info);
         expect(send_tx_called).equal(1);
         expect(typeof res).equal('undefined');
+
+        cosmos.send_transaction = old_send;
     });
 
     it('delete error', async () =>
     {
         const msg = 'key not found';
         var send_tx_called = 0;
+        old_send = cosmos.send_transaction;
         cosmos.send_transaction = async (req_type, ep_name, data, gas_info) =>
         {
             ++send_tx_called;
@@ -298,6 +322,8 @@ describe('testing delete', () =>
         }
         expect(send_tx_called).equal(1);
         expect(fail).equal(true);
+
+        cosmos.send_transaction = old_send;
     });
 });
 
@@ -308,6 +334,7 @@ describe('testing has', () =>
     it('has success', async () =>
     {
         var send_tx_called = 0;
+        old_send = cosmos.send_transaction;
         cosmos.send_transaction = async (req_type, ep_name, data, gas_info) =>
         {
             ++send_tx_called;
@@ -327,11 +354,14 @@ describe('testing has', () =>
         res = await api.has(key, params.gas_info);
         expect(send_tx_called).equal(1);
         expect(res).equal(true);
+
+        cosmos.send_transaction = old_send;
     });
 
     it('has failure', async () =>
     {
         var send_tx_called = 0;
+        old_send = cosmos.send_transaction;
         cosmos.send_transaction = async (req_type, ep_name, data, gas_info) =>
         {
             ++send_tx_called;
@@ -351,12 +381,15 @@ describe('testing has', () =>
         res = await api.has(key, params.gas_info);
         expect(send_tx_called).equal(1);
         expect(res).equal(false);
+
+        cosmos.send_transaction = old_send;
     });
 
     it('has error', async () =>
     {
         const msg = 'error';
         var send_tx_called = 0;
+        old_send = cosmos.send_transaction;
         cosmos.send_transaction = async (req_type, ep_name, data, gas_info) =>
         {
             ++send_tx_called;
@@ -379,6 +412,8 @@ describe('testing has', () =>
         }
         expect(send_tx_called).equal(1);
         expect(fail).equal(true);
+
+        cosmos.send_transaction = old_send;
     });
 });
 
@@ -389,6 +424,7 @@ describe('testing keys', () =>
         var send_tx_called = 0;
         const keys = ['key1', 'key2', 'key3'];
 
+        old_send = cosmos.send_transaction;
         cosmos.send_transaction = async (req_type, ep_name, data, gas_info) =>
         {
             ++send_tx_called;
@@ -416,6 +452,8 @@ describe('testing keys', () =>
         res = await api.keys(params.gas_info);
         expect(send_tx_called).equal(1);
         expect(res).to.deep.equal(keys);
+
+        cosmos.send_transaction = old_send;
     });
 
     it('keys error', async () =>
@@ -424,6 +462,7 @@ describe('testing keys', () =>
         var send_tx_called = 0;
         const keys = ['key1', 'key2', 'key3'];
 
+        old_send = cosmos.send_transaction;
         cosmos.send_transaction = async (req_type, ep_name, data, gas_info) =>
         {
             ++send_tx_called;
@@ -447,6 +486,8 @@ describe('testing keys', () =>
         }
         expect(send_tx_called).equal(1);
         expect(fail).equal(true);
+
+        cosmos.send_transaction = old_send;
     });
 });
 
@@ -457,6 +498,7 @@ describe('testing quickread unverified', () =>
         const key = 'key';
         const value = 'value';
 
+        old_query  = cosmos.query;
         cosmos.query = async (ep) =>
         {
             expect(ep).equal(`read/${params.address}/${key}`);
@@ -469,6 +511,8 @@ describe('testing quickread unverified', () =>
 
         res = await api.quickread(key, false);
         expect(res).equal(value);
+
+        cosmos.query = old_query;
     });
 
     it('quickread-u error', async () =>
@@ -476,6 +520,7 @@ describe('testing quickread unverified', () =>
         const key = 'key';
         const msg = 'key not found';
 
+        old_query  = cosmos.query;
         cosmos.query = async (ep) =>
         {
             expect(ep).equal(`read/${params.address}/${key}`);
@@ -496,6 +541,8 @@ describe('testing quickread unverified', () =>
             fail = true;
         }
         expect(fail).equal(true);
+
+        cosmos.query = old_query;
     });
 });
 
@@ -506,6 +553,7 @@ describe('testing quickread verified', () =>
         const key = 'key';
         const value = 'value';
 
+        old_query  = cosmos.query;
         cosmos.query = async (ep) =>
         {
             expect(ep).equal(`pread/${params.address}/${key}`);
@@ -518,6 +566,8 @@ describe('testing quickread verified', () =>
 
         res = await api.quickread(key, true);
         expect(res).equal(value);
+
+        cosmos.query = old_query;
     });
 
     it('quickread-v error', async () =>
@@ -525,6 +575,7 @@ describe('testing quickread verified', () =>
         const key = 'key';
         const msg = 'key not found';
 
+        old_query  = cosmos.query;
         cosmos.query = async (ep) =>
         {
             expect(ep).equal(`pread/${params.address}/${key}`);
@@ -545,6 +596,8 @@ describe('testing quickread verified', () =>
             fail = true;
         }
         expect(fail).equal(true);
+
+        cosmos.query = old_query;
     });
 });
 
@@ -554,6 +607,7 @@ describe('testing quickhas', () =>
 
     it('quickhas success', async () =>
     {
+        old_query  = cosmos.query;
         cosmos.query = async (ep) =>
         {
             expect(ep).equal(`has/${params.address}/${key}`);
@@ -566,10 +620,13 @@ describe('testing quickhas', () =>
 
         res = await api.quickhas(key);
         expect(res).equal(true);
+
+        cosmos.query = old_query;
     });
 
     it('quickhas failure', async () =>
     {
+        old_query  = cosmos.query;
         cosmos.query = async (ep) =>
         {
             expect(ep).equal(`has/${params.address}/${key}`);
@@ -582,6 +639,8 @@ describe('testing quickhas', () =>
 
         res = await api.quickhas(key);
         expect(res).equal(false);
+
+        cosmos.query = old_query;
     });
 });
 
@@ -591,6 +650,7 @@ describe('testing quickkeys', () =>
     {
         const keys = ['key1', 'key2', 'key3'];
 
+        old_query  = cosmos.query;
         cosmos.query = async (ep) =>
         {
             expect(ep).equal(`keys/${params.address}`);
@@ -603,6 +663,8 @@ describe('testing quickkeys', () =>
 
         res = await api.quickkeys();
         expect(res).to.deep.equal(keys);
+
+        cosmos.query = old_query;
     });
 
     it('keys error', async () =>
@@ -610,6 +672,7 @@ describe('testing quickkeys', () =>
         const msg = "An error occurred";
         var send_tx_called = 0;
 
+        old_query  = cosmos.query;
         cosmos.query = async (ep) =>
         {
             expect(ep).equal(`keys/${params.address}`);
@@ -631,5 +694,7 @@ describe('testing quickkeys', () =>
             fail = true;
         }
         expect(fail).equal(true);
+
+        cosmos.query = old_query;
     });
 });
