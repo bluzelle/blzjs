@@ -16,9 +16,6 @@
 
 const API = require('./api');
 
-//const { pub_from_priv, import_private_key_from_base64, import_public_key_from_base64 } = require('./ecdsa_secp256k1');
-//const assert = require('assert');
-
 
 module.exports =
 {
