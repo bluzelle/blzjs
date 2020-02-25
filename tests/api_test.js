@@ -45,11 +45,6 @@ cosmos.init = async (mnemonic, endpoint) =>
     return true;
 };
 
-cosmos.query = async (ep) =>
-{
-    console.log("query called");
-};
-
 function validate_common_data(data)
 {
     if (typeof data.BaseReq != 'object')
@@ -179,7 +174,7 @@ describe('testing read', () =>
         var fail = false;
         try
         {
-            res = await api.read(key, value, params.gas_info);
+            res = await api.read(key, params.gas_info);
         }
         catch (err)
         {
@@ -420,7 +415,6 @@ describe('testing keys', () =>
 
         res = await api.keys(params.gas_info);
         expect(send_tx_called).equal(1);
-    debugger;
         expect(res).to.deep.equal(keys);
     });
 
@@ -456,43 +450,186 @@ describe('testing keys', () =>
     });
 });
 
-describe('testing ', () =>
+describe('testing quickread unverified', () =>
 {
+    it('quickread-u success', async () =>
+    {
+        const key = 'key';
+        const value = 'value';
+
+        cosmos.query = async (ep) =>
+        {
+            expect(ep).equal(`read/${params.address}/${key}`);
+            return new Promise(async (resolve, reject) =>
+            {
+                // this is the wrong format
+                resolve({value: value});
+            });
+        };
+
+        res = await api.quickread(key, false);
+        expect(res).equal(value);
+    });
+
+    it('quickread-u error', async () =>
+    {
+        const key = 'key';
+        const msg = 'key not found';
+
+        cosmos.query = async (ep) =>
+        {
+            expect(ep).equal(`read/${params.address}/${key}`);
+            return new Promise(async (resolve, reject) =>
+            {
+                reject(new Error(msg));
+            });
+        };
+
+        var fail = false;
+        try
+        {
+            res = await api.quickread(key, false);
+        }
+        catch (err)
+        {
+            expect(err.message).equal(msg);
+            fail = true;
+        }
+        expect(fail).equal(true);
+    });
 });
 
-describe('testing ', () =>
+describe('testing quickread verified', () =>
 {
+    it('quickread-v success', async () =>
+    {
+        const key = 'key';
+        const value = 'value';
+
+        cosmos.query = async (ep) =>
+        {
+            expect(ep).equal(`pread/${params.address}/${key}`);
+            return new Promise(async (resolve, reject) =>
+            {
+                // this is the wrong format
+                resolve({value: value});
+            });
+        };
+
+        res = await api.quickread(key, true);
+        expect(res).equal(value);
+    });
+
+    it('quickread-v error', async () =>
+    {
+        const key = 'key';
+        const msg = 'key not found';
+
+        cosmos.query = async (ep) =>
+        {
+            expect(ep).equal(`pread/${params.address}/${key}`);
+            return new Promise(async (resolve, reject) =>
+            {
+                reject(new Error(msg));
+            });
+        };
+
+        var fail = false;
+        try
+        {
+            res = await api.quickread(key, true);
+        }
+        catch (err)
+        {
+            expect(err.message).equal(msg);
+            fail = true;
+        }
+        expect(fail).equal(true);
+    });
 });
 
-describe('testing ', () =>
+describe('testing quickhas', () =>
 {
+    const key = 'key';
+
+    it('quickhas success', async () =>
+    {
+        cosmos.query = async (ep) =>
+        {
+            expect(ep).equal(`has/${params.address}/${key}`);
+
+            return new Promise(async (resolve, reject) =>
+            {
+                resolve({"has": true});
+            });
+        };
+
+        res = await api.quickhas(key);
+        expect(res).equal(true);
+    });
+
+    it('quickhas failure', async () =>
+    {
+        cosmos.query = async (ep) =>
+        {
+            expect(ep).equal(`has/${params.address}/${key}`);
+
+            return new Promise(async (resolve, reject) =>
+            {
+                resolve({"has": false});
+            });
+        };
+
+        res = await api.quickhas(key);
+        expect(res).equal(false);
+    });
 });
 
-describe('testing ', () =>
+describe('testing quickkeys', () =>
 {
-});
+    it('quickkeys success', async () =>
+    {
+        const keys = ['key1', 'key2', 'key3'];
 
-describe('testing ', () =>
-{
-});
+        cosmos.query = async (ep) =>
+        {
+            expect(ep).equal(`keys/${params.address}`);
 
-describe('testing ', () =>
-{
-});
+            return new Promise(async (resolve, reject) =>
+            {
+                resolve({keys: keys});
+            });
+        };
 
-describe('testing ', () =>
-{
-});
+        res = await api.quickkeys();
+        expect(res).to.deep.equal(keys);
+    });
 
-describe('testing ', () =>
-{
-});
+    it('keys error', async () =>
+    {
+        const msg = "An error occurred";
+        var send_tx_called = 0;
 
-describe('testing ', () =>
-{
-});
+        cosmos.query = async (ep) =>
+        {
+            expect(ep).equal(`keys/${params.address}`);
 
-describe('testing ', () =>
-{
-});
+            return new Promise(async (resolve, reject) =>
+            {
+                reject(msg);
+            });
+        };
 
+        var fail = false;
+        try
+        {
+            res = await api.quickkeys();
+        }
+        catch (err)
+        {
+            expect(err).equal(msg);
+            fail = true;
+        }
+        expect(fail).equal(true);
+    });
+});
