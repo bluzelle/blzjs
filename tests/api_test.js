@@ -116,7 +116,7 @@ describe('testing create', () =>
 
             return new Promise(async (resolve, reject) =>
             {
-                reject(msg);
+                reject(new Error(msg));
             });
         };
 
@@ -127,7 +127,7 @@ describe('testing create', () =>
         }
         catch (err)
         {
-            expect(err).equal(msg);
+            expect(err.message).equal(msg);
             fail = true;
         }
         expect(send_tx_called).equal(1);
@@ -180,7 +180,7 @@ describe('testing read', () =>
 
             return new Promise(async (resolve, reject) =>
             {
-                reject(msg);
+                reject(new Error(msg));
             });
         };
 
@@ -191,7 +191,7 @@ describe('testing read', () =>
         }
         catch (err)
         {
-            expect(err).equal(msg);
+            expect(err.message).equal(msg);
             fail = true;
         }
         expect(send_tx_called).equal(1);
@@ -244,7 +244,7 @@ describe('testing update', () =>
 
             return new Promise(async (resolve, reject) =>
             {
-                reject(msg);
+                reject(new Error(msg));
             });
         };
 
@@ -255,7 +255,7 @@ describe('testing update', () =>
         }
         catch (err)
         {
-            expect(err).equal(msg);
+            expect(err.message).equal(msg);
             fail = true;
         }
         expect(send_tx_called).equal(1);
@@ -307,7 +307,7 @@ describe('testing delete', () =>
 
             return new Promise(async (resolve, reject) =>
             {
-                reject(msg);
+                reject(new Error(msg));
             });
         };
 
@@ -318,7 +318,7 @@ describe('testing delete', () =>
         }
         catch (err)
         {
-            expect(err).equal(msg);
+            expect(err.message).equal(msg);
             fail = true;
         }
         expect(send_tx_called).equal(1);
@@ -397,7 +397,7 @@ describe('testing has', () =>
 
             return new Promise(async (resolve, reject) =>
             {
-                reject(msg);
+                reject(new Error(msg));
             });
         };
 
@@ -408,7 +408,7 @@ describe('testing has', () =>
         }
         catch (err)
         {
-            expect(err).equal(msg);
+            expect(err.message).equal(msg);
             fail = true;
         }
         expect(send_tx_called).equal(1);
@@ -471,7 +471,7 @@ describe('testing keys', () =>
             return new Promise(async (resolve, reject) =>
             {
                 // this is the wrong format
-                resolve(keys);
+                reject(new Error(msg));
             });
         };
 
@@ -482,7 +482,7 @@ describe('testing keys', () =>
         }
         catch (err)
         {
-            expect(err).equal(msg);
+            expect(err.message).equal(msg);
             fail = true;
         }
         expect(send_tx_called).equal(1);
@@ -680,7 +680,7 @@ describe('testing quickkeys', () =>
 
             return new Promise(async (resolve, reject) =>
             {
-                reject(msg);
+                reject(new Error(msg));
             });
         };
 
@@ -691,7 +691,7 @@ describe('testing quickkeys', () =>
         }
         catch (err)
         {
-            expect(err).equal(msg);
+            expect(err.message).equal(msg);
             fail = true;
         }
         expect(fail).equal(true);
