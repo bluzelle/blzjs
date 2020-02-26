@@ -369,7 +369,6 @@ async function query(ep)
         }
         catch (error)
         {
-//            reject(error);
             if (typeof error.response.data === 'string')
             {
                 reject(new Error(error.response.data));
@@ -388,7 +387,7 @@ async function query(ep)
             }
             else
             {
-                reject("An error occurred");
+                reject(new Error("An error occurred"));
             }
         }
     });

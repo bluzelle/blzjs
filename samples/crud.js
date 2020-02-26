@@ -15,16 +15,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-const { bluzelle } = require('bluzelle');
+const { bluzelle } = require('../src/main.js');
 
-const gas_params = {'gas_price': '0.0001'};
+// NOTE: You may need to set the gas parameters based on your configuration
+// const gas_params = {'max_gas': '', 'max_fee': '', 'gas_price': ''};
+const gas_params = {'gas_price': '0.01'};
+
 var bz;
+
+function usage()
+{
+    console.log("\nUsage: " + process.argv[1] + " command [ argument...]\n");
+    console.log("Executes a command on a Bluzelle node");
+    console.log("Commands and arguments:");
+    console.log(" create key value - creates a new key/value");
+    console.log(" read key         - returns the value of an existing key");
+    console.log(" update key value - updates the value of an existing key");
+    console.log(" delete key value - deletes an existing key");
+    console.log(" has key          - determines if a key exists");
+    console.log(" keys             - returns a list of all keys");
+}
 
 const main = async () => {
 
+    // NOTE: you must fill in the credential below with valid values
     bz = await bluzelle({
-        address: 'cosmos1zuxcvpkxlzf37dh4k95e2rujmy9sxqvxhaj5pn',
-        mnemonic: 'desert maple evoke popular trumpet beach primary decline visit enhance dish drink excite setup public forward ladder girl end genre symbol alter category choose',
+        address: 'bluzelle1xhz23a58mku7ch3hx8f9hrx6he6gyujq57y3kp',
+        mnemonic: 'volcano arrest ceiling physical concert sunset absent hungry tobacco canal census era pretty car code crunch inside behind afraid express giraffe reflect stadium luxury',
         endpoint: "http://localhost:1317",
         chain_id: "bluzelle"
     });
@@ -51,9 +68,12 @@ const main = async () => {
             case 'keys':
                 res = await bz.keys(gas_params);
                 break;
+            default:
+                usage();
+                return;
         }
 
-        console.log(res);
+        console.log(typeof res != 'undefined' ? res : "success");
     }
     catch(e)
     {
