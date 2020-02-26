@@ -78,16 +78,6 @@ async function main()
 
     bz = await bluzelle(params);
 
-    await do_func("*** has ***", async function()
-    {
-        return bz.has("mykey", gas_params);
-    });
-
-    await do_func("*** quickhas ***", async function()
-    {
-        return bz.quickhas("mykey");
-    });
-
     await do_func("*** create key/value ***", async function()
     {
         return bz.create("mykey", '#'.repeat(payload_size), gas_params);

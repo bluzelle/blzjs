@@ -130,7 +130,6 @@ module.exports = class API
                 }
                 else
                 {
-                    //prove ? reject(err) : reject({Error: err});
                     reject(err);
                 }
             });
