@@ -35,11 +35,14 @@ module.exports = class API
 
     constructor(address, mnemonic, endpoint, uuid, chain_id/*, ...args*/)
     {
-        this.mnemonic = mnemonic || def_mnemonic;
+        assert(typeof address === 'string', 'address must be a string');
+        assert(typeof mnemonic === 'string', 'mnemonic must be a string');
+
+        this.mnemonic = mnemonic;
         this.address = address;
         this.uuid = uuid;
         this.chain_id = chain_id || "bluzelle";
-        this.endpoint = endpoint;
+        this.endpoint = endpoint || "http://localhost:1317";
     }
 
     async init()

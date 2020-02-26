@@ -1,6 +1,11 @@
-# API docs
+<a href="https://bluzelle.com/"><img src='https://raw.githubusercontent.com/bluzelle/api/master/source/images/Bluzelle%20-%20Logo%20-%20Big%20-%20Colour.png' alt="Bluzelle" style="width: 100%"/></a>
 
-Read below for detailed documentation on how to use the Bluzelle database.
+Build Status (branch devel): [![Build Status](https://travis-ci.org/bluzelle/bluzelle-js.svg?branch=devel)](https://travis-ci.org/bluzelle/bluzelle-js)
+
+
+# blzjs API documentation
+
+Read below for detailed documentation on how to use the Bluzelle database service.
 
 {% hint style="info" %}
 The Bluzelle JavaScript library works with [promises](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) to model asynchronous behavior. Ensure that dependent calls to the Bluzelle database are within `.then()` blocks or within [asynchronous functions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function). Also ensure that promises exceptions are caught and handled.
@@ -12,7 +17,7 @@ Keys and values in the Bluzelle database are plain strings to ensure compatibili
 
 ## Exports
 
-### version
+### version (tbd)
 
 The bluzelle-js version.
 
@@ -30,8 +35,11 @@ Configures the Bluzelle connection. This may be called multiple times to create 
 const {bluzelle} = require('bluzelle');
 
 const api = await bluzelle({
-    public_pem: 'MFYwEAY...YicgEN9dgLA==',
-    private_pem: 'MHQCAQEEIF...ZKIy8ejQ=='
+    address: 'bluzelle1xhz23a58mku7ch3hx8f9hrx6he6gyujq57y3kp',
+    mnemonic: 'volcano arrest ceiling physical concert sunset absent hungry tobacco canal census era pretty car code crunch inside behind afraid express giraffe reflect stadium luxury',
+    endpoint: "http://localhost:1317",
+    uuid:     "20fc19d4-7c9d-4b5c-9578-8cedd756e0ea",
+    chain_id: "bluzelle"
 });
 ```
 
@@ -41,46 +49,16 @@ const api = await bluzelle({
 
 | Argument | Description |
 | :--- | :--- |
-| **private\_pem** | The private key for this user in PEM format. |
-| **public\_pem** | The public key for this user in PEM format. |
-| ethereum\_rpc | \(Optional\) The remote procedure call entry point for accessing Ethereum. Defaults to the Infura Ropsten gateway. |
-| contract\_address | \(Optional\) The contract address containing Bluzelle metadata. Default to our most up-to-date contract. |
-| uuid | \(Optional\) Bluzelle uses `UUID`'s to identify distinct databases on a single swarm. We recommend using [Version 4 of the universally unique identifier](https://en.wikipedia.org/wiki/Universally_unique_identifier#Version_4_%28random%29). Defaults to the public key. |
-| log | \(Optional\) When set to `true`, logs the request and response messages with `console.log`. When set to a function, logs the request and response messages by calling that function. |
-| logDetailed | \(Optional\) When set to true, also logs JSON-ified versions of the database messages. |
-| p2p\_latency\_bound | \(Optional\) The upper bound for node-to-node latency on the Bluzelle network in ms. The client uses this number for its internal failure timing. Default is 100. |
-| onclose | \(Optional\) Function to be called when the main connection closes or receives an error. |
-| \_connect\_to\_all | \(Optional\) When set to true, establishes a connection with every remote swarm rather than selecting one based upon uuid. This option is primarily used for administrative database operations, such as creating a database. |
+| **address** | The address of your Bluzelle account |
+| **mnemonic** | The mnemonic of the private key for your Bluzelle account |
+| endpoint | \(Optional\) The hostname and port of your rest server. Default: http://localhost:1317 |
+| uuid | \(Optional\) Bluzelle uses `UUID`'s to identify distinct databases on a single swarm. We recommend using [Version 4 of the universally unique identifier](https://en.wikipedia.org/wiki/Universally_unique_identifier#Version_4_%28random%29). Defaults to the account address. |
+| chain_id | \(Optional\) The chain id of your Bluzelle account. Default: bluzelle |
 
-## Misc API Functions
-
-### status\(\)
-
-Returns the status of the swarm.
-
-```javascript
-await api.status();
-```
-
-Returns JSON-encoded swarm status.
-
-### close\(\)
-
-Closes the connections.
-
-```javascript
-api.close();
-```
-
-Returns nothing. Never fails.
-
-{% hint style="info" %}
-Having open WebSocket connections will stop a program from terminating when running under node.js.
-{% endhint %}
 
 ## Database Functions
 
-### create\(key, value\[, ttl\]\)
+### create\(key, value)
 
 Create a field in the database.
 
@@ -96,13 +74,10 @@ await api.create('mykey', '{ a: 13 }');
 | :--- | :--- |
 | key | The name of the key to create |
 | value | The string value to set the key |
-| ttl | \(Optional\) The field's time-to-live, in seconds. |
 
 Returns a promise resolving to nothing.
 
-Fails when a response is not received from the connection, the key already exists, or invalid value.
-
-Fails when a response is not received.
+Throws an exception when a response is not received from the connection, the key already exists, or invalid value.
 
 ### read\(key\)
 
@@ -122,7 +97,7 @@ const value = await api.read('mykey');
 
 Returns a promise resolving the string value of the key.
 
-Fails when a response is not received or the key does not exist in the database.
+Throws an exception when the key does not exist in the database.
 
 ### update\(key, value\[, ttl\]\)
 
@@ -140,52 +115,10 @@ await api.update('mykey', '{ a: 13 }');
 | :--- | :--- |
 | key | The name of the key to create |
 | value | The string value to set the key |
-| ttl | \(Optional\) The field's time-to-live, in seconds. |
 
 Returns a promise resolving to nothing.
 
-Fails when a response is not received from the connection, the key doesn't exist, or invalid value.
-
-Fails when a response is not received.
-
-### quickread\(key\)
-
-Retrieve the value of a key. Has the same interface as read. The difference with quickread is that it bypasses the consensus and cryptography mechanisms in favor of speed.
-
-```javascript
-// promise syntax
-api.quickread('mykey').then(value => { ... }, error => { ... });
-
-// async/await syntax
-const value = await api.quickread('mykey');
-```
-
-| Argument | Description |
-| :--- | :--- |
-| key | The key to retrieve |
-
-Returns a promise resolving the string value of the key.
-
-Fails when a response is not received or the key does not exist in the database.
-
-Update a field in the database.
-
-```javascript
-// promise syntax
-api.update('mykey', '{ a: 13 }').then(() => { ... }, error => { ... });
-
-// async/await syntax
-await api.update('mykey', '{ a: 13 }');
-```
-
-| Argument | Description |
-| :--- | :--- |
-| key | The name of the key to update |
-| value | The string value to set the key |
-
-Returns a promise resolving to nothing.
-
-Fails when a response is not received from the connection, the key does not exist, or invalid value.
+Throws an exception when the key doesn't exist, or invalid value.
 
 ### delete\(key\)
 
@@ -205,7 +138,7 @@ await bluzelle.delete('mykey');
 
 Returns a promise resolving to nothing.
 
-Fails when a response is not received from the connection or the key is not in the database.
+Throws an exception when the key is not in the database.
 
 ### has\(key\)
 
@@ -225,8 +158,6 @@ const hasMyKey = await api.has('mykey');
 
 Returns a promise resolving to a boolean value - `true` or `false`, representing whether the key is in the database.
 
-Fails when a response is not received from the connection.
-
 ### keys\(\)
 
 Retrieve a list of all keys.
@@ -241,241 +172,57 @@ const keys = await api.keys();
 
 Returns a promise resolving to an array of strings. ex. `["key1", "key2", ...]`.
 
-Fails when a response is not received from the connection.
+### quickread\(key, prove\)
 
-### size\(\)
-
-Retrieves the size of the database in bytes.
+Retrieve the value of a key without consensus verification. Can optionally require the result to have a cryptographic proof (slower).
 
 ```javascript
 // promise syntax
-api.size().then(obj => { ... }, error => { ... });
+api.quickread('mykey').then(value => { ... }, error => { ... });
 
 // async/await syntax
-const obj = await api.size();
-```
-
-Returns an object with the following fields:
-
-| Key | Value |
-| :--- | :--- |
-| bytes | The number of bytes in the database. |
-| keys | The number of keys in the database. |
-| remainingBytes | The remaining bytes if there's a max size. |
-| maxSize | The maximum size of the database in bytes. |
-
-Fails when a response is not received from the connection.
-
-## Expiry Functions
-
-### expire\(key, expiry\)
-
-Sets an expiry on a field.
-
-```javascript
-// promise syntax
-api.expire('myKey', 100).then(() => { ... }, error => { ... });
-
-// async/await syntax
-await api.expire('myKey', 100);
+const value = await api.quickread('mykey');
 ```
 
 | Argument | Description |
 | :--- | :--- |
-| key | The name of the key |
-| expiry | The number of seconds that the key will survive before being deleted. |
+| key | The key to retrieve |
+| prove | A proof of the value is required from the network (requires 'config trust-node false' to be set) |
 
-Returns a promise resolving to a nothing.
+Returns a promise resolving the string value of the key.
 
-Fails when a response is not received from the connection or internal error.
+Throws an exception when the key does not exist in the database.
+Throws an exception when the prove is true and the result fails verification.
 
-### persist\(key\)
+### quickhas\(key\)
 
-Removes the expiry from a field.
+Query to see if a key is in the database. Has the same interface as 'has' but bypasses the consensus and cryptography mechanisms in favor of speed.
+
 
 ```javascript
 // promise syntax
-api.persist('myKey').then(() => { ... }, error => { ... });
+api.has('mykey').then(hasMyKey => { ... }, error => { ... });
 
 // async/await syntax
-await api.persist('myKey');
+const hasMyKey = await api.has('mykey');
 ```
 
 | Argument | Description |
 | :--- | :--- |
-| key | The name of the key |
+| key | The name of the key to query |
 
-Returns a promise resolving to a nothing.
+Returns a promise resolving to a boolean value - `true` or `false`, representing whether the key is in the database. Has the same interface as 'keys' but bypasses the consensus and cryptography mechanisms in favor of speed.
 
-Fails when a response is not received from the connection or internal error.
+### quickkeys\(\)
 
-### ttl\(key\)
-
-Returns the remaining time-to-live of the given key, in seconds.
+Retrieve a list of all keys.
 
 ```javascript
 // promise syntax
-api.ttl('myKey').then(ttl => { ... }, error => { ... });
+api.keys().then(keys => { ... }, error => { ... });
 
 // async/await syntax
-const ttl = await api.ttl('myKey');
+const keys = await api.keys();
 ```
 
-| Argument | Description |
-| :--- | :--- |
-| key | The name of the key |
-
-Returns a promise resolving to an integer.
-
-Fails when a response is not received from the connection, expiry does not exist, or internal error.
-
-## Administrative Functions
-
-{% hint style="info" %}
-These functions may only be called by the administrative entity of the swarm. Any requests without not matching the daemon-configurable `owner_public_key` will be rejected.
-{% endhint %}
-
-{% hint style="info" %}
-**These functions cannot be used by the public on the Bluzelle testnet.**
-{% endhint %}
-
-### \_createDB\(\[maxsize, \[policy\_type\]\]\)
-
-Creates a database identified by the `uuid` field given to the `bluzelle` constructor object \(defaulting to `public_pem`\).
-
-```javascript
-// promise syntax
-api._createDB().then(() => { ... }, error => { ... });
-
-// async/await syntax
-await api._createDB();
-```
-
-| Argument | Description |
-| :--- | :--- |
-| maxsize | \(Optional\) The number of bytes for maximum database size. |
-| policy\_type | \(Optional\) Configures the database eviction policy. When set to `"random"`, randomly discards fields when exceeding maximum size. Otherwise, rejects requests that would exceed the maximum size. |
-
-Returns a promise resolving to nothing.
-
-Fails when the operation fails or a database with that uuid already exists.
-
-### \_updateDB\(\[maxsize, \[policy\_type\]\]\)
-
-Updates an existing database. Same API as `_createDB()`.
-
-```javascript
-// promise syntax
-api._createDB().then(() => { ... }, error => { ... });
-
-// async/await syntax
-await api._createDB();
-```
-
-| Argument | Description |
-| :--- | :--- |
-| maxsize | \(Optional\) The number of bytes for maximum database size. |
-| policy\_type | \(Optional\) Configures the database eviction policy. When set to `"random"`, randomly discards fields when exceeding maximum size. Otherwise, rejects requests that would exceed the maximum size. |
-
-Returns a promise resolving to nothing.
-
-Fails when the operation fails or no database with the uuid exists.
-
-### \_deleteDB\(\)
-
-Deletes an existing database.
-
-```javascript
-// promise syntax
-api._deleteDB().then(() => { ... }, error => { ... });
-
-// async/await syntax
-await api._deleteDB();
-```
-
-Returns a promise resolving to nothing.
-
-Fails when the operation fails or no database with the uuid exists.
-
-### \_hasDB\(\)
-
-Queries to see if a given database exists.
-
-```javascript
-// promise syntax
-api._hasDB().then(exists => { ... }, error => { ... });
-
-// async/await syntax
-const exists = await api._hasDB();
-```
-
-Returns a promise resolving to a boolean signifying whether the database exists.
-
-Fails when the operation fails.
-
-### \_getWriters\(\)
-
-Gets the owner and writers of the given database. The owner is the public key of the user that created the database. The writers array lists the public keys of users that are allowed to make changes to the database.
-
-```javascript
-// promise syntax
-api._getWriters().then(permissions => { ... }, error => { ... });
-
-// async/await syntax
-const permissions = await api._getWriters();
-```
-
-Returns a promise resolving to an object like this:
-
-```javascript
-{
-    owner: 'MFYwEAY...EpZop6A==',
-    writers: [
-        'MFYwEAYH...0FEoB==',
-        ...
-    ]
-}
-```
-
-Fails when a response is not received or the database does not exist.
-
-### \_addWriters\(writers\)
-
-Adds writers to the writers list. May only be executed by the owner of the database.
-
-```javascript
-// promise syntax
-api._addWriters('MFYwEAY...EpZop6A==').then(() => { ... }, error => { ... });
-
-// async/await syntax
-await api._addWriters(['MFYwEAY...EpZop6A==', 'MFYwEAYH...0FEoB==']);
-```
-
-| Argument | Description |
-| :--- | :--- |
-| writers | A single public key or an array of public keys to add. |
-
-Returns a promise resolving to nothing.
-
-{% hint style="info" %}
-Duplicate writers are not added to the writers list.
-{% endhint %}
-
-### \_deleteWriters\(writers\)
-
-Deletes writers from the writers list. May only be executed by the owner of the database.
-
-```javascript
-// promise syntax
-api._deleteWriters('MFYwEAY...EpZop6A==').then(() => { ... }, error => { ... });
-
-// async/await syntax
-await api._deleteWriters(['MFYwEAY...EpZop6A==', 'MFYwEAYH...0FEoB==']);
-```
-
-| Argument | Description |
-| :--- | :--- |
-| writers | A single public key or an array of public keys to delete. |
-
-Returns a promise resolving to nothing.
-
+Returns a promise resolving to an array of strings. ex. `["key1", "key2", ...]`.
