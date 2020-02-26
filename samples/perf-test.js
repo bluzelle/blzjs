@@ -48,14 +48,19 @@ async function do_func(label, func)
     try
     {
         res = await func();
-        if (res)
+        if (typeof res != 'undefined')
         {
             payload_set || console.log("result: " + JSON.stringify(res));
         }
+        else
+        {
+            payload_set || console.log("success");
+        }
+
     }
     catch(err)
     {
-        console.log("result: " + JSON.stringify(err));
+        console.log("error: " + err.message);
     }
     time_taken = now() - start;
     times.push(time_taken);
