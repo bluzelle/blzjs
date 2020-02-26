@@ -58,6 +58,44 @@ const basic_response_data =
     }
 };
 
+const tx_create_skeleton =
+    {
+        "type": "cosmos-sdk/StdTx",
+        "value": {
+            "msg": [
+                {
+                    "type": "crud/create",
+                    "value": {
+                        "UUID": "cosmos1zuxcvpkxlzf37dh4k95e2rujmy9sxqvxhaj5pn",
+                        "Key": "mykey",
+                        "Value": "##########",
+                        "Owner": "cosmos1zuxcvpkxlzf37dh4k95e2rujmy9sxqvxhaj5pn"
+                    }
+                }
+            ],
+            "fee": {
+                "amount": [],
+                "gas": "200000"
+            },
+            "signatures": null,
+            "memo": ""
+        }
+    };
+
+const ep = "create";
+const method = "post";
+const WAIT_TIME = 100;
+const create_data = {
+    BaseReq: {
+        from: params.address,
+        chain_id: params.chain_id
+    },
+    UUID: params.address,
+    Key: "key",
+    Value: "value",
+    Owner: params.address
+};
+
 async function get_ec_private_key(mnemonic)
 {
     const seed = await bip39.mnemonicToSeed(mnemonic);
@@ -96,7 +134,9 @@ async function do_init()
             response: JSON.parse(JSON.stringify(basic_response_data))
         });
 
-    return await cosmos.init(params.mnemonic, params.endpoint);
+    const res = await cosmos.init(params.mnemonic, params.endpoint);
+    moxios.stubs.reset();
+    return res;
 }
 
 describe('testing initialize', () =>
@@ -265,6 +305,60 @@ describe('testing query', () =>
     });
 });
 
+function do_create()
+{
+    // first the library should send a create request to get the tx skeleton
+    moxios.wait(function ()
+    {
+        let request = moxios.requests.mostRecent();
+        expect(request.config.url).equal(app_endpoint + app_service + '/' + ep);
+        expect(request.config.method).equal(method);
+        expect(request.config.data).equal(JSON.stringify(create_data));
+
+        // then it should sign and broadcast it
+        moxios.wait(function ()
+        {
+            let request = moxios.requests.mostRecent();
+            expect(request.config.method).equal('post');
+            expect(request.config.url).equal(app_endpoint + '/txs');
+            const data = JSON.parse(request.config.data);
+            expect(data.tx.signatures.length).equal(1);
+            expect(verify_signature(data.tx)).equal(true);
+
+            // then it should poll for result
+            moxios.wait(function ()
+            {
+                let request = moxios.requests.mostRecent();
+                expect(request.config.method).equal('get');
+                expect(request.config.url).equal(app_endpoint + '/txs/xxxx');
+
+                request.respondWith({
+                    status: 200,
+                    response: {
+                        logs: [{
+                            success: true
+                        }],
+                        tx_hash: "xxxx"
+                    }
+                });
+            }, WAIT_TIME);
+
+            request.respondWith({
+                status: 200,
+                response: {
+                    logs: [{}],
+                    txhash: "xxxx"
+                }
+            });
+        }, WAIT_TIME);
+
+        request.respondWith({
+            status: 200,
+            response: tx_create_skeleton
+        });
+    }, WAIT_TIME);
+}
+
 describe('testing send_transaction', () =>
 {
     beforeEach(() =>
@@ -277,44 +371,6 @@ describe('testing send_transaction', () =>
         moxios.uninstall(axios);
     });
 
-    const tx_create_skeleton =
-        {
-            "type": "cosmos-sdk/StdTx",
-            "value": {
-                "msg": [
-                    {
-                        "type": "crud/create",
-                        "value": {
-                            "UUID": "cosmos1zuxcvpkxlzf37dh4k95e2rujmy9sxqvxhaj5pn",
-                            "Key": "mykey",
-                            "Value": "##########",
-                            "Owner": "cosmos1zuxcvpkxlzf37dh4k95e2rujmy9sxqvxhaj5pn"
-                        }
-                    }
-                ],
-                "fee": {
-                    "amount": [],
-                    "gas": "200000"
-                },
-                "signatures": null,
-                "memo": ""
-            }
-        };
-
-    const ep = "create";
-    const method = "post";
-    const WAIT_TIME = 100;
-    const create_data = {
-        BaseReq: {
-            from: params.address,
-            chain_id: params.chain_id
-        },
-        UUID: params.address,
-        Key: "key",
-        Value: "value",
-        Owner: params.address
-    };
-
     it('basic tx', async () =>
     {
         params.priv_key = await get_ec_private_key(params.mnemonic);
@@ -323,56 +379,7 @@ describe('testing send_transaction', () =>
         const res2 = await do_init();
         expect(res2).equal(true);
 
-        // first the library should send a create request to get the tx skeleton
-        moxios.wait(function ()
-        {
-            let request = moxios.requests.mostRecent();
-            expect(request.config.url).equal(app_endpoint + app_service + '/' + ep);
-            expect(request.config.method).equal(method);
-            expect(request.config.data).equal(JSON.stringify(create_data));
-
-            // then it should sign and broadcast it
-            moxios.wait(function ()
-            {
-                let request = moxios.requests.mostRecent();
-                expect(request.config.method).equal('post');
-                expect(request.config.url).equal(app_endpoint + '/txs');
-                const data = JSON.parse(request.config.data);
-                expect(data.tx.signatures.length).equal(1);
-                expect(verify_signature(data.tx)).equal(true);
-
-                // then it should poll for result
-                moxios.wait(function ()
-                {
-                    let request = moxios.requests.mostRecent();
-                    expect(request.config.method).equal('get');
-                    expect(request.config.url).equal(app_endpoint + '/txs/xxxx');
-
-                    request.respondWith({
-                        status: 200,
-                        response: {
-                            logs: [{
-                                success: true
-                            }],
-                            tx_hash: "xxxx"
-                        }
-                    });
-                }, WAIT_TIME);
-
-                request.respondWith({
-                    status: 200,
-                    response: {
-                        logs: [{}],
-                        txhash: "xxxx"
-                    }
-                });
-            }, WAIT_TIME);
-
-            request.respondWith({
-                status: 200,
-                response: tx_create_skeleton
-            });
-        }, WAIT_TIME);
+        do_create();
 
         const prom = cosmos.send_transaction(method, ep, create_data, gas_params);
         const res = await prom;
@@ -647,5 +654,131 @@ describe('testing send_transaction', () =>
         const prom = cosmos.send_transaction(method, ep, create_data);
         const res2 = await prom;
         expect(res2.data.logs[0].success).equal(true);
+    });
+
+    it('handles sequence race', async () =>
+    {
+        params.priv_key = await get_ec_private_key(params.mnemonic);
+
+        // wait for account request
+        const res2 = await do_init();
+        expect(res2).equal(true);
+
+        // first the library should send a create request to get the tx skeleton
+        moxios.wait(function ()
+        {
+            let request = moxios.requests.mostRecent();
+            expect(request.config.url).equal(app_endpoint + app_service + '/' + ep);
+            expect(request.config.method).equal(method);
+            expect(request.config.data).equal(JSON.stringify(create_data));
+
+            // then it should sign and broadcast it
+            moxios.wait(function ()
+            {
+                let request = moxios.requests.mostRecent();
+                expect(request.config.method).equal('post');
+                expect(request.config.url).equal(app_endpoint + '/txs');
+
+                // should request updated account info - reply with updated sequence
+                moxios.wait(function ()
+                {
+                    let request = moxios.requests.mostRecent();
+                    expect(request.config.method).equal('get');
+                    //expect(request.config.url).equal(app_endpoint + '/auth/accounts/xxxx');
+
+                    // now it should re-send tx with new sequence number
+                    params.sequence_number = `${++params.sequence_number}`;
+                    do_create();
+
+                    // respond with updated sequence number
+                    let response = JSON.parse(JSON.stringify(basic_response_data));
+                    response.result.value.sequence = `${++response.result.value.sequence}`;
+                    request.respondWith({
+                        status: 200,
+                        response: response
+                    });
+                }, WAIT_TIME);
+
+                // simulate a signature failure
+                request.respondWith({
+                    status: 200,
+                    response: {
+                        raw_log: '{"code": "4"}'
+                    }});
+            }, WAIT_TIME);
+
+            request.respondWith({
+                status: 200,
+                response: tx_create_skeleton
+            });
+        }, WAIT_TIME);
+
+        const prom = cosmos.send_transaction(method, ep, create_data, gas_params);
+        const res = await prom;
+        expect(res.data.logs[0].success).equal(true);
+    });
+
+    it('detects bad chain_id', async () =>
+    {
+        params.priv_key = await get_ec_private_key(params.mnemonic);
+
+        // wait for account request
+        const res2 = await do_init();
+        expect(res2).equal(true);
+
+        // first the library should send a create request to get the tx skeleton
+        moxios.wait(function ()
+        {
+            let request = moxios.requests.mostRecent();
+            expect(request.config.url).equal(app_endpoint + app_service + '/' + ep);
+            expect(request.config.method).equal(method);
+            expect(request.config.data).equal(JSON.stringify(create_data));
+
+            // then it should sign and broadcast it
+            moxios.wait(function ()
+            {
+                let request = moxios.requests.mostRecent();
+                expect(request.config.method).equal('post');
+                expect(request.config.url).equal(app_endpoint + '/txs');
+
+                // should request updated account info - reply with updated sequence
+                moxios.wait(function ()
+                {
+                    let request = moxios.requests.mostRecent();
+                    expect(request.config.method).equal('get');
+
+                    // respond with NOT updated sequence number
+                    let response = JSON.parse(JSON.stringify(basic_response_data));
+                    request.respondWith({
+                        status: 200,
+                        response: response
+                    });
+                }, WAIT_TIME);
+
+                // simulate a signature failure
+                request.respondWith({
+                    status: 200,
+                    response: {
+                        raw_log: '{"code": "4"}'
+                    }});
+            }, WAIT_TIME);
+
+            request.respondWith({
+                status: 200,
+                response: tx_create_skeleton
+            });
+        }, WAIT_TIME);
+
+        var error = "";
+        try
+        {
+            await cosmos.send_transaction(method, ep, create_data, gas_params);
+        }
+        catch (err)
+        {
+            error = err.message;
+        }
+
+        expect(error).equal("Invalid chain id");
     });
 });

@@ -32,7 +32,7 @@ const prefix = 'bluzelle';
 const path = "m/44'/118'/0'/0/0";
 
 var private_key;
-var account_info = {};
+var account_info = { account_number : "", sequance : ""};
 var tx_queue = [];
 
 const token_name = 'bnt';
@@ -81,12 +81,12 @@ class transaction
 function sign_transaction(key, data, chain_id)
 {
     let payload = {
-        account_number: account_info.value.account_number || '0',
+        account_number: account_info.account_number || '0',
         chain_id: chain_id,
         fee: util.sortJson(data.value.fee),
         memo: data.value.memo,
         msgs: util.sortJson(data.value.msg),
-        sequence: (account_info.value.sequence || '0')
+        sequence: (account_info.sequence || '0')
     };
 
     // Calculate the SHA256 of the payload object
@@ -185,7 +185,7 @@ async function begin_tx(tx)
     if (res.logs)
     {
         // bump our sequence number
-        account_info.value.sequence = `${++account_info.value.sequence}`;
+        account_info.sequence = `${++account_info.sequence}`;
 
         // start polling for result
         poll_tx(tx, res.txhash, 0);
@@ -197,14 +197,21 @@ async function begin_tx(tx)
         let info = JSON.parse(res.raw_log);
         if (info.code == 4)
         {
-            // signature fail. Assume sequence number is invalid
-            await send_account_query();
-
-            // retry
-            setTimeout(function ()
+            // signature fail. Either sequence number or chain id is invalid
+            const changed = await send_account_query();
+            if (changed)
             {
-                begin_tx(tx);
-            });
+                // retry
+                setTimeout(function ()
+                {
+                    begin_tx(tx);
+                });
+            }
+            else
+            {
+                tx.deferred.reject(new Error("Invalid chain id"));
+                advance_queue();
+            }
         }
         else
         {
@@ -285,15 +292,8 @@ async function send_account_query()
     // We will need its account number and current sequence.
 
     let url = `${app_endpoint}/auth/accounts/${get_address(secp256k1.keyFromPrivate(private_key, 'hex').getPublic(true, 'hex'))}`;
-    try
-    {
-        let response = await axios.get(url);
-        return handle_account_response(response);
-    }
-    catch(err)
-    {
-        return false;
-    }
+    let response = await axios.get(url);
+    return handle_account_response(response);
 }
 
 function handle_account_response(response)
@@ -302,11 +302,16 @@ function handle_account_response(response)
 
     if (state && state.result && state.result.value.account_number && state.result.value.sequence)
     {
-        account_info = state.result;
-        return true;
+        account_info.account_number = state.result.value.account_number;
+        if (account_info.sequence !== state.result.value.sequence)
+        {
+            account_info.sequence = state.result.value.sequence;
+            return true;
+        }
+        return false;
     }
 
-    return false;
+    throw(new Error("Invalid account information"));
 }
 
 async function next_tx()
@@ -323,7 +328,15 @@ async function init(mnemonic, endpoint)
 {
     app_endpoint = endpoint ? endpoint : app_endpoint;
     private_key = await get_ec_private_key(mnemonic);
-    return await send_account_query();
+    try
+    {
+        await send_account_query();
+        return true;
+    }
+    catch (err)
+    {
+        return false;
+    }
 }
 
 async function send_transaction(req_type, ep_name, data, gas_info)
@@ -369,7 +382,6 @@ async function query(ep)
         }
         catch (error)
         {
-//            reject(error);
             if (typeof error.response.data === 'string')
             {
                 reject(new Error(error.response.data));
@@ -388,7 +400,7 @@ async function query(ep)
             }
             else
             {
-                reject("An error occurred");
+                reject(new Error("An error occurred"));
             }
         }
     });

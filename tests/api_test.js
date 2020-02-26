@@ -58,18 +58,19 @@ function validate_common_data(data)
 
 describe('testing init', () =>
 {
-    old_init = cosmos.init;
-    cosmos.init = async (mnemonic, endpoint) =>
-    {
-        return true;
-    };
-
     it('initializes', async () =>
     {
+        old_init = cosmos.init;
+        cosmos.init = async (mnemonic, endpoint) =>
+        {
+            return true;
+        };
+
         res = await api.init();
         expect(res).equal(true);
+
+        cosmos.init = old_init;
     });
-    cosmos.init = old_init;
 });
 
 describe('testing create', () =>
