@@ -120,7 +120,8 @@ module.exports = class API
 
         return new Promise(async (resolve, reject) =>
         {
-            const url = prove ? `pread/${this.uuid}/${key}` : `read/${this.uuid}/${key}`;
+            const uri_key = encodeURI(key);
+            const url = prove ? `pread/${this.uuid}/${uri_key}` : `read/${this.uuid}/${uri_key}`;
             cosmos.query(url).then(function (res)
             {
                 resolve(res.value);
@@ -210,7 +211,8 @@ module.exports = class API
 
         return new Promise(async (resolve, reject) =>
         {
-            cosmos.query(`has/${this.uuid}/${key}`).then(function (res)
+            const uri_key = encodeURI(key);
+            cosmos.query(`has/${this.uuid}/${uri_key}`).then(function (res)
             {
                 resolve(res.has);
             }).catch(function (err)
