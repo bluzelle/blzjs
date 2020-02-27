@@ -6,7 +6,6 @@ Build Status (branch devel): [![Build Status](https://travis-ci.org/bluzelle/blz
 **blzjs** is a JavaScript library that can be used to access the Bluzelle database service.
 
 # blzjs API documentation
-https://travis-ci.org/bluzelle/blzjs.svg?branch=devel
 Read below for detailed documentation on how to use the Bluzelle database service.
 
 <p class="callout info">
