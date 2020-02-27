@@ -1,21 +1,20 @@
 <a href="https://bluzelle.com/"><img src='https://raw.githubusercontent.com/bluzelle/api/master/source/images/Bluzelle%20-%20Logo%20-%20Big%20-%20Colour.png' alt="Bluzelle" style="width: 100%"/></a>
 
-Build Status (branch devel): [![Build Status](https://travis-ci.org/bluzelle/bluzelle-js.svg?branch=devel)](https://travis-ci.org/bluzelle/bluzelle-js)
+Build Status (branch devel): [![Build Status](https://travis-ci.org/bluzelle/blzjs.svg?branch=devel)](https://travis-ci.org/bluzelle/blzjs)
 
 
 **blzjs** is a JavaScript library that can be used to access the Bluzelle database service.
 
 # blzjs API documentation
-
 Read below for detailed documentation on how to use the Bluzelle database service.
 
-{% hint style="info" %}
-The Bluzelle JavaScript library works with [promises](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) to model asynchronous behavior. Ensure that dependent calls to the Bluzelle database are within `.then()` blocks or within [asynchronous functions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function). Also ensure that promises exceptions are caught and handled.
-{% endhint %}
+<p class="callout info">
+The Bluzelle JavaScript library works with promises (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) to model asynchronous behavior. Ensure that dependent calls to the Bluzelle database are within `.then()` blocks or within asynchronous functions (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function). Also ensure that promises exceptions are caught and handled.
+</p>
 
-{% hint style="info" %}
+<p class="callout info">
 Keys and values in the Bluzelle database are plain strings to ensure compatibility for all forms of serialization. JavaScript applications will probably want to use `JSON.stringify(obj)` and `JSON.parse(str)` to convert object data to and from string format.
-{% endhint %}
+</p>
 
 ## Exports
 
