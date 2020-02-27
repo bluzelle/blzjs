@@ -18,6 +18,13 @@
 
 const { bluzelle } = require('../src/main.js');
 
+// NOTE: This file must be provided and contains your account credentials in the form
+//  module.exports = {
+//         address: 'bluzellexxxxxxxxxxxxxxxxxxx',
+//         mnemonic: 'set of words representing your private key',
+//  };
+const account = require('./blz-account.js');
+
 var times = [];
 var payload_size = 10;
 var payload_set = false;
@@ -27,9 +34,8 @@ const gas_params = {'gas_price': '0.01'};
 
 const params =
 {
-    // local
-    address: 'bluzelle1xhz23a58mku7ch3hx8f9hrx6he6gyujq57y3kp',
-    mnemonic: 'volcano arrest ceiling physical concert sunset absent hungry tobacco canal census era pretty car code crunch inside behind afraid express giraffe reflect stadium luxury',
+    address:  account.address,
+    mnemonic: account.mnemonic,
     endpoint: "http://localhost:1317",
     chain_id: "bluzelle"
 };

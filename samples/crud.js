@@ -17,6 +17,13 @@
 
 const { bluzelle } = require('../src/main.js');
 
+// NOTE: This file must be provided and contains your account credentials in the form
+//  module.exports = {
+//         address: 'bluzellexxxxxxxxxxxxxxxxxxx',
+//         mnemonic: 'set of words representing your private key',
+//  };
+const account = require('./blz-account.js');
+
 // NOTE: You may need to set the gas parameters based on your configuration
 // const gas_params = {'max_gas': '', 'max_fee': '', 'gas_price': ''};
 const gas_params = {'gas_price': '0.01'};
@@ -38,10 +45,11 @@ function usage()
 
 const main = async () => {
 
+    debugger;
     // NOTE: you must fill in the credential below with valid values
     bz = await bluzelle({
-        address: 'bluzelle1xhz23a58mku7ch3hx8f9hrx6he6gyujq57y3kp',
-        mnemonic: 'volcano arrest ceiling physical concert sunset absent hungry tobacco canal census era pretty car code crunch inside behind afraid express giraffe reflect stadium luxury',
+        address:  account.address,
+        mnemonic: account.mnemonic,
         endpoint: "http://localhost:1317",
         chain_id: "bluzelle"
     });
