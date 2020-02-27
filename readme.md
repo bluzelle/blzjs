@@ -8,14 +8,19 @@ Build Status (branch devel): [![Build Status](https://travis-ci.org/bluzelle/blz
 # blzjs API documentation
 Read below for detailed documentation on how to use the Bluzelle database service.
 
-<p class="callout info">
-The Bluzelle JavaScript library works with promises (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) to model asynchronous behavior. Ensure that dependent calls to the Bluzelle database are within `.then()` blocks or within asynchronous functions (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function). Also ensure that promises exceptions are caught and handled.
-</p>
+![#1589F0](https://placehold.it/15/1589F0/000000?text=+) The Bluzelle JavaScript library works with promises (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) to model asynchronous behavior. Ensure that dependent calls to the Bluzelle database are within `.then()` blocks or within asynchronous functions (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function). Also ensure that promises exceptions are caught and handled.
 
-<p class="callout info">
-Keys and values in the Bluzelle database are plain strings to ensure compatibility for all forms of serialization. JavaScript applications will probably want to use `JSON.stringify(obj)` and `JSON.parse(str)` to convert object data to and from string format.
-</p>
+![#1589F0](https://placehold.it/15/1589F0/000000?text=+) Keys and values in the Bluzelle database are plain strings to ensure compatibility for all forms of serialization. JavaScript applications will probably want to use `JSON.stringify(obj)` and `JSON.parse(str)` to convert object data to and from string format.
 
+![#1589F0](https://placehold.it/15/1589F0/000000?text=+) Some API functions take *gas_info* as a parameter. This is a JavaScript object containing parameters related to gas consumption as follows:
+```javascript
+{
+    'max_gas': '0', // maximum amount of gas to consume for this call (integer)
+    'max_fee': '0', // maximum amount to charge for this call (integer, in bnt)
+    'gas_price': '0.0' // maximum price to pay for gas (floating point, in bnt)
+};
+````
+All values are optional. The `max_gas` value will always be honored if present, otherwise a default value will be used. If both `max_fee` and `gas_price` are specified, `gas_price` will be ignored and calculated based on the provided `max_fee`.
 ## Exports
 
 ### version (tbd)
@@ -59,7 +64,7 @@ const api = await bluzelle({
 
 ## Database Functions
 
-### create\(key, value)
+### create\(key, value[, gas_info]\)
 
 Create a field in the database.
 
@@ -75,12 +80,13 @@ await api.create('mykey', '{ a: 13 }');
 | :--- | :--- |
 | key | The name of the key to create |
 | value | The string value to set the key |
+| gas_info (Optional) | Object containing gas parameters (see above) |
 
 Returns a promise resolving to nothing.
 
 Throws an exception when a response is not received from the connection, the key already exists, or invalid value.
 
-### read\(key\)
+### read\(key[, gas_info]\)
 
 Retrieve the value of a key.
 
@@ -95,12 +101,13 @@ const value = await api.read('mykey');
 | Argument | Description |
 | :--- | :--- |
 | key | The key to retrieve |
+| gas_info (Optional) | Object containing gas parameters (see above) |
 
 Returns a promise resolving the string value of the key.
 
 Throws an exception when the key does not exist in the database.
 
-### update\(key, value\[, ttl\]\)
+### update\(key, value\[, gas_info]\)
 
 Updates a field in the database.
 
@@ -116,12 +123,13 @@ await api.update('mykey', '{ a: 13 }');
 | :--- | :--- |
 | key | The name of the key to create |
 | value | The string value to set the key |
+| gas_info (Optional) | Object containing gas parameters (see above) |
 
 Returns a promise resolving to nothing.
 
 Throws an exception when the key doesn't exist, or invalid value.
 
-### delete\(key\)
+### delete\(key[, gas_info]\)
 
 Deletes a field from the database.
 
@@ -136,12 +144,13 @@ await bluzelle.delete('mykey');
 | Argument | Description |
 | :--- | :--- |
 | key | The name of the key to delete |
+| gas_info (Optional) | Object containing gas parameters (see above) |
 
 Returns a promise resolving to nothing.
 
 Throws an exception when the key is not in the database.
 
-### has\(key\)
+### has\(key[, gas_info]\)
 
 Query to see if a key is in the database.
 
@@ -156,10 +165,11 @@ const hasMyKey = await api.has('mykey');
 | Argument | Description |
 | :--- | :--- |
 | key | The name of the key to query |
+| gas_info (Optional) | Object containing gas parameters (see above) |
 
 Returns a promise resolving to a boolean value - `true` or `false`, representing whether the key is in the database.
 
-### keys\(\)
+### keys\([gas_info]\)
 
 Retrieve a list of all keys.
 
@@ -170,6 +180,10 @@ api.keys().then(keys => { ... }, error => { ... });
 // async/await syntax
 const keys = await api.keys();
 ```
+
+| Argument | Description |
+| :--- | :--- |
+| gas_info (Optional) | Object containing gas parameters (see above) |
 
 Returns a promise resolving to an array of strings. ex. `["key1", "key2", ...]`.
 

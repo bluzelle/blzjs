@@ -155,7 +155,7 @@ async function begin_tx(tx)
         response = await axios(request);
 
         // set the gas info
-        if (tx.max_gas && parseInt(response.data.value.fee.gas > tx.max_gas))
+        if (tx.max_gas && parseInt(response.data.value.fee.gas) > parseInt(tx.max_gas))
         {
             response.data.value.fee.gas = `${tx.max_gas}`;
         }
@@ -177,7 +177,7 @@ async function begin_tx(tx)
     }
     catch (err)
     {
-        tx.deferred.reject(err.message);
+        tx.deferred.reject(new Error(err.message));
         advance_queue();
         return;
     }
@@ -208,7 +208,7 @@ async function begin_tx(tx)
         }
         else
         {
-            tx.deferred.reject(res.raw_log);
+            tx.deferred.reject(new Error(info.message));
             advance_queue();
         }
     }
