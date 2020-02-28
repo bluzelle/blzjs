@@ -17,7 +17,7 @@
 
 const { bluzelle } = require('bluzelle');
 
-const gas_params = {'gas_price': '0.0001'};
+const gas_params = {'gas_price': '0.01'};
 var bz;
 
 const main = async () => {

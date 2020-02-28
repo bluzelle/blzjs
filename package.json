@@ -9,7 +9,7 @@
     "test-node": "mocha \"`git rev-parse --show-toplevel`/src/**/*.test.js\" --exit --timeout 8000",
     "test-browser": "cd `git rev-parse --show-toplevel`/test-browser; webpack main.test.js -o main.test.pack.js --mode=\"development\"; open mocha.html",
     "build": "webpack",
-    "test": "nyc --reporter=text mocha **/tests/*_test.js --timeout 200000"
+    "test": "nyc --reporter=text mocha **/tests/*_test.js --timeout 20000"
   },
   "devDependencies": {
     "chai": "*",

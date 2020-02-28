@@ -32,7 +32,7 @@ const prefix = 'bluzelle';
 const path = "m/44'/118'/0'/0/0";
 
 var private_key;
-var account_info = { account_number : "", sequance : ""};
+var account_info = { account_number : "", sequence : ""};
 var tx_queue = [];
 
 const token_name = 'bnt';
