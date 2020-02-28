@@ -480,11 +480,11 @@ describe('testing keys', () =>
     });
 });
 
-describe('testing quickread unverified', () =>
+describe('testing queryread unverified', () =>
 {
     save_cosmos_functions();
 
-    it('quickread-u success', async () =>
+    it('queryread-u success', async () =>
     {
         const key = 'key';
         const value = 'value';
@@ -499,11 +499,11 @@ describe('testing quickread unverified', () =>
             });
         };
 
-        res = await api.quickread(key, false);
+        res = await api.queryread(key, false);
         expect(res).equal(value);
     });
 
-    it('quickread-u error', async () =>
+    it('queryread-u error', async () =>
     {
         const key = 'key';
         const msg = 'key not found';
@@ -520,7 +520,7 @@ describe('testing quickread unverified', () =>
         var fail = false;
         try
         {
-            res = await api.quickread(key, false);
+            res = await api.queryread(key, false);
         }
         catch (err)
         {
@@ -530,7 +530,7 @@ describe('testing quickread unverified', () =>
         expect(fail).equal(true);
     });
 
-    it('quickread-u with special characters', async () =>
+    it('queryread-u with special characters', async () =>
     {
         const key = 'key#1%2&3';
         const value = 'value';
@@ -546,16 +546,16 @@ describe('testing quickread unverified', () =>
             });
         };
 
-        res = await api.quickread(key, false);
+        res = await api.queryread(key, false);
         expect(res).equal(value);
     });
 });
 
-describe('testing quickread verified', () =>
+describe('testing queryread verified', () =>
 {
     save_cosmos_functions();
 
-    it('quickread-v success', async () =>
+    it('queryread-v success', async () =>
     {
         const key = 'key';
         const value = 'value';
@@ -570,11 +570,11 @@ describe('testing quickread verified', () =>
             });
         };
 
-        res = await api.quickread(key, true);
+        res = await api.queryread(key, true);
         expect(res).equal(value);
     });
 
-    it('quickread-v error', async () =>
+    it('queryread-v error', async () =>
     {
         const key = 'key';
         const msg = 'key not found';
@@ -591,7 +591,7 @@ describe('testing quickread verified', () =>
         var fail = false;
         try
         {
-            res = await api.quickread(key, true);
+            res = await api.queryread(key, true);
         }
         catch (err)
         {
@@ -602,12 +602,12 @@ describe('testing quickread verified', () =>
     });
 });
 
-describe('testing quickhas', () =>
+describe('testing queryhas', () =>
 {
     const key = 'key';
     save_cosmos_functions();
 
-    it('quickhas success', async () =>
+    it('queryhas success', async () =>
     {
         cosmos.query = async (ep) =>
         {
@@ -619,11 +619,11 @@ describe('testing quickhas', () =>
             });
         };
 
-        res = await api.quickhas(key);
+        res = await api.queryhas(key);
         expect(res).equal(true);
     });
 
-    it('quickhas failure', async () =>
+    it('queryhas failure', async () =>
     {
         cosmos.query = async (ep) =>
         {
@@ -635,16 +635,16 @@ describe('testing quickhas', () =>
             });
         };
 
-        res = await api.quickhas(key);
+        res = await api.queryhas(key);
         expect(res).equal(false);
     });
 });
 
-describe('testing quickkeys', () =>
+describe('testing querykeys', () =>
 {
     save_cosmos_functions();
 
-    it('quickkeys success', async () =>
+    it('querykeys success', async () =>
     {
         const keys = ['key1', 'key2', 'key3'];
 
@@ -658,7 +658,7 @@ describe('testing quickkeys', () =>
             });
         };
 
-        res = await api.quickkeys();
+        res = await api.querykeys();
         expect(res).to.deep.equal(keys);
     });
 
@@ -680,7 +680,7 @@ describe('testing quickkeys', () =>
         var fail = false;
         try
         {
-            res = await api.quickkeys();
+            res = await api.querykeys();
         }
         catch (err)
         {

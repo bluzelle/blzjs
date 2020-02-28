@@ -114,7 +114,7 @@ module.exports = class API
     }
 
     // returns a promise resolving the string value of the key.
-    async quickread(key, prove)
+    async queryread(key, prove)
     {
         assert(typeof key === 'string', 'Key must be a string');
 
@@ -205,7 +205,7 @@ module.exports = class API
     }
 
     // returns a promise resolving to a boolean value - true or false, representing whether the key is in the database.
-    async quickhas(key)
+    async queryhas(key)
     {
         assert(typeof key === 'string', 'Key must be a string');
 
@@ -260,7 +260,7 @@ module.exports = class API
     }
 
     // returns a promise resolving to an array of strings. ex. ["key1", "key2", ...]
-    async quickkeys()
+    async querykeys()
     {
         return new Promise(async (resolve, reject) =>
         {

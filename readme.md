@@ -187,16 +187,16 @@ const keys = await api.keys();
 
 Returns a promise resolving to an array of strings. ex. `["key1", "key2", ...]`.
 
-### quickread\(key, prove\)
+### queryread\(key, prove\)
 
 Retrieve the value of a key without consensus verification. Can optionally require the result to have a cryptographic proof (slower).
 
 ```javascript
 // promise syntax
-api.quickread('mykey').then(value => { ... }, error => { ... });
+api.queryread('mykey').then(value => { ... }, error => { ... });
 
 // async/await syntax
-const value = await api.quickread('mykey');
+const value = await api.queryread('mykey');
 ```
 
 | Argument | Description |
@@ -209,17 +209,17 @@ Returns a promise resolving the string value of the key.
 Throws an exception when the key does not exist in the database.
 Throws an exception when the prove is true and the result fails verification.
 
-### quickhas\(key\)
+### queryhas\(key\)
 
 Query to see if a key is in the database. Has the same interface as 'has' but bypasses the consensus and cryptography mechanisms in favor of speed.
 
 
 ```javascript
 // promise syntax
-api.has('mykey').then(hasMyKey => { ... }, error => { ... });
+api.queryhas('mykey').then(hasMyKey => { ... }, error => { ... });
 
 // async/await syntax
-const hasMyKey = await api.has('mykey');
+const hasMyKey = await api.queryhas('mykey');
 ```
 
 | Argument | Description |
@@ -228,16 +228,16 @@ const hasMyKey = await api.has('mykey');
 
 Returns a promise resolving to a boolean value - `true` or `false`, representing whether the key is in the database. Has the same interface as 'keys' but bypasses the consensus and cryptography mechanisms in favor of speed.
 
-### quickkeys\(\)
+### querykeys\(\)
 
 Retrieve a list of all keys.
 
 ```javascript
 // promise syntax
-api.keys().then(keys => { ... }, error => { ... });
+api.querykeys().then(keys => { ... }, error => { ... });
 
 // async/await syntax
-const keys = await api.keys();
+const keys = await api.querykeys();
 ```
 
 Returns a promise resolving to an array of strings. ex. `["key1", "key2", ...]`.
