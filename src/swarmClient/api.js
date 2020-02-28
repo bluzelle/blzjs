@@ -35,11 +35,14 @@ module.exports = class API
 
     constructor(address, mnemonic, endpoint, uuid, chain_id/*, ...args*/)
     {
-        this.mnemonic = mnemonic || def_mnemonic;
+        assert(typeof address === 'string', 'address must be a string');
+        assert(typeof mnemonic === 'string', 'mnemonic must be a string');
+
+        this.mnemonic = mnemonic;
         this.address = address;
         this.uuid = uuid;
         this.chain_id = chain_id || "bluzelle";
-        this.endpoint = endpoint;
+        this.endpoint = endpoint || "http://localhost:1317";
     }
 
     async init()
@@ -117,7 +120,8 @@ module.exports = class API
 
         return new Promise(async (resolve, reject) =>
         {
-            const url = prove ? `pread/${this.uuid}/${key}` : `read/${this.uuid}/${key}`;
+            const uri_key = encodeURI(key);
+            const url = prove ? `pread/${this.uuid}/${uri_key}` : `read/${this.uuid}/${uri_key}`;
             cosmos.query(url).then(function (res)
             {
                 resolve(res.value);
@@ -130,7 +134,6 @@ module.exports = class API
                 }
                 else
                 {
-                    //prove ? reject(err) : reject({Error: err});
                     reject(err);
                 }
             });
@@ -208,7 +211,8 @@ module.exports = class API
 
         return new Promise(async (resolve, reject) =>
         {
-            cosmos.query(`has/${this.uuid}/${key}`).then(function (res)
+            const uri_key = encodeURI(key);
+            cosmos.query(`has/${this.uuid}/${uri_key}`).then(function (res)
             {
                 resolve(res.has);
             }).catch(function (err)
