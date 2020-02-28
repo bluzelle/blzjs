@@ -101,7 +101,7 @@ async function main()
 
     await do_func("\n*** quick-read (unverified) ***", async function()
     {
-        return bz.quickread("mykeyxx");
+        return bz.quickread("mykey");
     });
 
     await do_func("\n*** quick-read (verified) ***", async function()

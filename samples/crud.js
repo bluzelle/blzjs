@@ -45,7 +45,6 @@ function usage()
 
 const main = async () => {
 
-    debugger;
     // NOTE: you must fill in the credential below with valid values
     bz = await bluzelle({
         address:  account.address,
