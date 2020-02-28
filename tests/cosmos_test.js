@@ -395,6 +395,7 @@ describe('testing send_transaction', () =>
         expect(r).equal(true);
 
         const error_response = '{"code": 1, "message": "key already exists"}';
+        const error_message = 'key already exists';
 
         // first the library should send a create request to get the tx skeleton
         moxios.wait(function ()
@@ -502,7 +503,7 @@ describe('testing send_transaction', () =>
         }
         catch (e)
         {
-            expect(e).equal(error_response);
+            expect(e.message).equal(error_message);
             error = true;
         }
 
@@ -539,7 +540,7 @@ describe('testing send_transaction', () =>
         }
         catch(e)
         {
-            expect(e).equal("Request failed with status code 500");
+            expect(e.message).equal("Request failed with status code 500");
             error = true;
         }
 
@@ -592,7 +593,7 @@ describe('testing send_transaction', () =>
         }
         catch(e)
         {
-            expect(e).equal("Request failed with status code 404");
+            expect(e.message).equal("Request failed with status code 404");
             error = true;
         }
 
