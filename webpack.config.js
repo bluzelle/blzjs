@@ -41,6 +41,7 @@ module.exports = [
             path: path.resolve('lib'),
             filename: 'bluzelle-web.js',
             libraryTarget: "commonjs",
+            library: 'bluzelle'
         },
         target: 'web',
 

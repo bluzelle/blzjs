@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!--<link type="text/css" rel="stylesheet" href="styles/normalize.css" />
+    <link type="text/css" rel="stylesheet" href="styles/styles.css" />-->
+    <style type="text/css">
+        #credentials {
+            margin-top: 50px;
+            margin-left: 20px;
+        }
+        #credentials td {
+            padding: 10px;
+        }
+        #credentials input {
+            width: 600px;
+        }
+
+        #input_fields {
+            margin-top: 50px;
+            margin-left: 20px;
+        }
+        #input_fields td {
+            padding: 10px;
+        }
+        #input_fields input {
+            width: 200px;
+        }
+        #execute {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+<H1>blzjs Test Web Application</H1>
+<div id="credentials">
+    <table class="cred_table">
+        <tr><td>Address:</td><td><input id="address"></td></tr>
+        <tr><td>Mnemonic:</td><td><input id="mnemonic"></td></tr>
+        <tr><td>Operation:</td><td>
+            <select id="operation" onchange="operationChanged();">
+                <option value="create">Create</option>
+                <option value="read">Read</option>
+                <option value="update">Update</option>
+                <option value="delete">Delete</option>
+            </select>
+        </td></tr>
+    </table>
+</div>
+<div id="input_fields">
+
+</div>
+</body>
+
+<script type="text/javascript" src="bluzelle-web.js"></script>
+
+<script type="text/javascript">
+//    const { bluzelle } = require('../src/main');
+
+    function addRow(table, className)
+    {
+        let row = document.createElement('tr');
+        row.className = className;
+        table.insertRow(row);
+        return row;
+    }
+
+    function addColumn(content)
+    {
+        let col = document.createElement('td');
+        col.appendChild(content);
+        return col;
+    }
+
+    function setupInputFields(table, type)
+    {
+        if (type != 'keys')
+        {
+            let key_row = addRow(table, 'input_row');
+            table.appendChild(key_row);
+            key_row.appendChild(addColumn(document.createTextNode('Key:')));
+
+            let key_name = document.createElement('input');
+            key_name.id = 'key_name';
+            key_row.appendChild(addColumn(key_name));
+        }
+
+        if (type == 'create' || type == 'update')
+        {
+            let val_row = addRow(table, 'input_row');
+            table.appendChild(val_row);
+            val_row.appendChild(addColumn(document.createTextNode('Value:')));
+
+            let val_name = document.createElement('input');
+            val_name.id = 'val_name';
+            val_row.appendChild(addColumn(val_name));
+        }
+
+    }
+
+    function operationChanged()
+    {
+        let div = document.getElementById('input_fields');
+
+        // remember key for later
+        let key_field = document.getElementById('key_name');
+        key = key_field ? key_field.value : "";
+
+        // reset input fields
+        div.innerHTML = '';
+
+        let table = document.createElement('table');
+        div.appendChild(table);
+        table.id = 'input_table';
+
+        setupInputFields(table, document.getElementById('operation').value);
+
+        var button = document.createElement('BUTTON');
+        button.appendChild(document.createTextNode('Execute'));
+        button.id = 'execute';
+        button.onclick = onExecute;
+        div.appendChild(button);
+    }
+
+    async function onExecute()
+    {
+        let operation = document.getElementById('operation').value;
+        if (operation == "read")
+        {
+            bz = await bluzelle({
+                address:  document.getElementById('address').value,
+                mnemonic: document.getElementById('mnemonic').value,
+                endpoint: "http://localhost:1317",
+                chain_id: "bluzelle"
+            });
+
+            if (bz)
+            {
+                let res = "";
+                try
+                {
+                    res = bz.queryread(document.getElementById('key_name').value);
+                }
+                catch (error)
+                {
+                    res = error.message;
+                }
+
+                alert(res);
+            }
+        }
+    }
+</script>
