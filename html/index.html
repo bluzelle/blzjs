@@ -52,10 +52,14 @@
 </div>
 </body>
 
+<script type="text/javascript">
+    var exports = [];
+</script>
+
 <script type="text/javascript" src="bluzelle-web.js"></script>
 
 <script type="text/javascript">
-//    const { bluzelle } = require('../src/main');
+    const bluzelle = exports['bluzelle'];
 
     function addRow(table, className)
     {
@@ -125,29 +129,73 @@
     async function onExecute()
     {
         let operation = document.getElementById('operation').value;
-        if (operation == "read")
+
+        let fn = ()=>{};
+        switch (operation)
         {
-            bz = await bluzelle({
-                address:  document.getElementById('address').value,
-                mnemonic: document.getElementById('mnemonic').value,
-                endpoint: "http://localhost:1317",
-                chain_id: "bluzelle"
-            });
+            case 'read':
+                fn = () => {
+                    return bz.read(document.getElementById('key_name').value);
+                    // return new Promise((resolve, reject) => { resolve('value'); });
+                };
+                break;
 
-            if (bz)
+            case 'create':
+                fn = () => {
+                    return bz.create(document.getElementById('key_name').value, document.getElementById('val_name').value);
+                    // return new Promise((resolve, reject) => { resolve(); });
+                };
+                break;
+
+            case 'update':
+                fn = () => {
+                    return bz.update(document.getElementById('key_name').value, document.getElementById('val_name').value);
+                    // return new Promise((resolve, reject) => { resolve(); });
+                };
+                break;
+
+            case 'delete':
+                fn = () => {
+                    return bz.delete(document.getElementById('key_name').value);
+                    // return new Promise((resolve, reject) => { resolve(); });
+                };
+                break;
+
+            case 'has':
+                fn = () => {
+                    return bz.has(document.getElementById('key').value);
+                    // return new Promise((resolve, reject) => { resolve(true); });
+                };
+                break;
+
+            case 'keys':
+                fn = () => {
+                    return bz.keys();
+                    // return new Promise((resolve, reject) => { resolve(['key1']); });
+                };
+                break;
+        }
+
+        bz = await bluzelle.bluzelle({
+            address:  document.getElementById('address').value,
+            mnemonic: document.getElementById('mnemonic').value,
+            endpoint: "http://localhost:1317",
+            chain_id: "bluzelle"
+        });
+
+        if (bz)
+        {
+            let res = "";
+            try
             {
-                let res = "";
-                try
-                {
-                    res = bz.queryread(document.getElementById('key_name').value);
-                }
-                catch (error)
-                {
-                    res = error.message;
-                }
-
-                alert(res);
+                res = await(fn());
             }
+            catch (error)
+            {
+                res = error.message;
+            }
+
+            alert(res);
         }
     }
 </script>
