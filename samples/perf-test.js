@@ -22,8 +22,10 @@ const { bluzelle } = require('../src/main.js');
 //  module.exports = {
 //         address: 'bluzellexxxxxxxxxxxxxxxxxxx',
 //         mnemonic: 'set of words representing your private key',
+//         endpoint: "address/port of your rest-proxy, e.g. http://localhost:1317",
+//         chain_id: "bluzelle"
 //  };
-const account = require('./blz-account.js');
+const config = require('./blz-config.js');
 
 var times = [];
 var payload_size = 10;
@@ -32,12 +34,15 @@ var payload_set = false;
 // const gas_params = {'max_gas': '', 'max_fee': '', 'gas_price': ''};
 const gas_params = {'gas_price': '0.01'};
 
+// NOTE: you must fill in the information below with valid values
+// if uuid is not specified, the value of "address" will be used as the uuid
 const params =
 {
-    address:  account.address,
-    mnemonic: account.mnemonic,
-    endpoint: "http://localhost:1317",
-    chain_id: "bluzelle"
+    address:  config.address,
+    mnemonic: config.mnemonic,
+    uuid: "my_uuid",
+    endpoint: config.endpoint,
+    chain_id: config.chain_id
 };
 
 function now()
@@ -89,9 +94,9 @@ async function main()
         return bz.create("mykey", '#'.repeat(payload_size), gas_params);
     });
 
-    await do_func("\n*** quick-read (unverified) ***", async function()
+    await do_func("\n*** query-read (unverified) ***", async function()
     {
-        return bz.quickread("mykey");
+        return bz.queryread("mykey");
     });
 
     await do_func("\n*** update value ***", async function()
@@ -99,23 +104,23 @@ async function main()
         return bz.update("mykey", '*'.repeat(payload_size), gas_params);
     });
 
-    await do_func("\n*** quick-read (unverified) ***", async function()
+    await do_func("\n*** query-read (unverified) ***", async function()
     {
-        return bz.quickread("mykey");
+        return bz.queryread("mykey");
     });
 
-    await do_func("\n*** quick-read (verified) ***", async function()
+    await do_func("\n*** query-read (verified) ***", async function()
     {
-        return bz.quickread("mykey", true);
+        return bz.queryread("mykey", true);
     });
 
-    p1 = do_func("\n*** simultaneous unverified and verified quick-read ***", async function()
+    p1 = do_func("\n*** simultaneous unverified and verified query-read ***", async function()
     {
-        return bz.quickread("mykey");
+        return bz.queryread("mykey");
     });
     p2 = do_func("", async function()
     {
-        return bz.quickread("mykey", true);
+        return bz.queryread("mykey", true);
     });
     await Promise.all([p1, p2]);
 
