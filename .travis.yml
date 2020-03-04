@@ -1,0 +1,10 @@
+language: node_js
+node_js:
+  - node
+
+jobs:
+  include:
+    - stage: Produce Coverage
+      node_js: node
+      script:
+        - npx nyc --reporter=lcov mocha "**/tests/*_test.js" && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
