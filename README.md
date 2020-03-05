@@ -19,6 +19,11 @@ Read below for detailed documentation on how to use the Bluzelle database servic
 };
 ````
 All values are optional. The `max_gas` value will always be honored if present, otherwise a default value will be used. If both `max_fee` and `gas_price` are specified, `gas_price` will be ignored and calculated based on the provided `max_fee`.
+
+![#1589F0](https://placehold.it/15/1589F0/000000?text=+) The example code in the `samples` directory requires Node.js in order to run. For instructions on how to install Node.js for your platform, please see http://nodejs.org
+
+The samples require configuration to be set in the file `blz-config.js`. You can copy and modify the `blz-config.js.sample` file for this purpose.
+
 ## Exports
 
 ### version (tbd)
