@@ -50,14 +50,20 @@ function usage()
     console.log("  querykeys uuid             - returns a list of all keys\n");
 }
 
-const main = async () => {
-
-    if (typeof process.argv[2] !== 'string' || typeof process.argv[3] !== 'string' || typeof process.argv[4] !== 'string' ||
-        ((process.argv[2] === 'create' || process.argv[2] === 'update') && typeof process.argv[5] !== 'string'))
+function check_args(num)
+{
+    for (var i = 2; i <= num; i++)
     {
-        usage();
-        return;
+        if (typeof process.argv[i] !== 'string')
+        {
+            console.log(i)
+            usage();
+            process.exit();
+        }
     }
+}
+
+const main = async () => {
 
     bz = await bluzelle({
         address:  config.address,
@@ -72,24 +78,31 @@ const main = async () => {
         switch (process.argv[2])
         {
             case 'create':
+                check_args(5);
                 res = await bz.create(process.argv[4], process.argv[5], gas_params);
                 break;
             case 'read':
+                check_args(4);
                 res = await bz.read(process.argv[4], gas_params);
                 break;
             case 'update':
+                check_args(5);
                 res = await bz.update(process.argv[4], process.argv[5], gas_params);
                 break;
             case 'delete':
+                check_args(4);
                 res = await bz.delete(process.argv[4], gas_params);
                 break;
             case 'has':
+                check_args(4);
                 res = await bz.has(process.argv[4], gas_params);
                 break;
             case 'keys':
+                check_args(3);
                 res = await bz.keys(gas_params);
                 break;
             case 'queryread':
+                check_args(4);
                 if (process.argv[5] && process.argv[5] !== 'prove')
                 {
                     console.log(`Error: Invalid argument '${process.argv[5]}'\n`)
@@ -98,9 +111,11 @@ const main = async () => {
                 res = await bz.queryread(process.argv[4], process.argv[5] ? true : false);
                 break;
             case 'queryhas':
+                check_args(4);
                 res = await bz.queryhas(process.argv[4]);
                 break;
             case 'querykeys':
+                check_args(3);
                 res = await bz.querykeys();
                 break;
             default:
