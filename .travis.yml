@@ -7,4 +7,4 @@ jobs:
     - stage: Produce Coverage
       node_js: node
       script:
-        - npx nyc --reporter=lcov mocha "**/tests/*_test.js" && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
+        - npx nyc --reporter=lcov mocha "**/tests/*_test.js" --timeout 20000 && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
