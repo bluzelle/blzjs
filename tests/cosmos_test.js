@@ -85,6 +85,8 @@ const tx_create_skeleton =
 const ep = "create";
 const method = "post";
 const WAIT_TIME = 100;
+const RETRY_WAIT_TIME = cosmos.RETRY_INTERVAL + WAIT_TIME;
+
 const create_data = {
     BaseReq: {
         from: params.address,
@@ -698,7 +700,7 @@ describe('testing send_transaction', () =>
                         status: 200,
                         response: response
                     });
-                }, WAIT_TIME);
+                }, RETRY_WAIT_TIME);
 
                 // simulate a signature failure
                 request.respondWith({
@@ -718,6 +720,29 @@ describe('testing send_transaction', () =>
         const res = await prom;
         expect(res.data.logs[0].success).equal(true);
     });
+
+    function respond_with_same_sequence(count)
+    {
+        if (count)
+        {
+            // should request updated account info - reply with same sequence
+            moxios.wait(function ()
+            {
+                let request = moxios.requests.mostRecent();
+                expect(request.config.method).equal('get');
+
+                // respond with NOT updated sequence number
+                let response = JSON.parse(JSON.stringify(basic_response_data));
+                request.respondWith({
+                    status: 200,
+                    response: response
+                });
+
+                respond_with_same_sequence(count - 1);
+
+            }, RETRY_WAIT_TIME);
+        }
+    }
 
     it('detects bad chain_id', async () =>
     {
@@ -742,19 +767,8 @@ describe('testing send_transaction', () =>
                 expect(request.config.method).equal('post');
                 expect(request.config.url).equal(app_endpoint + '/txs');
 
-                // should request updated account info - reply with updated sequence
-                moxios.wait(function ()
-                {
-                    let request = moxios.requests.mostRecent();
-                    expect(request.config.method).equal('get');
-
-                    // respond with NOT updated sequence number
-                    let response = JSON.parse(JSON.stringify(basic_response_data));
-                    request.respondWith({
-                        status: 200,
-                        response: response
-                    });
-                }, WAIT_TIME);
+                // expect 10 retries to get get sequence number
+                respond_with_same_sequence(cosmos.MAX_RETRIES);
 
                 // simulate a signature failure
                 request.respondWith({

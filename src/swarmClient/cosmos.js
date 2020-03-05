@@ -36,6 +36,8 @@ var account_info = { account_number : "", sequence : ""};
 var tx_queue = [];
 
 const token_name = 'bnt';
+const MAX_RETRIES = 10;
+const RETRY_INTERVAL = 1000; // 1 second
 
 async function get_ec_private_key(mnemonic)
 {
@@ -50,6 +52,18 @@ function get_address(pubkey)
 {
     let bytes = util.hash('ripemd160', util.hash('sha256', Buffer.from(pubkey, 'hex')));
     return bech32.encode(prefix, bech32.toWords(bytes))
+}
+
+function make_random_string(length)
+{
+    var result           = '';
+    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for ( var i = 0; i < length; i++ )
+    {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
 }
 
 class deferred
@@ -75,6 +89,7 @@ class transaction
         this.gas_price = 0;
         this.max_gas = 0;
         this.max_fee = 0;
+        this.retries_left = MAX_RETRIES;
     }
 }
 
@@ -122,6 +137,7 @@ async function send_tx(url, data, chain_id)
 
     // set up the signature
     data.value.signatures = [];
+    data.value.memo = make_random_string(32);
     const sig = sign_transaction(private_key, data, chain_id);
     data.value.signatures.push(sig);
 
@@ -171,7 +187,16 @@ async function begin_tx(tx)
                 'amount': `${response.data.value.fee.gas * tx.gas_price}`
             }];
         }
+    }
+    catch (err)
+    {
+        tx.deferred.reject(new Error(err.message));
+        advance_queue();
+        return;
+    }
 
+    try
+    {
         // broadcast the tx
         res = await send_tx(app_endpoint, response.data, chain_id);
     }
@@ -197,27 +222,39 @@ async function begin_tx(tx)
         let info = JSON.parse(res.raw_log);
         if (info.code == 4)
         {
-            // signature fail. Either sequence number or chain id is invalid
-            const changed = await send_account_query();
-            if (changed)
-            {
-                // retry
-                setTimeout(function ()
-                {
-                    begin_tx(tx);
-                });
-            }
-            else
-            {
-                tx.deferred.reject(new Error("Invalid chain id"));
-                advance_queue();
-            }
+            update_account_sequence(tx, MAX_RETRIES);
         }
         else
         {
             tx.deferred.reject(new Error(info.message));
             advance_queue();
         }
+    }
+}
+
+function update_account_sequence(tx, retries)
+{
+    if (retries)
+    {
+        setTimeout(async function ()
+        {
+            // signature fail. Either sequence number or chain id is invalid
+            const changed = await send_account_query();
+            if (changed)
+            {
+                await begin_tx(tx);
+            }
+            else
+            {
+                update_account_sequence(tx, retries - 1);
+            }
+        }, RETRY_INTERVAL);
+    }
+    else
+    {
+        // at this point, assume it's the chain id that is bad
+        tx.deferred.reject(new Error("Invalid chain id"));
+        advance_queue();
     }
 }
 
@@ -410,5 +447,7 @@ module.exports =
 {
     init,
     send_transaction,
-    query
+    query,
+    MAX_RETRIES,
+    RETRY_INTERVAL
 };
