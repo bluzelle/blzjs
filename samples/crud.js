@@ -41,7 +41,7 @@ function usage()
     console.log("  create uuid key value - creates a new key/value");
     console.log("  read uuid key         - returns the value of an existing key");
     console.log("  update uuid key value - updates the value of an existing key");
-    console.log("  delete uuid key value - deletes an existing key");
+    console.log("  delete uuid key       - deletes an existing key");
     console.log("  has uuid key          - determines if a key exists");
     console.log("  keys uuid             - returns a list of all keys");
     console.log("\n Query commands");
