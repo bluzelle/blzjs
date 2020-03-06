@@ -124,6 +124,10 @@ function sign_transaction(key, data, chain_id)
                 canonical: true,
             }),
         ).toString('base64'),
+
+        account_number: account_info.account_number,
+        sequence: account_info.sequence
+
     }
 }
 
@@ -140,6 +144,7 @@ async function send_tx(url, data, chain_id)
     data.value.memo = make_random_string(32);
     const sig = sign_transaction(private_key, data, chain_id);
     data.value.signatures.push(sig);
+    data.value.signature = sig;
 
     // Post the transaction
     let res = await axios.post(`${url}/${tx_command}`, {
@@ -207,7 +212,15 @@ async function begin_tx(tx)
         return;
     }
 
-    if (res.logs)
+    // note - as of right now (3/6/20) the responses returned by the Cosmos REST interface now look like this:
+    // success case: {"height":"0","txhash":"3F596D7E83D514A103792C930D9B4ED8DCF03B4C8FD93873AB22F0A707D88A9F","raw_log":"[]"}
+    // failure case: {"height":"0","txhash":"DEE236DEF1F3D0A92CB7EE8E442D1CE457EE8DB8E665BAC1358E6E107D5316AA","code":4,
+    //  "raw_log":"unauthorized: signature verification failed; verify correct account sequence and chain-id"}
+    //
+    // This is far from ideal, doesn't match their docs, and is probably going to change (again) in the future.
+    //
+
+    if (!res.code)
     {
         // bump our sequence number
         account_info.sequence = `${++account_info.sequence}`;
@@ -219,14 +232,13 @@ async function begin_tx(tx)
     }
     else
     {
-        let info = JSON.parse(res.raw_log);
-        if (info.code == 4)
+        if (res.raw_log.search("signature verification failed") !== -1)
         {
             update_account_sequence(tx, MAX_RETRIES);
         }
         else
         {
-            tx.deferred.reject(new Error(info.message));
+            tx.deferred.reject(new Error(res.raw_log));
             advance_queue();
         }
     }
@@ -270,6 +282,21 @@ function advance_queue()
     }
 }
 
+function extract_error_from_message(msg)
+{
+    // this is very fragile and will break if Cosmos changes their error format again
+    // currently it looks like "unauthorized: Key already exists: failed to execute message; message index: 0"
+    // and we just want the "Key already exists" bit.
+    var offset1 = msg.search(": ");
+    if (offset1 == -1)
+    {
+        return msg;
+    }
+
+    var offset2 = msg.indexOf(':', offset1 + 1);
+    return msg.substring(offset1 + 2, offset2);
+}
+
 function poll_tx(tx, hash, timeout)
 {
     setTimeout(async function ()
@@ -279,27 +306,29 @@ function poll_tx(tx, hash, timeout)
         {
             if (res.data.logs)
             {
-                if (res.data.logs[0].success)
-                {
-                    tx.deferred.resolve(res);
-                }
-                else
-                {
-                    let err = JSON.parse(res.data.logs[0].log);
-                    tx.deferred.reject(new Error(err.message));
-                }
+                tx.deferred.resolve(res);
+                // if (res.data.logs[0].success)
+                // {
+                //     tx.deferred.resolve(res);
+                // }
+                // else
+                // {
+                //     let err = JSON.parse(res.data.logs[0].log);
+                //     tx.deferred.reject(new Error(err.message));
+                // }
             }
             else
             {
-                try
-                {
-                    const err = JSON.parse(res.data.raw_log);
-                    tx.deferred.reject(new Error(err.message));
-                }
-                catch (err)
-                {
-                    tx.deferred.reject(new Error(res.data.raw_log));
-                }
+                tx.deferred.reject(new Error(extract_error_from_message(res.data.raw_log)));
+                // try
+                // {
+                //     const err = JSON.parse(res.data.raw_log);
+                //     tx.deferred.reject(new Error(err.message));
+                // }
+                // catch (err)
+                // {
+                //     tx.deferred.reject(new Error(res.data.raw_log));
+                // }
             }
         })
             .catch(function (err)
@@ -311,7 +340,7 @@ function poll_tx(tx, hash, timeout)
                 }
                 else
                 {
-                    tx.deferred.reject(err.message);
+                    tx.deferred.reject(new Error(err.message));
                 }
             });
     }, timeout);
@@ -339,10 +368,10 @@ function handle_account_response(response)
 
     if (state && state.result && state.result.value.account_number && state.result.value.sequence)
     {
-        account_info.account_number = state.result.value.account_number;
-        if (account_info.sequence !== state.result.value.sequence)
+        account_info.account_number = `${state.result.value.account_number}`;
+        if (account_info.sequence !== `${state.result.value.sequence}`)
         {
-            account_info.sequence = state.result.value.sequence;
+            account_info.sequence = `${state.result.value.sequence}`;
             return true;
         }
         return false;

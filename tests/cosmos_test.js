@@ -337,10 +337,8 @@ function do_create()
                 request.respondWith({
                     status: 200,
                     response: {
-                        logs: [{
-                            success: true
-                        }],
-                        tx_hash: "xxxx"
+                        logs: [{}],
+                        txhash: "xxxx"
                     }
                 });
             }, WAIT_TIME);
@@ -348,7 +346,7 @@ function do_create()
             request.respondWith({
                 status: 200,
                 response: {
-                    logs: [{}],
+                    raw_log: [],
                     txhash: "xxxx"
                 }
             });
@@ -385,7 +383,6 @@ describe('testing send_transaction', () =>
 
         const prom = cosmos.send_transaction(method, ep, create_data, gas_params);
         const res = await prom;
-        expect(res.data.logs[0].success).equal(true);
     });
 
     it('two txs are synchronized', async () =>
@@ -396,8 +393,8 @@ describe('testing send_transaction', () =>
         const r = await do_init();
         expect(r).equal(true);
 
-        const error_response = '{"code": 1, "message": "key already exists"}';
-        const error_message = 'key already exists';
+        const error_response = {"code": 1, "raw log": "unauthorized: Key already exists: failed to execute message; message index: 0"};
+        const error_message = 'Key already exists';
 
         // first the library should send a create request to get the tx skeleton
         moxios.wait(function ()
@@ -432,9 +429,7 @@ describe('testing send_transaction', () =>
                             request.respondWith({
                                 status: 200,
                                 response: {
-                                    logs: [{
-                                        success: true
-                                    }],
+                                    logs: [{}],
                                     tx_hash: "xxxx"
                                 }
                             });
@@ -462,9 +457,7 @@ describe('testing send_transaction', () =>
                                 // reject with error
                                 request.respondWith({
                                     status: 200,
-                                    response: {
-                                        raw_log: error_response
-                                    }
+                                    response: error_response
                                 });
                             });
 
@@ -480,7 +473,7 @@ describe('testing send_transaction', () =>
                 request.respondWith({
                     status: 200,
                     response: {
-                        logs: [{}],
+                        raw_log: [],
                         txhash: "xxxx"
                     }
                 });
@@ -497,7 +490,7 @@ describe('testing send_transaction', () =>
         var prom2 = cosmos.send_transaction(method, ep, create_data);
 
         const res = await prom;
-        expect(res.data.logs[0].success).equal(true);
+        //expect(res.data.logs[0].success).equal(true);
 
         try
         {
