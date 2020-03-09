@@ -393,7 +393,7 @@ describe('testing send_transaction', () =>
         const r = await do_init();
         expect(r).equal(true);
 
-        const error_response = {"code": 1, "raw log": "unauthorized: Key already exists: failed to execute message; message index: 0"};
+        const error_response = {"code": 1, "raw_log": "unauthorized: Key already exists: failed to execute message; message index: 0"};
         const error_message = 'Key already exists';
 
         // first the library should send a create request to get the tx skeleton
@@ -454,10 +454,27 @@ describe('testing send_transaction', () =>
                                 params.sequence_number = `${++params.sequence_number}`;
                                 expect(verify_signature(data.tx)).equal(true);
 
-                                // reject with error
+                                // then it should poll for result
+                                moxios.wait(function ()
+                                {
+                                    expect(moxios.requests.__items.length).equal(7);
+                                    let request = moxios.requests.mostRecent();
+                                    expect(request.config.method).equal('get');
+                                    expect(request.config.url).equal(app_endpoint + '/txs/yyyy');
+
+                                    // reject with error
+                                    request.respondWith({
+                                        status: 200,
+                                        response: error_response
+                                    });
+                                });
+
                                 request.respondWith({
                                     status: 200,
-                                    response: error_response
+                                    response: {
+                                        raw_log: [],
+                                        txhash: "yyyy"
+                                    }
                                 });
                             });
 
@@ -699,7 +716,8 @@ describe('testing send_transaction', () =>
                 request.respondWith({
                     status: 200,
                     response: {
-                        raw_log: '{"code": "4"}'
+                        code: 4,
+                        raw_log: 'signature verification failed'
                     }});
             }, WAIT_TIME);
 
@@ -711,7 +729,6 @@ describe('testing send_transaction', () =>
 
         const prom = cosmos.send_transaction(method, ep, create_data, gas_params);
         const res = await prom;
-        expect(res.data.logs[0].success).equal(true);
     });
 
     function respond_with_same_sequence(count)
@@ -767,7 +784,8 @@ describe('testing send_transaction', () =>
                 request.respondWith({
                     status: 200,
                     response: {
-                        raw_log: '{"code": "4"}'
+                        code: 4,
+                        raw_log: 'signature verification failed'
                     }});
             }, WAIT_TIME);
 
