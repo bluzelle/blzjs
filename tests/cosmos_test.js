@@ -327,22 +327,6 @@ function do_create()
             expect(data.tx.signatures.length).equal(1);
             expect(verify_signature(data.tx)).equal(true);
 
-            // then it should poll for result
-            moxios.wait(function ()
-            {
-                let request = moxios.requests.mostRecent();
-                expect(request.config.method).equal('get');
-                expect(request.config.url).equal(app_endpoint + '/txs/xxxx');
-
-                request.respondWith({
-                    status: 200,
-                    response: {
-                        logs: [{}],
-                        txhash: "xxxx"
-                    }
-                });
-            }, WAIT_TIME);
-
             request.respondWith({
                 status: 200,
                 response: {
@@ -418,75 +402,41 @@ describe('testing send_transaction', () =>
                 // then it should poll for result and send second create request
                 moxios.wait(function ()
                 {
-                    expect(moxios.requests.__items.length).equal(5);
-                    for (var i = 3; i < 5; i++)
+                    expect(moxios.requests.__items.length).equal(4);
+                    let request = moxios.requests.__items[3];
+                    expect(request.config.url).equal(app_endpoint + app_service + '/' + ep);
+                    expect(request.config.method).equal(method);
+                    expect(request.config.data).equal(JSON.stringify(create_data));
+
+                    // then it should sign and broadcast it
+                    moxios.wait(function ()
                     {
-                        let request = moxios.requests.__items[i];
-                        if (request.config.method === 'get')
-                        {
-                            expect(request.config.url).equal(app_endpoint + '/txs/xxxx');
+                        expect(moxios.requests.__items.length).equal(5);
+                        let request = moxios.requests.mostRecent();
+                        expect(request.config.method).equal('post');
+                        expect(request.config.url).equal(app_endpoint + '/txs');
+                        const data = JSON.parse(request.config.data);
+                        expect(data.tx.signatures.length).equal(1);
 
-                            request.respondWith({
-                                status: 200,
-                                response: {
-                                    logs: [{}],
-                                    tx_hash: "xxxx"
-                                }
-                            });
-                        }
-                        else
-                        {
-                            expect(request.config.url).equal(app_endpoint + app_service + '/' + ep);
-                            expect(request.config.method).equal(method);
-                            expect(request.config.data).equal(JSON.stringify(create_data));
+                        // sequence should have been incremented
+                        params.sequence_number = `${++params.sequence_number}`;
+                        expect(verify_signature(data.tx)).equal(true);
 
-                            // then it should sign and broadcast it
-                            moxios.wait(function ()
-                            {
-                                expect(moxios.requests.__items.length).equal(6);
-                                let request = moxios.requests.mostRecent();
-                                expect(request.config.method).equal('post');
-                                expect(request.config.url).equal(app_endpoint + '/txs');
-                                const data = JSON.parse(request.config.data);
-                                expect(data.tx.signatures.length).equal(1);
+                        // response for second tx
+                        request.respondWith({
+                            status: 200,
+                            response: error_response
+                        });
+                    });
 
-                                // sequence should have been incremented
-                                params.sequence_number = `${++params.sequence_number}`;
-                                expect(verify_signature(data.tx)).equal(true);
-
-                                // then it should poll for result
-                                moxios.wait(function ()
-                                {
-                                    expect(moxios.requests.__items.length).equal(7);
-                                    let request = moxios.requests.mostRecent();
-                                    expect(request.config.method).equal('get');
-                                    expect(request.config.url).equal(app_endpoint + '/txs/yyyy');
-
-                                    // reject with error
-                                    request.respondWith({
-                                        status: 200,
-                                        response: error_response
-                                    });
-                                });
-
-                                request.respondWith({
-                                    status: 200,
-                                    response: {
-                                        raw_log: [],
-                                        txhash: "yyyy"
-                                    }
-                                });
-                            });
-
-                            // second create skeleton
-                            request.respondWith({
-                                status: 200,
-                                response: tx_create_skeleton
-                            });
-                        }
-                    }
+                    // second create skeleton
+                    request.respondWith({
+                        status: 200,
+                        response: tx_create_skeleton
+                    });
                 }, WAIT_TIME);
 
+                // response for first tx
                 request.respondWith({
                     status: 200,
                     response: {
@@ -507,7 +457,6 @@ describe('testing send_transaction', () =>
         var prom2 = cosmos.send_transaction(method, ep, create_data);
 
         const res = await prom;
-        //expect(res.data.logs[0].success).equal(true);
 
         try
         {
@@ -631,24 +580,6 @@ describe('testing send_transaction', () =>
                 // the sequence number should NOT have incremented
                 expect(verify_signature(data.tx)).equal(true);
 
-                // then it should poll for result
-                moxios.wait(function ()
-                {
-                    let request = moxios.requests.mostRecent();
-                    expect(request.config.method).equal('get');
-                    expect(request.config.url).equal(app_endpoint + '/txs/xxxx');
-
-                    request.respondWith({
-                        status: 200,
-                        response: {
-                            logs: [{
-                                success: true
-                            }],
-                            tx_hash: "xxxx"
-                        }
-                    });
-                }, WAIT_TIME);
-
                 request.respondWith({
                     status: 200,
                     response: {
@@ -666,7 +597,6 @@ describe('testing send_transaction', () =>
 
         const prom = cosmos.send_transaction(method, ep, create_data);
         const res2 = await prom;
-        expect(res2.data.logs[0].success).equal(true);
     });
 
     it('handles sequence race', async () =>
@@ -777,7 +707,7 @@ describe('testing send_transaction', () =>
                 expect(request.config.method).equal('post');
                 expect(request.config.url).equal(app_endpoint + '/txs');
 
-                // expect 10 retries to get get sequence number
+                // expect 10 retries to get sequence number
                 respond_with_same_sequence(cosmos.MAX_RETRIES);
 
                 // simulate a signature failure

@@ -150,7 +150,7 @@ async function send_tx(url, data, chain_id)
     let res = await axios.post(`${url}/${tx_command}`, {
         headers: {'Content-type': 'application/x-www-form-urlencoded'},
         tx: data.value,
-        mode: 'sync' // wait for checkTx
+        mode: 'block' // wait for tx to be committed
     });
 
     return res.data
@@ -225,8 +225,7 @@ async function begin_tx(tx)
         // bump our sequence number
         account_info.sequence = `${++account_info.sequence}`;
 
-        // start polling for result
-        poll_tx(tx, res.txhash, 0);
+        tx.deferred.resolve(res.data);
 
         advance_queue();
     }
@@ -238,7 +237,7 @@ async function begin_tx(tx)
         }
         else
         {
-            tx.deferred.reject(new Error(res.raw_log));
+            tx.deferred.reject(new Error(extract_error_from_message(res.raw_log)));
             advance_queue();
         }
     }
@@ -295,61 +294,6 @@ function extract_error_from_message(msg)
 
     var offset2 = msg.indexOf(':', offset1 + 1);
     return msg.substring(offset1 + 2, offset2);
-}
-
-function poll_tx(tx, hash, timeout)
-{
-    setTimeout(async function ()
-    {
-        // query the tx status
-        query_tx(hash).then(function (res)
-        {
-            if (res.data.logs)
-            {
-                tx.deferred.resolve(res);
-                // if (res.data.logs[0].success)
-                // {
-                //     tx.deferred.resolve(res);
-                // }
-                // else
-                // {
-                //     let err = JSON.parse(res.data.logs[0].log);
-                //     tx.deferred.reject(new Error(err.message));
-                // }
-            }
-            else
-            {
-                tx.deferred.reject(new Error(extract_error_from_message(res.data.raw_log)));
-                // try
-                // {
-                //     const err = JSON.parse(res.data.raw_log);
-                //     tx.deferred.reject(new Error(err.message));
-                // }
-                // catch (err)
-                // {
-                //     tx.deferred.reject(new Error(res.data.raw_log));
-                // }
-            }
-        })
-            .catch(function (err)
-            {
-                if (err.response.status == 404)
-                {
-                    // tx not committed yet, retry
-                    poll_tx(tx, hash, 1000);
-                }
-                else
-                {
-                    tx.deferred.reject(new Error(err.message));
-                }
-            });
-    }, timeout);
-}
-
-async function query_tx(hash)
-{
-    let res = await axios.get(`${app_endpoint}/${tx_command}/${hash}`);
-    return res;
 }
 
 async function send_account_query()
