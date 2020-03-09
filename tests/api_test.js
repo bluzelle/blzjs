@@ -173,7 +173,7 @@ describe('testing read', () =>
             return new Promise(async (resolve, reject) =>
             {
                 const str = `{"value": "${value}"}`;
-                resolve({data: {data: string2hex(str)}});
+                resolve(string2hex(str));
             });
         };
 
@@ -348,7 +348,7 @@ describe('testing has', () =>
             return new Promise(async (resolve, reject) =>
             {
                 const str = `{"has": true}`;
-                resolve({data: {data: string2hex(str)}});
+                resolve(string2hex(str));
             });
         };
 
@@ -372,7 +372,7 @@ describe('testing has', () =>
             return new Promise(async (resolve, reject) =>
             {
                 const str = `{"has": false}`;
-                resolve({data: {data: string2hex(str)}});
+                resolve(string2hex(str));
             });
         };
 
@@ -439,7 +439,7 @@ describe('testing keys', () =>
                     }
                 }
                 str += ']}';
-                resolve({data: {data: string2hex(str)}});
+                resolve(string2hex(str));
             });
         };
 

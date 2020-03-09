@@ -162,13 +162,13 @@ module.exports = class API
             {
                 try
                 {
-                    const str = hex2string(res.data.data);
+                    const str = hex2string(res);
                     const json = JSON.parse(str);
                     resolve(json.value);
                 }
                 catch(err)
                 {
-                    resolve(res.data.data);
+                    resolve(res);
                 }
             }).catch(function (err)
             {
@@ -244,7 +244,7 @@ module.exports = class API
             {
                 try
                 {
-                    const str = hex2string(res.data.data);
+                    const str = hex2string(res);
                     const json = JSON.parse(str);
                     resolve(json.has);
                 }
@@ -293,7 +293,7 @@ module.exports = class API
             {
                 try
                 {
-                    const str = hex2string(res.data.data);
+                    const str = hex2string(res);
                     const json = JSON.parse(str);
                     resolve(json.keys ? json.keys : []);
                 }
