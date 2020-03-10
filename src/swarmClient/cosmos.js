@@ -301,9 +301,16 @@ async function send_account_query()
     // Fetch the current state of the account that's signing the transaction
     // We will need its account number and current sequence.
 
-    let url = `${app_endpoint}/auth/accounts/${get_address(secp256k1.keyFromPrivate(private_key, 'hex').getPublic(true, 'hex'))}`;
-    let response = await axios.get(url);
-    return handle_account_response(response);
+    try
+    {
+        let url = `${app_endpoint}/auth/accounts/${get_address(secp256k1.keyFromPrivate(private_key, 'hex').getPublic(true, 'hex'))}`;
+        let response = await axios.get(url);
+        return handle_account_response(response);
+    }
+    catch (err)
+    {
+        throw(err);
+    }
 }
 
 function handle_account_response(response)
@@ -321,7 +328,7 @@ function handle_account_response(response)
         return false;
     }
 
-    throw(new Error("Invalid account information"));
+    throw(new Error("Unable to retrieve account information"));
 }
 
 async function next_tx()
@@ -334,18 +341,24 @@ async function next_tx()
 // exported functions
 ////////////////////////////////////////////////////////
 
-async function init(mnemonic, endpoint)
+async function init(mnemonic, endpoint, address)
 {
     app_endpoint = endpoint ? endpoint : app_endpoint;
     private_key = await get_ec_private_key(mnemonic);
+
+    // validate address against mnemonic
+    if (get_address(secp256k1.keyFromPrivate(private_key, 'hex').getPublic(true, 'hex')) !== address)
+    {
+        return Promise.reject((new Error("Bad credentials - verify your address and mnemonic")));
+    }
+
     try
     {
         await send_account_query();
-        return true;
     }
     catch (err)
     {
-        return false;
+        throw(err);
     }
 }
 

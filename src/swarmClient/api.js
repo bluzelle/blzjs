@@ -47,7 +47,16 @@ module.exports = class API
 
     async init()
     {
-        return await cosmos.init(this.mnemonic, this.endpoint);
+        return new Promise(async (resolve, reject) =>
+        {
+            cosmos.init(this.mnemonic, this.endpoint, this.address).then(function()
+            {
+                resolve();
+            }).catch (function(err)
+            {
+                reject(err);
+            });
+        });
     }
 
     status()

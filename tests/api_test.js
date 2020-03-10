@@ -82,13 +82,12 @@ describe('testing init', () =>
 
     it('initializes', async () =>
     {
-        cosmos.init = async (mnemonic, endpoint) =>
+        cosmos.init = async (mnemonic, endpoint, address) =>
         {
             return true;
         };
 
-        res = await api.init();
-        expect(res).equal(true);
+        await api.init();
     });
 });
 

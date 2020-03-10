@@ -87,7 +87,15 @@ async function main()
         payload_set = true;
     }
 
-    bz = await bluzelle(params);
+    try
+    {
+        bz = await bluzelle(params);
+    }
+    catch (err)
+    {
+        console.log(err.message);
+        return;
+    }
 
     await do_func("*** create key/value ***", async function()
     {

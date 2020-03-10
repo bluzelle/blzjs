@@ -65,16 +65,16 @@ function check_args(num)
 
 const main = async () => {
 
-    bz = await bluzelle({
-        address:  config.address,
-        mnemonic: config.mnemonic,
-        uuid: process.argv[3],
-        endpoint: config.endpoint,
-        chain_id: config.chain_id
-    });
-
     try
     {
+        bz = await bluzelle({
+            address:  config.address,
+            mnemonic: config.mnemonic,
+            uuid: process.argv[3],
+            endpoint: config.endpoint,
+            chain_id: config.chain_id
+        });
+
         switch (process.argv[2])
         {
             case 'create':
