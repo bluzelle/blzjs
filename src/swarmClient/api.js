@@ -114,7 +114,7 @@ module.exports = class API
     }
 
     // returns a promise resolving the string value of the key.
-    async queryread(key, prove)
+    async read(key, prove)
     {
         assert(typeof key === 'string', 'Key must be a string');
 
@@ -141,7 +141,7 @@ module.exports = class API
     }
 
     // returns a promise resolving the string value of the key.
-    async read(key, gas_info)
+    async txread(key, gas_info)
     {
         assert(typeof key === 'string', 'Key must be a string');
 
@@ -205,7 +205,7 @@ module.exports = class API
     }
 
     // returns a promise resolving to a boolean value - true or false, representing whether the key is in the database.
-    async queryhas(key)
+    async has(key)
     {
         assert(typeof key === 'string', 'Key must be a string');
 
@@ -223,7 +223,7 @@ module.exports = class API
     }
 
     // returns a promise resolving to a boolean value - true or false, representing whether the key is in the database.
-    has(key, gas_info)
+    txhas(key, gas_info)
     {
         assert(typeof key === 'string', 'Key must be a string');
 
@@ -260,7 +260,7 @@ module.exports = class API
     }
 
     // returns a promise resolving to an array of strings. ex. ["key1", "key2", ...]
-    async querykeys()
+    async keys()
     {
         return new Promise(async (resolve, reject) =>
         {
@@ -275,7 +275,7 @@ module.exports = class API
     }
 
     // returns a promise resolving to an array of strings. ex. ["key1", "key2", ...]
-    keys(gas_info)
+    txkeys(gas_info)
     {
         const uuid = this.uuid;
         const data = {

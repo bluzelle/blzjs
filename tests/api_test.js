@@ -152,13 +152,13 @@ describe('testing create', () =>
     });
 });
 
-describe('testing read', () =>
+describe('testing txread', () =>
 {
     const key = 'key';
     const value = 'value';
     save_cosmos_functions();
 
-    it('read success', async () =>
+    it('txread success', async () =>
     {
         var send_tx_called = 0;
         cosmos.send_transaction = async (req_type, ep_name, data, gas_info) =>
@@ -177,12 +177,12 @@ describe('testing read', () =>
             });
         };
 
-        res = await api.read(key, params.gas_info);
+        res = await api.txread(key, params.gas_info);
         expect(send_tx_called).equal(1);
         expect(res).equal(value);
     });
 
-    it('read error', async () =>
+    it('txread error', async () =>
     {
         const msg = 'key not found';
         var send_tx_called = 0;
@@ -199,7 +199,7 @@ describe('testing read', () =>
         var fail = false;
         try
         {
-            res = await api.read(key, params.gas_info);
+            res = await api.txread(key, params.gas_info);
         }
         catch (err)
         {
@@ -328,12 +328,12 @@ describe('testing delete', () =>
     });
 });
 
-describe('testing has', () =>
+describe('testing txhas', () =>
 {
     const key = 'key';
     save_cosmos_functions();
 
-    it('has success', async () =>
+    it('txhas success', async () =>
     {
         var send_tx_called = 0;
         cosmos.send_transaction = async (req_type, ep_name, data, gas_info) =>
@@ -352,12 +352,12 @@ describe('testing has', () =>
             });
         };
 
-        res = await api.has(key, params.gas_info);
+        res = await api.txhas(key, params.gas_info);
         expect(send_tx_called).equal(1);
         expect(res).equal(true);
     });
 
-    it('has failure', async () =>
+    it('txhas failure', async () =>
     {
         var send_tx_called = 0;
         cosmos.send_transaction = async (req_type, ep_name, data, gas_info) =>
@@ -376,12 +376,12 @@ describe('testing has', () =>
             });
         };
 
-        res = await api.has(key, params.gas_info);
+        res = await api.txhas(key, params.gas_info);
         expect(send_tx_called).equal(1);
         expect(res).equal(false);
     });
 
-    it('has error', async () =>
+    it('txhas error', async () =>
     {
         const msg = 'error';
         var send_tx_called = 0;
@@ -398,7 +398,7 @@ describe('testing has', () =>
         var fail = false;
         try
         {
-            res = await api.has(key, params.gas_info);
+            res = await api.txhas(key, params.gas_info);
         }
         catch (err)
         {
@@ -410,11 +410,11 @@ describe('testing has', () =>
     });
 });
 
-describe('testing keys', () =>
+describe('testing txkeys', () =>
 {
     save_cosmos_functions();
 
-    it('keys success', async () =>
+    it('txkeys success', async () =>
     {
         var send_tx_called = 0;
         const keys = ['key1', 'key2', 'key3'];
@@ -443,12 +443,12 @@ describe('testing keys', () =>
             });
         };
 
-        res = await api.keys(params.gas_info);
+        res = await api.txkeys(params.gas_info);
         expect(send_tx_called).equal(1);
         expect(res).to.deep.equal(keys);
     });
 
-    it('keys error', async () =>
+    it('txkeys error', async () =>
     {
         const msg = "An error occurred parsing the result";
         var send_tx_called = 0;
@@ -468,7 +468,7 @@ describe('testing keys', () =>
         var fail = false;
         try
         {
-            res = await api.keys(params.gas_info);
+            res = await api.txkeys(params.gas_info);
         }
         catch (err)
         {
@@ -480,11 +480,11 @@ describe('testing keys', () =>
     });
 });
 
-describe('testing queryread unverified', () =>
+describe('testing read unverified', () =>
 {
     save_cosmos_functions();
 
-    it('queryread-u success', async () =>
+    it('read-u success', async () =>
     {
         const key = 'key';
         const value = 'value';
@@ -499,11 +499,11 @@ describe('testing queryread unverified', () =>
             });
         };
 
-        res = await api.queryread(key, false);
+        res = await api.read(key, false);
         expect(res).equal(value);
     });
 
-    it('queryread-u error', async () =>
+    it('read-u error', async () =>
     {
         const key = 'key';
         const msg = 'key not found';
@@ -520,7 +520,7 @@ describe('testing queryread unverified', () =>
         var fail = false;
         try
         {
-            res = await api.queryread(key, false);
+            res = await api.read(key, false);
         }
         catch (err)
         {
@@ -530,7 +530,7 @@ describe('testing queryread unverified', () =>
         expect(fail).equal(true);
     });
 
-    it('queryread-u with special characters', async () =>
+    it('read-u with special characters', async () =>
     {
         const key = 'key#1%2&3';
         const value = 'value';
@@ -546,16 +546,16 @@ describe('testing queryread unverified', () =>
             });
         };
 
-        res = await api.queryread(key, false);
+        res = await api.read(key, false);
         expect(res).equal(value);
     });
 });
 
-describe('testing queryread verified', () =>
+describe('testing read verified', () =>
 {
     save_cosmos_functions();
 
-    it('queryread-v success', async () =>
+    it('read-v success', async () =>
     {
         const key = 'key';
         const value = 'value';
@@ -570,11 +570,11 @@ describe('testing queryread verified', () =>
             });
         };
 
-        res = await api.queryread(key, true);
+        res = await api.read(key, true);
         expect(res).equal(value);
     });
 
-    it('queryread-v error', async () =>
+    it('read-v error', async () =>
     {
         const key = 'key';
         const msg = 'key not found';
@@ -591,7 +591,7 @@ describe('testing queryread verified', () =>
         var fail = false;
         try
         {
-            res = await api.queryread(key, true);
+            res = await api.read(key, true);
         }
         catch (err)
         {
@@ -602,12 +602,12 @@ describe('testing queryread verified', () =>
     });
 });
 
-describe('testing queryhas', () =>
+describe('testing has', () =>
 {
     const key = 'key';
     save_cosmos_functions();
 
-    it('queryhas success', async () =>
+    it('has success', async () =>
     {
         cosmos.query = async (ep) =>
         {
@@ -619,11 +619,11 @@ describe('testing queryhas', () =>
             });
         };
 
-        res = await api.queryhas(key);
+        res = await api.has(key);
         expect(res).equal(true);
     });
 
-    it('queryhas failure', async () =>
+    it('has failure', async () =>
     {
         cosmos.query = async (ep) =>
         {
@@ -635,16 +635,16 @@ describe('testing queryhas', () =>
             });
         };
 
-        res = await api.queryhas(key);
+        res = await api.has(key);
         expect(res).equal(false);
     });
 });
 
-describe('testing querykeys', () =>
+describe('testing keys', () =>
 {
     save_cosmos_functions();
 
-    it('querykeys success', async () =>
+    it('keys success', async () =>
     {
         const keys = ['key1', 'key2', 'key3'];
 
@@ -658,7 +658,7 @@ describe('testing querykeys', () =>
             });
         };
 
-        res = await api.querykeys();
+        res = await api.keys();
         expect(res).to.deep.equal(keys);
     });
 
@@ -680,7 +680,7 @@ describe('testing querykeys', () =>
         var fail = false;
         try
         {
-            res = await api.querykeys();
+            res = await api.keys();
         }
         catch (err)
         {

@@ -94,9 +94,9 @@ async function main()
         return bz.create("mykey", '#'.repeat(payload_size), gas_params);
     });
 
-    await do_func("\n*** query-read (unverified) ***", async function()
+    await do_func("\n*** read (unverified) ***", async function()
     {
-        return bz.queryread("mykey");
+        return bz.read("mykey");
     });
 
     await do_func("\n*** update value ***", async function()
@@ -104,29 +104,29 @@ async function main()
         return bz.update("mykey", '*'.repeat(payload_size), gas_params);
     });
 
-    await do_func("\n*** query-read (unverified) ***", async function()
+    await do_func("\n*** read (unverified) ***", async function()
     {
-        return bz.queryread("mykey");
+        return bz.read("mykey");
     });
 
-    await do_func("\n*** query-read (verified) ***", async function()
+    await do_func("\n*** read (verified) ***", async function()
     {
-        return bz.queryread("mykey", true);
+        return bz.read("mykey", true);
     });
 
-    p1 = do_func("\n*** simultaneous unverified and verified query-read ***", async function()
+    p1 = do_func("\n*** simultaneous unverified and verified read ***", async function()
     {
-        return bz.queryread("mykey");
+        return bz.read("mykey");
     });
     p2 = do_func("", async function()
     {
-        return bz.queryread("mykey", true);
+        return bz.read("mykey", true);
     });
     await Promise.all([p1, p2]);
 
     await do_func("\n*** transactional read ***", async function()
     {
-        return bz.read("mykey", gas_params);
+        return bz.txread("mykey", gas_params);
     });
 
     await do_func("\n*** delete ***", async function()

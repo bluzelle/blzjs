@@ -39,15 +39,15 @@ function usage()
     console.log("Commands and arguments:");
     console.log("\n Transactional commands");
     console.log("  create uuid key value - creates a new key/value");
-    console.log("  read uuid key         - returns the value of an existing key");
+    console.log("  txread uuid key         - returns the value of an existing key");
     console.log("  update uuid key value - updates the value of an existing key");
     console.log("  delete uuid key       - deletes an existing key");
-    console.log("  has uuid key          - determines if a key exists");
-    console.log("  keys uuid             - returns a list of all keys");
+    console.log("  txhas uuid key          - determines if a key exists");
+    console.log("  txkeys uuid             - returns a list of all keys");
     console.log("\n Query commands");
-    console.log("  queryread uuid key [prove] - returns the value of an existing key, requiring proof if 'prove' is specified");
-    console.log("  queryhas uuid key          - determines if a key exists");
-    console.log("  querykeys uuid             - returns a list of all keys\n");
+    console.log("  read uuid key [prove] - returns the value of an existing key, requiring proof if 'prove' is specified");
+    console.log("  has uuid key          - determines if a key exists");
+    console.log("  keys uuid             - returns a list of all keys\n");
 }
 
 function check_args(num)
@@ -81,9 +81,9 @@ const main = async () => {
                 check_args(5);
                 res = await bz.create(process.argv[4], process.argv[5], gas_params);
                 break;
-            case 'read':
+            case 'txread':
                 check_args(4);
-                res = await bz.read(process.argv[4], gas_params);
+                res = await bz.txread(process.argv[4], gas_params);
                 break;
             case 'update':
                 check_args(5);
@@ -93,30 +93,30 @@ const main = async () => {
                 check_args(4);
                 res = await bz.delete(process.argv[4], gas_params);
                 break;
-            case 'has':
+            case 'txhas':
                 check_args(4);
-                res = await bz.has(process.argv[4], gas_params);
+                res = await bz.txhas(process.argv[4], gas_params);
                 break;
-            case 'keys':
+            case 'txkeys':
                 check_args(3);
-                res = await bz.keys(gas_params);
+                res = await bz.txkeys(gas_params);
                 break;
-            case 'queryread':
+            case 'read':
                 check_args(4);
                 if (process.argv[5] && process.argv[5] !== 'prove')
                 {
                     console.log(`Error: Invalid argument '${process.argv[5]}'\n`)
                     return;
                 }
-                res = await bz.queryread(process.argv[4], process.argv[5] ? true : false);
+                res = await bz.read(process.argv[4], process.argv[5] ? true : false);
                 break;
-            case 'queryhas':
+            case 'has':
                 check_args(4);
-                res = await bz.queryhas(process.argv[4]);
+                res = await bz.has(process.argv[4]);
                 break;
-            case 'querykeys':
+            case 'keys':
                 check_args(3);
-                res = await bz.querykeys();
+                res = await bz.keys();
                 break;
             default:
                 usage();
