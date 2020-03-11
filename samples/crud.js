@@ -118,6 +118,10 @@ const main = async () => {
                 check_args(3);
                 res = await bz.keys();
                 break;
+            case 'account':
+                check_args(2);
+                res = await bz.account();
+                break;
             default:
                 usage();
                 return;

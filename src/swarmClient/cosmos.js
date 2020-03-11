@@ -23,7 +23,6 @@ const bip32 = require('bip32');
 const bip39 = require('bip39');
 
 var app_endpoint = "http://localhost:1317";
-const app_service = "/crud";
 const tx_command = "txs";
 
 const secp256k1 = new ec('secp256k1');
@@ -158,7 +157,7 @@ async function send_tx(url, data, chain_id)
 
 async function begin_tx(tx)
 {
-    const url = app_endpoint + app_service + '/' + tx.ep;
+    const url = app_endpoint + '/' + tx.ep;
     let chain_id = tx.data.BaseReq.chain_id;
 
     const request = {
@@ -387,7 +386,7 @@ async function query(ep)
     {
         try
         {
-            let res = await axios.get(`${app_endpoint}${app_service}/${ep}`);
+            let res = await axios.get(`${app_endpoint}/${ep}`);
             resolve(res.data.result);
         }
         catch (error)
