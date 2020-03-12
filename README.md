@@ -64,6 +64,27 @@ const api = await bluzelle({
 
 ## General Functions
 
+### version\()
+
+Retrieve the version of the Bluzelle service.
+
+```javascript
+// promise syntax
+api.version().then(() => { ... }, error => { ... });
+
+// async/await syntax
+await api.version();
+```
+
+Returns a promise resolving to a string containing the version information, e.g.
+
+```
+0.0.0-39-g8895e3e
+```
+
+Throws an exception if a response is not received from the connection.
+
+
 ### account\()
 
 Retrieve information about the currently active Bluzelle account.

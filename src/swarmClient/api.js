@@ -323,4 +323,19 @@ module.exports = class API
             });
         });
     }
+
+    // returns a promise resolving to a version string.
+    async version()
+    {
+        return new Promise(async (resolve, reject) =>
+        {
+            cosmos.query(`/crud/version`).then(function (res)
+            {
+                resolve(res.version);
+            }).catch(function (err)
+            {
+                reject(err);
+            });
+        });
+    }
 };

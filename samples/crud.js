@@ -48,6 +48,9 @@ function usage()
     console.log("  read uuid key [prove] - returns the value of an existing key, requiring proof if 'prove' is specified");
     console.log("  has uuid key          - determines if a key exists");
     console.log("  keys uuid             - returns a list of all keys\n");
+    console.log("\n Miscellaneous commands");
+    console.log("  account               - returns information about the currently active account\n");
+    console.log("  version               - returns the version of the Bluzelle service\n");
 }
 
 function check_args(num)
@@ -121,6 +124,10 @@ const main = async () => {
             case 'account':
                 check_args(2);
                 res = await bz.account();
+                break;
+            case 'version':
+                check_args(2);
+                res = await bz.version();
                 break;
             default:
                 usage();

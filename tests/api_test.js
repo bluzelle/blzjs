@@ -748,3 +748,63 @@ describe('testing account', () =>
         expect(fail).equal(true);
     });
 });
+
+describe('testing version', () =>
+{
+    save_cosmos_functions();
+
+    it('version success', async () =>
+    {
+        const version_info =
+        {
+            "name": "BluzelleService",
+            "server_name": "blzd",
+            "client_name": "blzcli",
+            "version": "0.0.0-39-g8895e3e",
+            "commit": "8895e3edf0a3ede0f6ed30f2224930e8faa1236e",
+            "build_tags": "ledger,faucet,cosmos-sdk v0.38.1",
+            "go": "go version go1.13.4 linux/amd64"
+        };
+
+        cosmos.query = async (ep) =>
+        {
+            expect(ep).equal(`/crud/version`);
+
+            return new Promise(async (resolve, reject) =>
+            {
+                resolve(version_info);
+            });
+        };
+
+        res = await api.version();
+        expect(res).equal(version_info.version);
+    });
+
+    it('version error', async () =>
+    {
+        const msg = "An error occurred";
+        var send_tx_called = 0;
+
+        cosmos.query = async (ep) =>
+        {
+            expect(ep).equal(`/crud/version`);
+
+            return new Promise(async (resolve, reject) =>
+            {
+                reject(new Error(msg));
+            });
+        };
+
+        var fail = false;
+        try
+        {
+            res = await api.version();
+        }
+        catch (err)
+        {
+            expect(err.message).equal(msg);
+            fail = true;
+        }
+        expect(fail).equal(true);
+    });
+});
