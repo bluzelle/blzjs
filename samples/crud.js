@@ -121,6 +121,30 @@ const main = async () => {
                 check_args(3);
                 res = await bz.keys();
                 break;
+            case 'rename':
+                check_args(5);
+                res = await bz.rename(process.argv[4], process.argv[5], gas_params);
+                break;
+            case 'count':
+                check_args(3);
+                res = await bz.count();
+                break;
+            case 'txcount':
+                check_args(3);
+                res = await bz.txcount(gas_params);
+                break;
+            case 'deleteall':
+                check_args(3);
+                res = await bz.deleteall(gas_params);
+                break;
+            case 'keyvalues':
+                check_args(3);
+                res = await bz.keyvalues();
+                break;
+            case 'txkeyvalues':
+                check_args(3);
+                res = await bz.txkeyvalues(gas_params);
+                break;
             case 'account':
                 check_args(2);
                 res = await bz.account();

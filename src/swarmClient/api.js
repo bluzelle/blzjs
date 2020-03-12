@@ -46,6 +46,22 @@ module.exports = class API
         this.endpoint = endpoint || "http://localhost:1317";
     }
 
+    init_data()
+    {
+        const data = {
+            BaseReq: {
+                from: this.address,
+                chain_id: this.chain_id
+            },
+            UUID: this.uuid,
+            Key: key,
+            Owner: this.address,
+        };
+
+        return data;
+    }
+
+
     async init()
     {
         return await cosmos.init(this.mnemonic, this.endpoint);
@@ -146,13 +162,12 @@ module.exports = class API
     {
         assert(typeof key === 'string', 'Key must be a string');
 
-        const uuid = this.uuid;
         const data = {
             BaseReq: {
                 from: this.address,
                 chain_id: this.chain_id
             },
-            UUID: uuid,
+            UUID: this.uuid,
             Key: key,
             Owner: this.address,
         };
@@ -228,13 +243,12 @@ module.exports = class API
     {
         assert(typeof key === 'string', 'Key must be a string');
 
-        const uuid = this.uuid;
         const data = {
             BaseReq: {
                 from: this.address,
                 chain_id: this.chain_id
             },
-            UUID: uuid,
+            UUID: this.uuid,
             Key: key,
             Owner: this.address,
         };
@@ -278,13 +292,12 @@ module.exports = class API
     // returns a promise resolving to an array of strings. ex. ["key1", "key2", ...]
     txkeys(gas_info)
     {
-        const uuid = this.uuid;
         const data = {
             BaseReq: {
                 from: this.address,
                 chain_id: this.chain_id
             },
-            UUID: uuid,
+            UUID: this.uuid,
             Owner: this.address,
         };
 
@@ -297,6 +310,155 @@ module.exports = class API
                     const str = hex2string(res);
                     const json = JSON.parse(str);
                     resolve(json.keys ? json.keys : []);
+                }
+                catch (err)
+                {
+                    reject("An error occurred parsing the result");
+                }
+            }).catch(function (err)
+            {
+                reject(err);
+            });
+        });
+    }
+
+    // returns a promise resolving to nothing
+    rename(key, new_key, gas_info)
+    {
+        assert(typeof key === 'string', 'Key must be a string');
+        assert(typeof new_key === 'string', 'New key must be a string');
+
+        const data = {
+            BaseReq: {
+                from: this.address,
+                chain_id: this.chain_id
+            },
+            UUID: this.uuid,
+            Key: key,
+            NewKey: new_key,
+            Owner: this.address
+        };
+
+        return new Promise(async (resolve, reject) =>
+        {
+            cosmos.send_transaction('post', `${app_service}/rename`, data, gas_info).then(function (res)
+            {
+                resolve();
+            }).catch(function (err)
+            {
+                reject(err);
+            });
+        });
+    }
+
+    // returns a promise resolving to the number of keys/values
+    count()
+    {
+        return new Promise(async (resolve, reject) =>
+        {
+            cosmos.query(`/crud/count/${this.uuid}`).then(function (res)
+            {
+                resolve(parseInt(res.count));
+            }).catch(function (err)
+            {
+                reject(err);
+            });
+        });
+    }
+
+    // returns a promise resolving to the number of keys/values
+    txcount(gas_info)
+    {
+        const data = {
+            BaseReq: {
+                from: this.address,
+                chain_id: this.chain_id
+            },
+            UUID: this.uuid,
+            Owner: this.address,
+        };
+
+        return new Promise(async (resolve, reject) =>
+        {
+            cosmos.send_transaction('post', `${app_service}/count`, data, gas_info).then(function (res)
+            {
+                try
+                {
+                    const str = hex2string(res);
+                    const json = JSON.parse(str);
+                    resolve(parseInt(json.count));
+                }
+                catch (err)
+                {
+                    reject("An error occurred parsing the result");
+                }
+            }).catch(function (err)
+            {
+                reject(err);
+            });
+        });
+    }
+
+    // returns a promise resolving to nothing
+    deleteall(gas_info)
+    {
+        const data = {
+            BaseReq: {
+                from: this.address,
+                chain_id: this.chain_id
+            },
+            UUID: this.uuid,
+            Owner: this.address,
+        };
+
+        return new Promise(async (resolve, reject) =>
+        {
+            cosmos.send_transaction('post', `${app_service}/deleteall`, data, gas_info).then(function (res)
+            {
+                resolve();
+            }).catch(function (err)
+            {
+                reject(err);
+            });
+        });
+    }
+
+    // returns a promise resolving to a JSON array containing keys and values
+    keyvalues()
+    {
+        return new Promise(async (resolve, reject) =>
+        {
+            cosmos.query(`/crud/keyvalues/${this.uuid}`).then(function (res)
+            {
+                resolve(res.keyvalues);
+            }).catch(function (err)
+            {
+                reject(err);
+            });
+        });
+    }
+
+    // returns a promise resolving to a JSON array containing keys and values
+    txkeyvalues(gas_info)
+    {
+        const data = {
+            BaseReq: {
+                from: this.address,
+                chain_id: this.chain_id
+            },
+            UUID: this.uuid,
+            Owner: this.address,
+        };
+
+        return new Promise(async (resolve, reject) =>
+        {
+            cosmos.send_transaction('post', `${app_service}/keyvalues`, data, gas_info).then(function (res)
+            {
+                try
+                {
+                    const str = hex2string(res);
+                    const json = JSON.parse(str);
+                    resolve(parseInt(json.keyvalues));
                 }
                 catch (err)
                 {
