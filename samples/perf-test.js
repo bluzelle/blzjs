@@ -32,7 +32,7 @@ var payload_size = 10;
 var payload_set = false;
 
 // const gas_params = {'max_gas': '', 'max_fee': '', 'gas_price': ''};
-const gas_params = {'gas_price': '0.01'};
+const gas_params = {'gas_price': '10'};
 
 // NOTE: you must fill in the information below with valid values
 // if uuid is not specified, the value of "address" will be used as the uuid

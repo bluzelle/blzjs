@@ -14,8 +14,8 @@ Read below for detailed documentation on how to use the Bluzelle database servic
 ```javascript
 {
     'max_gas': '0', // maximum amount of gas to consume for this call (integer)
-    'max_fee': '0', // maximum amount to charge for this call (integer, in bnt)
-    'gas_price': '0.0' // maximum price to pay for gas (floating point, in bnt)
+    'max_fee': '0', // maximum amount to charge for this call (integer, in ubnt)
+    'gas_price': '0' // maximum price to pay for gas (integer, in ubnt)
 };
 ````
 All values are optional. The `max_gas` value will always be honored if present, otherwise a default value will be used. If both `max_fee` and `gas_price` are specified, `gas_price` will be ignored and calculated based on the provided `max_fee`.

@@ -35,7 +35,7 @@ var private_key;
 var account_info = { account_number : "", sequence : ""};
 var tx_queue = [];
 
-const token_name = 'bnt';
+const token_name = 'ubnt';
 const MAX_RETRIES = 10;
 const RETRY_INTERVAL = 1000; // 1 second
 
