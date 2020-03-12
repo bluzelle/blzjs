@@ -21,6 +21,7 @@ const encode = string => new Uint8Array(Buffer.from(string, 'utf-8'));
 const decode = binary => Buffer.from(binary).toString('utf-8');
 
 const def_mnemonic = "";
+const app_service = "crud";
 
 function hex2string(hex)
 {
@@ -74,7 +75,7 @@ module.exports = class API
 
         return new Promise(async (resolve, reject) =>
         {
-            cosmos.send_transaction('post', 'create', data, gas_info).then(function (res)
+            cosmos.send_transaction('post', `${app_service}/create`, data, gas_info).then(function (res)
             {
                 resolve();
             }).catch(function (err)
@@ -103,7 +104,7 @@ module.exports = class API
 
         return new Promise(async (resolve, reject) =>
         {
-            cosmos.send_transaction('post', 'update', data, gas_info).then(function (res)
+            cosmos.send_transaction('post', `${app_service}/update`, data, gas_info).then(function (res)
             {
                 resolve();
             }).catch(function (err)
@@ -121,7 +122,7 @@ module.exports = class API
         return new Promise(async (resolve, reject) =>
         {
             const uri_key = encodeURI(key);
-            const url = prove ? `pread/${this.uuid}/${uri_key}` : `read/${this.uuid}/${uri_key}`;
+            const url = prove ? `${app_service}/pread/${this.uuid}/${uri_key}` : `${app_service}/read/${this.uuid}/${uri_key}`;
             cosmos.query(url).then(function (res)
             {
                 resolve(res.value);
@@ -158,7 +159,7 @@ module.exports = class API
 
         return new Promise(async (resolve, reject) =>
         {
-            cosmos.send_transaction('post', 'read', data, gas_info).then(function (res)
+            cosmos.send_transaction('post', `${app_service}/read`, data, gas_info).then(function (res)
             {
                 try
                 {
@@ -194,7 +195,7 @@ module.exports = class API
 
         return new Promise(async (resolve, reject) =>
         {
-            cosmos.send_transaction('delete', 'delete', data, gas_info).then(function (res)
+            cosmos.send_transaction('delete', `${app_service}/delete`, data, gas_info).then(function (res)
             {
                 resolve();
             }).catch(function (err)
@@ -212,7 +213,7 @@ module.exports = class API
         return new Promise(async (resolve, reject) =>
         {
             const uri_key = encodeURI(key);
-            cosmos.query(`has/${this.uuid}/${uri_key}`).then(function (res)
+            cosmos.query(`${app_service}/has/${this.uuid}/${uri_key}`).then(function (res)
             {
                 resolve(res.has);
             }).catch(function (err)
@@ -240,7 +241,7 @@ module.exports = class API
 
         return new Promise(async (resolve, reject) =>
         {
-            cosmos.send_transaction('post', 'has', data, gas_info).then(function (res)
+            cosmos.send_transaction('post', `${app_service}/has`, data, gas_info).then(function (res)
             {
                 try
                 {
@@ -264,7 +265,7 @@ module.exports = class API
     {
         return new Promise(async (resolve, reject) =>
         {
-            cosmos.query(`keys/${this.uuid}`).then(function (res)
+            cosmos.query(`${app_service}/keys/${this.uuid}`).then(function (res)
             {
                 resolve(res.keys ? res.keys : []);
             }).catch(function (err)
@@ -289,7 +290,7 @@ module.exports = class API
 
         return new Promise(async (resolve, reject) =>
         {
-            cosmos.send_transaction('post', 'keys', data, gas_info).then(function (res)
+            cosmos.send_transaction('post', `${app_service}/keys`, data, gas_info).then(function (res)
             {
                 try
                 {
@@ -308,4 +309,18 @@ module.exports = class API
         });
     }
 
+    // returns a promise resolving to a JSON object representing the user account data.
+    async account()
+    {
+        return new Promise(async (resolve, reject) =>
+        {
+            cosmos.query(`/auth/accounts/${this.address}`).then(function (res)
+            {
+                resolve(res.value);
+            }).catch(function (err)
+            {
+                reject(err);
+            });
+        });
+    }
 };

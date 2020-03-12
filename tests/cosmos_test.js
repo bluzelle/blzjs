@@ -30,7 +30,6 @@ const secp256k1 = new ec('secp256k1');
 const gas_params = {'gas_price': '0.01', 'max_gas': '20000'};
 
 var app_endpoint = "http://localhost:1317";
-const app_service = "/crud";
 const tx_command = "txs";
 
 const params =
@@ -82,7 +81,7 @@ const tx_create_skeleton =
         }
     };
 
-const ep = "create";
+const ep = "crud/create";
 const method = "post";
 const WAIT_TIME = 100;
 const RETRY_WAIT_TIME = cosmos.RETRY_INTERVAL + WAIT_TIME;
@@ -313,7 +312,7 @@ function do_create()
     moxios.wait(function ()
     {
         let request = moxios.requests.mostRecent();
-        expect(request.config.url).equal(app_endpoint + app_service + '/' + ep);
+        expect(request.config.url).equal(app_endpoint + '/' + ep);
         expect(request.config.method).equal(method);
         expect(request.config.data).equal(JSON.stringify(create_data));
 
@@ -384,7 +383,7 @@ describe('testing send_transaction', () =>
         moxios.wait(function ()
         {
             let request = moxios.requests.mostRecent();
-            expect(request.config.url).equal(app_endpoint + app_service + '/' + ep);
+            expect(request.config.url).equal(app_endpoint + '/' + ep);
             expect(request.config.method).equal(method);
             expect(request.config.data).equal(JSON.stringify(create_data));
 
@@ -404,7 +403,7 @@ describe('testing send_transaction', () =>
                 {
                     expect(moxios.requests.__items.length).equal(4);
                     let request = moxios.requests.__items[3];
-                    expect(request.config.url).equal(app_endpoint + app_service + '/' + ep);
+                    expect(request.config.url).equal(app_endpoint + '/' + ep);
                     expect(request.config.method).equal(method);
                     expect(request.config.data).equal(JSON.stringify(create_data));
 
@@ -483,7 +482,7 @@ describe('testing send_transaction', () =>
         moxios.wait(function ()
         {
             let request = moxios.requests.mostRecent();
-            expect(request.config.url).equal(app_endpoint + app_service + '/' + ep);
+            expect(request.config.url).equal(app_endpoint + '/' + ep);
             expect(request.config.method).equal(method);
             expect(request.config.data).equal(JSON.stringify(create_data));
 
@@ -520,7 +519,7 @@ describe('testing send_transaction', () =>
         moxios.wait(function ()
         {
             let request = moxios.requests.mostRecent();
-            expect(request.config.url).equal(app_endpoint + app_service + '/' + ep);
+            expect(request.config.url).equal(app_endpoint + '/' + ep);
             expect(request.config.method).equal(method);
             expect(request.config.data).equal(JSON.stringify(create_data));
 
@@ -564,7 +563,7 @@ describe('testing send_transaction', () =>
         moxios.wait(function ()
         {
             let request = moxios.requests.mostRecent();
-            expect(request.config.url).equal(app_endpoint + app_service + '/' + ep);
+            expect(request.config.url).equal(app_endpoint + '/' + ep);
             expect(request.config.method).equal(method);
             expect(request.config.data).equal(JSON.stringify(create_data));
 
@@ -611,7 +610,7 @@ describe('testing send_transaction', () =>
         moxios.wait(function ()
         {
             let request = moxios.requests.mostRecent();
-            expect(request.config.url).equal(app_endpoint + app_service + '/' + ep);
+            expect(request.config.url).equal(app_endpoint + '/' + ep);
             expect(request.config.method).equal(method);
             expect(request.config.data).equal(JSON.stringify(create_data));
 
@@ -696,7 +695,7 @@ describe('testing send_transaction', () =>
         moxios.wait(function ()
         {
             let request = moxios.requests.mostRecent();
-            expect(request.config.url).equal(app_endpoint + app_service + '/' + ep);
+            expect(request.config.url).equal(app_endpoint + '/' + ep);
             expect(request.config.method).equal(method);
             expect(request.config.data).equal(JSON.stringify(create_data));
 

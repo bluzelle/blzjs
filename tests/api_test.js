@@ -36,6 +36,8 @@ var old_init;
 var old_send;
 var old_query;
 
+const app_service = "crud";
+
 function string2hex(str)
 {
     var hex = '';
@@ -106,7 +108,7 @@ describe('testing create', () =>
         {
             ++send_tx_called;
             expect(req_type).equal('post');
-            expect(ep_name).equal('create');
+            expect(ep_name).equal(`${app_service}/create`);
             expect(validate_common_data(data)).equal(true);
             expect(data.Key).equal(key);
             expect(data.Value).equal(value);
@@ -165,7 +167,7 @@ describe('testing txread', () =>
         {
             ++send_tx_called;
             expect(req_type).equal('post');
-            expect(ep_name).equal('read');
+            expect(ep_name).equal(`${app_service}/read`);
             expect(validate_common_data(data)).equal(true);
             expect(data.Key).equal(key);
             expect(gas_info).equal(params.gas_info);
@@ -224,7 +226,7 @@ describe('testing update', () =>
         {
             ++send_tx_called;
             expect(req_type).equal('post');
-            expect(ep_name).equal('update');
+            expect(ep_name).equal(`${app_service}/update`);
             expect(validate_common_data(data)).equal(true);
             expect(data.Key).equal(key);
             expect(data.Value).equal(value);
@@ -283,7 +285,7 @@ describe('testing delete', () =>
         {
             ++send_tx_called;
             expect(req_type).equal('delete');
-            expect(ep_name).equal('delete');
+            expect(ep_name).equal(`${app_service}/delete`);
             expect(validate_common_data(data)).equal(true);
             expect(data.Key).equal(key);
             expect(gas_info).equal(params.gas_info);
@@ -340,7 +342,7 @@ describe('testing txhas', () =>
         {
             ++send_tx_called;
             expect(req_type).equal('post');
-            expect(ep_name).equal('has');
+            expect(ep_name).equal(`${app_service}/has`);
             expect(validate_common_data(data)).equal(true);
             expect(data.Key).equal(key);
             expect(gas_info).equal(params.gas_info);
@@ -364,7 +366,7 @@ describe('testing txhas', () =>
         {
             ++send_tx_called;
             expect(req_type).equal('post');
-            expect(ep_name).equal('has');
+            expect(ep_name).equal(`${app_service}/has`);
             expect(validate_common_data(data)).equal(true);
             expect(data.Key).equal(key);
             expect(gas_info).equal(params.gas_info);
@@ -423,7 +425,7 @@ describe('testing txkeys', () =>
         {
             ++send_tx_called;
             expect(req_type).equal('post');
-            expect(ep_name).equal('keys');
+            expect(ep_name).equal(`${app_service}/keys`);
             expect(validate_common_data(data)).equal(true);
             expect(gas_info).equal(params.gas_info);
 
@@ -491,7 +493,7 @@ describe('testing read unverified', () =>
 
         cosmos.query = async (ep) =>
         {
-            expect(ep).equal(`read/${params.address}/${key}`);
+            expect(ep).equal(`${app_service}/read/${params.address}/${key}`);
             return new Promise(async (resolve, reject) =>
             {
                 // this is the wrong format
@@ -510,7 +512,7 @@ describe('testing read unverified', () =>
 
         cosmos.query = async (ep) =>
         {
-            expect(ep).equal(`read/${params.address}/${key}`);
+            expect(ep).equal(`${app_service}/read/${params.address}/${key}`);
             return new Promise(async (resolve, reject) =>
             {
                 reject(new Error(msg));
@@ -537,7 +539,7 @@ describe('testing read unverified', () =>
 
         cosmos.query = async (ep) =>
         {
-            const uri = encodeURI(`read/${params.address}/${key}`);
+            const uri = encodeURI(`${app_service}/read/${params.address}/${key}`);
             expect(ep).equal(uri);
             return new Promise(async (resolve, reject) =>
             {
@@ -562,7 +564,7 @@ describe('testing read verified', () =>
 
         cosmos.query = async (ep) =>
         {
-            expect(ep).equal(`pread/${params.address}/${key}`);
+            expect(ep).equal(`${app_service}/pread/${params.address}/${key}`);
             return new Promise(async (resolve, reject) =>
             {
                 // this is the wrong format
@@ -581,7 +583,7 @@ describe('testing read verified', () =>
 
         cosmos.query = async (ep) =>
         {
-            expect(ep).equal(`pread/${params.address}/${key}`);
+            expect(ep).equal(`${app_service}/pread/${params.address}/${key}`);
             return new Promise(async (resolve, reject) =>
             {
                 reject(new Error(msg));
@@ -611,7 +613,7 @@ describe('testing has', () =>
     {
         cosmos.query = async (ep) =>
         {
-            expect(ep).equal(`has/${params.address}/${key}`);
+            expect(ep).equal(`${app_service}/has/${params.address}/${key}`);
 
             return new Promise(async (resolve, reject) =>
             {
@@ -627,7 +629,7 @@ describe('testing has', () =>
     {
         cosmos.query = async (ep) =>
         {
-            expect(ep).equal(`has/${params.address}/${key}`);
+            expect(ep).equal(`${app_service}/has/${params.address}/${key}`);
 
             return new Promise(async (resolve, reject) =>
             {
@@ -650,7 +652,7 @@ describe('testing keys', () =>
 
         cosmos.query = async (ep) =>
         {
-            expect(ep).equal(`keys/${params.address}`);
+            expect(ep).equal(`${app_service}/keys/${params.address}`);
 
             return new Promise(async (resolve, reject) =>
             {
@@ -669,7 +671,7 @@ describe('testing keys', () =>
 
         cosmos.query = async (ep) =>
         {
-            expect(ep).equal(`keys/${params.address}`);
+            expect(ep).equal(`${app_service}/keys/${params.address}`);
 
             return new Promise(async (resolve, reject) =>
             {
@@ -681,6 +683,62 @@ describe('testing keys', () =>
         try
         {
             res = await api.keys();
+        }
+        catch (err)
+        {
+            expect(err.message).equal(msg);
+            fail = true;
+        }
+        expect(fail).equal(true);
+    });
+});
+
+describe('testing account', () =>
+{
+    save_cosmos_functions();
+
+    it('account success', async () =>
+    {
+        const account_info = { value:
+            { address: 'bluzelle1lgpau85z0hueyz6rraqqnskzmcz4zuzkfeqls7',
+            coins: [ { denom: 'bnt', amount: '9899567400' } ],
+            public_key: 'bluzellepub1addwnpepqd63w08dcrleyukxs4kq0n7ngalgyjdnu7jpf5khjmpykskyph2vypv6wms',
+            account_number: 3,
+            sequence: 218 }};
+
+        cosmos.query = async (ep) =>
+        {
+            expect(ep).equal(`/auth/accounts/${params.address}`);
+
+            return new Promise(async (resolve, reject) =>
+            {
+                resolve(account_info);
+            });
+        };
+
+        res = await api.account();
+        expect(res).to.deep.equal(account_info.value);
+    });
+
+    it('account error', async () =>
+    {
+        const msg = "An error occurred";
+        var send_tx_called = 0;
+
+        cosmos.query = async (ep) =>
+        {
+            expect(ep).equal(`/auth/accounts/${params.address}`);
+
+            return new Promise(async (resolve, reject) =>
+            {
+                reject(new Error(msg));
+            });
+        };
+
+        var fail = false;
+        try
+        {
+            res = await api.account();
         }
         catch (err)
         {
