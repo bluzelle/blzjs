@@ -34,8 +34,8 @@ const tx_command = "txs";
 
 const params =
 {
-    address: 'cosmos1zuxcvpkxlzf37dh4k95e2rujmy9sxqvxhaj5pn',
-    mnemonic: 'desert maple evoke popular trumpet beach primary decline visit enhance dish drink excite setup public forward ladder girl end genre symbol alter category choose',
+    address: 'bluzelle1lgpau85z0hueyz6rraqqnskzmcz4zuzkfeqls7',
+    mnemonic: 'panic cable humor almost reveal artist govern sample segment effort today start cotton canoe icon panel rain donkey brown swift suit extra sick valve',
     endpoint: "http://localhost:1317",
     chain_id: "bluzelle",
     pub_key: "A7KDYwh5wY2Fp3zMpvkdS6Jz+pNtqE5MkN9J5fqLPdzD",
@@ -135,9 +135,23 @@ async function do_init()
             response: JSON.parse(JSON.stringify(basic_response_data))
         });
 
-    const res = await cosmos.init(params.mnemonic, params.endpoint);
+    await cosmos.init(params.mnemonic, params.endpoint, params.address);
     moxios.stubs.reset();
-    return res;
+}
+
+async function do_init_fail()
+{
+    let error = false;
+    try
+    {
+        await cosmos.init(params.mnemonic, params.endpoint, params.address);
+    }
+    catch (err)
+    {
+        error = true;
+    }
+
+    return error;
 }
 
 describe('testing initialize', () =>
@@ -159,14 +173,12 @@ describe('testing initialize', () =>
                 responseText: 'Server error'
             });
 
-        const res = await cosmos.init(params.mnemonic, params.endpoint);
-        expect(res).equal(false);
+        expect(await do_init_fail()).equal(true);
     });
 
     it('initialize success case', async () =>
     {
         const res = await do_init();
-        expect(res).equal(true);
         expect(cosmos.account_info === basic_response_data.result);
     });
 
@@ -199,8 +211,7 @@ describe('testing initialize', () =>
                 response: response_data
             });
 
-        const res = await cosmos.init(params.mnemonic, params.endpoint);
-        expect(res).equal(false);
+        expect(await do_init_fail()).equal(true);
     });
 
     it('initialize handles missing result', async () =>
@@ -216,8 +227,39 @@ describe('testing initialize', () =>
                 response: response_data
             });
 
-        const res = await cosmos.init(params.mnemonic, params.endpoint);
-        expect(res).equal(false);
+        expect(await do_init_fail()).equal(true);
+    });
+
+    it('detects bad address', async () =>
+    {
+        let error = false;
+        try
+        {
+            await cosmos.init(params.mnemonic, params.endpoint, params.address + 'x');
+        }
+        catch (err)
+        {
+            expect(err.message.search("Bad credentials")).equal(0);
+            error = true;
+        }
+
+        expect(error).equal(true);
+    });
+
+    it('detects bad mnemonic', async () =>
+    {
+        let error = false;
+        try
+        {
+            await cosmos.init(params.mnemonic + 'x', params.endpoint, params.address);
+        }
+        catch (err)
+        {
+            expect(err.message.search("Bad credentials")).equal(0);
+            error = true;
+        }
+
+        expect(error).equal(true);
     });
 });
 
@@ -234,8 +276,7 @@ describe('testing query', () =>
 
     it('basic query', async () =>
     {
-        const res = await do_init();
-        expect(res).equal(true);
+        await do_init();
 
         const response_data =
             {
@@ -254,8 +295,7 @@ describe('testing query', () =>
 
     it('404 query', async () =>
     {
-        const res = await do_init();
-        expect(res).equal(true);
+        await do_init();
 
         const response = "not found";
 
@@ -279,8 +319,7 @@ describe('testing query', () =>
 
     it('key not found query', async () =>
     {
-        const res = await do_init();
-        expect(res).equal(true);
+        await do_init();
 
         const response =
             {
@@ -359,8 +398,7 @@ describe('testing send_transaction', () =>
         params.priv_key = await get_ec_private_key(params.mnemonic);
 
         // wait for account request
-        const res2 = await do_init();
-        expect(res2).equal(true);
+        await do_init();
 
         do_create();
 
@@ -373,8 +411,7 @@ describe('testing send_transaction', () =>
         params.priv_key = await get_ec_private_key(params.mnemonic);
 
         // wait for account request
-        const r = await do_init();
-        expect(r).equal(true);
+        await do_init();
 
         const error_response = {"code": 1, "raw_log": "unauthorized: Key already exists: failed to execute message; message index: 0"};
         const error_message = 'Key already exists';
@@ -475,8 +512,7 @@ describe('testing send_transaction', () =>
         params.priv_key = await get_ec_private_key(params.mnemonic);
 
         // wait for account request
-        const r = await do_init();
-        expect(r).equal(true);
+        await do_init();
 
         // first the library should send a create request to get the tx skeleton
         moxios.wait(function ()
@@ -512,8 +548,7 @@ describe('testing send_transaction', () =>
         params.priv_key = await get_ec_private_key(params.mnemonic);
 
         // wait for account request
-        const r = await do_init();
-        expect(r).equal(true);
+        await do_init();
 
         // first the library should send a create request to get the tx skeleton
         moxios.wait(function ()
@@ -603,8 +638,7 @@ describe('testing send_transaction', () =>
         params.priv_key = await get_ec_private_key(params.mnemonic);
 
         // wait for account request
-        const res2 = await do_init();
-        expect(res2).equal(true);
+        await do_init();
 
         // first the library should send a create request to get the tx skeleton
         moxios.wait(function ()
@@ -688,8 +722,7 @@ describe('testing send_transaction', () =>
         params.priv_key = await get_ec_private_key(params.mnemonic);
 
         // wait for account request
-        const res2 = await do_init();
-        expect(res2).equal(true);
+        await do_init();
 
         // first the library should send a create request to get the tx skeleton
         moxios.wait(function ()

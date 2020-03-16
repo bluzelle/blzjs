@@ -21,15 +21,16 @@ module.exports =
 {
     swarmClient: async (address, mnemonic, endpoint, uuid, chain_id, ...args) =>
     {
-
-        const api = new API(address, mnemonic, endpoint, uuid, chain_id, ...args);
-        if (await api.init())
+        return new Promise(async (resolve, reject) =>
         {
-            return api;
-        }
-        else
-        {
-            return null;
-        }
+            const api = new API(address, mnemonic, endpoint, uuid, chain_id, ...args);
+            api.init().then(function ()
+            {
+                resolve(api);
+            }).catch(function (err)
+            {
+                reject(err);
+            });
+        });
     }
 };

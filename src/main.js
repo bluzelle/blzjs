@@ -20,34 +20,15 @@ module.exports =
 {
     bluzelle: async ({log, address, mnemonic, endpoint, uuid, chain_id, ...args}) =>
     {
-        // Add timestamp to logs
-        const timestamp = () =>
+        return new Promise(async (resolve, reject) =>
         {
-            const d = new Date();
-            return '[' + d.getMinutes().toString().padStart(2, '0') + ':' +
-                d.getSeconds().toString().padStart(2, '0') + ':' +
-                d.getMilliseconds().toString().padEnd(3, '0') + '] ';
-        };
-
-        if (log)
-        {
-
-            // Default log is console.log, but you can pass any other function.
-            if (typeof log !== 'function')
+            swarmClient(address, mnemonic, endpoint, (uuid || address), chain_id).then(function (swarm)
             {
-                log = console.log.bind(console);
-            }
-
-            const log_ = log;
-            log = ((a, ...args) => log_(timestamp() + a, ...args));
-        }
-
-        swarm = await swarmClient(address, mnemonic, endpoint, (uuid || address), chain_id);
-        if (!swarm)
-        {
-            throw new Error('Could not initialize with given parameters');
-        }
-
-        return swarm;
+                resolve(swarm);
+            }).catch(function (err)
+            {
+                reject(err);
+            });
+        });
     }
 };
