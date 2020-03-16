@@ -92,6 +92,34 @@ class transaction
     }
 }
 
+function unicodify(str)
+{
+    let outstr = '';
+    for (var i = 0; i < str.length; i++)
+    {
+        const ch = str[i];
+        switch (ch)
+        {
+            //case '"':
+            case '&':
+            case '<':
+            case '>':
+            case '\\':
+            case '\n':
+            case '\r':
+            case '\t':
+                outstr += '\\u00' + (ch.charCodeAt(0)).toString(16);
+                break;
+
+            default:
+                outstr += ch;
+                break;
+        }
+    }
+
+    return outstr;
+}
+
 function sign_transaction(key, data, chain_id)
 {
     let payload = {
@@ -104,7 +132,7 @@ function sign_transaction(key, data, chain_id)
     };
 
     // Calculate the SHA256 of the payload object
-    let jsonHash = util.hash('sha256', Buffer.from(JSON.stringify(payload)));
+    let jsonHash = util.hash('sha256', Buffer.from(unicodify(JSON.stringify(payload))));
 
     return {
         pub_key: {
@@ -433,6 +461,7 @@ module.exports =
     init,
     send_transaction,
     query,
+    unicodify,
     MAX_RETRIES,
     RETRY_INTERVAL
 };

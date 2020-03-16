@@ -533,7 +533,7 @@ describe('testing read unverified', () =>
 
     it('read-u with special characters', async () =>
     {
-        const key = 'key#1%2&3';
+        const key = 'key!@#$%^&*()_+';
         const value = 'value';
 
         cosmos.query = async (ep) =>

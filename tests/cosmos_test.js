@@ -57,6 +57,22 @@ const basic_response_data =
     }
 };
 
+const ep = "crud/create";
+const method = "post";
+const WAIT_TIME = 100;
+const RETRY_WAIT_TIME = cosmos.RETRY_INTERVAL + WAIT_TIME;
+
+const create_data = {
+    BaseReq: {
+        from: params.address,
+        chain_id: params.chain_id
+    },
+    UUID: params.address,
+    Key: "key!@#$%^<>",
+    Value: "value&*()_+",
+    Owner: params.address
+};
+
 const tx_create_skeleton =
     {
         "type": "cosmos-sdk/StdTx",
@@ -65,10 +81,10 @@ const tx_create_skeleton =
                 {
                     "type": "crud/create",
                     "value": {
-                        "UUID": "cosmos1zuxcvpkxlzf37dh4k95e2rujmy9sxqvxhaj5pn",
-                        "Key": "mykey",
-                        "Value": "##########",
-                        "Owner": "cosmos1zuxcvpkxlzf37dh4k95e2rujmy9sxqvxhaj5pn"
+                        "UUID": params.address,
+                        "Key": create_data.Key,
+                        "Value": create_data.Value,
+                        "Owner": params.address
                     }
                 }
             ],
@@ -81,21 +97,6 @@ const tx_create_skeleton =
         }
     };
 
-const ep = "crud/create";
-const method = "post";
-const WAIT_TIME = 100;
-const RETRY_WAIT_TIME = cosmos.RETRY_INTERVAL + WAIT_TIME;
-
-const create_data = {
-    BaseReq: {
-        from: params.address,
-        chain_id: params.chain_id
-    },
-    UUID: params.address,
-    Key: "key",
-    Value: "value",
-    Owner: params.address
-};
 
 async function get_ec_private_key(mnemonic)
 {
@@ -118,7 +119,7 @@ function verify_signature(data)
     };
 
     // Calculate the SHA256 of the payload object
-    let jsonHash = util.hash('sha256', Buffer.from(JSON.stringify(payload)));
+    let jsonHash = util.hash('sha256', Buffer.from(cosmos.unicodify(JSON.stringify(payload))));
     let sig = util.convertSignature(secp256k1.sign(jsonHash, params.priv_key, 'hex',
         {
             canonical: true,
