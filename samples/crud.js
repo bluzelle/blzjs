@@ -26,9 +26,7 @@ const { bluzelle } = require('../src/main.js');
 //  };
 const config = require('./blz-config.js');
 
-// NOTE: You may need to set the gas parameters based on your configuration
-// const gas_params = {'max_gas': '', 'max_fee': '', 'gas_price': ''};
-const gas_params = {'gas_price': '10'};
+const gas_params = config.gas_params;
 
 var bz;
 
