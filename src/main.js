@@ -49,7 +49,5 @@ module.exports =
         }
 
         return swarm;
-    },
-
-    version: require('../package.json').version
+    }
 };

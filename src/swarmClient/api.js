@@ -458,7 +458,7 @@ module.exports = class API
                 {
                     const str = hex2string(res);
                     const json = JSON.parse(str);
-                    resolve(parseInt(json.keyvalues));
+                    resolve(json.keyvalues);
                 }
                 catch (err)
                 {
