@@ -310,16 +310,34 @@ function advance_queue()
 
 function extract_error_from_message(msg)
 {
-    // this is very fragile and will break if Cosmos changes their error format again
+    // This is very fragile and will break if Cosmos changes their error format again
     // currently it looks like "unauthorized: Key already exists: failed to execute message; message index: 0"
-    // and we just want the "Key already exists" bit.
-    var offset1 = msg.search(": ");
+    // and we just want the "Key already exists" bit. However with some messages, e.g.
+    // insufficient fee: insufficient fees; got: 10ubnt required: 2000000ubnt
+    // we want most of the message.
+    // To deal with this, we will in general extract the message between the first two colons in most cases
+    // but will have exceptions for certain cases
+
+    const offset1 = msg.search(": ");
+
+    // If we can't segment the message, just return the whole thing
     if (offset1 == -1)
     {
         return msg;
     }
 
-    var offset2 = msg.indexOf(':', offset1 + 1);
+    // exception cases
+    const prefix =  msg.substring(0, offset1);
+    switch (prefix)
+    {
+        case "insufficient fee":
+            return msg.substring(offset1 + 2);
+
+        default:
+            break;
+    }
+
+    const offset2 = msg.indexOf(':', offset1 + 1);
     return msg.substring(offset1 + 2, offset2);
 }
 
