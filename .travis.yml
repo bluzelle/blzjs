@@ -6,9 +6,7 @@ node_js:
 
 env:
   global:
-    - secure: "LBPuPqFb4PYq9n0d6vQ+TwFWwepAsl3X3ZoRyWU+4/kv3S50PRzre60B5xVP+Y3eyG5RbsWh1Z4unp2nVOGN9O3H4VjqgAXQYnyTMIzg+AceUnjVmlbzPL01A0tTY5MswbZP3ncQFphBNreRrIWgLZKV9btfiYjuOO85+ZC+biw3jNuyeGkHSdfibAsuKug0Mr11FkYccAry3zOUHwNzn2dMnfDVImPmjxucZxXOqIeqXaPQ9W8OVn+ZiYYoW51+s/G1ll00C290c6TKbnVnFVqK6cAR9VQnpI00IDLuRNGQJWiosHCxoYkr/p9nSZgN04nVRYvkLXo8CxSsthcYf23Z1R0H5NeFuCVfLSzAgFOff23VK2jOhINPgCfBtENMyR4jVdUSCv0XJ/VrjHHMJXzpILXSy/M38RnZzeN2brM6H7nbvk58Kdv+6Dn7A1E2ZLCslFtlP4m6qrP17bDViibfVgYNcRytDATnKXjbJURAJ3ja+ZUULLPMhAO5BDHuJDzIWXq2wzZWk4OMk49PIaVwkSvaJ8+KFg9x7mNXGhql5TAS+d+OArkJyzR1ODQnfZ0JA1rzvJ9T321lOT8YzWy8nEPfRcpAbrIuud1Rrj4r4luOaZ6iRmGvOtrnKCDjciQCY+J1ftJj5U+uDeZt0A9Bxo1DFy/tW96KX0QxvwI="
-    - secure: "LmvYG98cHXvtysWaHKHb8fLt1y2UHIVZ7g0w9AUkCnyR7BsbiLvyCIV5Xhg0SPGpcIPIEyTnCgAzEV0Q489Phr+W4eBq7wKfP63SIojgM3Ne4z/utoY/FOjvo3ZlOjwYrup3QIuU8JpDKy/0a+silGDl9q0Q/JdL0qStvgz9eSEmk5R6Ov0iNcQu7z3lZSgHaw7Y/TjJ7G8AbibZ6L0/Z4ncof6GORjZzo0mZwlPEmbjJnfUkqNKCcwI3IrPLP5I9qXTChuiV5wRfdibjD0Y0Lmddz/VAxNw6rcvEJEzM+GB42TXQZwl6ekXVqi0b1hC95Mz4dFt5idsN2Xf46EJeyUjNNZh5Bk3vfOAmyhnhc0/HEe97YxhZCTLUaVsNntNH3djFus6hE/yEE7hqbUo7eZmnhXGmg/tOd9rwUDCarT+K3oCdiJBg48htTe3vXn/Vm+ffI1QCY/RttitCkXLGg8G88d7cAD7RAM8F9nxyObkDEenj0n290DzRLwVE+i0N1ROLNerEdTWtCbuoWEgEl6SFRpw49elcgehHMq7X/Bg8gL9xrhzDs8psxN62dSjiSz/OXhDW6E7vvVJNKmMS+8/MLD0bCbrbsjhASpgeF8YGRchFVEw8/33Hmybnpo97+R5FObS8pVGu0yzcTNQzAe5eM0GZtihftxo3ApwEaA="
-
+    - secure: "mxKFdSXcxH3xHmb17YDTPT4a+EvyNhyT2KF/TrcsXUXPyVMCMnRTdljaVUqnUc0cF+uJA3e3XHIPvJOY678DBzUjXxN4x8HwrDNYBpKW/fZhi/vGUdW8M6Ue2gZ1qg3L/HBE59L60SBB2RuaLItiwD25r5SAwPjhFJ4F+eBEcSa00wFZeZQIHsPS87gxfnhmQfilaDeBpAa6wHXhnBAvR4Yl0izXymUN93TUMMS+zx0opjYvcTjynxNLZF5K3fMc1pSaInx7Qu8S5Dii4JlImertqvhTWhvcwptySKAO34iBA20LIVtCP5bVWXkDYSNgh4JI3KpL+OWFAnpmAkpH1IpWsTTNdfITBWtcvCb1ma/gZWXZ0vZci26grfLeyaih/vT0pIzyFSPhyRm3GF9FFVsePBHhHFRu9VyqF7htvtWz9CV1BvCVVQGx4W9mHiqqE9HAdRkz69SM7OtLAEUpgupxZH2tldgH5xg4Q+HvggfMoZ+ANPvOHqNgMVkWDHKXKr9rMOxPB729cIRqMBhQeA9M6DKdFI50jxhSmxL/REBaSPdB2QHCV91RSBFCu9Kd9hCF4LkJJVpZpBSHFqi/n7y7g7lIUTO8dDJ133Jo/EFh4kl7oTny/7PA4eEfxmM7gYl1Py2wIiMX8dgBigSAE7gQXvORDx2kGD+twBV30DY="
 jobs:
   include:
     - stage: Produce Coverage
@@ -18,7 +16,6 @@ jobs:
         - npm install -g travis-status
         - npm install -g child_process
       script:
-        - npx nyc --reporter=lcov mocha "**/tests/*_test.js" --timeout 20000 && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
         - |
           ls -a
           echo ${TRAVIS_PULL_REQUEST}
