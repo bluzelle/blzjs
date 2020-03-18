@@ -46,6 +46,27 @@ function string2hex(str)
     return hex;
 }
 
+function encode_safe(str)
+{
+    let outstr = '';
+    for (var i = 0; i < str.length; i++)
+    {
+        const ch = str[i];
+        switch (ch)
+        {
+            case '#':
+                outstr += '%' + (ch.charCodeAt(0)).toString(16);
+                break;
+
+            default:
+                outstr += ch;
+                break;
+        }
+    }
+
+    return outstr;
+}
+
 function validate_common_data(data)
 {
     if (typeof data.BaseReq != 'object')
@@ -538,7 +559,7 @@ describe('testing read unverified', () =>
 
         cosmos.query = async (ep) =>
         {
-            const uri = encodeURI(`${app_service}/read/${params.address}/${key}`);
+            const uri = encode_safe(encodeURI(`${app_service}/read/${params.address}/${key}`));
             expect(ep).equal(uri);
             return new Promise(async (resolve, reject) =>
             {

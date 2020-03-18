@@ -31,6 +31,27 @@ function hex2string(hex)
     return str;
 }
 
+function encode_safe(str)
+{
+    let outstr = '';
+    for (var i = 0; i < str.length; i++)
+    {
+        const ch = str[i];
+        switch (ch)
+        {
+            case '#':
+                outstr += '%' + (ch.charCodeAt(0)).toString(16);
+                break;
+
+            default:
+                outstr += ch;
+                break;
+        }
+    }
+
+    return outstr;
+}
+
 module.exports = class API
 {
 
@@ -60,7 +81,6 @@ module.exports = class API
 
         return data;
     }
-
 
     async init()
     {
@@ -146,7 +166,7 @@ module.exports = class API
 
         return new Promise(async (resolve, reject) =>
         {
-            const uri_key = encodeURI(key);
+            const uri_key = encode_safe(encodeURI(key));
             const url = prove ? `${app_service}/pread/${this.uuid}/${uri_key}` : `${app_service}/read/${this.uuid}/${uri_key}`;
             cosmos.query(url).then(function (res)
             {
