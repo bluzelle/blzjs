@@ -23,6 +23,7 @@ jobs:
           if [ "${TRAVIS_PULL_REQUEST}" == "false"  ]; then 
             npx nyc --reporter=lcov mocha "**/tests/*_test.js" --timeout 20000 && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
           else 
+            travis login --pro --github-token $TRAV_API_TOKEN
             echo "y" | travis restart -r bluzelle/curium-test; 
             npm install travis-status; 
             node travisStatus.js $TRAV_API_TOKEN; 
