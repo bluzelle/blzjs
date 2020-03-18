@@ -32,7 +32,7 @@ jobs:
             sudo apt install yarn
             sudo apt-get install g++
             sudo apt-get install make
-            export TARGET_BRANCH=${TRAVIS_PULL_REQUEST_BRANCH}
+            export BLZJS_TARGET_BRANCH=${TRAVIS_PULL_REQUEST_BRANCH}
             git clone -b devel git@github.com:bluzelle/curium-test.git
             cd curium-test/integration
             yarn
