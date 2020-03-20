@@ -133,7 +133,7 @@ async function main()
 
     await do_func("\n*** transactional read ***", async function()
     {
-        return bz.txread("mykey", gas_params);
+        return bz.txRead("mykey", gas_params);
     });
 
     await do_func("\n*** delete ***", async function()

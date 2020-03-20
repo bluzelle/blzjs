@@ -22,6 +22,7 @@ const decode = binary => Buffer.from(binary).toString('utf-8');
 
 const def_mnemonic = "";
 const app_service = "crud";
+const BLOCK_TIME_IN_SECONDS = 5;
 
 function hex2string(hex)
 {
@@ -53,9 +54,22 @@ function encode_safe(str)
     return outstr;
 }
 
+
+function parse_result(str, reject)
+{
+    try
+    {
+        const json = hex2string(str);
+        return JSON.parse(json);
+    }
+    catch (err)
+    {
+        reject(new Error("An error occurred parsing the result"));
+    }
+}
+
 module.exports = class API
 {
-
     constructor(address, mnemonic, endpoint, uuid, chain_id/*, ...args*/)
     {
         assert(typeof address === 'string', 'address must be a string');
@@ -66,21 +80,6 @@ module.exports = class API
         this.uuid = uuid;
         this.chain_id = chain_id || "bluzelle";
         this.endpoint = endpoint || "http://localhost:1317";
-    }
-
-    init_data()
-    {
-        const data = {
-            BaseReq: {
-                from: this.address,
-                chain_id: this.chain_id
-            },
-            UUID: this.uuid,
-            Key: key,
-            Owner: this.address,
-        };
-
-        return data;
     }
 
     async init()
@@ -103,60 +102,34 @@ module.exports = class API
     }
 
     // returns a promise resolving to nothing.
-    async create(key, value, gas_info)
+    async create(key, value, gas_info, lease_info)
     {
         assert(typeof key === 'string', 'Key must be a string');
         assert(typeof value === 'string', 'Value must be a string');
 
-        const data = {
-            BaseReq: {
-                from: this.address,
-                chain_id: this.chain_id
-            },
-            UUID: this.uuid,
+        return this.do_tx({
             Key: key,
             Value: value,
-            Owner: this.address,
-        };
-
-        return new Promise(async (resolve, reject) =>
+            Lease: this.convert_lease(lease_info)
+        }, 'post', 'create', gas_info, function(res, resolve, reject)
         {
-            cosmos.send_transaction('post', `${app_service}/create`, data, gas_info).then(function (res)
-            {
-                resolve();
-            }).catch(function (err)
-            {
-                reject(err);
-            });
+            resolve();
         });
     }
 
     // returns a promise resolving to nothing.
-    async update(key, value, gas_info)
+    async update(key, value, gas_info, lease_info)
     {
         assert(typeof key === 'string', 'Key must be a string');
         assert(typeof value === 'string', 'Value must be a string');
 
-        const data = {
-            BaseReq: {
-                from: this.address,
-                chain_id: this.chain_id
-            },
-            UUID: this.uuid,
+        return this.do_tx({
             Key: key,
             Value: value,
-            Owner: this.address,
-        };
-
-        return new Promise(async (resolve, reject) =>
+            Lease: this.convert_lease(lease_info)
+        }, 'post', 'update', gas_info, function(res, resolve, reject)
         {
-            cosmos.send_transaction('post', `${app_service}/update`, data, gas_info).then(function (res)
-            {
-                resolve();
-            }).catch(function (err)
-            {
-                reject(err);
-            });
+            resolve();
         });
     }
 
@@ -167,7 +140,7 @@ module.exports = class API
 
         return new Promise(async (resolve, reject) =>
         {
-            const uri_key = encode_safe(encodeURI(key));
+            const uri_key = this.encode_safe(key);
             const url = prove ? `${app_service}/pread/${this.uuid}/${uri_key}` : `${app_service}/read/${this.uuid}/${uri_key}`;
             cosmos.query(url).then(function (res)
             {
@@ -188,38 +161,16 @@ module.exports = class API
     }
 
     // returns a promise resolving the string value of the key.
-    async txread(key, gas_info)
+    async txRead(key, gas_info)
     {
         assert(typeof key === 'string', 'Key must be a string');
 
-        const data = {
-            BaseReq: {
-                from: this.address,
-                chain_id: this.chain_id
-            },
-            UUID: this.uuid,
-            Key: key,
-            Owner: this.address,
-        };
-
-        return new Promise(async (resolve, reject) =>
+        return this.do_tx({
+            Key: key
+        }, 'post', 'read', gas_info, function(res, resolve, reject)
         {
-            cosmos.send_transaction('post', `${app_service}/read`, data, gas_info).then(function (res)
-            {
-                try
-                {
-                    const str = hex2string(res);
-                    const json = JSON.parse(str);
-                    resolve(json.value);
-                }
-                catch(err)
-                {
-                    resolve(res.result);
-                }
-            }).catch(function (err)
-            {
-                reject(err);
-            });
+            const json = parse_result(res, reject);
+            resolve(json.value);
         });
     }
 
@@ -228,25 +179,11 @@ module.exports = class API
     {
         assert(typeof key === 'string', 'Key must be a string');
 
-        const data = {
-            BaseReq: {
-                from: this.address,
-                chain_id: this.chain_id
-            },
-            UUID: this.uuid,
-            Key: key,
-            Owner: this.address,
-        };
-
-        return new Promise(async (resolve, reject) =>
+        return this.do_tx({
+            Key: key
+        }, 'delete', 'delete', gas_info, function(res, resolve, reject)
         {
-            cosmos.send_transaction('delete', `${app_service}/delete`, data, gas_info).then(function (res)
-            {
-                resolve();
-            }).catch(function (err)
-            {
-                reject(err);
-            });
+            resolve();
         });
     }
 
@@ -255,100 +192,43 @@ module.exports = class API
     {
         assert(typeof key === 'string', 'Key must be a string');
 
-        return new Promise(async (resolve, reject) =>
+        const uri_key = encode_safe(encodeURI(key));
+        return this.do_query(`${app_service}/has/${this.uuid}/${uri_key}`, function(res, resolve, reject)
         {
-            const uri_key = encode_safe(encodeURI(key));
-            cosmos.query(`${app_service}/has/${this.uuid}/${uri_key}`).then(function (res)
-            {
-                resolve(res.result.has);
-            }).catch(function (err)
-            {
-                reject(err);
-            });
+            resolve(res.has);
         });
     }
 
     // returns a promise resolving to a boolean value - true or false, representing whether the key is in the database.
-    txhas(key, gas_info)
+    txHas(key, gas_info)
     {
         assert(typeof key === 'string', 'Key must be a string');
 
-        const data = {
-            BaseReq: {
-                from: this.address,
-                chain_id: this.chain_id
-            },
-            UUID: this.uuid,
-            Key: key,
-            Owner: this.address,
-        };
-
-        return new Promise(async (resolve, reject) =>
+        return this.do_tx({
+            Key: key
+        }, 'post', 'has', gas_info, function(res, resolve, reject)
         {
-            cosmos.send_transaction('post', `${app_service}/has`, data, gas_info).then(function (res)
-            {
-                try
-                {
-                    const str = hex2string(res);
-                    const json = JSON.parse(str);
-                    resolve(json.has);
-                }
-                catch (err)
-                {
-                    reject("An error occurred parsing the result");
-                }
-            }).catch(function (err)
-            {
-                reject(err);
-            });
+            const json = parse_result(res, reject);
+            resolve(json.has);
         });
     }
 
     // returns a promise resolving to an array of strings. ex. ["key1", "key2", ...]
     async keys()
     {
-        return new Promise(async (resolve, reject) =>
+        return this.do_query(`${app_service}/keys/${this.uuid}`, function(res, resolve, reject)
         {
-            cosmos.query(`${app_service}/keys/${this.uuid}`).then(function (res)
-            {
-                resolve(res.result.keys ? res.result.keys : []);
-            }).catch(function (err)
-            {
-                reject(err);
-            });
+            resolve(res.result.keys ? res.result.keys : []);
         });
     }
 
     // returns a promise resolving to an array of strings. ex. ["key1", "key2", ...]
-    txkeys(gas_info)
+    txKeys(gas_info)
     {
-        const data = {
-            BaseReq: {
-                from: this.address,
-                chain_id: this.chain_id
-            },
-            UUID: this.uuid,
-            Owner: this.address,
-        };
-
-        return new Promise(async (resolve, reject) =>
+        return this.do_tx({}, 'post', 'keys', gas_info, function(res, resolve, reject)
         {
-            cosmos.send_transaction('post', `${app_service}/keys`, data, gas_info).then(function (res)
-            {
-                try
-                {
-                    const str = hex2string(res);
-                    const json = JSON.parse(str);
-                    resolve(json.keys ? json.keys : []);
-                }
-                catch (err)
-                {
-                    reject("An error occurred parsing the result");
-                }
-            }).catch(function (err)
-            {
-                reject(err);
-            });
+            const json = parse_result(res, reject);
+            resolve(json.keys ? json.keys : []);
         });
     }
 
@@ -358,151 +238,64 @@ module.exports = class API
         assert(typeof key === 'string', 'Key must be a string');
         assert(typeof new_key === 'string', 'New key must be a string');
 
-        const data = {
-            BaseReq: {
-                from: this.address,
-                chain_id: this.chain_id
-            },
-            UUID: this.uuid,
+        return this.do_tx({
             Key: key,
-            NewKey: new_key,
-            Owner: this.address
-        };
-
-        return new Promise(async (resolve, reject) =>
+            NewKey: new_key
+        }, 'post', 'rename', gas_info, function(res, resolve, reject)
         {
-            cosmos.send_transaction('post', `${app_service}/rename`, data, gas_info).then(function (res)
-            {
-                resolve();
-            }).catch(function (err)
-            {
-                reject(err);
-            });
+            resolve();
         });
     }
 
     // returns a promise resolving to the number of keys/values
     count()
     {
-        return new Promise(async (resolve, reject) =>
+        return this.do_query(`/${app_service}/count/${this.uuid}`, function(res, resolve, reject)
         {
-            cosmos.query(`/crud/count/${this.uuid}`).then(function (res)
-            {
-                resolve(parseInt(res.count));
-            }).catch(function (err)
-            {
-                reject(err);
-            });
+            resolve(parseInt(res.count));
         });
     }
 
     // returns a promise resolving to the number of keys/values
-    txcount(gas_info)
+    txCount(gas_info)
     {
-        const data = {
-            BaseReq: {
-                from: this.address,
-                chain_id: this.chain_id
-            },
-            UUID: this.uuid,
-            Owner: this.address,
-        };
-
-        return new Promise(async (resolve, reject) =>
+        return this.do_tx({}, 'post', 'count', gas_info, function(res, resolve, reject)
         {
-            cosmos.send_transaction('post', `${app_service}/count`, data, gas_info).then(function (res)
-            {
-                try
-                {
-                    const str = hex2string(res);
-                    const json = JSON.parse(str);
-                    resolve(parseInt(json.count));
-                }
-                catch (err)
-                {
-                    reject("An error occurred parsing the result");
-                }
-            }).catch(function (err)
-            {
-                reject(err);
-            });
+            const json = parse_result(res, reject);
+            resolve(json.count);
         });
     }
 
     // returns a promise resolving to nothing
-    deleteall(gas_info)
+    deleteAll(gas_info)
     {
-        const data = {
-            BaseReq: {
-                from: this.address,
-                chain_id: this.chain_id
-            },
-            UUID: this.uuid,
-            Owner: this.address,
-        };
-
-        return new Promise(async (resolve, reject) =>
+        return this.do_tx({}, 'post', 'deleteall', gas_info, function(res, resolve, reject)
         {
-            cosmos.send_transaction('post', `${app_service}/deleteall`, data, gas_info).then(function (res)
-            {
-                resolve();
-            }).catch(function (err)
-            {
-                reject(err);
-            });
+            resolve();
         });
     }
 
     // returns a promise resolving to a JSON array containing keys and values
-    keyvalues()
+    keyValues()
     {
-        return new Promise(async (resolve, reject) =>
+        return this.do_query(`/${app_service}/keyvalues/${this.uuid}`, function(res, resolve, reject)
         {
-            cosmos.query(`/crud/keyvalues/${this.uuid}`).then(function (res)
-            {
-                resolve(res.result.keyvalues);
-            }).catch(function (err)
-            {
-                reject(err);
-            });
+            resolve(res.result.keyvalues);
         });
     }
 
     // returns a promise resolving to a JSON array containing keys and values
-    txkeyvalues(gas_info)
+    txKeyValues(gas_info)
     {
-        const data = {
-            BaseReq: {
-                from: this.address,
-                chain_id: this.chain_id
-            },
-            UUID: this.uuid,
-            Owner: this.address,
-        };
-
-        return new Promise(async (resolve, reject) =>
+        return this.do_tx({}, 'post', 'keyvalues', gas_info, function(res, resolve, reject)
         {
-            cosmos.send_transaction('post', `${app_service}/keyvalues`, data, gas_info).then(function (res)
-            {
-                try
-                {
-                    const str = hex2string(res);
-                    const json = JSON.parse(str);
-                    resolve(json.keyvalues);
-                }
-                catch (err)
-                {
-                    reject("An error occurred parsing the result");
-                }
-            }).catch(function (err)
-            {
-                reject(err);
-            });
+            const json = parse_result(res, reject);
+            resolve(json.keyvalues);
         });
     }
 
     // returns a promise resolving to nothing.
-    async multiupdate(keyvalues, gas_info)
+    async multiUpdate(keyvalues, gas_info)
     {
         assert(typeof keyvalues === 'object', 'Keyvalues must be an array');
         keyvalues.forEach(function(value, index, array)
@@ -511,29 +304,118 @@ module.exports = class API
             assert(typeof value.value === 'string', "All values must be strings");
         });
 
-        const data = {
-            BaseReq: {
-                from: this.address,
-                chain_id: this.chain_id
-            },
-            UUID: this.uuid,
-            KeyValues: keyvalues,
-            Owner: this.address
-        };
-
-        return new Promise(async (resolve, reject) =>
+        return this.do_tx({
+            KeyValues: keyvalues
+        }, 'post', 'multiupdate', gas_info, function(res, resolve, reject)
         {
-            cosmos.send_transaction('post', `${app_service}/multiupdate`, data, gas_info).then(function (res)
-            {
-                resolve();
-            }).catch(function (err)
-            {
-                reject(err);
-            });
+            resolve();
         });
     }
 
+    // returns a promise resolving to an integral value in seconds, representing the lease time remaining on the key
+    async getLease(key)
+    {
+        assert(typeof key === 'string', 'Key must be a string');
+
+        const uri_key = this.encode_safe(key);
+        return this.do_query(`${app_service}/getlease/${this.uuid}/${uri_key}`, function(res, resolve, reject)
+        {
+            resolve(res.lease * BLOCK_TIME_IN_SECONDS);
+        });
+    }
+
+    // returns a promise resolving to nothing.
+    txGetLease(key, gas_info)
+    {
+        assert(typeof key === 'string', 'Key must be a string');
+
+        return this.do_tx({
+            Key: key
+        }, 'post', 'getlease', gas_info, function(res, resolve, reject)
+        {
+            const json = parse_result(res, reject);
+            resolve(json.lease * BLOCK_TIME_IN_SECONDS);
+        });
+    }
+
+    // returns a promise resolving to nothing.
+    renewLease(key, gas_info, lease_info)
+    {
+        assert(typeof key === 'string', 'Key must be a string');
+
+        debugger;
+        return this.do_tx({
+            Key: key,
+            Lease: this.convert_lease(lease_info)
+        }, 'post', 'renewlease', gas_info, function(res, resolve, reject)
+        {
+            resolve();
+        });
+    }
+
+    // returns a promise resolving to nothing.
+    renewLeaseAll(gas_info, lease_info)
+    {
+        return this.do_tx({
+            Lease: this.convert_lease(lease_info)
+        }, 'post', 'renewleaseall', gas_info, function(res, resolve, reject)
+        {
+            resolve();
+        });
+    }
+
+    // returns a promise resolving to an array of key/lease-time pairs
+    async getNShortestLease(n)
+    {
+        return this.do_query(`${app_service}/getnshortestlease/${this.uuid}/${n}`, function(res, resolve, reject)
+        {
+            debugger;
+            let lease_info = [];
+            res.keyleases.forEach(function(val, i, leases)
+            {
+                lease_info.push({key: leases[i].key, lease: leases[i].lease * BLOCK_TIME_IN_SECONDS});
+            });
+            resolve(lease_info);
+        });
+    }
+
+    // returns a promise resolving to an array of key/lease-time pairs
+    txGetNShortestLease(n, gas_info)
+    {
+        return this.do_tx(
+            {
+                N: n
+            }, 'post', 'getnshortestlease', gas_info, function(res, resolve, reject)
+        {
+            const json = parse_result(res, reject);
+            let lease_info = [];
+            json.keyleases.forEach(function(val, i, leases)
+            {
+                lease_info.push({key: leases[i].key, lease: leases[i].lease * BLOCK_TIME_IN_SECONDS});
+            });
+            resolve(lease_info);
+        });
+    }
+
+
     // returns a promise resolving to a JSON object representing the user account data.
+    async account()
+    {
+        return this.do_query(`/auth/accounts/${this.address}`, function(res, resolve, reject)
+        {
+            resolve(res.value);
+        });
+    }
+
+    // returns a promise resolving to a version string.
+    async version()
+    {
+        return this.do_query('/crud/version', function(res, resolve, reject)
+        {
+            resolve(res.version);
+        });
+    }
+
     async account()
     {
         return new Promise(async (resolve, reject) =>
@@ -561,5 +443,83 @@ module.exports = class API
                 reject(err);
             });
         });
+    }
+
+    do_tx(params, type, cmd, gas_info, func)
+    {
+        const data = {
+            BaseReq: {
+                from: this.address,
+                chain_id: this.chain_id
+            },
+            UUID: this.uuid,
+            Owner: this.address,
+        };
+
+        Object.assign(data, params);
+
+        return new Promise(async (resolve, reject) =>
+        {
+            cosmos.send_transaction(type, `${app_service}/${cmd}`, data, gas_info).then(function (res)
+            {
+                func(res, resolve, reject);
+            }).catch(function (err)
+            {
+                reject(err);
+            });
+        });
+    }
+
+    do_query(ep, func)
+    {
+        return new Promise(async (resolve, reject) =>
+        {
+            cosmos.query(ep).then(function (res)
+            {
+                func(res, resolve, reject);
+            }).catch(function (err)
+            {
+                reject(err);
+            });
+        });
+    }
+
+    convert_lease(lease_info)
+    {
+        let seconds = 0;
+        if (typeof(lease_info) === 'undefined')
+        {
+            return '0';
+        }
+
+        seconds += lease_info.days ? (parseInt(lease_info.days) * 24 * 60 * 60) : 0;
+        seconds += lease_info.hours ? (parseInt(lease_info.hours) * 60 * 60) : 0;
+        seconds += lease_info.minutes ? (parseInt(lease_info.minutes) * 60) : 0;
+        seconds += lease_info.seconds ? parseInt(lease_info.seconds) : 0;
+
+        const blocks = seconds / BLOCK_TIME_IN_SECONDS;
+        return `${blocks}`;
+    }
+
+    encode_safe(str)
+    {
+        let instr = encodeURI(str);
+        let outstr = '';
+        for (var i = 0; i < instr.length; i++)
+        {
+            const ch = instr[i];
+            switch (ch)
+            {
+                case '#':
+                    outstr += '%' + (ch.charCodeAt(0)).toString(16);
+                    break;
+
+                default:
+                    outstr += ch;
+                    break;
+            }
+        }
+
+        return outstr;
     }
 };

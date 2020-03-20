@@ -36,23 +36,30 @@ function usage()
     console.log(" Executes a command on a Bluzelle node\n");
     console.log("Commands and arguments:");
     console.log("\n Transactional commands");
-    console.log("  create uuid key value   - creates a new key/value");
-    console.log("  txread uuid key         - returns the value of an existing key");
-    console.log("  update uuid key value   - updates the value of an existing key");
-    console.log("  delete uuid key         - deletes an existing key");
-    console.log("  rename uuid key newkey  - updates the name of an existing key");
-    console.log("  txhas uuid key          - determines if a key exists");
-    console.log("  txkeys uuid             - returns a list of all keys");
-    console.log("  txcount uuid            - returns the number of keys");
-    console.log("  txkeyvalues uuid        - returns a list of all keys and values");
-    console.log("  deleteall uuid          - deletes all keys");
-    console.log("\n  multiupdate uuid key value [key value]... - updates the value of multiple existing keys");
+    console.log("  create uuid key value [lease] - creates a new key/value, optionally with a lease (in seconds)");
+    console.log("  txRead uuid key               - returns the value of an existing key");
+    console.log("  update uuid key value [lease] - updates the value of an existing key, optionally with a lease (in seconds)");
+    console.log("  delete uuid key               - deletes an existing key");
+    console.log("  rename uuid key newkey        - updates the name of an existing key");
+    console.log("  txHas uuid key                - determines if a key exists");
+    console.log("  txKeys uuid                   - returns a list of all keys");
+    console.log("  txCount uuid                  - returns the number of keys");
+    console.log("  txKeyValues uuid              - returns a list of all keys and values");
+    console.log("  deleteAll uuid                - deletes all keys");
+    console.log("  txGetLease uuid key           - returns the lease time (in seconds) remaining for a key");
+    console.log("  renewLease uuid key           - updates the lease time for a key, optionally with a lease (in seconds)");
+    console.log("  renewLeaseAll uuid [lease]    - updates the lease time for all keys, optionally with a lease (in seconds)");
+    console.log("  txGetNShortestLease uuid n    - returns the n keys/leases with the shortest least time");
+
+    console.log("\n  multiUpdate uuid key value [key value]... - updates the value of multiple existing keys");
     console.log("\n Query commands");
-    console.log("  read uuid key [prove] - returns the value of an existing key, requiring proof if 'prove' is specified");
-    console.log("  has uuid key          - determines if a key exists");
-    console.log("  keys uuid             - returns a list of all keys");
-    console.log("  keyvalues uuid        - returns a list of all keys and values");
-    console.log("  count uuid            - returns the number of keys");
+    console.log("  read uuid key [prove]    - returns the value of an existing key, requiring proof if 'prove' is specified");
+    console.log("  has uuid key             - determines if a key exists");
+    console.log("  keys uuid                - returns a list of all keys");
+    console.log("  keyValues uuid           - returns a list of all keys and values");
+    console.log("  count uuid               - returns the number of keys");
+    console.log("  getLease uuid key        - returns the lease time (in seconds) remaining for a key");
+    console.log("  getNShortestLease uuid n - returns the n keys/leases with the shortest least time");
     console.log("\n Miscellaneous commands");
     console.log("  account               - returns information about the currently active account");
     console.log("  version               - returns the version of the Bluzelle service");
@@ -72,6 +79,16 @@ function check_args(num)
     }
 }
 
+function make_lease(arg)
+{
+    var lease;
+    if (process.argv.length > arg)
+    {
+        lease = {seconds: `${process.argv[arg]}`}
+    }
+
+    return lease;
+}
 const main = async () => {
 
     try
@@ -90,27 +107,27 @@ const main = async () => {
         {
             case 'create':
                 check_args(5);
-                res = await bz.create(process.argv[4], process.argv[5], gas_params);
+                res = await bz.create(process.argv[4], process.argv[5], gas_params, make_lease(6));
                 break;
-            case 'txread':
+            case 'txRead':
                 check_args(4);
-                res = await bz.txread(process.argv[4], gas_params);
+                res = await bz.txRead(process.argv[4], gas_params);
                 break;
             case 'update':
                 check_args(5);
-                res = await bz.update(process.argv[4], process.argv[5], gas_params);
+                res = await bz.update(process.argv[4], process.argv[5], gas_params, make_lease(6));
                 break;
             case 'delete':
                 check_args(4);
                 res = await bz.delete(process.argv[4], gas_params);
                 break;
-            case 'txhas':
+            case 'txHas':
                 check_args(4);
-                res = await bz.txhas(process.argv[4], gas_params);
+                res = await bz.txHas(process.argv[4], gas_params);
                 break;
-            case 'txkeys':
+            case 'txKeys':
                 check_args(3);
-                res = await bz.txkeys(gas_params);
+                res = await bz.txKeys(gas_params);
                 break;
             case 'read':
                 check_args(4);
@@ -137,23 +154,23 @@ const main = async () => {
                 check_args(3);
                 res = await bz.count();
                 break;
-            case 'txcount':
+            case 'txCount':
                 check_args(3);
-                res = await bz.txcount(gas_params);
+                res = await bz.txCount(gas_params);
                 break;
-            case 'deleteall':
+            case 'deleteAll':
                 check_args(3);
-                res = await bz.deleteall(gas_params);
+                res = await bz.deleteAll(gas_params);
                 break;
-            case 'keyvalues':
+            case 'keyValues':
                 check_args(3);
-                res = await bz.keyvalues();
+                res = await bz.keyValues();
                 break;
-            case 'txkeyvalues':
+            case 'txKeyValues':
                 check_args(3);
-                res = await bz.txkeyvalues(gas_params);
+                res = await bz.txKeyValues(gas_params);
                 break;
-            case 'multiupdate':
+            case 'multiUpdate':
                 // number of arguments must be an even number and at least 6
                 check_args(5);
                 if (process.argv.length % 2)
@@ -167,7 +184,32 @@ const main = async () => {
                 {
                     kvs.push({key: process.argv[i], value: process.argv[i+1]})
                 }
-                res = await bz.multiupdate(kvs, gas_params);
+                res = await bz.multiUpdate(kvs, gas_params);
+                break;
+            case 'getLease':
+                check_args(4);
+                res = await bz.getLease(process.argv[4], gas_params) + " seconds";
+                break;
+            case 'txGetLease':
+                check_args(4);
+                res = await bz.txGetLease(process.argv[4], gas_params) + " seconds";
+                break;
+            case 'renewLease':
+                debugger;
+                check_args(4);
+                res = await bz.renewLease(process.argv[4], gas_params, make_lease(5));
+                break;
+            case 'renewLeaseAll':
+                check_args(3);
+                res = await bz.renewLeaseAll(gas_params, make_lease(4));
+                break;
+            case 'getNShortestLease':
+                check_args(4);
+                res = await bz.getNShortestLease(process.argv[4], gas_params);
+                break;
+            case 'txGetNShortestLease':
+                check_args(4);
+                res = await bz.txGetNShortestLease(process.argv[4], gas_params);
                 break;
             case 'account':
                 check_args(2);

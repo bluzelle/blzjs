@@ -20,7 +20,8 @@ const params =
         mnemonic: 'volcano arrest ceiling physical concert sunset absent hungry tobacco canal census era pretty car code crunch inside behind afraid express giraffe reflect stadium luxury',
         endpoint: "http://localhost:1317",
         chain_id: "bluzelle",
-        gas_info: {}
+        gas_info: {},
+        lease_info: { days: '100' }
     };
 
 
@@ -37,6 +38,7 @@ var old_send;
 var old_query;
 
 const app_service = "crud";
+const BLOCK_TIME_IN_SECONDS = 5;
 
 function string2hex(str)
 {
@@ -44,28 +46,6 @@ function string2hex(str)
     for (var i = 0; i < str.length; i ++)
         hex += Number(str.charCodeAt(i)).toString(16);
     return hex;
-}
-
-function encode_safe(str)
-{
-    let outstr = '';
-    for (var i = 0; i < str.length; i++)
-    {
-        const ch = str[i];
-        switch (ch)
-        {
-            case '#':
-            case '?':
-                outstr += '%' + (ch.charCodeAt(0)).toString(16);
-                break;
-
-            default:
-                outstr += ch;
-                break;
-        }
-    }
-
-    return outstr;
 }
 
 function validate_common_data(data)
@@ -98,6 +78,59 @@ function save_cosmos_functions()
         cosmos.send_transaction = old_send;
         cosmos.query = old_query;
     });
+}
+
+async function tx_error(msg, func)
+{
+    var send_tx_called = 0;
+
+    cosmos.send_transaction = async (req_type, ep_name, data, gas_info) =>
+    {
+        ++send_tx_called;
+
+        return new Promise(async (resolve, reject) =>
+        {
+            reject(new Error(msg));
+        });
+    };
+
+    var fail = false;
+    try
+    {
+        res = await func();
+    }
+    catch (err)
+    {
+        expect(err.message).equal(msg);
+        fail = true;
+    }
+    expect(send_tx_called).equal(1);
+    expect(fail).equal(true);
+}
+
+async function query_error(url, msg, func)
+{
+    cosmos.query = async (ep) =>
+    {
+        expect(ep).equal(url);
+        return new Promise(async (resolve, reject) =>
+        {
+            reject(new Error(msg));
+        });
+    };
+
+    var fail = false;
+    try
+    {
+        res = await func();
+    }
+    catch (err)
+    {
+        expect(err.message).equal(msg);
+        fail = true;
+    }
+    expect(fail).equal(true);
+
 }
 
 describe('testing init', () =>
@@ -133,6 +166,7 @@ describe('testing create', () =>
             expect(validate_common_data(data)).equal(true);
             expect(data.Key).equal(key);
             expect(data.Value).equal(value);
+            expect(data.Lease).equal(api.convert_lease(params.lease_info));
             expect(gas_info).equal(params.gas_info);
 
             return new Promise(async (resolve, reject) =>
@@ -141,47 +175,27 @@ describe('testing create', () =>
             });
         };
 
-        res = await api.create(key, value, params.gas_info);
+        res = await api.create(key, value, params.gas_info, params.lease_info);
         expect(send_tx_called).equal(1);
         expect(typeof res).equal('undefined');
     });
 
     it('create error', async () =>
     {
-        const msg = 'key already exists';
-        var send_tx_called = 0;
-        cosmos.send_transaction = async (req_type, ep_name, data, gas_info) =>
+        await tx_error('key already exists', function ()
         {
-            ++send_tx_called;
-
-            return new Promise(async (resolve, reject) =>
-            {
-                reject(new Error(msg));
-            });
-        };
-
-        var fail = false;
-        try
-        {
-            res = await api.create(key, value, params.gas_info);
-        }
-        catch (err)
-        {
-            expect(err.message).equal(msg);
-            fail = true;
-        }
-        expect(send_tx_called).equal(1);
-        expect(fail).equal(true);
+            return api.txRead(key, params.gas_info);
+        });
     });
 });
 
-describe('testing txread', () =>
+describe('testing txRead', () =>
 {
     const key = 'key';
     const value = 'value';
     save_cosmos_functions();
 
-    it('txread success', async () =>
+    it('txRead success', async () =>
     {
         var send_tx_called = 0;
         cosmos.send_transaction = async (req_type, ep_name, data, gas_info) =>
@@ -200,37 +214,17 @@ describe('testing txread', () =>
             });
         };
 
-        res = await api.txread(key, params.gas_info);
+        res = await api.txRead(key, params.gas_info);
         expect(send_tx_called).equal(1);
         expect(res).equal(value);
     });
 
-    it('txread error', async () =>
+    it('txRead error', async () =>
     {
-        const msg = 'key not found';
-        var send_tx_called = 0;
-        cosmos.send_transaction = async (req_type, ep_name, data, gas_info) =>
+        await tx_error('key not found', function ()
         {
-            ++send_tx_called;
-
-            return new Promise(async (resolve, reject) =>
-            {
-                reject(new Error(msg));
-            });
-        };
-
-        var fail = false;
-        try
-        {
-            res = await api.txread(key, params.gas_info);
-        }
-        catch (err)
-        {
-            expect(err.message).equal(msg);
-            fail = true;
-        }
-        expect(send_tx_called).equal(1);
-        expect(fail).equal(true);
+            return api.txRead(key, params.gas_info);
+        });
     });
 });
 
@@ -251,6 +245,7 @@ describe('testing update', () =>
             expect(validate_common_data(data)).equal(true);
             expect(data.Key).equal(key);
             expect(data.Value).equal(value);
+            expect(data.Lease).equal(api.convert_lease(params.lease_info));
             expect(gas_info).equal(params.gas_info);
 
             return new Promise(async (resolve, reject) =>
@@ -259,37 +254,17 @@ describe('testing update', () =>
             });
         };
 
-        res = await api.update(key, value, params.gas_info);
+        res = await api.update(key, value, params.gas_info, params.lease_info);
         expect(send_tx_called).equal(1);
         expect(typeof res).equal('undefined');
     });
 
     it('update error', async () =>
     {
-        const msg = 'key not found';
-        var send_tx_called = 0;
-        cosmos.send_transaction = async (req_type, ep_name, data, gas_info) =>
+        await tx_error('key not found', function ()
         {
-            ++send_tx_called;
-
-            return new Promise(async (resolve, reject) =>
-            {
-                reject(new Error(msg));
-            });
-        };
-
-        var fail = false;
-        try
-        {
-            res = await api.update(key, value, params.gas_info);
-        }
-        catch (err)
-        {
-            expect(err.message).equal(msg);
-            fail = true;
-        }
-        expect(send_tx_called).equal(1);
-        expect(fail).equal(true);
+            return api.update(key, value, params.gas_info, params.lease_info);
+        });
     });
 });
 
@@ -324,39 +299,19 @@ describe('testing delete', () =>
 
     it('delete error', async () =>
     {
-        const msg = 'key not found';
-        var send_tx_called = 0;
-        cosmos.send_transaction = async (req_type, ep_name, data, gas_info) =>
+        await tx_error('key not found', function ()
         {
-            ++send_tx_called;
-
-            return new Promise(async (resolve, reject) =>
-            {
-                reject(new Error(msg));
-            });
-        };
-
-        var fail = false;
-        try
-        {
-            res = await api.delete(key, params.gas_info);
-        }
-        catch (err)
-        {
-            expect(err.message).equal(msg);
-            fail = true;
-        }
-        expect(send_tx_called).equal(1);
-        expect(fail).equal(true);
+            return api.delete(key, params.gas_info);
+        });
     });
 });
 
-describe('testing txhas', () =>
+describe('testing txHas', () =>
 {
     const key = 'key';
     save_cosmos_functions();
 
-    it('txhas success', async () =>
+    it('txHas success', async () =>
     {
         var send_tx_called = 0;
         cosmos.send_transaction = async (req_type, ep_name, data, gas_info) =>
@@ -375,12 +330,12 @@ describe('testing txhas', () =>
             });
         };
 
-        res = await api.txhas(key, params.gas_info);
+        res = await api.txHas(key, params.gas_info);
         expect(send_tx_called).equal(1);
         expect(res).equal(true);
     });
 
-    it('txhas failure', async () =>
+    it('txHas failure', async () =>
     {
         var send_tx_called = 0;
         cosmos.send_transaction = async (req_type, ep_name, data, gas_info) =>
@@ -399,45 +354,25 @@ describe('testing txhas', () =>
             });
         };
 
-        res = await api.txhas(key, params.gas_info);
+        res = await api.txHas(key, params.gas_info);
         expect(send_tx_called).equal(1);
         expect(res).equal(false);
     });
 
-    it('txhas error', async () =>
+    it('txHas error', async () =>
     {
-        const msg = 'error';
-        var send_tx_called = 0;
-        cosmos.send_transaction = async (req_type, ep_name, data, gas_info) =>
+        await tx_error('error', function ()
         {
-            ++send_tx_called;
-
-            return new Promise(async (resolve, reject) =>
-            {
-                reject(new Error(msg));
-            });
-        };
-
-        var fail = false;
-        try
-        {
-            res = await api.txhas(key, params.gas_info);
-        }
-        catch (err)
-        {
-            expect(err.message).equal(msg);
-            fail = true;
-        }
-        expect(send_tx_called).equal(1);
-        expect(fail).equal(true);
+            return api.txHas(key, params.gas_info);
+        });
     });
 });
 
-describe('testing txkeys', () =>
+describe('testing txKeys', () =>
 {
     save_cosmos_functions();
 
-    it('txkeys success', async () =>
+    it('txKeys success', async () =>
     {
         var send_tx_called = 0;
         const keys = ['key1', 'key2', 'key3'];
@@ -466,40 +401,17 @@ describe('testing txkeys', () =>
             });
         };
 
-        res = await api.txkeys(params.gas_info);
+        res = await api.txKeys(params.gas_info);
         expect(send_tx_called).equal(1);
         expect(res).to.deep.equal(keys);
     });
 
-    it('txkeys error', async () =>
+    it('txKeys error', async () =>
     {
-        const msg = "An error occurred parsing the result";
-        var send_tx_called = 0;
-        const keys = ['key1', 'key2', 'key3'];
-
-        cosmos.send_transaction = async (req_type, ep_name, data, gas_info) =>
+        await tx_error('An error occurred parsing the result', function ()
         {
-            ++send_tx_called;
-
-            return new Promise(async (resolve, reject) =>
-            {
-                // this is the wrong format
-                reject(new Error(msg));
-            });
-        };
-
-        var fail = false;
-        try
-        {
-            res = await api.txkeys(params.gas_info);
-        }
-        catch (err)
-        {
-            expect(err.message).equal(msg);
-            fail = true;
-        }
-        expect(send_tx_called).equal(1);
-        expect(fail).equal(true);
+            return api.txKeys(params.gas_info);
+        });
     });
 });
 
@@ -517,7 +429,6 @@ describe('testing read unverified', () =>
             expect(ep).equal(`${app_service}/read/${params.address}/${key}`);
             return new Promise(async (resolve, reject) =>
             {
-                // this is the wrong format
                 resolve({result: {value: value}});
             });
         };
@@ -530,27 +441,12 @@ describe('testing read unverified', () =>
     {
         const key = 'key';
         const msg = 'key not found';
+        const url = `${app_service}/read/${params.address}/${key}`;
 
-        cosmos.query = async (ep) =>
+        await query_error(url, msg, function()
         {
-            expect(ep).equal(`${app_service}/read/${params.address}/${key}`);
-            return new Promise(async (resolve, reject) =>
-            {
-                reject(new Error(msg));
-            });
-        };
-
-        var fail = false;
-        try
-        {
-            res = await api.read(key, false);
-        }
-        catch (err)
-        {
-            expect(err.message).equal(msg);
-            fail = true;
-        }
-        expect(fail).equal(true);
+            return api.read(key, false);
+        });
     });
 
     it('read-u with special characters', async () =>
@@ -560,11 +456,10 @@ describe('testing read unverified', () =>
 
         cosmos.query = async (ep) =>
         {
-            const uri = encode_safe(encodeURI(`${app_service}/read/${params.address}/${key}`));
+            const uri = api.encode_safe(`${app_service}/read/${params.address}/${key}`);
             expect(ep).equal(uri);
             return new Promise(async (resolve, reject) =>
             {
-                // this is the wrong format
                 resolve({result: {value: value}});
             });
         };
@@ -601,27 +496,12 @@ describe('testing read verified', () =>
     {
         const key = 'key';
         const msg = 'key not found';
+        const url = `${app_service}/pread/${params.address}/${key}`;
 
-        cosmos.query = async (ep) =>
+        await query_error(url, msg, function()
         {
-            expect(ep).equal(`${app_service}/pread/${params.address}/${key}`);
-            return new Promise(async (resolve, reject) =>
-            {
-                reject(new Error(msg));
-            });
-        };
-
-        var fail = false;
-        try
-        {
-            res = await api.read(key, true);
-        }
-        catch (err)
-        {
-            expect(err.message).equal(msg);
-            fail = true;
-        }
-        expect(fail).equal(true);
+            return api.read(key, true);
+        });
     });
 });
 
@@ -688,29 +568,12 @@ describe('testing keys', () =>
     it('keys error', async () =>
     {
         const msg = "An error occurred";
-        var send_tx_called = 0;
+        const url = `${app_service}/keys/${params.address}`;
 
-        cosmos.query = async (ep) =>
+        await query_error(url, msg, function()
         {
-            expect(ep).equal(`${app_service}/keys/${params.address}`);
-
-            return new Promise(async (resolve, reject) =>
-            {
-                reject(new Error(msg));
-            });
-        };
-
-        var fail = false;
-        try
-        {
-            res = await api.keys();
-        }
-        catch (err)
-        {
-            expect(err.message).equal(msg);
-            fail = true;
-        }
-        expect(fail).equal(true);
+            return api.keys();
+        });
     });
 });
 
@@ -746,30 +609,10 @@ describe('testing rename', () =>
 
     it('rename error', async () =>
     {
-        const msg = 'key not found';
-        var send_tx_called = 0;
-        cosmos.send_transaction = async (req_type, ep_name, data, gas_info) =>
+        await tx_error('key not found', function ()
         {
-            ++send_tx_called;
-
-            return new Promise(async (resolve, reject) =>
-            {
-                reject(new Error(msg));
-            });
-        };
-
-        var fail = false;
-        try
-        {
-            res = await api.rename(key, newkey, params.gas_info);
-        }
-        catch (err)
-        {
-            expect(err.message).equal(msg);
-            fail = true;
-        }
-        expect(send_tx_called).equal(1);
-        expect(fail).equal(true);
+            return api.rename(key, newkey, params.gas_info);
+        });
     });
 });
 
@@ -797,37 +640,20 @@ describe('testing count', () =>
     it('count error', async () =>
     {
         const msg = "An error occurred";
-        var send_tx_called = 0;
+        const url = `/crud/count/${params.address}`;
 
-        cosmos.query = async (ep) =>
+        await query_error(url, msg, function()
         {
-            expect(ep).equal(`/crud/count/${params.address}`);
-
-            return new Promise(async (resolve, reject) =>
-            {
-                reject(new Error(msg));
-            });
-        };
-
-        var fail = false;
-        try
-        {
-            res = await api.count();
-        }
-        catch (err)
-        {
-            expect(err.message).equal(msg);
-            fail = true;
-        }
-        expect(fail).equal(true);
+            return api.count();
+        });
     });
 });
 
-describe('testing txcount', () =>
+describe('testing txCount', () =>
 {
     save_cosmos_functions();
 
-    it('txcount success', async () =>
+    it('txCount success', async () =>
     {
         var count = 10;
         var send_tx_called = 0;
@@ -846,45 +672,25 @@ describe('testing txcount', () =>
             });
         };
 
-        res = await api.txcount(params.gas_info);
+        res = await api.txCount(params.gas_info);
         expect(send_tx_called).equal(1);
         expect(res).equal(count);
     });
 
-    it('txcount error', async () =>
+    it('txCount error', async () =>
     {
-        const msg = 'An error occurred';
-        var send_tx_called = 0;
-        cosmos.send_transaction = async (req_type, ep_name, data, gas_info) =>
+        await tx_error('An error occurred', function ()
         {
-            ++send_tx_called;
-
-            return new Promise(async (resolve, reject) =>
-            {
-                reject(new Error(msg));
-            });
-        };
-
-        var fail = false;
-        try
-        {
-            res = await api.txcount(params.gas_info);
-        }
-        catch (err)
-        {
-            expect(err.message).equal(msg);
-            fail = true;
-        }
-        expect(send_tx_called).equal(1);
-        expect(fail).equal(true);
+            return api.txCount(params.gas_info);
+        });
     });
 });
 
-describe('testing deleteall', () =>
+describe('testing deleteAll', () =>
 {
     save_cosmos_functions();
 
-    it('deleteall success', async () =>
+    it('deleteAll success', async () =>
     {
         var send_tx_called = 0;
         cosmos.send_transaction = async (req_type, ep_name, data, gas_info) =>
@@ -901,46 +707,26 @@ describe('testing deleteall', () =>
             });
         };
 
-        res = await api.deleteall(params.gas_info);
+        res = await api.deleteAll(params.gas_info);
         expect(send_tx_called).equal(1);
         expect(typeof res).equal('undefined');
     });
 
-    it('deleteall error', async () =>
+    it('deleteAll error', async () =>
     {
-        const msg = 'An error occurred';
-        var send_tx_called = 0;
-        cosmos.send_transaction = async (req_type, ep_name, data, gas_info) =>
+        await tx_error('An error occurred', function ()
         {
-            ++send_tx_called;
-
-            return new Promise(async (resolve, reject) =>
-            {
-                reject(new Error(msg));
-            });
-        };
-
-        var fail = false;
-        try
-        {
-            res = await api.deleteall(params.gas_info);
-        }
-        catch (err)
-        {
-            expect(err.message).equal(msg);
-            fail = true;
-        }
-        expect(send_tx_called).equal(1);
-        expect(fail).equal(true);
+            return api.deleteAll(params.gas_info);
+        });
     });
 });
 
-describe('testing keyvalues', () =>
+describe('testing keyValues', () =>
 {
     save_cosmos_functions();
     var kvs = {"keyvalues": [{"key": "key1", "value": "value1"}, {"key": "key2", "value": "value2"}]};
 
-    it('keyvalues success', async () =>
+    it('keyValues success', async () =>
     {
         cosmos.query = async (ep) =>
         {
@@ -952,44 +738,27 @@ describe('testing keyvalues', () =>
             });
         };
 
-        res = await api.keyvalues();
+        res = await api.keyValues();
         expect(res).equal(kvs.keyvalues);
     });
 
-    it('keyvalues error', async () =>
+    it('keyValues error', async () =>
     {
         const msg = "An error occurred";
-        var send_tx_called = 0;
+        const url = `/crud/keyvalues/${params.address}`;
 
-        cosmos.query = async (ep) =>
+        await query_error(url, msg, function()
         {
-            expect(ep).equal(`/crud/keyvalues/${params.address}`);
-
-            return new Promise(async (resolve, reject) =>
-            {
-                reject(new Error(msg));
-            });
-        };
-
-        var fail = false;
-        try
-        {
-            res = await api.keyvalues();
-        }
-        catch (err)
-        {
-            expect(err.message).equal(msg);
-            fail = true;
-        }
-        expect(fail).equal(true);
+            return api.keyValues();
+        });
     });
 });
 
-describe('testing txkeyvalues', () =>
+describe('testing txKeyValues', () =>
 {
     save_cosmos_functions();
 
-    it('txkeyvalues success', async () =>
+    it('txKeyValues success', async () =>
     {
         var kvs = `{"keyvalues": [{"key": "key1", "value": "value1"}, {"key": "key2", "value": "value2"}]}`;
         var send_tx_called = 0;
@@ -1007,37 +776,17 @@ describe('testing txkeyvalues', () =>
             });
         };
 
-        res = await api.txkeyvalues(params.gas_info);
+        res = await api.txKeyValues(params.gas_info);
         expect(send_tx_called).equal(1);
         expect(res).to.deep.equal(JSON.parse(kvs).keyvalues);
     });
 
-    it('txkeyvalues error', async () =>
+    it('txKeyValues error', async () =>
     {
-        const msg = 'An error occurred';
-        var send_tx_called = 0;
-        cosmos.send_transaction = async (req_type, ep_name, data, gas_info) =>
+        await tx_error('An error occurred', function ()
         {
-            ++send_tx_called;
-
-            return new Promise(async (resolve, reject) =>
-            {
-                reject(new Error(msg));
-            });
-        };
-
-        var fail = false;
-        try
-        {
-            res = await api.txkeyvalues(params.gas_info);
-        }
-        catch (err)
-        {
-            expect(err.message).equal(msg);
-            fail = true;
-        }
-        expect(send_tx_called).equal(1);
-        expect(fail).equal(true);
+            return api.txKeyValues(params.gas_info);
+        });
     });
 });
 
@@ -1064,39 +813,255 @@ describe('testing mutliupdate', () =>
             });
         };
 
-        res = await api.multiupdate(kvs, params.gas_info);
+        res = await api.multiUpdate(kvs, params.gas_info);
         expect(send_tx_called).equal(1);
         expect(typeof res).equal('undefined');
     });
 
     it('mutliupdate error', async () =>
     {
-        const msg = 'Key does not exist [0]';
+        await tx_error('Key does not exist [0]', function ()
+        {
+            return api.multiUpdate(kvs, params.gas_info);
+        });
+    });
+});
+
+describe('testing getLease', () =>
+{
+    save_cosmos_functions();
+
+    it('getLease success', async () =>
+    {
+        const key = 'key!@#$%^&*()_+';
+        const lease = 100;
+
+        cosmos.query = async (ep) =>
+        {
+            const uri = api.encode_safe(`${app_service}/getlease/${params.address}/${key}`);
+            expect(ep).equal(uri);
+            return new Promise(async (resolve, reject) =>
+            {
+                resolve({lease: lease});
+            });
+        };
+
+        res = await api.getLease(key);
+        expect(res).equal(lease * BLOCK_TIME_IN_SECONDS);
+    });
+
+    it('getLease error', async () =>
+    {
+        const key = 'key';
+        const msg = 'key not found';
+        const url = `${app_service}/getlease/${params.address}/${key}`;
+
+        await query_error(url, msg, function()
+        {
+            return api.getLease(key);
+        });
+    });
+
+});
+
+describe('testing txGetLease', () =>
+{
+    const key = 'key';
+    const lease = 100;
+    save_cosmos_functions();
+
+    it('txGetLease success', async () =>
+    {
         var send_tx_called = 0;
         cosmos.send_transaction = async (req_type, ep_name, data, gas_info) =>
         {
             ++send_tx_called;
+            expect(req_type).equal('post');
+            expect(ep_name).equal(`${app_service}/getlease`);
+            expect(validate_common_data(data)).equal(true);
+            expect(data.Key).equal(key);
+            expect(gas_info).equal(params.gas_info);
 
             return new Promise(async (resolve, reject) =>
             {
-                reject(new Error(msg));
+                const str = `{"lease": "${lease}"}`;
+                resolve(string2hex(str));
             });
         };
 
-        var fail = false;
-        try
-        {
-            res = await api.multiupdate(kvs, params.gas_info);
-        }
-        catch (err)
-        {
-            expect(err.message).equal(msg);
-            fail = true;
-        }
+        res = await api.txGetLease(key, params.gas_info);
         expect(send_tx_called).equal(1);
-        expect(fail).equal(true);
+        expect(res).equal(lease * BLOCK_TIME_IN_SECONDS);
+    });
+
+    it('txGetLease error', async () =>
+    {
+        await tx_error('key not found', function ()
+        {
+            return api.txGetLease(key, params.gas_info);
+        });
     });
 });
+
+describe('testing renewLease', () =>
+{
+    const key = 'key';
+    save_cosmos_functions();
+
+    it('renewLease success', async () =>
+    {
+        var send_tx_called = 0;
+        cosmos.send_transaction = async (req_type, ep_name, data, gas_info) =>
+        {
+            ++send_tx_called;
+            expect(req_type).equal('post');
+            expect(ep_name).equal(`${app_service}/renewlease`);
+            expect(validate_common_data(data)).equal(true);
+            expect(data.Key).equal(key);
+            expect(data.Lease).equal(api.convert_lease(params.lease_info));
+            expect(gas_info).equal(params.gas_info);
+
+            return new Promise(async (resolve, reject) =>
+            {
+                resolve();
+            });
+        };
+
+        res = await api.renewLease(key, params.gas_info, params.lease_info);
+        expect(send_tx_called).equal(1);
+        expect(typeof res).equal('undefined');
+    });
+
+    it('renewLease error', async () =>
+    {
+        await tx_error('key not found', function ()
+        {
+            return api.renewLease(key, params.gas_info, params.lease_info);
+        });
+    });
+});
+
+describe('testing renewLeaseAll', () =>
+{
+    save_cosmos_functions();
+
+    it('renewLeaseAll success', async () =>
+    {
+        var send_tx_called = 0;
+        cosmos.send_transaction = async (req_type, ep_name, data, gas_info) =>
+        {
+            ++send_tx_called;
+            expect(req_type).equal('post');
+            expect(ep_name).equal(`${app_service}/renewleaseall`);
+            expect(validate_common_data(data)).equal(true);
+            expect(data.Lease).equal(api.convert_lease(params.lease_info));
+            expect(gas_info).equal(params.gas_info);
+
+            return new Promise(async (resolve, reject) =>
+            {
+                resolve();
+            });
+        };
+
+        res = await api.renewLeaseAll(params.gas_info, params.lease_info);
+        expect(send_tx_called).equal(1);
+        expect(typeof res).equal('undefined');
+    });
+
+    it('renewLeaseAll error', async () =>
+    {
+        await tx_error('key not found', function ()
+        {
+            return api.renewLeaseAll(params.gas_info, params.lease_info);
+        });
+    });
+});
+
+describe('testing getNShortestLease', () =>
+{
+    const n = 10;
+    const leases = [{key: 'key1', lease: 100}, {key: 'key2', lease: 200}];
+    save_cosmos_functions();
+
+    it('getNShortestLease success', async () =>
+    {
+        cosmos.query = async (ep) =>
+        {
+            expect(ep).equal(`${app_service}/getnshortestlease/${params.address}/${n}`);
+
+            return new Promise(async (resolve, reject) =>
+            {
+                resolve({"keyleases": leases});
+            });
+        };
+
+        res = await api.getNShortestLease(n);
+        res.forEach(function(val, i, lease_info)
+        {
+            expect(lease_info[i].key).equal(leases[i].key);
+            expect(lease_info[i].lease).equal(leases[i].lease * BLOCK_TIME_IN_SECONDS);
+        });
+    });
+
+    it('getNShortestLease error', async () =>
+    {
+        const msg = "An error occurred";
+        const url = `${app_service}/getnshortestlease/${params.address}/${n}`;
+
+        await query_error(url, msg, function()
+        {
+            return api.getNShortestLease(n);
+        });
+    });
+});
+
+describe('testing txGetNShortestLease', () =>
+{
+    save_cosmos_functions();
+    const n = 10;
+    const leases = [{key: 'key1', lease: 100}, {key: 'key2', lease: 200}];
+
+    it('txGetNShortestLease success', async () =>
+    {
+        var send_tx_called = 0;
+        cosmos.send_transaction = async (req_type, ep_name, data, gas_info) =>
+        {
+            ++send_tx_called;
+            expect(req_type).equal('post');
+            expect(ep_name).equal(`${app_service}/getnshortestlease`);
+            expect(validate_common_data(data)).equal(true);
+            expect(data.N).equal(n);
+            expect(gas_info).equal(params.gas_info);
+
+            return new Promise(async (resolve, reject) =>
+            {
+                const lease_info = JSON.stringify(leases);
+                const str = `{"keyleases": ${lease_info}}`;
+                resolve(string2hex(str));
+            });
+        };
+
+        res = await api.txGetNShortestLease(n, params.gas_info);
+        expect(send_tx_called).equal(1);
+        expect(typeof res).equal('object');
+        expect(res.length).equal(leases.length);
+        res.forEach(function(val, i, lease_info)
+        {
+            expect(lease_info[i].key).equal(leases[i].key);
+            expect(lease_info[i].lease).equal(leases[i].lease * BLOCK_TIME_IN_SECONDS);
+        });
+    });
+
+    it('txGetNShortestLease error', async () =>
+    {
+        await tx_error('An error occurred', function ()
+        {
+            return api.txGetNShortestLease(n, params.gas_info);
+        });
+    });
+});
+
+
 
 describe('testing account', () =>
 {
@@ -1128,29 +1093,12 @@ describe('testing account', () =>
     it('account error', async () =>
     {
         const msg = "An error occurred";
-        var send_tx_called = 0;
+        const url = `auth/accounts/${params.address}`;
 
-        cosmos.query = async (ep) =>
+        await query_error(url, msg, function()
         {
-            expect(ep).equal(`auth/accounts/${params.address}`);
-
-            return new Promise(async (resolve, reject) =>
-            {
-                reject(new Error(msg));
-            });
-        };
-
-        var fail = false;
-        try
-        {
-            res = await api.account();
-        }
-        catch (err)
-        {
-            expect(err.message).equal(msg);
-            fail = true;
-        }
-        expect(fail).equal(true);
+            return api.account();
+        });
     });
 });
 
@@ -1188,28 +1136,11 @@ describe('testing version', () =>
     it('version error', async () =>
     {
         const msg = "An error occurred";
-        var send_tx_called = 0;
+        const url = `node_info`;
 
-        cosmos.query = async (ep) =>
+        await query_error(url, msg, function()
         {
-            expect(ep).equal(`node_info`);
-
-            return new Promise(async (resolve, reject) =>
-            {
-                reject(new Error(msg));
-            });
-        };
-
-        var fail = false;
-        try
-        {
-            res = await api.version();
-        }
-        catch (err)
-        {
-            expect(err.message).equal(msg);
-            fail = true;
-        }
-        expect(fail).equal(true);
+            return api.version();
+        });
     });
 });

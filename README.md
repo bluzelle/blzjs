@@ -72,6 +72,17 @@ Read below for detailed documentation on how to use the Bluzelle database servic
 ````
 All values are optional. The `max_gas` value will always be honored if present, otherwise a default value will be used. If both `max_fee` and `gas_price` are specified, `gas_price` will be ignored and calculated based on the provided `max_fee`.
 
+![#1589F0](https://placehold.it/15/1589F0/000000?text=+) Some API functions take *lease_info* as a parameter. This is a JavaScript object containing parameters related to the minimum time a key should be maintained in the database, as follows:
+```javascript
+{
+    'days':    '0', // number of days (integer)
+    'hours':   '0', // number of hours (integer)
+    'minutes': '0'  // number of minutes (integer)
+};
+````
+All values are optional. If none are provided a default value of 10 days will be used. 
+
+
 ![#1589F0](https://placehold.it/15/1589F0/000000?text=+) The example code in the `samples` directory requires Node.js in order to run. For instructions on how to install Node.js for your platform, please see http://nodejs.org
 
 The samples require configuration to be set in the file `blz-config.js`. You can copy and modify the `blz-config.js.sample` file for this purpose.
@@ -155,23 +166,24 @@ Throws an exception if a response is not received from the connection.
 
 ## Database Functions
 
-### create\(key, value[, gas_info]\)
+### create\(key, value, gas_info [, lease_info]\)
 
 Create a field in the database.
 
 ```javascript
 // promise syntax
-api.create('mykey', '{ a: 13 }', {gas_price: 10}).then(() => { ... }, error => { ... });
+api.create('mykey', '{ a: 13 }', {gas_price: 10}, {days: 100}).then(() => { ... }, error => { ... });
 
 // async/await syntax
-await api.create('mykey', '{ a: 13 }, {gas_price: 10}');
+await api.create('mykey', '{ a: 13 }', {gas_price: 10}, {days: 100});
 ```
 
 | Argument | Description |
 | :--- | :--- |
 | key | The name of the key to create |
 | value | The string value to set the key |
-| gas_info (Optional) | Object containing gas parameters (see above) |
+| gas_info | Object containing gas parameters (see above) |
+| lease_info (optional) | Minimum time for key to remain in database (see above) |
 
 Returns a promise resolving to nothing.
 
@@ -199,31 +211,53 @@ Returns a promise resolving the string value of the key.
 Throws an exception when the key does not exist in the database.
 Throws an exception when the prove is true and the result fails verification.
 
-### update\(key, value\[, gas_info]\)
+### txRead\(key, gas_info\)
 
-Updates a field in the database.
+Retrieve the value of a key via a transaction (i.e. uses consensus).
 
 ```javascript
 // promise syntax
-api.update('mykey', '{ a: 13 }', {gas_price: 10}).then(() => { ... }, error => { ... });
+api.txRead('mykey', {gas_price: 10}).then(value => { ... }, error => { ... });
 
 // async/await syntax
-await api.update('mykey', '{ a: 13 }, {gas_price: 10}');
+const value = await api.txRead('mykey', {gas_price: 10});
+```
+
+| Argument | Description |
+| :--- | :--- |
+| key | The key to retrieve |
+| gas_info | Object containing gas parameters (see above) |
+
+Returns a promise resolving the string value of the key.
+
+Throws an exception when the key does not exist in the database.
+
+### update\(key, value, gas_info [, lease_info]\)
+
+Update a field in the database.
+
+```javascript
+// promise syntax
+api.update('mykey', '{ a: 13 }', {gas_price: 10}, {days: 100}).then(() => { ... }, error => { ... });
+
+// async/await syntax
+await api.update('mykey', '{ a: 13 }, {gas_price: 10}', {days: 100});
 ```
 
 | Argument | Description |
 | :--- | :--- |
 | key | The name of the key to create |
 | value | The string value to set the key |
-| gas_info (Optional) | Object containing gas parameters (see above) |
+| gas_info | Object containing gas parameters (see above) |
+| lease_info (optional) | Minimum time for key to remain in database (see above). If not specified, the existing lease will not be altered. |
 
 Returns a promise resolving to nothing.
 
 Throws an exception when the key doesn't exist, or invalid value.
 
-### delete\(key[, gas_info]\)
+### delete\(key, gas_info\)
 
-Deletes a field from the database.
+Delete a field from the database.
 
 ```javascript
 // promise syntax
@@ -236,7 +270,7 @@ await bluzelle.delete('mykey', {gas_price: 10});
 | Argument | Description |
 | :--- | :--- |
 | key | The name of the key to delete |
-| gas_info (Optional) | Object containing gas parameters (see above) |
+| gas_info | Object containing gas parameters (see above) |
 
 Returns a promise resolving to nothing.
 
@@ -261,6 +295,25 @@ const hasMyKey = await api.has('mykey');
 
 Returns a promise resolving to a boolean value - `true` or `false`, representing whether the key is in the database.
 
+### txHas\(key, gas_info\)
+
+Query to see if a key is in the database via a transaction (i.e. uses consensus).
+
+```javascript
+// promise syntax
+api.txHas('mykey', {gas_price: 10}).then(hasMyKey => { ... }, error => { ... });
+
+// async/await syntax
+const hasMyKey = await api.txHas('mykey', {gas_price: 10});
+```
+
+| Argument | Description |
+| :--- | :--- |
+| key | The name of the key to query |
+| gas_info | Object containing gas parameters (see above) |
+
+Returns a promise resolving to a boolean value - `true` or `false`, representing whether the key is in the database.
+
 ### keys\(\)
 
 Retrieve a list of all keys. This function bypasses the consensus and cryptography mechanisms in favor of speed.
@@ -275,7 +328,25 @@ const keys = await api.keys();
 
 Returns a promise resolving to an array of strings. ex. `["key1", "key2", ...]`.
 
-### rename\(key, new_key[, gas_info])
+### txKeys\(gas_info\)
+
+Retrieve a list of all keys via a transaction (i.e. uses consensus).
+
+```javascript
+// promise syntax
+api.txKeys({gas_price: 10}).then(keys => { ... }, error => { ... });
+
+// async/await syntax
+const keys = await api.txKeys({gas_price: 10});
+```
+
+| Argument | Description |
+| :--- | :--- |
+| gas_info | Object containing gas parameters (see above) |
+
+Returns a promise resolving to an array of strings. ex. `["key1", "key2", ...]`.
+
+### rename\(key, new_key, gas_info\)
 
 Change the name of an existing key.
 
@@ -291,7 +362,7 @@ await api.rename("key", "newkey", {gas_price: 10});
 | :--- | :--- |
 | key | The name of the key to rename |
 | new_key | The new name for the key |
-| gas_info (Optional) | Object containing gas parameters (see above) |
+| gas_info | Object containing gas parameters (see above) |
 
 Returns a promise resolving to nothing.
 
@@ -318,134 +389,53 @@ const number = await api.count();
 
 Returns a promise resolving to an integer value.
 
-### deleteall\([gas_info]\)
-
-Remove all keys in the current database/uuid.
-
-```javascript
-// promise syntax
-api.deleteall({gas_price: 10}).then(() => { ... }, error => { ... });
-
-// async/await syntax
-await api.deleteall({gas_price: 10});
-```
-
-| Argument | Description |
-| :--- | :--- |
-| gas_info (Optional) | Object containing gas parameters (see above) |
-
-Returns a promise resolving to nothing.
-
-### keyvalues\(\)
-
-Enumerate all keys and values in the current database/uuid. This function bypasses the consensus and cryptography mechanisms in favor of speed.
-
-```javascript
-// promise syntax
-api.keyvalues().then(kvs => { ... }, error => { ... });
-
-// async/await syntax
-const kvs = await api.keyvalues();
-```
-
-Returns a promise resolving to a JSON array containing key/value pairs, e.g.
-
-```
-[{"key": "key1", "value": "value1"}, {"key": "key2", "value": "value2"}]
-```
-
-
-### txread\(key[, gas_info]\)
-
-Retrieve the value of a key via a transaction (i.e. uses consensus).
-
-```javascript
-// promise syntax
-api.txread('mykey', {gas_price: 10}).then(value => { ... }, error => { ... });
-
-// async/await syntax
-const value = await api.txread('mykey', {gas_price: 10});
-```
-
-| Argument | Description |
-| :--- | :--- |
-| key | The key to retrieve |
-| gas_info (Optional) | Object containing gas parameters (see above) |
-
-Returns a promise resolving the string value of the key.
-
-Throws an exception when the key does not exist in the database.
-
-### txhas\(key[, gas_info]\)
-
-Query to see if a key is in the database via a transaction (i.e. uses consensus).
-
-```javascript
-// promise syntax
-api.txhas('mykey', {gas_price: 10}).then(hasMyKey => { ... }, error => { ... });
-
-// async/await syntax
-const hasMyKey = await api.txhas('mykey', {gas_price: 10});
-```
-
-| Argument | Description |
-| :--- | :--- |
-| key | The name of the key to query |
-| gas_info (Optional) | Object containing gas parameters (see above) |
-
-Returns a promise resolving to a boolean value - `true` or `false`, representing whether the key is in the database.
-
-### txkeys\([gas_info]\)
-
-Retrieve a list of all keys via a transaction (i.e. uses consensus).
-
-```javascript
-// promise syntax
-api.txkeys({gas_price: 10}).then(keys => { ... }, error => { ... });
-
-// async/await syntax
-const keys = await api.txkeys({gas_price: 10});
-```
-
-| Argument | Description |
-| :--- | :--- |
-| gas_info (Optional) | Object containing gas parameters (see above) |
-
-Returns a promise resolving to an array of strings. ex. `["key1", "key2", ...]`.
-
-### txcount\([gas_info]\)
+### txCount\(gas_info\)
 
 Retrieve the number of keys in the current database/uuid via a transaction.
 
 ```javascript
 // promise syntax
-api.txcount({gas_price: 10}).then(number => { ... }, error => { ... });
+api.txCount({gas_price: 10}).then(number => { ... }, error => { ... });
 
 // async/await syntax
-const number = await api.txcount({gas_price: 10});
+const number = await api.txCount({gas_price: 10});
 ```
 
 | Argument | Description |
 | :--- | :--- |
-| gas_info (Optional) | Object containing gas parameters (see above) |
+| gas_info | Object containing gas parameters (see above) |
 
 Returns a promise resolving to an integer value.
 
-### txkeyvalues\([gas_info]\)
+### deleteAll\(gas_info\)
 
-Enumerate all keys and values in the current database/uuid via a transaction.
+Remove all keys in the current database/uuid.
 
 ```javascript
 // promise syntax
-api.txkeyvalues({gas_price: 10}).then(kvs => { ... }, error => { ... });
+api.deleteAll({gas_price: 10}).then(() => { ... }, error => { ... });
 
 // async/await syntax
-const kvs = await api.txkeyvalues({gas_price: 10});
+await api.deleteAll({gas_price: 10});
 ```
 
 | Argument | Description |
 | :--- | :--- |
-| gas_info (Optional) | Object containing gas parameters (see above) |
+| gas_info | Object containing gas parameters (see above) |
+
+Returns a promise resolving to nothing.
+
+### keyValues\(\)
+
+Enumerate all keys and values in the current database/uuid. This function bypasses the consensus and cryptography mechanisms in favor of speed.
+
+```javascript
+// promise syntax
+api.keyValues().then(kvs => { ... }, error => { ... });
+
+// async/await syntax
+const kvs = await api.keyValues();
+```
 
 Returns a promise resolving to a JSON array containing key/value pairs, e.g.
 
@@ -453,24 +443,177 @@ Returns a promise resolving to a JSON array containing key/value pairs, e.g.
 [{"key": "key1", "value": "value1"}, {"key": "key2", "value": "value2"}]
 ```
 
-### multiupdate\(keyvalues \[, gas_info]\)
+### txKeyValues\(gas_info\)
 
-Updates multiple fields in the database.
+Enumerate all keys and values in the current database/uuid via a transaction.
 
 ```javascript
 // promise syntax
-api.update([{key: "key1", value: "value1"}, {key: "key2", value: "value2"}], {gas_price: 10}).then(() => { ... }, error => { ... });
+api.txKeyValues({gas_price: 10}).then(kvs => { ... }, error => { ... });
 
 // async/await syntax
-await api.update([{key: "key1", value: "value1"}, {key: "key2", value: "value2"}, {gas_price: 10}');
+const kvs = await api.txKeyValues({gas_price: 10});
 ```
 
 | Argument | Description |
 | :--- | :--- |
-| keyvalues | An array of objects containing keys and values (see example avove) |
-| gas_info (Optional) | Object containing gas parameters (see above) |
+| gas_info | Object containing gas parameters (see above) |
+
+Returns a promise resolving to a JSON array containing key/value pairs, e.g.
+
+```
+[{"key": "key1", "value": "value1"}, {"key": "key2", "value": "value2"}]
+```
+
+### multiUpdate\(key_values, gas_info\)
+
+Update multiple fields in the database.
+
+```javascript
+// promise syntax
+api.multiUpdate([{key: "key1", value: "value1"}, {key: "key2", value: "value2"}], {gas_price: 10}).then(() => { ... }, error => { ... });
+
+// async/await syntax
+await api.multiUpdate([{key: "key1", value: "value1"}, {key: "key2", value: "value2"}, {gas_price: 10}');
+```
+
+| Argument | Description |
+| :--- | :--- |
+| key_values | An array of objects containing keys and values (see example avove) |
+| gas_info | Object containing gas parameters (see above) |
 
 Returns a promise resolving to nothing.
 
 Throws an exception when any of the keys doesn't exist.
+
+
+### getLease\(key\)
+
+Retrieve the minimum time remaining on the lease for a key. This function bypasses the consensus and cryptography mechanisms in favor of speed.
+
+```javascript
+// promise syntax
+api.getLease('mykey').then(value => { ... }, error => { ... });
+
+// async/await syntax
+const value = await api.getLease('mykey');
+```
+
+| Argument | Description |
+| :--- | :--- |
+| key | The key to retrieve the lease information for |
+
+Returns a promise resolving the minimum length of time remaining for the key's lease, in seconds.
+
+Throws an exception when the key does not exist in the database.
+
+### txGetLease\(key, gas_info\)
+
+Retrieve the minimum time remaining on the lease for a key, using a transaction.
+
+```javascript
+// promise syntax
+api.txGetLease('mykey', {gas_price: 10}).then(value => { ... }, error => { ... });
+
+// async/await syntax
+const value = await api.txGetLease('mykey', {gas_price: 10});
+```
+
+| Argument | Description |
+| :--- | :--- |
+| key | The key to retrieve the lease information for |
+| gas_info | Object containing gas parameters (see above) |
+
+Returns a promise resolving the minimum length of time remaining for the key's lease, in seconds.
+
+Throws an exception when the key does not exist in the database.
+
+### renewLease\(key, gas_info[, lease_info]\)
+
+Update the minimum time remaining on the lease for a key.
+
+```javascript
+// promise syntax
+api.renewLease('mykey', {gas_price: 10}, {days: 100}).then(value => { ... }, error => { ... });
+
+// async/await syntax
+const value = await api.renewLease('mykey', {gas_price: 10}, {days: 100});
+```
+
+| Argument | Description |
+| :--- | :--- |
+| key | The key to retrieve the lease information for |
+| gas_info | Object containing gas parameters (see above) |
+| lease_info (optional) | Minimum time for key to remain in database (see above) |
+
+Returns a promise resolving the minimum length of time remaining for the key's lease.
+
+Throws an exception when the key does not exist in the database.
+
+
+### renewLeaseAll\(gas_info[, lease_info]\)
+
+Update the minimum time remaining on the lease for all keys.
+
+```javascript
+// promise syntax
+api.renewLease('mykey', {gas_price: 10}, {days: 100}).then(value => { ... }, error => { ... });
+
+// async/await syntax
+const value = await api.renewLease('mykey', {gas_price: 10}, {days: 100});
+```
+
+| Argument | Description |
+| :--- | :--- |
+| gas_info | Object containing gas parameters (see above) |
+| lease_info (optional) | Minimum time for key to remain in database (see above) |
+
+Returns a promise resolving the minimum length of time remaining for the key's lease.
+
+Throws an exception when the key does not exist in the database.
+
+
+### getNShortestLease\(n\)
+
+Retrieve a list of the n keys in the database with the shortest leases.  This function bypasses the consensus and cryptography mechanisms in favor of speed.
+ 
+```javascript
+// promise syntax
+api.getNShortestLease(10).then(keys => { ... }, error => { ... });
+
+// async/await syntax
+const keys = await api.getNShortestLease(10);
+```
+
+| Argument | Description |
+| :--- | :--- |
+| n | The number of keys to retrieve the lease information for |
+
+Returns a JSON array of objects containing key, lease (in seconds), e.g.
+```
+[ { key: "mykey", lease: { seconds: "12345" } }, {...}, ...]
+```
+
+### txGetNShortestLease\(n, gas_info\)
+
+Retrieve a list of the N keys/values in the database with the shortest leases, using a transaction.
+ 
+```javascript
+// promise syntax
+api.txGetNShortestLease(10).then(keys => { ... }, error => { ... });
+
+// async/await syntax
+const keys = await api.txGetNShortestLease(10);
+```
+
+| Argument | Description |
+| :--- | :--- |
+| n | The number of keys to retrieve the lease information for |
+| gas_info | Object containing gas parameters (see above) |
+
+Returns a JSON array of objects containing key, lifetime (in seconds), e.g.
+```
+[ { key: "mykey", lifetime: "12345" }, {...}, ...]
+```
+
 
