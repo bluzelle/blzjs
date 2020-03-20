@@ -15,7 +15,7 @@
 
 
 const assert = require('assert');
-cosmos = require('./cosmos');
+
 
 const encode = string => new Uint8Array(Buffer.from(string, 'utf-8'));
 const decode = binary => Buffer.from(binary).toString('utf-8');
