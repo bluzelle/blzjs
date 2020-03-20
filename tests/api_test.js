@@ -1040,16 +1040,62 @@ describe('testing txkeyvalues', () =>
     });
 });
 
+describe('testing mutliupdate', () =>
+{
+    const kvs = [{key: 'key1', value: 'value1'},{key: 'key2', value: 'value2'}];
+    save_cosmos_functions();
 
+    it('mutliupdate success', async () =>
+    {
+        var send_tx_called = 0;
+        cosmos.send_transaction = async (req_type, ep_name, data, gas_info) =>
+        {
+            ++send_tx_called;
+            expect(req_type).equal('post');
+            expect(ep_name).equal(`${app_service}/multiupdate`);
+            expect(validate_common_data(data)).equal(true);
+            expect(data.KeyValues).to.deep.equal(kvs);
+            expect(gas_info).equal(params.gas_info);
 
+            return new Promise(async (resolve, reject) =>
+            {
+                resolve();
+            });
+        };
 
+        res = await api.multiupdate(kvs, params.gas_info);
+        expect(send_tx_called).equal(1);
+        expect(typeof res).equal('undefined');
+    });
 
+    it('mutliupdate error', async () =>
+    {
+        const msg = 'Key does not exist [0]';
+        var send_tx_called = 0;
+        cosmos.send_transaction = async (req_type, ep_name, data, gas_info) =>
+        {
+            ++send_tx_called;
 
+            return new Promise(async (resolve, reject) =>
+            {
+                reject(new Error(msg));
+            });
+        };
 
-
-
-
-
+        var fail = false;
+        try
+        {
+            res = await api.multiupdate(kvs, params.gas_info);
+        }
+        catch (err)
+        {
+            expect(err.message).equal(msg);
+            fail = true;
+        }
+        expect(send_tx_called).equal(1);
+        expect(fail).equal(true);
+    });
+});
 
 describe('testing account', () =>
 {

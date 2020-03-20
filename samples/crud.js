@@ -36,19 +36,27 @@ function usage()
     console.log(" Executes a command on a Bluzelle node\n");
     console.log("Commands and arguments:");
     console.log("\n Transactional commands");
-    console.log("  create uuid key value - creates a new key/value");
+    console.log("  create uuid key value   - creates a new key/value");
     console.log("  txread uuid key         - returns the value of an existing key");
-    console.log("  update uuid key value - updates the value of an existing key");
-    console.log("  delete uuid key       - deletes an existing key");
+    console.log("  update uuid key value   - updates the value of an existing key");
+    console.log("  delete uuid key         - deletes an existing key");
+    console.log("  rename uuid key newkey  - updates the name of an existing key");
     console.log("  txhas uuid key          - determines if a key exists");
     console.log("  txkeys uuid             - returns a list of all keys");
+    console.log("  txcount uuid            - returns the number of keys");
+    console.log("  txkeyvalues uuid        - returns a list of all keys and values");
+    console.log("  deleteall uuid          - deletes all keys");
+    console.log("\n  multiupdate uuid key value [key value]... - updates the value of multiple existing keys");
     console.log("\n Query commands");
     console.log("  read uuid key [prove] - returns the value of an existing key, requiring proof if 'prove' is specified");
     console.log("  has uuid key          - determines if a key exists");
-    console.log("  keys uuid             - returns a list of all keys\n");
+    console.log("  keys uuid             - returns a list of all keys");
+    console.log("  keyvalues uuid        - returns a list of all keys and values");
+    console.log("  count uuid            - returns the number of keys");
     console.log("\n Miscellaneous commands");
-    console.log("  account               - returns information about the currently active account\n");
-    console.log("  version               - returns the version of the Bluzelle service\n");
+    console.log("  account               - returns information about the currently active account");
+    console.log("  version               - returns the version of the Bluzelle service");
+    console.log("\n");
 }
 
 function check_args(num)
@@ -75,6 +83,8 @@ const main = async () => {
             endpoint: config.endpoint,
             chain_id: config.chain_id
         });
+
+        var res;
 
         switch (process.argv[2])
         {
@@ -142,6 +152,22 @@ const main = async () => {
             case 'txkeyvalues':
                 check_args(3);
                 res = await bz.txkeyvalues(gas_params);
+                break;
+            case 'multiupdate':
+                // number of arguments must be an even number and at least 6
+                check_args(5);
+                if (process.argv.length % 2)
+                {
+                    usage();
+                    return;
+                }
+
+                var kvs = [];
+                for (var i = 4; i < process.argv.length; i += 2)
+                {
+                    kvs.push({key: process.argv[i], value: process.argv[i+1]})
+                }
+                res = await bz.multiupdate(kvs, gas_params);
                 break;
             case 'account':
                 check_args(2);

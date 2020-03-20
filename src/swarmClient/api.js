@@ -500,6 +500,38 @@ module.exports = class API
         });
     }
 
+    // returns a promise resolving to nothing.
+    async multiupdate(keyvalues, gas_info)
+    {
+        assert(typeof keyvalues === 'object', 'Keyvalues must be an array');
+        keyvalues.forEach(function(value, index, array)
+        {
+            assert(typeof value.key === 'string', "All keys must be strings");
+            assert(typeof value.value === 'string', "All values must be strings");
+        });
+
+        const data = {
+            BaseReq: {
+                from: this.address,
+                chain_id: this.chain_id
+            },
+            UUID: this.uuid,
+            KeyValues: keyvalues,
+            Owner: this.address
+        };
+
+        return new Promise(async (resolve, reject) =>
+        {
+            cosmos.send_transaction('post', `${app_service}/multiupdate`, data, gas_info).then(function (res)
+            {
+                resolve();
+            }).catch(function (err)
+            {
+                reject(err);
+            });
+        });
+    }
+
     // returns a promise resolving to a JSON object representing the user account data.
     async account()
     {

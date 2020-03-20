@@ -400,3 +400,25 @@ Returns a promise resolving to a JSON array containing key/value pairs, e.g.
 ```
 [{"key": "key1", "value": "value1"}, {"key": "key2", "value": "value2"}]
 ```
+
+### multiupdate\(keyvalues \[, gas_info]\)
+
+Updates multiple fields in the database.
+
+```javascript
+// promise syntax
+api.update([{key: "key1", value: "value1"}, {key: "key2", value: "value2"}], {gas_price: 10}).then(() => { ... }, error => { ... });
+
+// async/await syntax
+await api.update([{key: "key1", value: "value1"}, {key: "key2", value: "value2"}, {gas_price: 10}');
+```
+
+| Argument | Description |
+| :--- | :--- |
+| keyvalues | An array of objects containing keys and values (see example avove) |
+| gas_info (Optional) | Object containing gas parameters (see above) |
+
+Returns a promise resolving to nothing.
+
+Throws an exception when any of the keys doesn't exist.
+
