@@ -3,6 +3,58 @@
 
 **blzjs** is a JavaScript library that can be used to access the Bluzelle database service.
 
+# blzjs Installation
+
+You will generally use *blzjs* from code running under the **Node.js** platform. For instructions on installing Node.js on your platform please see http://nodejs.org. Use of *blzjs* in web browser content is not currently supported.
+
+You can use blzjs either in-place, or by building a library. In either case you will want to get the latest stable version of blzjs by doing the following:
+```
+git clone https://github.com/bluzelle/blzjs
+```
+This will create a directory named *blzjs* and download the library code to it.
+
+For in-place use, simply create a JavaScript source file and include the following at the top of the file:
+```
+const { bluzelle } = require('path_to_blzjs/main.js');
+```
+You can then use the various functions described below.
+
+To build a library and use it locally, you will need **npm** and **npx** installed. Please see the relevant documentation for your platform for instructions on how to do that.
+
+You will then do the following:
+```
+cd blzjs
+npm install
+npx webpack
+sudo npm link
+```
+Then in the directory where you create your source code, run
+```
+npm link bluzelle
+```
+And at the top of your source fill add the following:
+```
+const { bluzelle } = require ('bluzelle')
+```
+
+# Getting Started
+
+The file crud.js in the *samples* directory contains example code that demonstrates how to use the blzjs API.
+
+In general, you must initialize blzjs before calling any other functions. Do the following (using your own configuration parameters as applicable) to initialize:
+```
+let bz = await bluzelle({
+        address:  my_account_address,
+        mnemonic: my_mnemonic,
+        uuid:     my_uuid,
+        endpoint: my_endpoint,
+        chain_id: my_chain_id
+    });
+```  
+This performs some initial checks, retrieves your account information, and returns an object through which you can call the rest of the API functions.
+
+You may now use the functions described below to perform database operations, as well as retrieve account and status information.
+
 # blzjs API documentation
 Read below for detailed documentation on how to use the Bluzelle database service.
 
