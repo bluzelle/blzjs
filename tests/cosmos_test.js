@@ -119,7 +119,7 @@ function verify_signature(data)
     };
 
     // Calculate the SHA256 of the payload object
-    let jsonHash = util.hash('sha256', Buffer.from(cosmos.unicodify(JSON.stringify(payload))));
+    let jsonHash = util.hash('sha256', Buffer.from(cosmos.sanitize_string(JSON.stringify(payload))));
     let sig = util.convertSignature(secp256k1.sign(jsonHash, params.priv_key, 'hex',
         {
             canonical: true,
