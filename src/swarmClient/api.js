@@ -40,6 +40,7 @@ function encode_safe(str)
         switch (ch)
         {
             case '#':
+            case '?':
                 outstr += '%' + (ch.charCodeAt(0)).toString(16);
                 break;
 
