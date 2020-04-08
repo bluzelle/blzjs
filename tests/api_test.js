@@ -518,7 +518,7 @@ describe('testing read unverified', () =>
             return new Promise(async (resolve, reject) =>
             {
                 // this is the wrong format
-                resolve({value: value});
+                resolve({result: {value: value}});
             });
         };
 
@@ -565,7 +565,7 @@ describe('testing read unverified', () =>
             return new Promise(async (resolve, reject) =>
             {
                 // this is the wrong format
-                resolve({value: value});
+                resolve({result: {value: value}});
             });
         };
 
@@ -589,7 +589,7 @@ describe('testing read verified', () =>
             return new Promise(async (resolve, reject) =>
             {
                 // this is the wrong format
-                resolve({value: value});
+                resolve({result: {value: value}});
             });
         };
 
@@ -638,7 +638,7 @@ describe('testing has', () =>
 
             return new Promise(async (resolve, reject) =>
             {
-                resolve({"has": true});
+                resolve({result: {"has": true}});
             });
         };
 
@@ -654,7 +654,7 @@ describe('testing has', () =>
 
             return new Promise(async (resolve, reject) =>
             {
-                resolve({"has": false});
+                resolve({result: {"has": false}});
             });
         };
 
@@ -677,7 +677,7 @@ describe('testing keys', () =>
 
             return new Promise(async (resolve, reject) =>
             {
-                resolve({keys: keys});
+                resolve({result: {keys: keys}});
             });
         };
 
@@ -948,7 +948,7 @@ describe('testing keyvalues', () =>
 
             return new Promise(async (resolve, reject) =>
             {
-                resolve(kvs);
+                resolve({result: kvs});
             });
         };
 
@@ -1113,11 +1113,11 @@ describe('testing account', () =>
 
         cosmos.query = async (ep) =>
         {
-            expect(ep).equal(`/auth/accounts/${params.address}`);
+            expect(ep).equal(`auth/accounts/${params.address}`);
 
             return new Promise(async (resolve, reject) =>
             {
-                resolve(account_info);
+                resolve({result: account_info});
             });
         };
 
@@ -1132,7 +1132,7 @@ describe('testing account', () =>
 
         cosmos.query = async (ep) =>
         {
-            expect(ep).equal(`/auth/accounts/${params.address}`);
+            expect(ep).equal(`auth/accounts/${params.address}`);
 
             return new Promise(async (resolve, reject) =>
             {
@@ -1173,11 +1173,11 @@ describe('testing version', () =>
 
         cosmos.query = async (ep) =>
         {
-            expect(ep).equal(`/crud/version`);
+            expect(ep).equal(`node_info`);
 
             return new Promise(async (resolve, reject) =>
             {
-                resolve(version_info);
+                resolve({application_version: version_info});
             });
         };
 
@@ -1192,7 +1192,7 @@ describe('testing version', () =>
 
         cosmos.query = async (ep) =>
         {
-            expect(ep).equal(`/crud/version`);
+            expect(ep).equal(`node_info`);
 
             return new Promise(async (resolve, reject) =>
             {

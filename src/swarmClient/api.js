@@ -171,7 +171,7 @@ module.exports = class API
             const url = prove ? `${app_service}/pread/${this.uuid}/${uri_key}` : `${app_service}/read/${this.uuid}/${uri_key}`;
             cosmos.query(url).then(function (res)
             {
-                resolve(res.value);
+                resolve(res.result.value);
             }).catch(function (err)
             {
                 // treat 404's specially
@@ -214,7 +214,7 @@ module.exports = class API
                 }
                 catch(err)
                 {
-                    resolve(res);
+                    resolve(res.result);
                 }
             }).catch(function (err)
             {
@@ -260,7 +260,7 @@ module.exports = class API
             const uri_key = encode_safe(encodeURI(key));
             cosmos.query(`${app_service}/has/${this.uuid}/${uri_key}`).then(function (res)
             {
-                resolve(res.has);
+                resolve(res.result.has);
             }).catch(function (err)
             {
                 reject(err);
@@ -311,7 +311,7 @@ module.exports = class API
         {
             cosmos.query(`${app_service}/keys/${this.uuid}`).then(function (res)
             {
-                resolve(res.keys ? res.keys : []);
+                resolve(res.result.keys ? res.result.keys : []);
             }).catch(function (err)
             {
                 reject(err);
@@ -460,7 +460,7 @@ module.exports = class API
         {
             cosmos.query(`/crud/keyvalues/${this.uuid}`).then(function (res)
             {
-                resolve(res.keyvalues);
+                resolve(res.result.keyvalues);
             }).catch(function (err)
             {
                 reject(err);
@@ -538,9 +538,9 @@ module.exports = class API
     {
         return new Promise(async (resolve, reject) =>
         {
-            cosmos.query(`/auth/accounts/${this.address}`).then(function (res)
+            cosmos.query(`auth/accounts/${this.address}`).then(function (res)
             {
-                resolve(res.value);
+                resolve(res.result.value);
             }).catch(function (err)
             {
                 reject(err);
@@ -553,9 +553,9 @@ module.exports = class API
     {
         return new Promise(async (resolve, reject) =>
         {
-            cosmos.query(`/crud/version`).then(function (res)
+            cosmos.query(`node_info`).then(function (res)
             {
-                resolve(res.version);
+                resolve(res.application_version.version);
             }).catch(function (err)
             {
                 reject(err);

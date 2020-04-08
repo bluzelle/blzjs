@@ -444,7 +444,7 @@ async function query(ep)
         try
         {
             let res = await axios.get(`${app_endpoint}/${ep}`);
-            resolve(res.data.result);
+            resolve(res.data);
         }
         catch (error)
         {

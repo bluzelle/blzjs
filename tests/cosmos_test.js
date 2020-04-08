@@ -291,7 +291,7 @@ describe('testing query', () =>
             });
 
         const res2 = await cosmos.query(/test/);
-        expect(res2).equal(response_data.result);
+        expect(res2).equal(response_data);
     });
 
     it('404 query', async () =>
