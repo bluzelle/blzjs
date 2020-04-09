@@ -629,7 +629,7 @@ describe('testing count', () =>
 
             return new Promise(async (resolve, reject) =>
             {
-                resolve({"count": count});
+                resolve({result: {"count": count}});
             });
         };
 
@@ -842,7 +842,7 @@ describe('testing getLease', () =>
             expect(ep).equal(uri);
             return new Promise(async (resolve, reject) =>
             {
-                resolve({lease: lease});
+                resolve({result: {lease: lease}});
             });
         };
 
@@ -991,7 +991,7 @@ describe('testing getNShortestLease', () =>
 
             return new Promise(async (resolve, reject) =>
             {
-                resolve({"keyleases": leases});
+                resolve({result: {"keyleases": leases}});
             });
         };
 

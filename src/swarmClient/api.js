@@ -32,29 +32,6 @@ function hex2string(hex)
     return str;
 }
 
-function encode_safe(str)
-{
-    let outstr = '';
-    for (var i = 0; i < str.length; i++)
-    {
-        const ch = str[i];
-        switch (ch)
-        {
-            case '#':
-            case '?':
-                outstr += '%' + (ch.charCodeAt(0)).toString(16);
-                break;
-
-            default:
-                outstr += ch;
-                break;
-        }
-    }
-
-    return outstr;
-}
-
-
 function parse_result(str, reject)
 {
     try
@@ -192,10 +169,10 @@ module.exports = class API
     {
         assert(typeof key === 'string', 'Key must be a string');
 
-        const uri_key = encode_safe(encodeURI(key));
+        const uri_key = this.encode_safe(key);
         return this.do_query(`${app_service}/has/${this.uuid}/${uri_key}`, function(res, resolve, reject)
         {
-            resolve(res.has);
+            resolve(res.result.has);
         });
     }
 
@@ -252,7 +229,7 @@ module.exports = class API
     {
         return this.do_query(`/${app_service}/count/${this.uuid}`, function(res, resolve, reject)
         {
-            resolve(parseInt(res.count));
+            resolve(parseInt(res.result.count));
         });
     }
 
@@ -320,7 +297,7 @@ module.exports = class API
         const uri_key = this.encode_safe(key);
         return this.do_query(`${app_service}/getlease/${this.uuid}/${uri_key}`, function(res, resolve, reject)
         {
-            resolve(res.lease * BLOCK_TIME_IN_SECONDS);
+            resolve(res.result.lease * BLOCK_TIME_IN_SECONDS);
         });
     }
 
@@ -371,7 +348,7 @@ module.exports = class API
         {
             debugger;
             let lease_info = [];
-            res.keyleases.forEach(function(val, i, leases)
+            res.result.keyleases.forEach(function(val, i, leases)
             {
                 lease_info.push({key: leases[i].key, lease: leases[i].lease * BLOCK_TIME_IN_SECONDS});
             });
@@ -401,47 +378,18 @@ module.exports = class API
     // returns a promise resolving to a JSON object representing the user account data.
     async account()
     {
-        return this.do_query(`/auth/accounts/${this.address}`, function(res, resolve, reject)
+        return this.do_query(`auth/accounts/${this.address}`, function(res, resolve, reject)
         {
-            resolve(res.value);
+            resolve(res.result.value);
         });
     }
 
     // returns a promise resolving to a version string.
     async version()
     {
-        return this.do_query('/crud/version', function(res, resolve, reject)
+        return this.do_query('node_info', function(res, resolve, reject)
         {
-            resolve(res.version);
-        });
-    }
-
-    async account()
-    {
-        return new Promise(async (resolve, reject) =>
-        {
-            cosmos.query(`auth/accounts/${this.address}`).then(function (res)
-            {
-                resolve(res.result.value);
-            }).catch(function (err)
-            {
-                reject(err);
-            });
-        });
-    }
-
-    // returns a promise resolving to a version string.
-    async version()
-    {
-        return new Promise(async (resolve, reject) =>
-        {
-            cosmos.query(`node_info`).then(function (res)
-            {
-                resolve(res.application_version.version);
-            }).catch(function (err)
-            {
-                reject(err);
-            });
+            resolve(res.application_version.version);
         });
     }
 
@@ -511,6 +459,7 @@ module.exports = class API
             switch (ch)
             {
                 case '#':
+                case '?':
                     outstr += '%' + (ch.charCodeAt(0)).toString(16);
                     break;
 
