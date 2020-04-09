@@ -40,6 +40,7 @@ function encode_safe(str)
         switch (ch)
         {
             case '#':
+            case '?':
                 outstr += '%' + (ch.charCodeAt(0)).toString(16);
                 break;
 
@@ -256,7 +257,7 @@ module.exports = class API
 
         return new Promise(async (resolve, reject) =>
         {
-            const uri_key = encodeURI(key);
+            const uri_key = encode_safe(encodeURI(key));
             cosmos.query(`${app_service}/has/${this.uuid}/${uri_key}`).then(function (res)
             {
                 resolve(res.has);
