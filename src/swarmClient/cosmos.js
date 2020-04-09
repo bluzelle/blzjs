@@ -92,7 +92,9 @@ class transaction
     }
 }
 
-function unicodify(str)
+// this function translates certain characters that are necessary
+// in order to sign the string correctly for Cosmos
+function sanitize_string(str)
 {
     let outstr = '';
     for (var i = 0; i < str.length; i++)
@@ -100,17 +102,11 @@ function unicodify(str)
         const ch = str[i];
         switch (ch)
         {
-            //case '"':
             case '&':
             case '<':
             case '>':
-            case '\\':
-            case '\n':
-            case '\r':
-            case '\t':
                 outstr += '\\u00' + (ch.charCodeAt(0)).toString(16);
                 break;
-
             default:
                 outstr += ch;
                 break;
@@ -132,7 +128,9 @@ function sign_transaction(key, data, chain_id)
     };
 
     // Calculate the SHA256 of the payload object
-    let jsonHash = util.hash('sha256', Buffer.from(unicodify(JSON.stringify(payload))));
+    let jstr = JSON.stringify(payload);
+    let sstr = sanitize_string(jstr);
+    let jsonHash = util.hash('sha256', Buffer.from(sstr));
 
     return {
         pub_key: {
@@ -479,7 +477,7 @@ module.exports =
     init,
     send_transaction,
     query,
-    unicodify,
+    sanitize_string,
     MAX_RETRIES,
     RETRY_INTERVAL
 };
