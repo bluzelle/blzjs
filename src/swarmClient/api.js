@@ -84,10 +84,16 @@ module.exports = class API
         assert(typeof key === 'string', 'Key must be a string');
         assert(typeof value === 'string', 'Value must be a string');
 
+        const blocks = this.convert_lease(lease_info);
+        if (blocks < 0)
+        {
+            throw new Error("Invalid lease time");
+        }
+
         return this.do_tx({
             Key: key,
             Value: value,
-            Lease: this.convert_lease(lease_info)
+            Lease: blocks
         }, 'post', 'create', gas_info, function(res, resolve, reject)
         {
             resolve();
@@ -320,10 +326,15 @@ module.exports = class API
     {
         assert(typeof key === 'string', 'Key must be a string');
 
-        debugger;
+        const blocks = this.convert_lease(lease_info);
+        if (blocks < 0)
+        {
+            throw new Error("Invalid lease time");
+        }
+
         return this.do_tx({
             Key: key,
-            Lease: this.convert_lease(lease_info)
+            Lease: blocks
         }, 'post', 'renewlease', gas_info, function(res, resolve, reject)
         {
             resolve();
@@ -333,8 +344,14 @@ module.exports = class API
     // returns a promise resolving to nothing.
     renewLeaseAll(gas_info, lease_info)
     {
+        const blocks = this.convert_lease(lease_info);
+        if (blocks < 0)
+        {
+            throw new Error("Invalid lease time");
+        }
+
         return this.do_tx({
-            Lease: this.convert_lease(lease_info)
+            Lease: blocks
         }, 'post', 'renewleaseall', gas_info, function(res, resolve, reject)
         {
             resolve();
@@ -344,6 +361,11 @@ module.exports = class API
     // returns a promise resolving to an array of key/lease-time pairs
     async getNShortestLease(n)
     {
+        if (n < 0)
+        {
+            throw new Error("Invalid value specified");
+        }
+
         return this.do_query(`${app_service}/getnshortestlease/${this.uuid}/${n}`, function(res, resolve, reject)
         {
             debugger;
@@ -359,6 +381,11 @@ module.exports = class API
     // returns a promise resolving to an array of key/lease-time pairs
     txGetNShortestLease(n, gas_info)
     {
+        if (n < 0)
+        {
+            throw new Error("Invalid value specified");
+        }
+
         return this.do_tx(
             {
                 N: n
