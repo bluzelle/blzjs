@@ -1,0 +1,20 @@
+{
+  "extends": ["standard", "plugin:prettier/recommended"],
+  "env": {
+    "browser": false,
+    "node": true,
+    "mocha": true
+  },
+  "rules": {
+    "comma-dangle": "off",
+    "indent": ["error", 2, { "SwitchCase": 1 }],
+    "prettier/prettier": "warn",
+    "prefer-promise-reject-errors": 0,
+    "quotes": ["warn", "single"],
+    "semi": "off",
+    "import/export": 0,
+    "no-useless-constructor": 1,
+    "handle-callback-err": 1,
+    "max-len": ["error", { "code": 120 }]
+  }
+}

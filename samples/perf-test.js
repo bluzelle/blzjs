@@ -15,7 +15,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 const { bluzelle } = require('../src/main.js');
 
 // NOTE: This file must be provided and contains your account credentials in the form
@@ -26,125 +25,102 @@ const { bluzelle } = require('../src/main.js');
 //         chain_id: "bluzelle"
 //  };
 const config = require('./blz-config.js');
-
-var times = [];
-var payload_size = 10;
-var payload_set = false;
-
-const gas_params = config.gas_params;
+const times = [];
+const { gas_params: GAS_PARAMS } = config;
+let PAYLOAD_SIZE = 10;
+let PAYLOAD_SET = false;
+let BZ;
 
 // NOTE: you must fill in the information below with valid values
 // if uuid is not specified, the value of "address" will be used as the uuid
-const params =
-{
-    address:  config.address,
-    mnemonic: config.mnemonic,
-    uuid: "my_uuid",
-    endpoint: config.endpoint,
-    chain_id: config.chain_id
+const params = {
+  address: config.address,
+  mnemonic: config.mnemonic,
+  uuid: 'my_uuid',
+  endpoint: config.endpoint,
+  chain_id: config.chain_id,
 };
 
-function now()
-{
-    var d = new Date();
-    return d.getTime();
+function now() {
+  const d = new Date();
+  return d.getTime();
 }
 
-async function do_func(label, func)
-{
-    payload_set || console.log(label);
-    var start = now();
+async function doFunc(label, func) {
+  PAYLOAD_SET || console.log(label);
+  const start = now();
 
-    try
-    {
-        res = await func();
-        if (typeof res != 'undefined')
-        {
-            payload_set || console.log("result: " + JSON.stringify(res));
-        }
-        else
-        {
-            payload_set || console.log("success");
-        }
-
+  try {
+    const res = await func();
+    if (typeof res !== 'undefined') {
+      PAYLOAD_SET || console.log('result: ' + JSON.stringify(res));
+    } else {
+      PAYLOAD_SET || console.log('success');
     }
-    catch(err)
-    {
-        console.log("error: " + err.message);
-    }
-    time_taken = now() - start;
-    times.push(time_taken);
-    payload_set || console.log("time taken: " + time_taken + "ms");
+  } catch (err) {
+    console.log('error: ' + err.message);
+  }
+  const timeTaken = now() - start;
+  times.push(timeTaken);
+  PAYLOAD_SET || console.log('time taken: ' + timeTaken + 'ms');
 }
 
-async function main()
-{
-    if (process.argv.length > 2)
-    {
-        payload_size = parseInt(process.argv[2]);
-        console.log("Payload size: " + payload_size);
-        payload_set = true;
+async function main() {
+  if (process.argv.length > 2) {
+    PAYLOAD_SIZE = parseInt(process.argv[2]);
+    console.log('Payload size: ' + PAYLOAD_SIZE);
+    PAYLOAD_SET = true;
+  }
+
+  try {
+    BZ = await bluzelle(params);
+  } catch (err) {
+    console.log(err.message);
+    return;
+  }
+
+  await doFunc('*** create key/value ***', async function () {
+    return BZ.create('mykey', '#'.repeat(PAYLOAD_SIZE), GAS_PARAMS);
+  });
+
+  await doFunc('\n*** read (unverified) ***', async function () {
+    return BZ.read('mykey');
+  });
+
+  await doFunc('\n*** update value ***', async function () {
+    return BZ.update('mykey', '*'.repeat(PAYLOAD_SIZE), GAS_PARAMS);
+  });
+
+  await doFunc('\n*** read (unverified) ***', async function () {
+    return BZ.read('mykey');
+  });
+
+  await doFunc('\n*** read (verified) ***', async function () {
+    return BZ.read('mykey', true);
+  });
+
+  const p1 = doFunc(
+    '\n*** simultaneous unverified and verified read ***',
+    async function () {
+      return BZ.read('mykey');
     }
+  );
+  const p2 = doFunc('', async function () {
+    return BZ.read('mykey', true);
+  });
+  await Promise.all([p1, p2]);
 
-    try
-    {
-        bz = await bluzelle(params);
-    }
-    catch (err)
-    {
-        console.log(err.message);
-        return;
-    }
+  await doFunc('\n*** transactional read ***', async function () {
+    return BZ.txRead('mykey', GAS_PARAMS);
+  });
 
-    await do_func("*** create key/value ***", async function()
-    {
-        return bz.create("mykey", '#'.repeat(payload_size), gas_params);
-    });
+  await doFunc('\n*** delete ***', async function () {
+    await BZ.delete('mykey', GAS_PARAMS);
+  });
+}
 
-    await do_func("\n*** read (unverified) ***", async function()
-    {
-        return bz.read("mykey");
-    });
-
-    await do_func("\n*** update value ***", async function()
-    {
-        return bz.update("mykey", '*'.repeat(payload_size), gas_params);
-    });
-
-    await do_func("\n*** read (unverified) ***", async function()
-    {
-        return bz.read("mykey");
-    });
-
-    await do_func("\n*** read (verified) ***", async function()
-    {
-        return bz.read("mykey", true);
-    });
-
-    p1 = do_func("\n*** simultaneous unverified and verified read ***", async function()
-    {
-        return bz.read("mykey");
-    });
-    p2 = do_func("", async function()
-    {
-        return bz.read("mykey", true);
-    });
-    await Promise.all([p1, p2]);
-
-    await do_func("\n*** transactional read ***", async function()
-    {
-        return bz.txRead("mykey", gas_params);
-    });
-
-    await do_func("\n*** delete ***", async function()
-    {
-        await bz.delete("mykey", gas_params);
-    });
-};
-
-main().then(function()
-{
-    console.log("\n*** summary of times taken:");
-    console.log(times);
-    console.log("total: " + times.reduce((a, b) => a + b, 0));
+main().then(function () {
+  console.log('\n*** summary of times taken:');
+  console.log(times);
+  console.log('total: ' + times.reduce((a, b) => a + b, 0));
 });

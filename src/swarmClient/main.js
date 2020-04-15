@@ -13,24 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 const API = require('./api');
 
-
-module.exports =
-{
-    swarmClient: async (address, mnemonic, endpoint, uuid, chain_id, ...args) =>
-    {
-        return new Promise(async (resolve, reject) =>
-        {
-            const api = new API(address, mnemonic, endpoint, uuid, chain_id, ...args);
-            api.init().then(function ()
-            {
-                resolve(api);
-            }).catch(function (err)
-            {
-                reject(err);
-            });
-        });
-    }
+module.exports = {
+  swarmClient: async (address, mnemonic, endpoint, uuid, chainId, ...args) => {
+    return await new API(address, mnemonic, endpoint, uuid, chainId, ...args);
+  },
 };

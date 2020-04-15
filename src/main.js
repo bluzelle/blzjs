@@ -13,22 +13,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-const {swarmClient} = require('./swarmClient/main');
+const { swarmClient } = require('./swarmClient/main');
 
-
-module.exports =
-{
-    bluzelle: async ({log, address, mnemonic, endpoint, uuid, chain_id, ...args}) =>
-    {
-        return new Promise(async (resolve, reject) =>
-        {
-            swarmClient(address, mnemonic, endpoint, (uuid || address), chain_id).then(function (swarm)
-            {
-                resolve(swarm);
-            }).catch(function (err)
-            {
-                reject(err);
-            });
-        });
-    }
+module.exports = {
+  bluzelle: async ({
+    log,
+    address,
+    mnemonic,
+    endpoint,
+    uuid,
+    chain_id: chainId,
+    ...args
+  }) => {
+    return await swarmClient(
+      address,
+      mnemonic,
+      endpoint,
+      uuid || address,
+      chainId
+    );
+  },
 };

@@ -13,64 +13,54 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 const assert = require('assert');
 const EC = require('elliptic').ec;
 const sha256 = require('hash.js/lib/hash/sha/256');
 
+const verify = (msgBin, sigBin, pubKeyBase64) => {
+  const ecKey = importPublicKeyFromBase64(pubKeyBase64);
 
-const verify = (msg_bin, sig_bin, pub_key_base64) => {
+  const msgHash = sha256().update(msgBin).digest();
 
-    const ec_key = import_public_key_from_base64(pub_key_base64);
+  // Signature base64 decoding handled by elliptic.
 
-    const msg_hash = sha256().update(msg_bin).digest();
-
-
-    // Signature base64 decoding handled by elliptic.
-
-    return ec_key.verify(msg_hash, sig_bin);
-
+  return ecKey.verify(msgHash, sigBin);
 };
 
+const sign = (msgBin, privKeyBase64) => {
+  const ecKey = importPrivateKeyFromBase64(privKeyBase64);
 
-const sign = (msg_bin, priv_key_base64) => {
+  const msgHash = sha256().update(msgBin).digest();
 
-    const ec_key = import_private_key_from_base64(priv_key_base64);
+  const sigBin = ecKey.sign(msgHash).toDER();
 
-    const msg_hash = sha256().update(msg_bin).digest();
+  assert(
+    ecKey.verify(msgHash, sigBin),
+    'ECDSA: the produced signature cannot be self-verified.'
+  );
 
-    const sig_bin = ec_key.sign(msg_hash).toDER();
-
-
-    assert(ec_key.verify(msg_hash, sig_bin),
-        "ECDSA: the produced signature cannot be self-verified.");
-
-    return sig_bin;
-
+  return sigBin;
 };
 
+const pubFromPriv = (privKeyBase64) => {
+  const ecKey = importPrivateKeyFromBase64(privKeyBase64);
 
-const pub_from_priv = priv_key_base64 => {
+  // This is the only way we get the long-form encoding found in PEM's.
 
-    const ec_key = import_private_key_from_base64(priv_key_base64);
+  // It returns a buffer and not base64 for God-knows why.
 
-    // This is the only way we get the long-form encoding found in PEM's.
+  const pub = ecKey.getPublic(false, 'base64');
 
-    // It returns a buffer and not base64 for God-knows why.
+  // Strip the first byte since those are present
+  // in the base64 header we've provided.
 
-    const pub = ec_key.getPublic(false, 'base64');
+  const pubhex = Buffer.from(pub).toString('hex');
 
-
-    // Strip the first byte since those are present
-    // in the base64 header we've provided.
-
-    const pub_hex = Buffer.from(pub).toString('hex');
-
-    return "MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAE" + 
-        Buffer.from(pub_hex.substring(2), 'hex').toString('base64');
-
+  return (
+    'MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAE' +
+    Buffer.from(pubhex.substring(2), 'hex').toString('base64')
+  );
 };
-
 
 // Returns an elliptic key from base64 PEM encoding with braces removes
 
@@ -84,43 +74,40 @@ const pub_from_priv = priv_key_base64 => {
 // We pass "MFYwEAYHKoZI..." into this function and it gives us an elliptic
 // key object with x/y interpreted.
 
+const importPublicKeyFromBase64 = (pubKeyBase64) => {
+  const keyBin = Buffer.from(pubKeyBase64, 'base64');
 
-const import_public_key_from_base64 = pub_key_base64 => {
+  const keyHex = keyBin.toString('hex');
 
+  // This is a constant portion of the DER-encoding that is the same for all keys.
 
-    const key_bin = Buffer.from(pub_key_base64, 'base64');
+  // It encodes:
 
-    const key_hex = key_bin.toString('hex');
+  // - 1.2.840.10045.2.1 ecPublicKey (ANSI X9.62 public key type)
+  // - 1.3.132.0.10 secp256k1 (SECG (Certicom) named elliptic curve)
+  // - The length and type of the remaining bitstring.
 
+  // To derive this, take a sample secp256k1 public key from OpenSSL and run it through
+  // an ASN.1 decoder such as https://lapo.it/asn1js/.
 
-    // This is a constant portion of the DER-encoding that is the same for all keys.
-    
-    // It encodes:
+  const header = keyHex.substring(0, 46);
 
-    // - 1.2.840.10045.2.1 ecPublicKey (ANSI X9.62 public key type)
-    // - 1.3.132.0.10 secp256k1 (SECG (Certicom) named elliptic curve)
-    // - The length and type of the remaining bitstring.
+  assert.equal(
+    header,
+    '3056301006072a8648ce3d020106052b8104000a034200',
+    'ECDSA Signature Verification: public key header is malformed for secp256k1. This is the public key you\'re trying to decode: "' + // eslint-disable-line max-len
+      pubKeyBase64 +
+      '"'
+  );
 
-    // To derive this, take a sample secp256k1 public key from OpenSSL and run it through
-    // an ASN.1 decoder such as https://lapo.it/asn1js/.
+  const body = keyHex.substring(46, keyHex.length);
 
-    const header = key_hex.substring(0, 46);
+  const ec = new EC('secp256k1');
 
-    assert.equal(header, "3056301006072a8648ce3d020106052b8104000a034200",
-        "ECDSA Signature Verification: public key header is malformed for secp256k1. This is the public key you're trying to decode: \"" + pub_key_base64 + '"');
+  // Decodes the body into x and y.
 
-
-    const body = key_hex.substring(46, key_hex.length);
-
-    const ec = new EC('secp256k1');
-
-
-    // Decodes the body into x and y.
-
-    return ec.keyFromPublic(body, 'hex');
-
+  return ec.keyFromPublic(body, 'hex');
 };
-
 
 // Like the above but for private keys.
 
@@ -130,73 +117,73 @@ const import_public_key_from_base64 = pub_key_base64 => {
 // m8rQbGWfVM84eqnb/RVuIXqoz6F9Bg==
 // -----END EC PRIVATE KEY-----
 
+const importPrivateKeyFromBase64 = (privKeyBase64) => {
+  const keyBin = Buffer.from(privKeyBase64, 'base64');
+  const keyHex = keyBin.toString('hex');
 
-const import_private_key_from_base64 = priv_key_base64 => {
+  // Like the header above. This one encodes:
 
+  // - INTEGER 1
+  // - OCTET STRING (32 byte) - PRIVATE KEY
+  // - OBJECT IDENTIFIER 1.3.132.0.10 secp256k1 (SECG (Certicom) named elliptic curve)
+  // - PUBLIC KEY
 
-    const key_bin = Buffer.from(priv_key_base64, 'base64');
+  // specified here: https://tools.ietf.org/html/rfc5915
 
-    const key_hex = key_bin.toString('hex');
+  const header1 = keyHex.substring(0, 14);
 
-     // Like the header above. This one encodes:
+  assert.equal(
+    header1,
+    '30740201010420',
+    'ECDSA Private Key Import: private key header is malformed. This is the private key you\'re trying to decode: "' +
+      privKeyBase64 +
+      '"'
+  );
 
-    // - INTEGER 1
-    // - OCTET STRING (32 byte) - PRIVATE KEY
-    // - OBJECT IDENTIFIER 1.3.132.0.10 secp256k1 (SECG (Certicom) named elliptic curve)
-    // - PUBLIC KEY
+  const header2 = keyHex.substring(78, 78 + 26);
 
-    // specified here: https://tools.ietf.org/html/rfc5915
+  assert.equal(
+    header2,
+    'a00706052b8104000aa1440342',
+    'ECDSA Private Key Import: private key header is malformed. This is the private key you\'re trying to decode: "' +
+      privKeyBase64 +
+      '"'
+  );
 
-    const header1 = key_hex.substring(0, 14);
+  const body = keyHex.substring(14, 14 + 64);
 
-    assert.equal(header1, "30740201010420",
-        "ECDSA Private Key Import: private key header is malformed. This is the private key you're trying to decode: \"" + priv_key_base64 + '"');
+  const ec = new EC('secp256k1');
 
-    const header2 = key_hex.substring(78, 78 + 26)
+  // Decodes the body into x and y.
 
-
-    assert.equal(header2, "a00706052b8104000aa1440342",
-        "ECDSA Private Key Import: private key header is malformed. This is the private key you're trying to decode: \"" + priv_key_base64 + '"');
-
-
-    const body = key_hex.substring(14, 14 + 64);
-
-    const ec = new EC('secp256k1');
-
-
-    // Decodes the body into x and y.
-
-    return ec.keyFromPrivate(body, 'hex');
-
+  return ec.keyFromPrivate(body, 'hex');
 };
 
-
-const get_pem_private_key = ec => {
-
-    return Buffer.from(
-            '30740201010420' + ec.getPrivate('hex') + 'a00706052b8104000aa144034200' + ec.getPublic('hex'),
-            'hex').toString('base64');
-
+const getPemPrivateKey = (ec) => {
+  return Buffer.from(
+    '30740201010420' +
+      ec.getPrivate('hex') +
+      'a00706052b8104000aa144034200' +
+      ec.getPublic('hex'),
+    'hex'
+  ).toString('base64');
 };
 
+const randomKey = (entropy) => {
+  const ecdsa = new EC('secp256k1');
+  const keys = ecdsa.genKeyPair({
+    entropy,
+  });
 
-const random_key = entropy => {
-
-    const ecdsa = new EC('secp256k1');
-    const keys = ecdsa.genKeyPair({
-        entropy
-    });
-
-    return get_pem_private_key(keys);
-
-};  
+  return getPemPrivateKey(keys);
+};
 
 module.exports = {
-    verify,
-    sign,
-    pub_from_priv,
-    import_private_key_from_base64,
-    import_public_key_from_base64,
-    get_pem_private_key,
-    random_key
+  verify,
+  sign,
+  pubFromPriv,
+  importPrivateKeyFromBase64,
+  importPublicKeyFromBase64,
+  getPemPrivateKey,
+  randomKey,
 };

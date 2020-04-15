@@ -13,72 +13,59 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-const crypto = require ('crypto');
+const crypto = require('crypto');
 const BN = require('bn.js');
-const ec = require ('elliptic').ec;
+const EC = require('elliptic').ec;
 
-const secp256k1 = new ec('secp256k1');
+const secp256k1 = new EC('secp256k1');
 
-const hash = (hash, data) =>
-    crypto.createHash(hash)
-        .update(data)
-        .digest()
+const hash = (hash, data) => crypto.createHash(hash).update(data).digest();
 
-const convertSignature = sig =>
-{
-    let r = new BN(sig.r)
+const convertSignature = (sig) => {
+  let r = new BN(sig.r);
 
-    if (r.cmp(secp256k1.curve.n) >= 0)
-    {
-        r = new BN(0)
-    }
+  if (r.cmp(secp256k1.curve.n) >= 0) {
+    r = new BN(0);
+  }
 
-    let s = new BN(sig.s)
-    if (s.cmp(secp256k1.curve.n) >= 0)
-    {
-        s = new BN(0)
-    }
+  let s = new BN(sig.s);
+  if (s.cmp(secp256k1.curve.n) >= 0) {
+    s = new BN(0);
+  }
 
-    return Buffer.concat([
-        r.toArrayLike(Buffer, 'be', 32),
-        s.toArrayLike(Buffer, 'be', 32),
-    ])
-}
+  return Buffer.concat([
+    r.toArrayLike(Buffer, 'be', 32),
+    s.toArrayLike(Buffer, 'be', 32),
+  ]);
+};
 
-const sortJson = obj =>
-{
-    if (
-        obj === null ||
-        ~['undefined', 'string', 'number', 'boolean', 'function'].indexOf(
-            typeof obj
-        )
+const sortJson = (obj) => {
+  if (
+    obj === null ||
+    ~['undefined', 'string', 'number', 'boolean', 'function'].indexOf(
+      typeof obj
     )
-    {
-        return obj
-    }
+  ) {
+    return obj;
+  }
 
-    if (Array.isArray(obj))
-    {
-        return obj.sort().map(i => sortJson(i))
-    }
-    else
-    {
-        let sortedObj = {}
+  if (Array.isArray(obj)) {
+    return obj.sort().map((i) => sortJson(i));
+  } else {
+    const sortedObj = {};
 
-        Object.keys(obj)
-            .sort()
-            .forEach(key =>
-            {
-                sortedObj[key] = sortJson(obj[key])
-            })
+    Object.keys(obj)
+      .sort()
+      .forEach((key) => {
+        sortedObj[key] = sortJson(obj[key]);
+      });
 
-        return sortedObj
-    }
-}
+    return sortedObj;
+  }
+};
 
-module.exports =
-    {
-        hash,
-        convertSignature,
-        sortJson
-    };
+module.exports = {
+  hash,
+  convertSignature,
+  sortJson,
+};
