@@ -49,7 +49,7 @@ function usage()
     console.log("  txGetLease uuid key           - returns the lease time (in seconds) remaining for a key");
     console.log("  renewLease uuid key           - updates the lease time for a key, optionally with a lease (in seconds)");
     console.log("  renewLeaseAll uuid [lease]    - updates the lease time for all keys, optionally with a lease (in seconds)");
-    console.log("  txGetNShortestLease uuid n    - returns the n keys/leases with the shortest least time");
+    console.log("  txGetNShortestLeases uuid n    - returns the n keys/leases with the shortest least time");
 
     console.log("\n  multiUpdate uuid key value [key value]... - updates the value of multiple existing keys");
     console.log("\n Query commands");
@@ -59,7 +59,7 @@ function usage()
     console.log("  keyValues uuid           - returns a list of all keys and values");
     console.log("  count uuid               - returns the number of keys");
     console.log("  getLease uuid key        - returns the lease time (in seconds) remaining for a key");
-    console.log("  getNShortestLease uuid n - returns the n keys/leases with the shortest least time");
+    console.log("  getNShortestLeases uuid n - returns the n keys/leases with the shortest least time");
     console.log("\n Miscellaneous commands");
     console.log("  account               - returns information about the currently active account");
     console.log("  version               - returns the version of the Bluzelle service");
@@ -203,13 +203,13 @@ const main = async () => {
                 check_args(3);
                 res = await bz.renewLeaseAll(gas_params, make_lease(4));
                 break;
-            case 'getNShortestLease':
+            case 'getNShortestLeases':
                 check_args(4);
-                res = await bz.getNShortestLease(process.argv[4], gas_params);
+                res = await bz.getNShortestLeases(process.argv[4], gas_params);
                 break;
-            case 'txGetNShortestLease':
+            case 'txGetNShortestLeases':
                 check_args(4);
-                res = await bz.txGetNShortestLease(process.argv[4], gas_params);
+                res = await bz.txGetNShortestLeases(process.argv[4], gas_params);
                 break;
             case 'account':
                 check_args(2);
