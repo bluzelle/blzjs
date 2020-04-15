@@ -368,7 +368,6 @@ module.exports = class API
 
         return this.do_query(`${app_service}/getnshortestlease/${this.uuid}/${n}`, function(res, resolve, reject)
         {
-            debugger;
             let lease_info = [];
             res.result.keyleases.forEach(function(val, i, leases)
             {

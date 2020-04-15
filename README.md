@@ -78,6 +78,7 @@ All values are optional. The `max_gas` value will always be honored if present, 
     'days':    '0', // number of days (integer)
     'hours':   '0', // number of hours (integer)
     'minutes': '0'  // number of minutes (integer)
+    'seconds': '0'  // number of seconds (integer)
 };
 ````
 All values are optional. If none are provided a default value of 10 days will be used. 
@@ -249,7 +250,7 @@ await api.update('mykey', '{ a: 13 }, {gas_price: 10}', {days: 100});
 | key | The name of the key to create |
 | value | The string value to set the key |
 | gas_info | Object containing gas parameters (see above) |
-| lease_info (optional) | Minimum time for key to remain in database (see above). If not specified, the existing lease will not be altered. |
+| lease_info (optional) | Positive or negative amount of time to alter the lease by. If not specified, the existing lease will not be changed. |
 
 Returns a promise resolving to nothing.
 
