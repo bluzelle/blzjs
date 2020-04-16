@@ -41,5 +41,6 @@ jobs:
             cd ..
             yarn test-install
             echo ">>RUNNING INTEGRATION TESTS<<"
+            sed -i 's/"test": "mocha/"test": "mocha --grep \\"with single client|with multiple clients to same account|bluzelle JS client|read()|txread()|update()\\"/g' package.json
             yarn test
           fi
