@@ -360,7 +360,8 @@ function handle_account_response(response)
 {
     let state = response.data;
 
-    if (state && state.result && state.result.value.account_number && state.result.value.sequence)
+    if (state && state.result && typeof state.result.value.account_number !== 'undefined'
+        && typeof state.result.value.sequence !== 'undefined')
     {
         account_info.account_number = `${state.result.value.account_number}`;
         if (account_info.sequence !== `${state.result.value.sequence}`)
