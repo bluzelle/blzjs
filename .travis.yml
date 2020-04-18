@@ -41,5 +41,5 @@ jobs:
             cd ..
             yarn test-install
             echo ">>RUNNING INTEGRATION TESTS<<"
-            yarn test
+            yarn test -g "js-client"
           fi
