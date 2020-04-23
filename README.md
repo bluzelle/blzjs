@@ -81,7 +81,7 @@ All values are optional. The `max_gas` value will always be honored if present, 
     'seconds': '0'  // number of seconds (integer)
 };
 ````
-All values are optional. If none are provided a default value of 10 days will be used. 
+All values are optional. If none are provided a default value of 10 days will be used.
 
 
 ![#1589F0](https://placehold.it/15/1589F0/000000?text=+) The example code in the `samples` directory requires Node.js in order to run. For instructions on how to install Node.js for your platform, please see http://nodejs.org
@@ -574,16 +574,16 @@ Returns a promise resolving the minimum length of time remaining for the key's l
 Throws an exception when the key does not exist in the database.
 
 
-### getNShortestLease\(n\)
+### getNShortestLeases\(n\)
 
 Retrieve a list of the n keys in the database with the shortest leases.  This function bypasses the consensus and cryptography mechanisms in favor of speed.
- 
+
 ```javascript
 // promise syntax
-api.getNShortestLease(10).then(keys => { ... }, error => { ... });
+api.getNShortestLeases(10).then(keys => { ... }, error => { ... });
 
 // async/await syntax
-const keys = await api.getNShortestLease(10);
+const keys = await api.getNShortestLeases(10);
 ```
 
 | Argument | Description |
@@ -595,16 +595,16 @@ Returns a JSON array of objects containing key, lease (in seconds), e.g.
 [ { key: "mykey", lease: { seconds: "12345" } }, {...}, ...]
 ```
 
-### txGetNShortestLease\(n, gas_info\)
+### txGetNShortestLeases\(n, gas_info\)
 
 Retrieve a list of the N keys/values in the database with the shortest leases, using a transaction.
- 
+
 ```javascript
 // promise syntax
-api.txGetNShortestLease(10).then(keys => { ... }, error => { ... });
+api.txGetNShortestLeases(10).then(keys => { ... }, error => { ... });
 
 // async/await syntax
-const keys = await api.txGetNShortestLease(10);
+const keys = await api.txGetNShortestLeases(10);
 ```
 
 | Argument | Description |
@@ -616,5 +616,3 @@ Returns a JSON array of objects containing key, lifetime (in seconds), e.g.
 ```
 [ { key: "mykey", lifetime: "12345" }, {...}, ...]
 ```
-
-

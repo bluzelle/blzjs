@@ -359,14 +359,14 @@ module.exports = class API
     }
 
     // returns a promise resolving to an array of key/lease-time pairs
-    async getNShortestLease(n)
+    async getNShortestLeases(n)
     {
         if (n < 0)
         {
             throw new Error("Invalid value specified");
         }
 
-        return this.do_query(`${app_service}/getnshortestlease/${this.uuid}/${n}`, function(res, resolve, reject)
+        return this.do_query(`${app_service}/getnshortestleases/${this.uuid}/${n}`, function(res, resolve, reject)
         {
             let lease_info = [];
             res.result.keyleases.forEach(function(val, i, leases)
@@ -378,7 +378,7 @@ module.exports = class API
     }
 
     // returns a promise resolving to an array of key/lease-time pairs
-    txGetNShortestLease(n, gas_info)
+    txGetNShortestLeases(n, gas_info)
     {
         if (n < 0)
         {
@@ -388,7 +388,7 @@ module.exports = class API
         return this.do_tx(
             {
                 N: n
-            }, 'post', 'getnshortestlease', gas_info, function(res, resolve, reject)
+            }, 'post', 'getnshortestleases', gas_info, function(res, resolve, reject)
         {
             const json = parse_result(res, reject);
             let lease_info = [];

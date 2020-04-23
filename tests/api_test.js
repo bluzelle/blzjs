@@ -977,17 +977,17 @@ describe('testing renewLeaseAll', () =>
     });
 });
 
-describe('testing getNShortestLease', () =>
+describe('testing getNShortestLeases', () =>
 {
     const n = 10;
     const leases = [{key: 'key1', lease: 100}, {key: 'key2', lease: 200}];
     save_cosmos_functions();
 
-    it('getNShortestLease success', async () =>
+    it('getNShortestLeases success', async () =>
     {
         cosmos.query = async (ep) =>
         {
-            expect(ep).equal(`${app_service}/getnshortestlease/${params.address}/${n}`);
+            expect(ep).equal(`${app_service}/getnshortestleases/${params.address}/${n}`);
 
             return new Promise(async (resolve, reject) =>
             {
@@ -995,7 +995,7 @@ describe('testing getNShortestLease', () =>
             });
         };
 
-        res = await api.getNShortestLease(n);
+        res = await api.getNShortestLeases(n);
         res.forEach(function(val, i, lease_info)
         {
             expect(lease_info[i].key).equal(leases[i].key);
@@ -1003,32 +1003,32 @@ describe('testing getNShortestLease', () =>
         });
     });
 
-    it('getNShortestLease error', async () =>
+    it('getNShortestLeases error', async () =>
     {
         const msg = "An error occurred";
-        const url = `${app_service}/getnshortestlease/${params.address}/${n}`;
+        const url = `${app_service}/getnshortestleases/${params.address}/${n}`;
 
         await query_error(url, msg, function()
         {
-            return api.getNShortestLease(n);
+            return api.getNShortestLeases(n);
         });
     });
 });
 
-describe('testing txGetNShortestLease', () =>
+describe('testing txGetNShortestLeases', () =>
 {
     save_cosmos_functions();
     const n = 10;
     const leases = [{key: 'key1', lease: 100}, {key: 'key2', lease: 200}];
 
-    it('txGetNShortestLease success', async () =>
+    it('txGetNShortestLeases success', async () =>
     {
         var send_tx_called = 0;
         cosmos.send_transaction = async (req_type, ep_name, data, gas_info) =>
         {
             ++send_tx_called;
             expect(req_type).equal('post');
-            expect(ep_name).equal(`${app_service}/getnshortestlease`);
+            expect(ep_name).equal(`${app_service}/getnshortestleases`);
             expect(validate_common_data(data)).equal(true);
             expect(data.N).equal(n);
             expect(gas_info).equal(params.gas_info);
@@ -1041,7 +1041,7 @@ describe('testing txGetNShortestLease', () =>
             });
         };
 
-        res = await api.txGetNShortestLease(n, params.gas_info);
+        res = await api.txGetNShortestLeases(n, params.gas_info);
         expect(send_tx_called).equal(1);
         expect(typeof res).equal('object');
         expect(res.length).equal(leases.length);
@@ -1052,11 +1052,11 @@ describe('testing txGetNShortestLease', () =>
         });
     });
 
-    it('txGetNShortestLease error', async () =>
+    it('txGetNShortestLeases error', async () =>
     {
         await tx_error('An error occurred', function ()
         {
-            return api.txGetNShortestLease(n, params.gas_info);
+            return api.txGetNShortestLeases(n, params.gas_info);
         });
     });
 });
