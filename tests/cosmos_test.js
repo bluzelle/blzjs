@@ -183,6 +183,22 @@ describe('testing initialize', () =>
         expect(cosmos.account_info === basic_response_data.result);
     });
 
+
+    it('initialize handles zero account sequence', async () =>
+    {
+        response = {
+            status: 200,
+            response: JSON.parse(JSON.stringify(basic_response_data))
+        };
+        response.response.result.value.sequence = "0";
+
+        moxios.stubRequest(/\/auth\/accounts\/.*/, response);
+
+        await cosmos.init(params.mnemonic, params.endpoint, params.address);
+        moxios.stubs.reset();
+
+    });
+
     it('initialize handles missing data', async () =>
     {
         const response_data =
