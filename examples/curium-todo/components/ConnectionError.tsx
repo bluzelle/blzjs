@@ -1,5 +1,4 @@
 import {Alert, Button} from "react-bootstrap";
-import Link from "next/link";
 import {params} from "../services/TodoService";
 
 export const ConnectionError: React.FC<{error: string}> = ({error}) => (

@@ -24,8 +24,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const api_1 = require("./swarmClient/api");
-exports.bluzelle = ({ address, mnemonic, endpoint, uuid, chain_id }) => __awaiter(void 0, void 0, void 0, function* () {
-    const api = new api_1.API(address, mnemonic, endpoint, uuid || address, chain_id);
+exports.bluzelle = (config) => __awaiter(void 0, void 0, void 0, function* () {
+    const api = new api_1.API(config);
     yield api.init();
     return api;
 });

@@ -48,42 +48,38 @@ function hex2string(hex) {
 }
 const parse_result = (str) => JSON.parse(hex2string(str));
 class API {
-    constructor(address, mnemonic, endpoint, uuid, chain_id) {
-        assert_1.default(lodash_1.isString(address), "address must be a string" /* ADDRESS_MUST_BE_A_STRING */);
+    constructor({ mnemonic, endpoint, uuid, chain_id }) {
+        this.address = '';
         assert_1.default(lodash_1.isString(mnemonic), "mnemonic must be a string" /* MNEMONIC_MUST_BE_A_STRING */);
+        assert_1.default(lodash_1.isString(uuid), "uuid must be a string" /* UUID_MUST_BE_A_STRING */);
         this.mnemonic = mnemonic;
-        this.address = address;
         this.uuid = uuid;
         this.chain_id = chain_id || "bluzelle";
         this.endpoint = endpoint || "http://localhost:1317";
     }
     init() {
         return __awaiter(this, void 0, void 0, function* () {
-            return cosmos.init(this.mnemonic, this.endpoint, this.address);
+            this.address = yield cosmos.init(this.mnemonic, this.endpoint);
         });
     }
     status() {
         console.log("status");
     }
     create(key, value, gas_info, lease_info = {}) {
-        return __awaiter(this, void 0, void 0, function* () {
-            assert_1.default(lodash_1.isString(key), "Key must be a string" /* KEY_MUST_BE_A_STRING */);
-            assert_1.default(lodash_1.isString(value), "Value must be a string" /* VALUE_MUST_BE_A_STRING */);
-            const blocks = util_2.convertLease(lease_info);
-            if (blocks < 0) {
-                throw new Error("Invalid lease time" /* INVALID_LEASE_TIME */);
-            }
-            return this.do_tx({
-                Key: key,
-                Value: value,
-                Lease: blocks.toString()
-            }, 'post', 'create', gas_info);
-        });
+        assert_1.default(lodash_1.isString(key), "Key must be a string" /* KEY_MUST_BE_A_STRING */);
+        assert_1.default(lodash_1.isString(value), "Value must be a string" /* VALUE_MUST_BE_A_STRING */);
+        const blocks = util_2.convertLease(lease_info);
+        assert_1.default(blocks >= 0, "Invalid lease time" /* INVALID_LEASE_TIME */);
+        return this.doTx({
+            Key: key,
+            Value: value,
+            Lease: blocks.toString()
+        }, 'post', 'create', gas_info);
     }
     update(key, value, gas_info, lease_info) {
         assert_1.default(lodash_1.isString(key), "Key must be a string" /* KEY_MUST_BE_A_STRING */);
         assert_1.default(lodash_1.isString(value), "Value must be a string" /* VALUE_MUST_BE_A_STRING */);
-        return this.do_tx({
+        return this.doTx({
             Key: key,
             Value: value,
             Lease: util_2.convertLease(lease_info = {}).toString()
@@ -91,9 +87,7 @@ class API {
     }
     read(key, prove) {
         assert_1.default(lodash_1.isString(key), "Key must be a string" /* KEY_MUST_BE_A_STRING */);
-        const uri_key = util_3.encodeSafe(key);
-        const url = prove ? `${APP_SERVICE}/pread/${this.uuid}/${uri_key}` : `${APP_SERVICE}/read/${this.uuid}/${uri_key}`;
-        return cosmos.query(url)
+        return cosmos.query(`${APP_SERVICE}/${prove ? 'pread' : 'read'}/${this.uuid}/${util_3.encodeSafe(key)}`)
             .then(res => res.result.value)
             .catch(err => {
             // treat 404's specially
@@ -106,46 +100,38 @@ class API {
         });
     }
     txRead(key, gas_info) {
-        return __awaiter(this, void 0, void 0, function* () {
-            assert_1.default(lodash_1.isString(key), "Key must be a string" /* KEY_MUST_BE_A_STRING */);
-            return this.do_tx({
-                Key: key
-            }, 'post', 'read', gas_info).then(res => parse_result(res).value);
-        });
+        assert_1.default(lodash_1.isString(key), "Key must be a string" /* KEY_MUST_BE_A_STRING */);
+        return this.doTx({
+            Key: key
+        }, 'post', 'read', gas_info).then(res => parse_result(res).value);
     }
     delete(key, gas_info) {
-        return __awaiter(this, void 0, void 0, function* () {
-            assert_1.default(lodash_1.isString(key), "Key must be a string" /* KEY_MUST_BE_A_STRING */);
-            return this.do_tx({
-                Key: key
-            }, 'delete', 'delete', gas_info);
-        });
+        assert_1.default(lodash_1.isString(key), "Key must be a string" /* KEY_MUST_BE_A_STRING */);
+        return this.doTx({
+            Key: key
+        }, 'delete', 'delete', gas_info);
     }
     has(key) {
-        return __awaiter(this, void 0, void 0, function* () {
-            assert_1.default(lodash_1.isString(key), "Key must be a string" /* KEY_MUST_BE_A_STRING */);
-            const uri_key = util_3.encodeSafe(key);
-            return cosmos.query(`${APP_SERVICE}/has/${this.uuid}/${uri_key}`).then(({ result }) => result.has);
-        });
+        assert_1.default(lodash_1.isString(key), "Key must be a string" /* KEY_MUST_BE_A_STRING */);
+        const uri_key = util_3.encodeSafe(key);
+        return cosmos.query(`${APP_SERVICE}/has/${this.uuid}/${uri_key}`).then(({ result }) => result.has);
     }
     txHas(key, gas_info) {
         assert_1.default(lodash_1.isString(key), "Key must be a string" /* KEY_MUST_BE_A_STRING */);
-        return this.do_tx({
+        return this.doTx({
             Key: key
         }, 'post', 'has', gas_info).then(res => parse_result(res).has);
     }
     keys() {
-        return __awaiter(this, void 0, void 0, function* () {
-            return cosmos.query(`${APP_SERVICE}/keys/${this.uuid}`).then(({ result }) => result.keys || []);
-        });
+        return cosmos.query(`${APP_SERVICE}/keys/${this.uuid}`).then(({ result }) => result.keys || []);
     }
     txKeys(gas_info) {
-        return this.do_tx({}, 'post', 'keys', gas_info).then(res => parse_result(res).keys || []);
+        return this.doTx({}, 'post', 'keys', gas_info).then(res => parse_result(res).keys || []);
     }
     rename(key, new_key, gas_info) {
         assert_1.default(lodash_1.isString(key), "Key must be a string" /* KEY_MUST_BE_A_STRING */);
         assert_1.default(lodash_1.isString(new_key), "New key must be a string" /* NEW_KEY_MUST_BE_A_STRING */);
-        return this.do_tx({
+        return this.doTx({
             Key: key,
             NewKey: new_key
         }, 'post', 'rename', gas_info);
@@ -154,75 +140,63 @@ class API {
         return cosmos.query(`/${APP_SERVICE}/count/${this.uuid}`).then(({ result }) => parseInt(result.count));
     }
     txCount(gas_info) {
-        return this.do_tx({}, 'post', 'count', gas_info).then(res => parseInt(parse_result(res).count));
+        return this.doTx({}, 'post', 'count', gas_info).then(res => parseInt(parse_result(res).count));
     }
     deleteAll(gas_info) {
-        return this.do_tx({}, 'post', 'deleteall', gas_info);
+        return this.doTx({}, 'post', 'deleteall', gas_info);
     }
     keyValues() {
         return cosmos.query(`/${APP_SERVICE}/keyvalues/${this.uuid}`).then(({ result }) => result.keyvalues);
     }
     txKeyValues(gas_info) {
-        return this.do_tx({}, 'post', 'keyvalues', gas_info).then(res => parse_result(res).keyvalues);
+        return this.doTx({}, 'post', 'keyvalues', gas_info).then(res => parse_result(res).keyvalues);
     }
     multiUpdate(keyvalues, gas_info) {
-        return __awaiter(this, void 0, void 0, function* () {
-            assert_1.default(typeof keyvalues === 'object', 'Keyvalues must be an array');
-            keyvalues.forEach(({ key, value }, index, array) => {
-                assert_1.default(lodash_1.isString(key), "All keys must be strings" /* ALL_KEYS_MUST_BE_STRINGS */);
-                assert_1.default(lodash_1.isString(value), "All values must be strings" /* ALL_VALUES_MUST_BE_STRINGS */);
-            });
-            return this.do_tx({
-                KeyValues: keyvalues
-            }, 'post', 'multiupdate', gas_info);
+        assert_1.default(Array.isArray(keyvalues), 'keyvalues must be an array');
+        keyvalues.forEach(({ key, value }, index, array) => {
+            assert_1.default(lodash_1.isString(key), "All keys must be strings" /* ALL_KEYS_MUST_BE_STRINGS */);
+            assert_1.default(lodash_1.isString(value), "All values must be strings" /* ALL_VALUES_MUST_BE_STRINGS */);
         });
+        return this.doTx({
+            KeyValues: keyvalues
+        }, 'post', 'multiupdate', gas_info);
     }
     getLease(key) {
-        return __awaiter(this, void 0, void 0, function* () {
-            assert_1.default(lodash_1.isString(key), "Key must be a string" /* KEY_MUST_BE_A_STRING */);
-            const uri_key = util_3.encodeSafe(key);
-            return cosmos.query(`${APP_SERVICE}/getlease/${this.uuid}/${uri_key}`).then(({ result }) => result.lease * util_1.BLOCK_TIME_IN_SECONDS);
-        });
+        assert_1.default(lodash_1.isString(key), "Key must be a string" /* KEY_MUST_BE_A_STRING */);
+        const uri_key = util_3.encodeSafe(key);
+        return cosmos.query(`${APP_SERVICE}/getlease/${this.uuid}/${uri_key}`).then(({ result }) => result.lease * util_1.BLOCK_TIME_IN_SECONDS);
     }
     txGetLease(key, gas_info) {
         assert_1.default(lodash_1.isString(key), "Key must be a string" /* KEY_MUST_BE_A_STRING */);
-        return this.do_tx({
+        return this.doTx({
             Key: key
         }, 'post', 'getlease', gas_info).then(res => parse_result(res).lease * util_1.BLOCK_TIME_IN_SECONDS);
     }
     renewLease(key, gas_info, lease_info) {
         assert_1.default(lodash_1.isString(key), "Key must be a string" /* KEY_MUST_BE_A_STRING */);
         const blocks = util_2.convertLease(lease_info);
-        if (blocks < 0) {
-            throw new Error("Invalid lease time" /* INVALID_LEASE_TIME */);
-        }
-        return this.do_tx({
+        assert_1.default(blocks >= 0, "Invalid lease time" /* INVALID_LEASE_TIME */);
+        return this.doTx({
             Key: key,
             Lease: blocks.toString()
         }, 'post', 'renewlease', gas_info);
     }
     renewLeaseAll(gas_info, lease_info = {}) {
         const blocks = util_2.convertLease(lease_info);
-        if (blocks < 0) {
-            throw new Error("Invalid lease time" /* INVALID_LEASE_TIME */);
-        }
-        return this.do_tx({
+        assert_1.default(blocks >= 0, "Invalid lease time" /* INVALID_LEASE_TIME */);
+        return this.doTx({
             Lease: blocks.toString()
         }, 'post', 'renewleaseall', gas_info);
     }
     getNShortestLeases(n) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (n < 0) {
-                throw new Error("Invalid value specified" /* INVALID_VALUE_SPECIFIED */);
-            }
-            return cosmos.query(`${APP_SERVICE}/getnshortestleases/${this.uuid}/${n}`).then(({ result }) => {
-                return result.keyleases.map(({ key, lease }) => ({ key, lease: parseInt(lease) * util_1.BLOCK_TIME_IN_SECONDS }));
-            });
+        assert_1.default(n >= 0, Error("Invalid value specified" /* INVALID_VALUE_SPECIFIED */));
+        return cosmos.query(`${APP_SERVICE}/getnshortestleases/${this.uuid}/${n}`).then(({ result }) => {
+            return result.keyleases.map(({ key, lease }) => ({ key, lease: parseInt(lease) * util_1.BLOCK_TIME_IN_SECONDS }));
         });
     }
     txGetNShortestLeases(n, gas_info) {
         assert_1.default(n >= 0, "Invalid value specified" /* INVALID_VALUE_SPECIFIED */);
-        return this.do_tx({
+        return this.doTx({
             N: n
         }, 'post', 'getnshortestleases', gas_info).then(res => {
             const result = parse_result(res);
@@ -230,21 +204,17 @@ class API {
         });
     }
     account() {
-        return __awaiter(this, void 0, void 0, function* () {
-            return cosmos.query(`auth/accounts/${this.address}`).then(({ result }) => result.value);
-        });
+        return cosmos.query(`auth/accounts/${this.address}`).then(({ result }) => result.value);
     }
     version() {
-        return __awaiter(this, void 0, void 0, function* () {
-            return cosmos.query('node_info').then(res => res.application_version.version);
-        });
+        return cosmos.query('node_info').then(res => res.application_version.version);
     }
-    do_tx(params, type, cmd, gas_info) {
+    doTx(params, type, cmd, gas_info) {
         const data = Object.assign({ BaseReq: {
                 from: this.address,
                 chain_id: this.chain_id
             }, UUID: this.uuid, Owner: this.address }, params);
-        return cosmos.send_transaction(type, `${APP_SERVICE}/${cmd}`, data, gas_info);
+        return cosmos.sendTransaction(type, `${APP_SERVICE}/${cmd}`, data, gas_info);
     }
 }
 exports.API = API;

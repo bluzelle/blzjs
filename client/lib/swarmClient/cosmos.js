@@ -38,12 +38,12 @@ const bitcoinjs = require('bitcoinjs-lib');
 const bip32 = require('bip32');
 const bip39 = require('bip39');
 let app_endpoint;
-const tx_command = "txs";
-const secp256k1 = new ec('secp256k1');
-const BECH32_PREFIX = 'bluzelle';
 let private_key;
 const account_info = { account_number: "", sequence: 0 };
 const tx_queue = [];
+const TX_COMMAND = "txs";
+const secp256k1 = new ec('secp256k1');
+const BECH32_PREFIX = 'bluzelle';
 const TOKEN_NAME = 'ubnt';
 exports.MAX_RETRIES = 10;
 exports.RETRY_INTERVAL = 1000; // 1 second
@@ -105,7 +105,7 @@ function send_tx(url, data, chain_id) {
     data.value.signatures = [sig];
     data.value.signature = sig;
     // Post the transaction
-    return axios.post(`${url}/${tx_command}`, {
+    return axios.post(`${url}/${TX_COMMAND}`, {
         headers: { 'Content-type': 'application/x-www-form-urlencoded' },
         tx: data.value,
         mode: 'block' // wait for tx to be committed
@@ -254,16 +254,13 @@ function next_tx() {
 ////////////////////////////////////////////////////////
 // exported functions
 ////////////////////////////////////////////////////////
-exports.init = (mnemonic, endpoint, address) => __awaiter(void 0, void 0, void 0, function* () {
+exports.init = (mnemonic, endpoint) => __awaiter(void 0, void 0, void 0, function* () {
     app_endpoint = endpoint;
     private_key = yield getECPrivateKey(mnemonic);
-    // validate address against mnemonic
-    if (getAddress(secp256k1.keyFromPrivate(private_key, 'hex').getPublic(true, 'hex')) !== address) {
-        return Promise.reject((new Error("Bad credentials - verify your address and mnemonic")));
-    }
     yield sendAccountQuery();
+    return getAddress(secp256k1.keyFromPrivate(private_key, 'hex').getPublic(true, 'hex'));
 });
-exports.send_transaction = (req_type, ep_name, data, gas_info) => {
+exports.sendTransaction = (req_type, ep_name, data, gas_info) => {
     const def = new Deferred_1.Deferred();
     const tx = new Transaction_1.Transaction(req_type, ep_name, data, def);
     lodash_1.extend(tx, gas_info || {});

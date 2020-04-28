@@ -1,22 +1,15 @@
 import {bluzelle} from '../../client/lib/bluzelle-node'
-import {BluzelleConfig} from "../../client/lib/BluzelleConfig";
 import {memoize} from 'lodash'
 import express from 'express'
+import {bluzelleConfig} from "../example-config";
 
 const PORT = 3000;
 
 const app = express()
 
-const params: BluzelleConfig = {
-    address: "bluzelle1htcd86l00dmkptdja75za0akg8mrt2w3qhd65v",
-    mnemonic: "apology antique such ancient spend narrow twin banner coral book iron summer west extend toddler walnut left genius exchange globe satisfy shield case rose",
-    endpoint: "http://testnet.public.bluzelle.com:1317",
-    chain_id: 'bluzelle',
-    uuid: Date.now().toString()
-}
 
 
-const getBZ = memoize(() => bluzelle(params));
+const getBZ = memoize(() => bluzelle(bluzelleConfig));
 
 app.get('/create/:key/:value', (req, res) => {
     getBZ()

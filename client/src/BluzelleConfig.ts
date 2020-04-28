@@ -1,5 +1,4 @@
 export interface BluzelleConfig {
-    address:  string
     mnemonic: string
     uuid: string
     endpoint: string

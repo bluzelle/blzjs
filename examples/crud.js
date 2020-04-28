@@ -24,7 +24,7 @@ const { bluzelle } = require('../client/lib/bluzelle-node');
 //         endpoint: "address/port of your rest-proxy, e.g. http://localhost:1317",
 //         chain_id: "bluzelle"
 //  };
-const config = require('./blz-config.js');
+const config = require('./example-config');
 
 const gas_params = config.gas_params;
 

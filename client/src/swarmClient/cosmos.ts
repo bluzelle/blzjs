@@ -31,15 +31,16 @@ const bip32 = require('bip32');
 const bip39 = require('bip39');
 
 let app_endpoint: string;
-const tx_command = "txs";
+let private_key: string;
+const account_info: { account_number: string, sequence: number } = {account_number: "", sequence: 0};
+const tx_queue: any[] = [];
+
+const TX_COMMAND = "txs";
 
 const secp256k1 = new ec('secp256k1');
 
 const BECH32_PREFIX: string = 'bluzelle';
 
-let private_key: string;
-const account_info: { account_number: string, sequence: number } = {account_number: "", sequence: 0};
-const tx_queue: any[] = [];
 
 const TOKEN_NAME = 'ubnt';
 
@@ -123,7 +124,7 @@ function send_tx(url: string, data: any, chain_id: string): any {
     data.value.signature = sig;
 
     // Post the transaction
-    return axios.post(`${url}/${tx_command}`, {
+    return axios.post(`${url}/${TX_COMMAND}`, {
         headers: {'Content-type': 'application/x-www-form-urlencoded'},
         tx: data.value,
         mode: 'block' // wait for tx to be committed
@@ -291,19 +292,16 @@ function next_tx(): Promise<void> {
 // exported functions
 ////////////////////////////////////////////////////////
 
-export const init = async (mnemonic: string, endpoint: string, address: string): Promise<any> => {
+export const init = async (mnemonic: string, endpoint: string): Promise<any> => {
     app_endpoint = endpoint;
     private_key = await getECPrivateKey(mnemonic);
 
-    // validate address against mnemonic
-    if (getAddress(secp256k1.keyFromPrivate(private_key, 'hex').getPublic(true, 'hex')) !== address) {
-        return Promise.reject((new Error("Bad credentials - verify your address and mnemonic")));
-    }
-
     await sendAccountQuery();
+
+    return getAddress(secp256k1.keyFromPrivate(private_key, 'hex').getPublic(true, 'hex'))
 }
 
-export const send_transaction = (req_type: string, ep_name: string, data: any, gas_info: GasInfo): Promise<any> => {
+export const sendTransaction = (req_type: string, ep_name: string, data: any, gas_info: GasInfo): Promise<any> => {
     const def = new Deferred();
     const tx = new Transaction(req_type, ep_name, data, def);
     extend(tx, gas_info || {});
