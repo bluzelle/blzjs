@@ -21,7 +21,6 @@ export const ParamsForm: React.FC = () => {
 
     return (
         <Form onSubmit={formSubmit}>
-            <ParamFormField label="Address" value={params.address} onChange={updateParam('address')} autoFocus/>
             <ParamFormField label="Mnemonic" value={params.mnemonic} onChange={updateParam('mnemonic')}/>
             <ParamFormField label="Endpoint" value={params.endpoint} onChange={updateParam('endpoint')}/>
             <ParamFormField label="Chain ID" value={params.chain_id} onChange={updateParam('chain_id')}/>

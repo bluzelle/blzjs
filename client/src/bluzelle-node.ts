@@ -16,8 +16,8 @@
 import {API} from './swarmClient/api'
 import {BluzelleConfig} from "./BluzelleConfig";
 
-export const bluzelle = async ({address, mnemonic, endpoint, uuid, chain_id}: BluzelleConfig): Promise<API> => {
-    const api = new API(address, mnemonic, endpoint, uuid || address, chain_id);
+export const bluzelle = async (config: BluzelleConfig): Promise<API> => {
+    const api = new API(config);
     await api.init();
     return api;
 }

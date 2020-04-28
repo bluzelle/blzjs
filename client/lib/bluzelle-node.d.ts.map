@@ -1,1 +1,1 @@
-{"version":3,"file":"bluzelle-node.d.ts","sourceRoot":"","sources":["../src/bluzelle-node.ts"],"names":[],"mappings":"AAeA,OAAO,EAAC,GAAG,EAAC,MAAM,mBAAmB,CAAA;AACrC,OAAO,EAAC,cAAc,EAAC,MAAM,kBAAkB,CAAC;AAEhD,eAAO,MAAM,QAAQ,mFAIpB,CAAA"}
+{"version":3,"file":"bluzelle-node.d.ts","sourceRoot":"","sources":["../src/bluzelle-node.ts"],"names":[],"mappings":"AAeA,OAAO,EAAC,GAAG,EAAC,MAAM,mBAAmB,CAAA;AACrC,OAAO,EAAC,cAAc,EAAC,MAAM,kBAAkB,CAAC;AAEhD,eAAO,MAAM,QAAQ,0CAIpB,CAAA"}

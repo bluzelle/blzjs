@@ -23,7 +23,6 @@ The file crud.js in the *samples* directory contains example code that demonstra
 In general, you must initialize blzjs before calling any other functions. Do the following (using your own configuration parameters as applicable) to initialize:
 ```
 let bz = await bluzelle({
-        address:  my_account_address,
         mnemonic: my_mnemonic,
         uuid:     my_uuid,
         endpoint: my_endpoint,

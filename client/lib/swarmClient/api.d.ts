@@ -1,13 +1,14 @@
 import { GasInfo } from "../GasInfo";
 import { LeaseInfo } from "../LeaseInfo";
 import { AccountInfo } from "../AccountInfo";
+import { BluzelleConfig } from "../BluzelleConfig";
 export declare class API {
     mnemonic: string;
     address: string;
     uuid: string;
     chain_id: string;
     endpoint: string;
-    constructor(address: string, mnemonic: string, endpoint: string, uuid: string, chain_id: string);
+    constructor({ mnemonic, endpoint, uuid, chain_id }: BluzelleConfig);
     init(): Promise<void>;
     status(): void;
     create(key: string, value: string, gas_info: GasInfo, lease_info?: LeaseInfo): Promise<void>;
@@ -53,6 +54,6 @@ export declare class API {
     }[]>;
     account(): Promise<AccountInfo>;
     version(): Promise<string>;
-    private do_tx;
+    private doTx;
 }
 //# sourceMappingURL=api.d.ts.map
