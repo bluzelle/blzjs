@@ -16,7 +16,7 @@
 // limitations under the License.
 
 
-const { bluzelle } = require('../src/main.js');
+const { bluzelle } = require('../client/lib/bluzelle-node');
 
 // NOTE: This file must be provided and contains your account credentials in the form
 //  module.exports = {

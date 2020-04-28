@@ -8,3 +8,6 @@ yark.lock
 .nyc_output/
 package-lock.json
 samples/blz-config.js
+.next
+.cache
+dist

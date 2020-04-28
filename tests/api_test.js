@@ -24,12 +24,10 @@ const params =
         lease_info: { days: '100' }
     };
 
-
-const API = require('../src/swarmClient/api.js');
-var assert = require('chai').assert;
+const cosmos = require('../client/lib/swarmClient/cosmos');
+const {API} = require('../client/lib/swarmClient/api.js');
+const {convertLease, encodeSafe} = require('../client/lib/swarmClient/util');
 var expect = require('chai').expect;
-var to = require('chai').to;
-var deep = require('chai').deep;
 
 var api = new API(params.address, params.mnemonic, params.endpoint, params.address, params.chain_id);
 
@@ -166,7 +164,7 @@ describe('testing create', () =>
             expect(validate_common_data(data)).equal(true);
             expect(data.Key).equal(key);
             expect(data.Value).equal(value);
-            expect(data.Lease).equal(api.convert_lease(params.lease_info));
+            expect(data.Lease).equal(convertLease(params.lease_info).toString());
             expect(gas_info).equal(params.gas_info);
 
             return new Promise(async (resolve, reject) =>
@@ -245,7 +243,7 @@ describe('testing update', () =>
             expect(validate_common_data(data)).equal(true);
             expect(data.Key).equal(key);
             expect(data.Value).equal(value);
-            expect(data.Lease).equal(api.convert_lease(params.lease_info));
+//            expect(data.Lease).equal(convertLease(params.lease_info));
             expect(gas_info).equal(params.gas_info);
 
             return new Promise(async (resolve, reject) =>
@@ -456,7 +454,7 @@ describe('testing read unverified', () =>
 
         cosmos.query = async (ep) =>
         {
-            const uri = api.encode_safe(`${app_service}/read/${params.address}/${key}`);
+            const uri = encodeSafe(`${app_service}/read/${params.address}/${key}`);
             expect(ep).equal(uri);
             return new Promise(async (resolve, reject) =>
             {
@@ -838,7 +836,7 @@ describe('testing getLease', () =>
 
         cosmos.query = async (ep) =>
         {
-            const uri = api.encode_safe(`${app_service}/getlease/${params.address}/${key}`);
+            const uri = encodeSafe(`${app_service}/getlease/${params.address}/${key}`);
             expect(ep).equal(uri);
             return new Promise(async (resolve, reject) =>
             {
@@ -918,7 +916,7 @@ describe('testing renewLease', () =>
             expect(ep_name).equal(`${app_service}/renewlease`);
             expect(validate_common_data(data)).equal(true);
             expect(data.Key).equal(key);
-            expect(data.Lease).equal(api.convert_lease(params.lease_info));
+            expect(data.Lease).equal(convertLease(params.lease_info).toString());
             expect(gas_info).equal(params.gas_info);
 
             return new Promise(async (resolve, reject) =>
@@ -954,7 +952,7 @@ describe('testing renewLeaseAll', () =>
             expect(req_type).equal('post');
             expect(ep_name).equal(`${app_service}/renewleaseall`);
             expect(validate_common_data(data)).equal(true);
-            expect(data.Lease).equal(api.convert_lease(params.lease_info));
+            expect(data.Lease).equal(convertLease(params.lease_info).toString());
             expect(gas_info).equal(params.gas_info);
 
             return new Promise(async (resolve, reject) =>
@@ -1070,11 +1068,11 @@ describe('testing account', () =>
     it('account success', async () =>
     {
         const account_info = { value:
-            { address: 'bluzelle1lgpau85z0hueyz6rraqqnskzmcz4zuzkfeqls7',
-            coins: [ { denom: 'bnt', amount: '9899567400' } ],
-            public_key: 'bluzellepub1addwnpepqd63w08dcrleyukxs4kq0n7ngalgyjdnu7jpf5khjmpykskyph2vypv6wms',
-            account_number: 3,
-            sequence: 218 }};
+                { address: 'bluzelle1lgpau85z0hueyz6rraqqnskzmcz4zuzkfeqls7',
+                    coins: [ { denom: 'bnt', amount: '9899567400' } ],
+                    public_key: 'bluzellepub1addwnpepqd63w08dcrleyukxs4kq0n7ngalgyjdnu7jpf5khjmpykskyph2vypv6wms',
+                    account_number: 3,
+                    sequence: 218 }};
 
         cosmos.query = async (ep) =>
         {
@@ -1109,15 +1107,15 @@ describe('testing version', () =>
     it('version success', async () =>
     {
         const version_info =
-        {
-            "name": "BluzelleService",
-            "server_name": "blzd",
-            "client_name": "blzcli",
-            "version": "0.0.0-39-g8895e3e",
-            "commit": "8895e3edf0a3ede0f6ed30f2224930e8faa1236e",
-            "build_tags": "ledger,faucet,cosmos-sdk v0.38.1",
-            "go": "go version go1.13.4 linux/amd64"
-        };
+            {
+                "name": "BluzelleService",
+                "server_name": "blzd",
+                "client_name": "blzcli",
+                "version": "0.0.0-39-g8895e3e",
+                "commit": "8895e3edf0a3ede0f6ed30f2224930e8faa1236e",
+                "build_tags": "ledger,faucet,cosmos-sdk v0.38.1",
+                "go": "go version go1.13.4 linux/amd64"
+            };
 
         cosmos.query = async (ep) =>
         {
