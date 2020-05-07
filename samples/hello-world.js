@@ -1,29 +1,19 @@
 #!/usr/bin/node
 
-const { bluzelle } = require('../client/lib/bluzelle-node');
-const config = require('./blz-config.js');
+const {bluzelle} = require('../client/lib/bluzelle-node');
 
-// const gas_params = {'gas_price': '0.01'};
-
+const config = {
+    address: "bluzelle1htcd86l00dmkptdja75za0akg8mrt2w3qhd65v",
+    mnemonic: "apology antique such ancient spend narrow twin banner coral book iron summer west extend toddler walnut left genius exchange globe satisfy shield case rose",
+    endpoint: "http://testnet.public.bluzelle.com:1317",
+    chain_id: 'bluzelle',
+    uuid: Date.now().toString()
+};
 
 (async () => {
-    const bz =  await bluzelle({
-        address:  config.address,
-        mnemonic: config.mnemonic,
-        uuid: Date.now().toString(),
-        endpoint: config.endpoint,
-        chain_id: config.chain_id
-    });
+    const bz = await bluzelle(config);
 
-    try {
-    	await bz.create("somekey", "somevalue", config.gas_params)
-            .then(res => console.log(res || 'success'))
-
-        await bz.read("somekey", false)
-            .then(res => console.log(res || 'success'))
-
-    } catch(e) {
-        console.error(e.message);
-    }
+    await bz.create("somekey", "somevalue", {'gas_price': '10.0'})
+    console.log(await bz.read("somekey"))
 })();
 
