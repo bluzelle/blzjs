@@ -1,0 +1,17 @@
+<script src="../../browser-client/lib/bluzelle-browser.js"></script>
+<script>
+    (async () => {
+        const bz = await bluzelle({
+            address: "bluzelle1htcd86l00dmkptdja75za0akg8mrt2w3qhd65v",
+            mnemonic: "apology antique such ancient spend narrow twin banner coral book iron summer west extend toddler walnut left genius exchange globe satisfy shield case rose",
+            endpoint: "http://testnet.public.bluzelle.com:1317",
+            chain_id: 'bluzelle',
+            uuid: Date.now().toString()
+        });
+        await bz.create('aKey', 'aValue', {gas_price: '10.0'});
+        document.body.innerHTML = await bz.read('aKey');
+    })()
+</script>
+<body>
+    Running...
+</body>

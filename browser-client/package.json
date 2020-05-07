@@ -1,0 +1,14 @@
+{
+  "dependencies": {
+    "parcel": "^1.12.4"
+  },
+  "devDependencies": {
+    "typescript": "^3.8.3"
+  },
+  "browserslist": [
+    "last 10 Chrome versions"
+  ],
+  "scripts": {
+    "build": "parcel build bluzelle-browser.ts --no-cache public-url='./' --out-dir 'lib'"
+  }
+}
