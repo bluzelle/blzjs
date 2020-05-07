@@ -1,4 +1,4 @@
-<script src="../../client/lib/bluzelle-browser.js"></script>
+<script src="../../browser-client/lib/bluzelle-browser.js"></script>
 <script>
     (async () => {
         const bz = await bluzelle({
@@ -12,3 +12,6 @@
         document.body.innerHTML = await bz.read('aKey');
     })()
 </script>
+<body>
+    Running...
+</body>
