@@ -30,14 +30,16 @@ const bitcoinjs = require('bitcoinjs-lib');
 const bip32 = require('bip32');
 const bip39 = require('bip39');
 
-let app_endpoint: string;
-const tx_command = "txs";
+let appEndpoint: string;
+let privateKey: string;
+
+const TX_COMMAND = "txs";
 
 const secp256k1 = new ec('secp256k1');
 
 const BECH32_PREFIX: string = 'bluzelle';
 
-let private_key: string;
+
 const account_info: { account_number: string, sequence: number } = {account_number: "", sequence: 0};
 const tx_queue: any[] = [];
 
@@ -118,12 +120,12 @@ function send_tx(url: string, data: any, chain_id: string): any {
 
     // set up the signature
     data.value.memo = makeRandomString(32);
-    const sig = signTransaction(private_key, data, chain_id);
+    const sig = signTransaction(privateKey, data, chain_id);
     data.value.signatures = [sig]
     data.value.signature = sig;
 
     // Post the transaction
-    return axios.post(`${url}/${tx_command}`, {
+    return axios.post(`${url}/${TX_COMMAND}`, {
         headers: {'Content-type': 'application/x-www-form-urlencoded'},
         tx: data.value,
         mode: 'block' // wait for tx to be committed
@@ -131,7 +133,7 @@ function send_tx(url: string, data: any, chain_id: string): any {
 }
 
 async function begin_tx(tx: Transaction): Promise<void> {
-    const url = `${app_endpoint}/${tx.ep}`;
+    const url = `${appEndpoint}/${tx.ep}`;
     const chain_id = tx.data.BaseReq.chain_id;
     let response, res
 
@@ -167,7 +169,7 @@ async function begin_tx(tx: Transaction): Promise<void> {
 
     try {
         // broadcast the tx
-        res = await send_tx(app_endpoint, response.data, chain_id);
+        res = await send_tx(appEndpoint, response.data, chain_id);
     } catch (err) {
         tx.deferred.reject(new Error(err.message));
         advance_queue();
@@ -256,7 +258,7 @@ function sendAccountQuery(): Promise<boolean> {
     // Fetch the current state of the account that's signing the transaction
     // We will need its account number and current sequence.
 
-    let url = `${app_endpoint}/auth/accounts/${getAddress(secp256k1.keyFromPrivate(private_key, 'hex').getPublic(true, 'hex'))}`;
+    let url = `${appEndpoint}/auth/accounts/${getAddress(secp256k1.keyFromPrivate(privateKey, 'hex').getPublic(true, 'hex'))}`;
     return axios.get(url)
         .then(handleAccountResponse);
 }
@@ -292,11 +294,11 @@ function next_tx(): Promise<void> {
 ////////////////////////////////////////////////////////
 
 export const init = async (mnemonic: string, endpoint: string, address: string): Promise<any> => {
-    app_endpoint = endpoint;
-    private_key = await getECPrivateKey(mnemonic);
+    appEndpoint = endpoint;
+    privateKey = await getECPrivateKey(mnemonic);
 
     // validate address against mnemonic
-    if (getAddress(secp256k1.keyFromPrivate(private_key, 'hex').getPublic(true, 'hex')) !== address) {
+    if (getAddress(secp256k1.keyFromPrivate(privateKey, 'hex').getPublic(true, 'hex')) !== address) {
         return Promise.reject((new Error("Bad credentials - verify your address and mnemonic")));
     }
 
@@ -317,7 +319,7 @@ export const send_transaction = (req_type: string, ep_name: string, data: any, g
 
 export const query = async (url: string): Promise<any> => {
     try {
-        return await axios.get(`${app_endpoint}/${url}`)
+        return await axios.get(`${appEndpoint}/${url}`)
             .then((res: any) => res.data)
     } catch (error) {
         if (typeof error.response.data === 'string') {
