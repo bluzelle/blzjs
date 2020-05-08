@@ -63,7 +63,7 @@ export class API {
         console.log("status");
     }
 
-    create(key: string, value: string, gas_info: GasInfo, lease_info: LeaseInfo = {}): Promise<void> {
+    async create(key: string, value: string, gas_info: GasInfo, lease_info: LeaseInfo = {}): Promise<void> {
         assert(isString(key), ClientErrors.KEY_MUST_BE_A_STRING);
         assert(isString(value), ClientErrors.VALUE_MUST_BE_A_STRING);
 
@@ -78,7 +78,7 @@ export class API {
         }, 'post', 'create', gas_info);
     }
 
-    update(key: string, value: string, gas_info: GasInfo, lease_info?: LeaseInfo): Promise<void> {
+    async update(key: string, value: string, gas_info: GasInfo, lease_info?: LeaseInfo): Promise<void> {
         assert(isString(key), ClientErrors.KEY_MUST_BE_A_STRING);
         assert(isString(value), ClientErrors.VALUE_MUST_BE_A_STRING);
 
@@ -89,7 +89,7 @@ export class API {
         }, 'post', 'update', gas_info);
     }
 
-    read(key: string, prove?: string): Promise<string> {
+    async read(key: string, prove?: string): Promise<string> {
         assert(isString(key), ClientErrors.KEY_MUST_BE_A_STRING);
 
         return cosmos.query(`${APP_SERVICE}/${prove ? 'pread' : 'read'}/${this.uuid}/${encodeSafe(key)}`)
@@ -105,7 +105,7 @@ export class API {
         });
     }
 
-    txRead(key: string, gas_info: GasInfo): Promise<string> {
+    async txRead(key: string, gas_info: GasInfo): Promise<string> {
         assert(isString(key), ClientErrors.KEY_MUST_BE_A_STRING);
 
         return this.doTx({
@@ -113,7 +113,7 @@ export class API {
         }, 'post', 'read', gas_info).then(res => parse_result(res).value);
     }
 
-    delete(key: string, gas_info: GasInfo): Promise<void> {
+    async delete(key: string, gas_info: GasInfo): Promise<void> {
         assert(isString(key), ClientErrors.KEY_MUST_BE_A_STRING);
 
         return this.doTx({
@@ -121,14 +121,14 @@ export class API {
         }, 'delete', 'delete', gas_info);
     }
 
-    has(key: string): Promise<boolean> {
+    async has(key: string): Promise<boolean> {
         assert(isString(key), ClientErrors.KEY_MUST_BE_A_STRING);
 
         const uri_key = encodeSafe(key);
         return cosmos.query(`${APP_SERVICE}/has/${this.uuid}/${uri_key}`).then(({result}) => result.has);
     }
 
-    txHas(key: string, gas_info: GasInfo): Promise<boolean> {
+    async txHas(key: string, gas_info: GasInfo): Promise<boolean> {
         assert(isString(key), ClientErrors.KEY_MUST_BE_A_STRING);
 
         return this.doTx({
@@ -138,17 +138,17 @@ export class API {
         );
     }
 
-    keys(): Promise<string[]> {
+    async keys(): Promise<string[]> {
         return cosmos.query(`${APP_SERVICE}/keys/${this.uuid}`).then(({result}) => result.keys || []);
     }
 
-    txKeys(gas_info: GasInfo): Promise<string[]> {
+    async txKeys(gas_info: GasInfo): Promise<string[]> {
         return this.doTx({}, 'post', 'keys', gas_info).then(res =>
             parse_result(res).keys || []
         );
     }
 
-    rename(key: string, new_key: string, gas_info: GasInfo): Promise<boolean> {
+    async rename(key: string, new_key: string, gas_info: GasInfo): Promise<boolean> {
         assert(isString(key), ClientErrors.KEY_MUST_BE_A_STRING);
         assert(isString(new_key), ClientErrors.NEW_KEY_MUST_BE_A_STRING);
 
@@ -158,31 +158,31 @@ export class API {
         }, 'post', 'rename', gas_info);
     }
 
-    count(): Promise<number> {
+    async count(): Promise<number> {
         return cosmos.query(`/${APP_SERVICE}/count/${this.uuid}`).then(({result}) => parseInt(result.count));
     }
 
-    txCount(gas_info: GasInfo): Promise<number> {
+    async txCount(gas_info: GasInfo): Promise<number> {
         return this.doTx({}, 'post', 'count', gas_info).then(res =>
             parseInt(parse_result(res).count)
         );
     }
 
-    deleteAll(gas_info: GasInfo):Promise<void> {
+    async deleteAll(gas_info: GasInfo):Promise<void> {
         return this.doTx({}, 'post', 'deleteall', gas_info);
     }
 
-    keyValues(): Promise<{key: string, value: string}[]> {
+    async keyValues(): Promise<{key: string, value: string}[]> {
         return cosmos.query(`/${APP_SERVICE}/keyvalues/${this.uuid}`).then(({result}) => result.keyvalues)
     }
 
-    txKeyValues(gas_info: GasInfo): Promise<{key: string, value: string}[]> {
+    async txKeyValues(gas_info: GasInfo): Promise<{key: string, value: string}[]> {
         return this.doTx({}, 'post', 'keyvalues', gas_info).then(res =>
             parse_result(res).keyvalues
         );
     }
 
-    multiUpdate(keyvalues: {key: string, value: string}[], gas_info: GasInfo): Promise<void> {
+    async multiUpdate(keyvalues: {key: string, value: string}[], gas_info: GasInfo): Promise<void> {
         assert(Array.isArray(keyvalues), 'keyvalues must be an array');
 
         keyvalues.forEach(({key, value}, index, array) => {
@@ -195,14 +195,14 @@ export class API {
         }, 'post', 'multiupdate', gas_info);
     }
 
-    getLease(key: string): Promise<number> {
+    async getLease(key: string): Promise<number> {
         assert(isString(key), ClientErrors.KEY_MUST_BE_A_STRING);
 
         const uri_key = encodeSafe(key);
         return cosmos.query(`${APP_SERVICE}/getlease/${this.uuid}/${uri_key}`).then(({result}) => result.lease * BLOCK_TIME_IN_SECONDS);
     }
 
-    txGetLease(key: string, gas_info: GasInfo): Promise<number> {
+    async txGetLease(key: string, gas_info: GasInfo): Promise<number> {
         assert(isString(key), ClientErrors.KEY_MUST_BE_A_STRING);
 
         return this.doTx({
@@ -212,7 +212,7 @@ export class API {
         );
     }
 
-    renewLease(key: string, gas_info: GasInfo, lease_info: LeaseInfo): Promise<number> {
+    async renewLease(key: string, gas_info: GasInfo, lease_info: LeaseInfo): Promise<number> {
         assert(isString(key), ClientErrors.KEY_MUST_BE_A_STRING);
 
         const blocks = convertLease(lease_info);
@@ -225,7 +225,7 @@ export class API {
         }, 'post', 'renewlease', gas_info);
     }
 
-    renewLeaseAll(gas_info: GasInfo, lease_info: LeaseInfo = {}): Promise<number> {
+    async renewLeaseAll(gas_info: GasInfo, lease_info: LeaseInfo = {}): Promise<number> {
         const blocks = convertLease(lease_info);
 
         assert(blocks >= 0, ClientErrors.INVALID_LEASE_TIME);
@@ -235,7 +235,7 @@ export class API {
         }, 'post', 'renewleaseall', gas_info);
     }
 
-    getNShortestLeases(n: number): Promise<{key: string, lease: {seconds: number}}[]> {
+    async getNShortestLeases(n: number): Promise<{key: string, lease: {seconds: number}}[]> {
         assert(n >= 0, Error(ClientErrors.INVALID_VALUE_SPECIFIED));
 
         return cosmos.query(`${APP_SERVICE}/getnshortestleases/${this.uuid}/${n}`).then(({result}) => {
@@ -243,7 +243,7 @@ export class API {
         })
     }
 
-    txGetNShortestLeases(n: number, gas_info: GasInfo): Promise<{key: string, lease: {seconds: number}}[]> {
+    async txGetNShortestLeases(n: number, gas_info: GasInfo): Promise<{key: string, lease: {seconds: number}}[]> {
         assert(n >= 0, ClientErrors.INVALID_VALUE_SPECIFIED);
 
         return this.doTx(
@@ -256,11 +256,11 @@ export class API {
     }
 
 
-    account(): Promise<AccountInfo> {
+    async account(): Promise<AccountInfo> {
         return cosmos.query(`auth/accounts/${this.address}`).then(({result}) => result.value);
     }
 
-    version(): Promise<string> {
+    async version(): Promise<string> {
         return cosmos.query('node_info').then(res => res.application_version.version);
     }
 

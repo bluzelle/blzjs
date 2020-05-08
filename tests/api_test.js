@@ -25,7 +25,7 @@ const params =
     };
 
 const cosmos = require('../client/lib/swarmClient/cosmos');
-const {API} = require('../client/lib/swarmClient/api.js');
+const {API} = require('../client/lib/swarmClient/Api.js');
 const {convertLease, encodeSafe} = require('../client/lib/swarmClient/util');
 var expect = require('chai').expect;
 

@@ -56,4 +56,4 @@ export declare class API {
     version(): Promise<string>;
     private doTx;
 }
-//# sourceMappingURL=api.d.ts.map
+//# sourceMappingURL=Api.d.ts.map

@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {API} from './swarmClient/api'
+import {API} from './swarmClient/Api'
 import {BluzelleConfig} from "./BluzelleConfig";
 
 export const bluzelle = async (config: BluzelleConfig): Promise<API> => {

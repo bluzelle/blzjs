@@ -1,7 +1,7 @@
 import {bluzelle} from "../../../client/lib/bluzelle-node";
 import {extend, memoize} from 'lodash'
 import {StoredTodo, Todo} from "../model/Todo";
-import {API} from "../../../client/lib/swarmClient/api";
+import {API} from "../../../client/src/swarmClient/Api";
 import {bluzelleConfig} from "../../example-config";
 
 export const params = bluzelleConfig;
