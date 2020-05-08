@@ -263,10 +263,17 @@ exports.init = (mnemonic, endpoint) => __awaiter(void 0, void 0, void 0, functio
 exports.sendTransaction = (req_type, ep_name, data, gas_info) => {
     const def = new Deferred_1.Deferred();
     const tx = new Transaction_1.Transaction(req_type, ep_name, data, def);
-    lodash_1.extend(tx, gas_info || {});
+    lodash_1.extend(tx, fixupGasInfo(gas_info));
     tx_queue.push(tx);
     tx_queue.length === 1 && setTimeout(next_tx, 0);
     return def.promise;
+    function fixupGasInfo({ max_gas, max_fee, gas_price } = {}) {
+        return ({
+            max_gas: max_gas === null || max_gas === void 0 ? void 0 : max_gas.toString(),
+            max_fee: max_fee === null || max_fee === void 0 ? void 0 : max_fee.toString(),
+            gas_price: gas_price === null || gas_price === void 0 ? void 0 : gas_price.toString()
+        });
+    }
 };
 exports.query = (url) => __awaiter(void 0, void 0, void 0, function* () {
     try {

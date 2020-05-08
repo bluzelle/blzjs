@@ -22,3 +22,46 @@ const { bluzelle } = require('bluzelle');
 * [API docs](https://github.com/bluzelle/blzjs/tree/devel/client)
 * [Download browser version for `<script>` tag](https://github.com/bluzelle/blzjs/tree/devel/browser-client)
 * [Examples](https://github.com/bluzelle/blzjs/tree/devel/samples)
+
+# Quckstart
+
+### Javascript
+```javascript
+const {bluzelle} = require('bluzelle');
+
+const config = {
+    mnemonic: "apology antique such ancient spend narrow twin banner coral book iron summer west extend toddler walnut left genius exchange globe satisfy shield case rose",
+    endpoint: "http://testnet.public.bluzelle.com:1317",
+    chain_id: 'bluzelle',
+    uuid: Date.now().toString()
+};
+
+(async () => {
+    const bz = await bluzelle(config);
+
+    await bz.create("somekey", "somevalue", {'gas_price': 10})
+    console.log(await bz.read("somekey"))
+})();
+
+```
+
+### Typescript
+
+```typescript
+import {bluzelle, API, BluzelleConfig} from 'bluzelle';
+
+const config: BluzelleConfig = {
+    mnemonic: "apology antique such ancient spend narrow twin banner coral book iron summer west extend toddler walnut left genius exchange globe satisfy shield case rose",
+    endpoint: "http://testnet.public.bluzelle.com:1317",
+    chain_id: 'bluzelle',
+    uuid: Date.now().toString()
+};
+
+(async () => {
+    const bz: API = await bluzelle(config);
+
+    await bz.create("somekey", "somevalue", {'gas_price': 10})
+    console.log(await bz.read("somekey"))
+})();
+
+```

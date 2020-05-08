@@ -304,13 +304,21 @@ export const init = async (mnemonic: string, endpoint: string): Promise<any> => 
 export const sendTransaction = (req_type: string, ep_name: string, data: any, gas_info: GasInfo): Promise<any> => {
     const def = new Deferred();
     const tx = new Transaction(req_type, ep_name, data, def);
-    extend(tx, gas_info || {});
+    extend(tx, fixupGasInfo(gas_info));
 
     tx_queue.push(tx);
 
     tx_queue.length === 1 && setTimeout(next_tx, 0);
 
     return def.promise;
+
+    function fixupGasInfo({max_gas, max_fee, gas_price}: GasInfo = {}): GasInfo {
+        return ({
+            max_gas: max_gas?.toString(),
+            max_fee: max_fee?.toString(),
+            gas_price: gas_price?.toString()
+        })
+    }
 }
 
 export const query = async (url: string): Promise<any> => {

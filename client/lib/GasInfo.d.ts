@@ -1,6 +1,6 @@
 export interface GasInfo {
-    gas_price?: string;
-    max_gas?: string;
-    max_fee?: string;
+    gas_price?: string | number;
+    max_gas?: string | number;
+    max_fee?: string | number;
 }
 //# sourceMappingURL=GasInfo.d.ts.map

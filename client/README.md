@@ -13,56 +13,54 @@ or
 npm install bluzelle
 ```
 ```
+import { bluzele } from 'bluzelle';
+or
 const { bluzelle } = require('bluzelle');
 ```
 
 # Getting Started
 
-The file crud.js in the *samples* directory contains example code that demonstrates how to use the blzjs API.
+The *examples* directory contains various examples for pure NodeJS express and single-page applications.
 
-In general, you must initialize blzjs before calling any other functions. Do the following (using your own configuration parameters as applicable) to initialize:
+To start a connection simply call *bluzelle* with your configuration.
 ```
-let bz = await bluzelle({
-        mnemonic: my_mnemonic,
+const api = await bluzelle({
+        mnemonic: swarm_mnemonic,
+        endpoint: swarm_endpoint,
+        chain_id: swarm_chain_id
         uuid:     my_uuid,
-        endpoint: my_endpoint,
-        chain_id: my_chain_id
     });
-```  
-This performs some initial checks, retrieves your account information, and returns an object through which you can call the rest of the API functions.
 
-You may now use the functions described below to perform database operations, as well as retrieve account and status information.
+```
 
 # blzjs API documentation
-Read below for detailed documentation on how to use the Bluzelle database service.
 
-![#1589F0](https://placehold.it/15/1589F0/000000?text=+) Keys and values in the Bluzelle database are plain strings to ensure compatibility for all forms of serialization. JavaScript applications will probably want to use `JSON.stringify(obj)` and `JSON.parse(str)` to convert object data to and from string format. Please note: keys may not contain the forward-slash (/) character.
+![#1589F0](https://placehold.it/15/1589F0/000000?text=+) Keys and values in the Bluzelle database are plain strings. To store an object serialize your objects to a string using JSON or some other serializer.
 
-![#1589F0](https://placehold.it/15/1589F0/000000?text=+) Some API functions take *gas_info* as a parameter. This is a JavaScript object containing parameters related to gas consumption as follows:
+![#1589F0](https://placehold.it/15/1589F0/000000?text=+) Some API functions take *gas_info* as a parameter. This is a object literal containing parameters related to gas consumption as follows:
+
 ```javascript
 {
-    'max_gas': '0', // maximum amount of gas to consume for this call (integer)
-    'max_fee': '0', // maximum amount to charge for this call (integer, in ubnt)
-    'gas_price': '0' // maximum price to pay for gas (integer, in ubnt)
+    gas_price: 10, // maximum price to pay for gas (integer, in ubnt)
+    max_gas: 20000,    // maximum amount of gas to consume for this call (integer)
+    max_fee: 20000 // maximum amount to charge for this call (integer, in ubnt)
 };
 ````
 All values are optional. The `max_gas` value will always be honored if present, otherwise a default value will be used. If both `max_fee` and `gas_price` are specified, `gas_price` will be ignored and calculated based on the provided `max_fee`.
 
-![#1589F0](https://placehold.it/15/1589F0/000000?text=+) Some API functions take *lease_info* as a parameter. This is a JavaScript object containing parameters related to the minimum time a key should be maintained in the database, as follows:
+![#1589F0](https://placehold.it/15/1589F0/000000?text=+) Some API functions take ***lease_info*** as a parameter. This is a JavaScript object containing parameters related to the minimum time a key should be maintained in the database, as follows:
 ```javascript
 {
-    'days':    '0', // number of days (integer)
-    'hours':   '0', // number of hours (integer)
-    'minutes': '0'  // number of minutes (integer)
-    'seconds': '0'  // number of seconds (integer)
+    'days':    0, // number of days (integer)
+    'hours':   0, // number of hours (integer)
+    'minutes': 0  // number of minutes (integer)
+    'seconds': 0  // number of seconds (integer)
 };
 ````
 All values are optional. If none are provided a default value of 10 days will be used.
 
 
-![#1589F0](https://placehold.it/15/1589F0/000000?text=+) The example code in the `samples` directory requires Node.js in order to run. For instructions on how to install Node.js for your platform, please see http://nodejs.org
-
-The samples require configuration to be set in the file `blz-config.js`. You can copy and modify the `blz-config.js.sample` file for this purpose.
+![#1589F0](https://placehold.it/15/1589F0/000000?text=+) The example code in the `examples` directory require Node.js in order to run. For instructions on how to install Node.js for your platform, please see http://nodejs.org
 
 ## Exports
 
@@ -70,11 +68,12 @@ The samples require configuration to be set in the file `blz-config.js`. You can
 
 Configures the Bluzelle connection. This may be called multiple times to create multiple clients.
 
+#### Plain Javascript
+
 ```javascript
 const {bluzelle} = require('bluzelle');
 
 const api = await bluzelle({
-    address: 'bluzelle1xhz23a58mku7ch3hx8f9hrx6he6gyujq57y3kp',
     mnemonic: 'volcano arrest ceiling physical concert sunset absent hungry tobacco canal census era pretty car code crunch inside behind afraid express giraffe reflect stadium luxury',
     endpoint: "http://localhost:1317",
     uuid:     "20fc19d4-7c9d-4b5c-9578-8cedd756e0ea",
@@ -82,15 +81,28 @@ const api = await bluzelle({
 });
 ```
 
+#### Typescript
+
+```typescript
+import {bluzelle, API} from 'bluzelle';
+
+
+const api: API = await bluzelle({
+    mnemonic: 'volcano arrest ceiling physical concert sunset absent hungry tobacco canal census era pretty car code crunch inside behind afraid express giraffe reflect stadium luxury',
+    endpoint: "http://localhost:1317",
+    uuid:     "20fc19d4-7c9d-4b5c-9578-8cedd756e0ea",
+    chain_id: "bluzelle"
+});
+```
+
+
 | Argument | Description |
 | :--- | :--- |
-| **address** | The address of your Bluzelle account |
 | **mnemonic** | The mnemonic of the private key for your Bluzelle account |
 | endpoint | \(Optional\) The hostname and port of your rest server. Default: http://localhost:1317 |
-| uuid | Bluzelle uses `UUID`'s to identify distinct databases on a single swarm. We recommend using [Version 4 of the universally unique identifier](https://en.wikipedia.org/wiki/Universally_unique_identifier#Version_4_%28random%29). Defaults to the account address. |
+| uuid | Bluzelle uses `UUID`'s to identify distinct databases on a single swarm. We recommend using [Version 4 of the universally unique identifier](https://en.wikipedia.org/wiki/Universally_unique_identifier#Version_4_%28random%29).  |
 | chain_id | \(Optional\) The chain id of your Bluzelle account. Default: bluzelle |
 
-`bluzelle` is the only export of the Bluzelle library. The calls below are methods of the object generated by calling `bluzelle`.
 
 ## General Functions
 
@@ -100,19 +112,15 @@ Retrieve the version of the Bluzelle service.
 
 ```javascript
 // promise syntax
-api.version().then(() => { ... }, error => { ... });
+api.version()
+	.then((version) => { ... })
+	.catch(error => { ... });
 
 // async/await syntax
-await api.version();
+const version = await api.version();
 ```
 
-Returns a promise resolving to a string containing the version information, e.g.
-
-```
-0.0.0-39-g8895e3e
-```
-
-Throws an exception if a response is not received from the connection.
+Returns: Promise=>string
 
 
 ### account\()
@@ -121,13 +129,14 @@ Retrieve information about the currently active Bluzelle account.
 
 ```javascript
 // promise syntax
-api.account().then(() => { ... }, error => { ... });
+api.account()
+	.then((info) => { ... })
+	.catch((error) => { ... });
 
 // async/await syntax
-await api.account();
+const info = await api.account();
 ```
-
-Returns a promise resolving to a JSON object representing the account information, e.g.
+Returns: Promise=>object
 
 ```
 { address: 'bluzelle1lgpau85z0hueyz6rraqqnskzmcz4zuzkfeqls7',
@@ -137,11 +146,9 @@ Returns a promise resolving to a JSON object representing the account informatio
   sequence: 218 }
 ```
 
-Throws an exception if a response is not received from the connection.
-
-
-
 ## Database Functions
+
+**NOTE: When a function has a 'tx' and non-'tx' version, the 'tx' version uses consensus.**
 
 ### create\(key, value, gas_info [, lease_info]\)
 
@@ -149,30 +156,32 @@ Create a field in the database.
 
 ```javascript
 // promise syntax
-api.create('mykey', '{ a: 13 }', {gas_price: 10}, {days: 100}).then(() => { ... }, error => { ... });
+api.create('mykey', 'myValue', {gas_price: 10}, {days: 100})
+	.then(() => { ... })
+	.catch(error => { ... });
 
 // async/await syntax
-await api.create('mykey', '{ a: 13 }', {gas_price: 10}, {days: 100});
+await api.create('mykey', 'myValue', {gas_price: 10}, {days: 100});
 ```
 
 | Argument | Description |
 | :--- | :--- |
 | key | The name of the key to create |
-| value | The string value to set the key |
+| value | The string value |
 | gas_info | Object containing gas parameters (see above) |
 | lease_info (optional) | Minimum time for key to remain in database (see above) |
 
-Returns a promise resolving to nothing.
+Returns: Promise=>void
 
-Throws an exception when a response is not received from the connection, the key already exists, or invalid value.
-
-### read\(key, prove\)
+### read\(key, [prove]\)
 
 Retrieve the value of a key without consensus verification. Can optionally require the result to have a cryptographic proof (slower).
 
 ```javascript
 // promise syntax
-api.read('mykey').then(value => { ... }, error => { ... });
+api.read('mykey')
+	.then(value => { ... })
+	.catch(error => { ... });
 
 // async/await syntax
 const value = await api.read('mykey');
@@ -183,18 +192,17 @@ const value = await api.read('mykey');
 | key | The key to retrieve |
 | prove | A proof of the value is required from the network (requires 'config trust-node false' to be set) |
 
-Returns a promise resolving the string value of the key.
-
-Throws an exception when the key does not exist in the database.
-Throws an exception when the prove is true and the result fails verification.
+Returns: Promise=>string (the value)
 
 ### txRead\(key, gas_info\)
 
-Retrieve the value of a key via a transaction (i.e. uses consensus).
+Retrieve the value of a key with consensus.
 
 ```javascript
 // promise syntax
-api.txRead('mykey', {gas_price: 10}).then(value => { ... }, error => { ... });
+api.txRead('mykey', {gas_price: 10})
+	.then(value => { ... })
+	.catch(error => { ... });
 
 // async/await syntax
 const value = await api.txRead('mykey', {gas_price: 10});
@@ -205,9 +213,7 @@ const value = await api.txRead('mykey', {gas_price: 10});
 | key | The key to retrieve |
 | gas_info | Object containing gas parameters (see above) |
 
-Returns a promise resolving the string value of the key.
-
-Throws an exception when the key does not exist in the database.
+Returns: Promise=>value
 
 ### update\(key, value, gas_info [, lease_info]\)
 
@@ -215,7 +221,9 @@ Update a field in the database.
 
 ```javascript
 // promise syntax
-api.update('mykey', '{ a: 13 }', {gas_price: 10}, {days: 100}).then(() => { ... }, error => { ... });
+api.update('mykey', '{ a: 13 }', {gas_price: 10}, {days: 100})
+	.then(() => { ... })
+	.catch(error => { ... });
 
 // async/await syntax
 await api.update('mykey', '{ a: 13 }, {gas_price: 10}', {days: 100});
@@ -228,17 +236,17 @@ await api.update('mykey', '{ a: 13 }, {gas_price: 10}', {days: 100});
 | gas_info | Object containing gas parameters (see above) |
 | lease_info (optional) | Positive or negative amount of time to alter the lease by. If not specified, the existing lease will not be changed. |
 
-Returns a promise resolving to nothing.
-
-Throws an exception when the key doesn't exist, or invalid value.
+Returns: Promise=>void
 
 ### delete\(key, gas_info\)
 
-Delete a field from the database.
+Delete a key from the database.
 
 ```javascript
 // promise syntax
-api.delete('mykey', {gas_price: 10}).then(() => { ... }, error => { ... });
+api.delete('mykey', {gas_price: 10})
+	.then(() => { ... })
+	.catch(error => { ... });
 
 // async/await syntax
 await bluzelle.delete('mykey', {gas_price: 10});
@@ -249,9 +257,7 @@ await bluzelle.delete('mykey', {gas_price: 10});
 | key | The name of the key to delete |
 | gas_info | Object containing gas parameters (see above) |
 
-Returns a promise resolving to nothing.
-
-Throws an exception when the key is not in the database.
+Returns: Promise=>void
 
 ### has\(key\)
 
@@ -260,7 +266,9 @@ Query to see if a key is in the database. This function bypasses the consensus a
 
 ```javascript
 // promise syntax
-api.has('mykey').then(hasMyKey => { ... }, error => { ... });
+api.has('mykey')
+	.then(hasMyKey => { ... })
+	.catch(error => { ... });
 
 // async/await syntax
 const hasMyKey = await api.has('mykey');
@@ -270,7 +278,7 @@ const hasMyKey = await api.has('mykey');
 | :--- | :--- |
 | key | The name of the key to query |
 
-Returns a promise resolving to a boolean value - `true` or `false`, representing whether the key is in the database.
+Returns: Promise=>boolean
 
 ### txHas\(key, gas_info\)
 
@@ -278,7 +286,9 @@ Query to see if a key is in the database via a transaction (i.e. uses consensus)
 
 ```javascript
 // promise syntax
-api.txHas('mykey', {gas_price: 10}).then(hasMyKey => { ... }, error => { ... });
+api.txHas('mykey', {gas_price: 10})
+	.then(hasMyKey => { ... })
+	.catch(error => { ... });
 
 // async/await syntax
 const hasMyKey = await api.txHas('mykey', {gas_price: 10});
@@ -289,7 +299,7 @@ const hasMyKey = await api.txHas('mykey', {gas_price: 10});
 | key | The name of the key to query |
 | gas_info | Object containing gas parameters (see above) |
 
-Returns a promise resolving to a boolean value - `true` or `false`, representing whether the key is in the database.
+Returns: Promise=>boolean
 
 ### keys\(\)
 
@@ -297,13 +307,15 @@ Retrieve a list of all keys. This function bypasses the consensus and cryptograp
 
 ```javascript
 // promise syntax
-api.keys().then(keys => { ... }, error => { ... });
+api.keys()
+	.then(keys => { ... }
+	.catch(error => { ... });
 
 // async/await syntax
 const keys = await api.keys();
 ```
 
-Returns a promise resolving to an array of strings. ex. `["key1", "key2", ...]`.
+Returns: Promise=>array (array of keys)
 
 ### txKeys\(gas_info\)
 
@@ -311,7 +323,9 @@ Retrieve a list of all keys via a transaction (i.e. uses consensus).
 
 ```javascript
 // promise syntax
-api.txKeys({gas_price: 10}).then(keys => { ... }, error => { ... });
+api.txKeys({gas_price: 10})
+	.then(keys => { ... })
+	.catch(error => { ... });
 
 // async/await syntax
 const keys = await api.txKeys({gas_price: 10});
@@ -321,7 +335,7 @@ const keys = await api.txKeys({gas_price: 10});
 | :--- | :--- |
 | gas_info | Object containing gas parameters (see above) |
 
-Returns a promise resolving to an array of strings. ex. `["key1", "key2", ...]`.
+Returns: Promise=>array (array of keys)
 
 ### rename\(key, new_key, gas_info\)
 
@@ -329,7 +343,9 @@ Change the name of an existing key.
 
 ```javascript
 // promise syntax
-api.rename("key", "newkey", {gas_price: 10}).then(() => { ... }, error => { ... });
+api.rename("key", "newkey", {gas_price: 10})
+	.then(() => { ... })
+	.catch(error => { ... });
 
 // async/await syntax
 await api.rename("key", "newkey", {gas_price: 10});
@@ -341,16 +357,7 @@ await api.rename("key", "newkey", {gas_price: 10});
 | new_key | The new name for the key |
 | gas_info | Object containing gas parameters (see above) |
 
-Returns a promise resolving to nothing.
-
-Throws an exception if the key doesn't exist.
-
-
-| Argument | Description |
-| :--- | :--- |
-| key | The name of the key to query |
-
-Returns a promise resolving to a boolean value - `true` or `false`, representing whether the key is in the database.
+Returns: Promise=>void
 
 ### count\(\)
 
@@ -358,13 +365,15 @@ Retrieve the number of keys in the current database/uuid. This function bypasses
 
 ```javascript
 // promise syntax
-api.count().then(number => { ... }, error => { ... });
+api.count()
+	.then(number => { ... })
+	.catch(error => { ... });
 
 // async/await syntax
 const number = await api.count();
 ```
 
-Returns a promise resolving to an integer value.
+Returns: Promise=>number
 
 ### txCount\(gas_info\)
 
@@ -372,7 +381,9 @@ Retrieve the number of keys in the current database/uuid via a transaction.
 
 ```javascript
 // promise syntax
-api.txCount({gas_price: 10}).then(number => { ... }, error => { ... });
+api.txCount({gas_price: 10})
+	.then(number => { ... })
+	.catch(error => { ... });
 
 // async/await syntax
 const number = await api.txCount({gas_price: 10});
@@ -382,7 +393,7 @@ const number = await api.txCount({gas_price: 10});
 | :--- | :--- |
 | gas_info | Object containing gas parameters (see above) |
 
-Returns a promise resolving to an integer value.
+Returns: Promise=>number
 
 ### deleteAll\(gas_info\)
 
@@ -390,7 +401,9 @@ Remove all keys in the current database/uuid.
 
 ```javascript
 // promise syntax
-api.deleteAll({gas_price: 10}).then(() => { ... }, error => { ... });
+api.deleteAll({gas_price: 10})
+	.then(() => { ... })
+	.catch(error => { ... });
 
 // async/await syntax
 await api.deleteAll({gas_price: 10});
@@ -400,21 +413,23 @@ await api.deleteAll({gas_price: 10});
 | :--- | :--- |
 | gas_info | Object containing gas parameters (see above) |
 
-Returns a promise resolving to nothing.
+Returns: Promise=>void
 
 ### keyValues\(\)
 
-Enumerate all keys and values in the current database/uuid. This function bypasses the consensus and cryptography mechanisms in favor of speed.
+Returns all keys and values in the current database/uuid. This function bypasses the consensus and cryptography mechanisms in favor of speed.
 
 ```javascript
 // promise syntax
-api.keyValues().then(kvs => { ... }, error => { ... });
+api.keyValues()
+	.then(kvs => { ... })
+	.catch(error => { ... });
 
 // async/await syntax
 const kvs = await api.keyValues();
 ```
 
-Returns a promise resolving to a JSON array containing key/value pairs, e.g.
+Returns: Promise=>object
 
 ```
 [{"key": "key1", "value": "value1"}, {"key": "key2", "value": "value2"}]
@@ -422,11 +437,13 @@ Returns a promise resolving to a JSON array containing key/value pairs, e.g.
 
 ### txKeyValues\(gas_info\)
 
-Enumerate all keys and values in the current database/uuid via a transaction.
+Returns all keys and values in the current database/uuid via a transaction.
 
 ```javascript
 // promise syntax
-api.txKeyValues({gas_price: 10}).then(kvs => { ... }, error => { ... });
+api.txKeyValues({gas_price: 10})
+	.then(kvs => { ... })
+	.catch(error => { ... });
 
 // async/await syntax
 const kvs = await api.txKeyValues({gas_price: 10});
@@ -436,7 +453,7 @@ const kvs = await api.txKeyValues({gas_price: 10});
 | :--- | :--- |
 | gas_info | Object containing gas parameters (see above) |
 
-Returns a promise resolving to a JSON array containing key/value pairs, e.g.
+Returns: Promise=>object
 
 ```
 [{"key": "key1", "value": "value1"}, {"key": "key2", "value": "value2"}]
@@ -448,7 +465,9 @@ Update multiple fields in the database.
 
 ```javascript
 // promise syntax
-api.multiUpdate([{key: "key1", value: "value1"}, {key: "key2", value: "value2"}], {gas_price: 10}).then(() => { ... }, error => { ... });
+api.multiUpdate([{key: "key1", value: "value1"}, {key: "key2", value: "value2"}], {gas_price: 10})
+	.then(() => { ... })
+	.catch(error => { ... });
 
 // async/await syntax
 await api.multiUpdate([{key: "key1", value: "value1"}, {key: "key2", value: "value2"}, {gas_price: 10}');
@@ -459,10 +478,7 @@ await api.multiUpdate([{key: "key1", value: "value1"}, {key: "key2", value: "val
 | key_values | An array of objects containing keys and values (see example avove) |
 | gas_info | Object containing gas parameters (see above) |
 
-Returns a promise resolving to nothing.
-
-Throws an exception when any of the keys doesn't exist.
-
+Returns: Promise=>void
 
 ### getLease\(key\)
 
@@ -470,7 +486,9 @@ Retrieve the minimum time remaining on the lease for a key. This function bypass
 
 ```javascript
 // promise syntax
-api.getLease('mykey').then(value => { ... }, error => { ... });
+api.getLease('mykey')
+	.then(value => { ... })
+	.catch(error => { ... });
 
 // async/await syntax
 const value = await api.getLease('mykey');
@@ -480,9 +498,7 @@ const value = await api.getLease('mykey');
 | :--- | :--- |
 | key | The key to retrieve the lease information for |
 
-Returns a promise resolving the minimum length of time remaining for the key's lease, in seconds.
-
-Throws an exception when the key does not exist in the database.
+Returns: Promise=>number (the minimum length of time remaining for the key's lease, in seconds)
 
 ### txGetLease\(key, gas_info\)
 
@@ -490,7 +506,9 @@ Retrieve the minimum time remaining on the lease for a key, using a transaction.
 
 ```javascript
 // promise syntax
-api.txGetLease('mykey', {gas_price: 10}).then(value => { ... }, error => { ... });
+api.txGetLease('mykey', {gas_price: 10})
+	.then(value => { ... })
+	.catch(error => { ... });
 
 // async/await syntax
 const value = await api.txGetLease('mykey', {gas_price: 10});
@@ -501,9 +519,7 @@ const value = await api.txGetLease('mykey', {gas_price: 10});
 | key | The key to retrieve the lease information for |
 | gas_info | Object containing gas parameters (see above) |
 
-Returns a promise resolving the minimum length of time remaining for the key's lease, in seconds.
-
-Throws an exception when the key does not exist in the database.
+Returns: Promise=>number (minimum length of time remaining for the key's lease, in seconds)
 
 ### renewLease\(key, gas_info[, lease_info]\)
 
@@ -511,7 +527,9 @@ Update the minimum time remaining on the lease for a key.
 
 ```javascript
 // promise syntax
-api.renewLease('mykey', {gas_price: 10}, {days: 100}).then(value => { ... }, error => { ... });
+api.renewLease('mykey', {gas_price: 10}, {days: 100})
+	.then(value => { ... })
+	.catch(error => { ... });
 
 // async/await syntax
 const value = await api.renewLease('mykey', {gas_price: 10}, {days: 100});
@@ -523,10 +541,7 @@ const value = await api.renewLease('mykey', {gas_price: 10}, {days: 100});
 | gas_info | Object containing gas parameters (see above) |
 | lease_info (optional) | Minimum time for key to remain in database (see above) |
 
-Returns a promise resolving the minimum length of time remaining for the key's lease.
-
-Throws an exception when the key does not exist in the database.
-
+Returns: Promise=>number (minimum length of time remaining for the key's lease)
 
 ### renewLeaseAll\(gas_info[, lease_info]\)
 
@@ -534,7 +549,9 @@ Update the minimum time remaining on the lease for all keys.
 
 ```javascript
 // promise syntax
-api.renewLease('mykey', {gas_price: 10}, {days: 100}).then(value => { ... }, error => { ... });
+api.renewLease('mykey', {gas_price: 10}, {days: 100})
+.then(value => { ... })
+.catch(error => { ... });
 
 // async/await syntax
 const value = await api.renewLease('mykey', {gas_price: 10}, {days: 100});
@@ -545,10 +562,7 @@ const value = await api.renewLease('mykey', {gas_price: 10}, {days: 100});
 | gas_info | Object containing gas parameters (see above) |
 | lease_info (optional) | Minimum time for key to remain in database (see above) |
 
-Returns a promise resolving the minimum length of time remaining for the key's lease.
-
-Throws an exception when the key does not exist in the database.
-
+Returns: Promise=>number (minimum length of time remaining for the key's lease)
 
 ### getNShortestLeases\(n\)
 
@@ -556,7 +570,9 @@ Retrieve a list of the n keys in the database with the shortest leases.  This fu
 
 ```javascript
 // promise syntax
-api.getNShortestLeases(10).then(keys => { ... }, error => { ... });
+api.getNShortestLeases(10)
+	.then(keys => { ... })
+	.catch(error => { ... });
 
 // async/await syntax
 const keys = await api.getNShortestLeases(10);
@@ -566,7 +582,7 @@ const keys = await api.getNShortestLeases(10);
 | :--- | :--- |
 | n | The number of keys to retrieve the lease information for |
 
-Returns a JSON array of objects containing key, lease (in seconds), e.g.
+Returns: Promise=>object (containing key, lease (in seconds))
 ```
 [ { key: "mykey", lease: { seconds: "12345" } }, {...}, ...]
 ```
@@ -577,7 +593,9 @@ Retrieve a list of the N keys/values in the database with the shortest leases, u
 
 ```javascript
 // promise syntax
-api.txGetNShortestLeases(10).then(keys => { ... }, error => { ... });
+api.txGetNShortestLeases(10)
+	.then(keys => { ... })
+	.catch(error => { ... });
 
 // async/await syntax
 const keys = await api.txGetNShortestLeases(10);
@@ -588,7 +606,8 @@ const keys = await api.txGetNShortestLeases(10);
 | n | The number of keys to retrieve the lease information for |
 | gas_info | Object containing gas parameters (see above) |
 
-Returns a JSON array of objects containing key, lifetime (in seconds), e.g.
+Returns: Promise=>array (of objects containing key, lifetime (in seconds))
+
 ```
 [ { key: "mykey", lifetime: "12345" }, {...}, ...]
 ```

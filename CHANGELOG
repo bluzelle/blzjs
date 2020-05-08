@@ -19,3 +19,10 @@ To use the sample browser app
 * Switch to the 'next-gen' branch
 * navigate to samples/curium-todo
 * Follow the provided instructions in the readme
+
+version 1.0.11
+---------------
+* Added API and BluzelleConfig to bluzelle-node.js
+* UUID is not optional
+* Address is no longer a config option
+* Fixed bug where functions were not resolving promises on errors
