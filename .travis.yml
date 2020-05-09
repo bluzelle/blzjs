@@ -19,7 +19,7 @@ jobs:
       script:
         - |
           if [ "${TRAVIS_PULL_REQUEST}" == "false"  ]; then 
-            npx nyc --reporter=lcov mocha "**/tests/*_test.js" --timeout 20000 && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
+#            npx nyc --reporter=lcov mocha "**/tests/*_test.js" --timeout 20000 && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
           else
             eval "$(ssh-agent -s)"
             openssl aes-256-cbc -K $encrypted_3682aed7d095_key -iv $encrypted_3682aed7d095_iv -in curium-test.enc -out curium-test-key -d
