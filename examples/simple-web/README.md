@@ -7,5 +7,5 @@ a web application.
 
 in /samples/simple-web
 * `yarn` or `npm install` 
-* `yarn start` (to start the dev server)
+* `yarn start` or `npm run start` (to start the dev server)
 * Open a browser to the url provided

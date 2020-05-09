@@ -8,5 +8,5 @@ demonstrate basic CRUD operations on Curium from a browser.
 * Clone the blzjs repository
 * `cd examples/curium-todo`
 * `yarn` or `npm install`
-* `yarn dev` (run the development server)
+* `yarn dev` or `npm run dev` (run the development server)
 * open a browser to `http://localhost:3000`

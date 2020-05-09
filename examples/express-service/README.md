@@ -3,7 +3,7 @@
 #### Quickstart
 in the /samples/express-service directory
 * `yarn` or `npm install`
-* `yarn start` to start the server
+* `yarn start` or `npm run start` to start the server
 
 #### To use
 `http://localhost:3000/create/[key]/[value]` to create a value
