@@ -1,5 +1,4 @@
-import {bluzelle} from '../../client/lib/bluzelle-node'
-import {API} from "../../client/lib/swarmClient/Api";
+import {bluzelle, API} from 'bluzelle'
 import {bluzelleConfig} from "../example-config";
 
 

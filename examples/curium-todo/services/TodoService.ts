@@ -1,16 +1,14 @@
-import {bluzelle} from "../../../client/lib/bluzelle-node";
+import {bluzelle, API, BluzelleConfig} from "bluzelle";
 import {extend, memoize} from 'lodash'
 import {StoredTodo, Todo} from "../model/Todo";
-import {API} from "../../../client/src/swarmClient/Api";
 import {bluzelleConfig} from "../../example-config";
 
-export const params = bluzelleConfig;
+export const params: BluzelleConfig = bluzelleConfig;
 
 const todosListeners = [];
 const todos: Record<string, Todo> = {};
 
-const getBz = memoize<Promise<API>>(() => bluzelle(params))
-
+const getBz: () => Promise<API> = memoize(() => bluzelle(params))
 
 export const initialLoadTodos = () => getBz().then(loadTodos);
 

@@ -1,9 +1,6 @@
 ## Simple Express Service Demo
 
 #### Quickstart
-in the /client directory
-* `yarn` or `npm install`
-
 in the /samples/express-service directory
 * `yarn` or `npm install`
 * `yarn start` to start the server

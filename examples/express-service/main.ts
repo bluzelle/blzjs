@@ -1,4 +1,4 @@
-import {bluzelle} from '../../client/lib/bluzelle-node'
+import {bluzelle, API} from 'bluzelle'
 import {memoize} from 'lodash'
 import express from 'express'
 import {bluzelleConfig} from "../example-config";
@@ -7,9 +7,7 @@ const PORT = 3000;
 
 const app = express()
 
-
-
-const getBZ = memoize(() => bluzelle(bluzelleConfig));
+const getBZ: () => Promise<API> = memoize(() => bluzelle(bluzelleConfig));
 
 app.get('/create/:key/:value', (req, res) => {
     getBZ()
