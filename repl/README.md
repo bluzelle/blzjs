@@ -1,4 +1,4 @@
-##Bluzelle JS client REPL
+## Bluzelle JS client REPL
 
 For use in learning about and experimenting with the JS client for the  Bluzelle database.
 
