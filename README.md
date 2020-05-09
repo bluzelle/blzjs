@@ -22,6 +22,7 @@ const { bluzelle } = require('bluzelle');
 * [API docs](https://github.com/bluzelle/blzjs/tree/devel/client)
 * [Download browser version for `<script>` tag](https://github.com/bluzelle/blzjs/tree/devel/browser-client)
 * [Examples](https://github.com/bluzelle/blzjs/tree/devel/samples)
+* [REPL (interactive console)](https://github.com/bluzelle/blzjs/tree/devel/repl)
 
 # Quckstart
 

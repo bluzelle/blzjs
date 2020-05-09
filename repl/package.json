@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "bluzelle": "^1.0.11",
+    "ts-node": "^8.10.1"
+  },
+  "scripts": {
+    "start": "node --require ts-node/register --experimental-repl-await repl.ts"
+  }
+}
