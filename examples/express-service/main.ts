@@ -11,7 +11,7 @@ const getBZ: () => Promise<API> = memoize(() => bluzelle(bluzelleConfig));
 
 app.get('/create/:key/:value', (req, res) => {
     getBZ()
-        .then(bz => bz.create(req.params.key, req.params.value, {gas_price: '10.0'}))
+        .then(bz => bz.create(req.params.key, req.params.value, {gas_price: 10}))
         .then(() => res.send(`Created ${req.params.key}=${req.params.value}`))
         .catch(e => res.send(e.message))
 });

@@ -4,7 +4,7 @@ import {bluzelleConfig} from "../example-config";
 
 bluzelle(bluzelleConfig).then(async (bz: API) => {
     window.document.body.innerHTML = 'Creating key...'
-    await bz.create('myKey', 'myValue', {gas_price: '10.0'})
+    await bz.create('myKey', 'myValue', {gas_price: 10})
 
     window.document.body.innerHTML = 'Reading key...'
     const result = await bz.read('myKey');

@@ -23,7 +23,7 @@ export const storeTodo = (todo: Pick<Todo, 'body'>): Promise<any> => {
     notifyListeners();
     const storedTodo: StoredTodo = {...todo, time, done: false};
     return getBz()
-        .then(bz => bz.create(time, JSON.stringify(storedTodo), {gas_price: '10.0'}))
+        .then(bz => bz.create(time, JSON.stringify(storedTodo), {gas_price: 10}))
         .then(() => todos[time].synced = true)
         .then(notifyListeners)
 }
@@ -43,7 +43,7 @@ export const deleteTodo = (todo: Todo):Promise<any> => {
     todo.synced = false;
     notifyListeners();
     return getBz()
-        .then(bz => bz.delete(todo.time, {gas_price: '10.0'}))
+        .then(bz => bz.delete(todo.time, {gas_price: 10}))
         .then(() => delete todos[todo.time])
         .then(notifyListeners);
 }
@@ -58,7 +58,7 @@ export const toggleTodoDone = (todo: Todo): Promise<any> => {
         time: todo.time
     }
     return getBz()
-        .then(bz => bz.update(todo.time, JSON.stringify(storedTodo), {gas_price: '10.0'}))
+        .then(bz => bz.update(todo.time, JSON.stringify(storedTodo), {gas_price: 10}))
         .then(() => todo.synced = true)
         .then(notifyListeners)
 }

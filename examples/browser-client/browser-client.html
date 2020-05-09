@@ -7,7 +7,7 @@
             chain_id: 'bluzelle',
             uuid: Date.now().toString()
         });
-        await bz.create('aKey', 'aValue', {gas_price: '10.0'});
+        await bz.create('aKey', 'aValue', {gas_price: 10});
         document.body.innerHTML = await bz.read('aKey');
     })()
 </script>
