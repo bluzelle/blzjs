@@ -106,7 +106,7 @@ function send_tx(url, data, chain_id) {
     data.value.signature = sig;
     // Post the transaction
     return axios.post(`${url}/${TX_COMMAND}`, {
-        headers: { 'Content-type': 'application/x-www-form-urlencoded' },
+        headers: { 'Content-type': 'application/json' },
         tx: data.value,
         mode: 'block' // wait for tx to be committed
     }).then((res) => res.data);
@@ -120,7 +120,7 @@ function begin_tx(tx) {
             method: tx.type,
             url: url,
             data: tx.data,
-            headers: { 'Content-type': 'application/x-www-form-urlencoded' }
+            headers: { 'Content-type': 'application/json' }
         };
         try {
             // get tx skeleton

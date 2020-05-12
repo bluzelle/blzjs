@@ -125,7 +125,7 @@ function send_tx(url: string, data: any, chain_id: string): any {
 
     // Post the transaction
     return axios.post(`${url}/${TX_COMMAND}`, {
-        headers: {'Content-type': 'application/x-www-form-urlencoded'},
+        headers: {'Content-type': 'application/json'},
         tx: data.value,
         mode: 'block' // wait for tx to be committed
     }).then((res: any) => res.data)
@@ -140,7 +140,7 @@ async function begin_tx(tx: Transaction): Promise<void> {
         method: tx.type,
         url: url,
         data: tx.data,
-        headers: {'Content-type': 'application/x-www-form-urlencoded'}
+        headers: {'Content-type': 'application/json'}
     };
 
     try {
