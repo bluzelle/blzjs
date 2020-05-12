@@ -1,5 +1,4 @@
 export declare const enum ClientErrors {
-    KEY_DOES_NOTE_EXIST = "Key does not exist",
     KEY_MUST_BE_A_STRING = "Key must be a string",
     NEW_KEY_MUST_BE_A_STRING = "New key must be a string",
     VALUE_MUST_BE_A_STRING = "Value must be a string",

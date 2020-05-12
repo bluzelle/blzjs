@@ -93,16 +93,7 @@ class API {
         return __awaiter(this, void 0, void 0, function* () {
             assert_1.default(lodash_1.isString(key), "Key must be a string" /* KEY_MUST_BE_A_STRING */);
             return cosmos.query(`${APP_SERVICE}/${prove ? 'pread' : 'read'}/${this.uuid}/${util_3.encodeSafe(key)}`)
-                .then(res => res.result.value)
-                .catch(err => {
-                // treat 404's specially
-                if (err.message.substr(0, 3) === '404') {
-                    throw new Error("Key does not exist" /* KEY_DOES_NOTE_EXIST */);
-                }
-                else {
-                    throw err;
-                }
-            });
+                .then(res => res.result.value);
         });
     }
     txRead(key, gas_info) {

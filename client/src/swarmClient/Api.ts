@@ -94,15 +94,6 @@ export class API {
 
         return cosmos.query(`${APP_SERVICE}/${prove ? 'pread' : 'read'}/${this.uuid}/${encodeSafe(key)}`)
             .then(res => res.result.value)
-            .catch(err => {
-            // treat 404's specially
-
-            if (err.message.substr(0, 3) === '404') {
-                throw new Error(ClientErrors.KEY_DOES_NOTE_EXIST);
-            } else {
-                throw err;
-            }
-        });
     }
 
     async txRead(key: string, gas_info: GasInfo): Promise<string> {
@@ -168,21 +159,21 @@ export class API {
         );
     }
 
-    async deleteAll(gas_info: GasInfo):Promise<void> {
+    async deleteAll(gas_info: GasInfo): Promise<void> {
         return this.doTx({}, 'post', 'deleteall', gas_info);
     }
 
-    async keyValues(): Promise<{key: string, value: string}[]> {
+    async keyValues(): Promise<{ key: string, value: string }[]> {
         return cosmos.query(`/${APP_SERVICE}/keyvalues/${this.uuid}`).then(({result}) => result.keyvalues)
     }
 
-    async txKeyValues(gas_info: GasInfo): Promise<{key: string, value: string}[]> {
+    async txKeyValues(gas_info: GasInfo): Promise<{ key: string, value: string }[]> {
         return this.doTx({}, 'post', 'keyvalues', gas_info).then(res =>
             parse_result(res).keyvalues
         );
     }
 
-    async multiUpdate(keyvalues: {key: string, value: string}[], gas_info: GasInfo): Promise<void> {
+    async multiUpdate(keyvalues: { key: string, value: string }[], gas_info: GasInfo): Promise<void> {
         assert(Array.isArray(keyvalues), 'keyvalues must be an array');
 
         keyvalues.forEach(({key, value}, index, array) => {
@@ -235,15 +226,15 @@ export class API {
         }, 'post', 'renewleaseall', gas_info);
     }
 
-    async getNShortestLeases(n: number): Promise<{key: string, lease: {seconds: number}}[]> {
+    async getNShortestLeases(n: number): Promise<{ key: string, lease: { seconds: number } }[]> {
         assert(n >= 0, Error(ClientErrors.INVALID_VALUE_SPECIFIED));
 
         return cosmos.query(`${APP_SERVICE}/getnshortestleases/${this.uuid}/${n}`).then(({result}) => {
-            return result.keyleases.map(({key, lease}: {key: string, lease: string}) => ({key, lease: parseInt(lease) * BLOCK_TIME_IN_SECONDS}));
+            return result.keyleases.map(({key, lease}: { key: string, lease: string }) => ({key, lease: parseInt(lease) * BLOCK_TIME_IN_SECONDS}));
         })
     }
 
-    async txGetNShortestLeases(n: number, gas_info: GasInfo): Promise<{key: string, lease: {seconds: number}}[]> {
+    async txGetNShortestLeases(n: number, gas_info: GasInfo): Promise<{ key: string, lease: { seconds: number } }[]> {
         assert(n >= 0, ClientErrors.INVALID_VALUE_SPECIFIED);
 
         return this.doTx(
@@ -251,7 +242,7 @@ export class API {
                 N: n
             }, 'post', 'getnshortestleases', gas_info).then(res => {
             const result = parse_result(res);
-            return result.keyleases.map(({key, lease}: {key: string, lease: string}) => ({key, lease: parseInt(lease) * BLOCK_TIME_IN_SECONDS}));
+            return result.keyleases.map(({key, lease}: { key: string, lease: string }) => ({key, lease: parseInt(lease) * BLOCK_TIME_IN_SECONDS}));
         });
     }
 
@@ -264,7 +255,7 @@ export class API {
         return cosmos.query('node_info').then(res => res.application_version.version);
     }
 
-    private doTx(params: {[key: string]: any}, type: 'post' | 'delete', cmd: string, gas_info: GasInfo) {
+    private doTx(params: { [key: string]: any }, type: 'post' | 'delete', cmd: string, gas_info: GasInfo) {
         const data = {
             BaseReq: {
                 from: this.address,
