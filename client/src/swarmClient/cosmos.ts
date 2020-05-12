@@ -161,7 +161,7 @@ async function begin_tx(tx: Transaction): Promise<void> {
             }];
         }
     } catch (err) {
-        tx.deferred.reject(new Error(err.message));
+        throw new Error(err.message);
         advance_queue();
         return;
     }
@@ -170,7 +170,7 @@ async function begin_tx(tx: Transaction): Promise<void> {
         // broadcast the tx
         res = await send_tx(app_endpoint, response.data, chain_id);
     } catch (err) {
-        tx.deferred.reject(new Error(err.message));
+        throw new Error(err.message);
         advance_queue();
         return;
     }
@@ -187,14 +187,14 @@ async function begin_tx(tx: Transaction): Promise<void> {
         // bump our sequence number
         account_info.sequence++;
 
-        tx.deferred.resolve(res.data);
+        return res.data;
 
         advance_queue();
     } else {
         if (res.raw_log.search("signature verification failed") !== -1) {
             update_account_sequence(tx, MAX_RETRIES);
         } else {
-            tx.deferred.reject(new Error(extract_error_from_message(res.raw_log)));
+            throw new Error(extract_error_from_message(res.raw_log));
             advance_queue();
         }
     }
@@ -213,7 +213,7 @@ function update_account_sequence(tx: Transaction, retries: number): void {
         }, RETRY_INTERVAL);
     } else {
         // at this point, assume it's the chain id that is bad
-        tx.deferred.reject(new Error("Invalid chain id"));
+        throw new Error("Invalid chain id");
         advance_queue();
     }
 }
@@ -310,7 +310,8 @@ export const sendTransaction = (req_type: string, ep_name: string, data: any, ga
 
     return queue = queue.then(() => new Promise((resolve, reject) => {
         begin_tx(tx)
-            .then(resolve);
+            .then(resolve)
+            .catch(reject)
     }))
 
 //    tx_queue.push(tx);

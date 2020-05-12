@@ -140,7 +140,7 @@ function begin_tx(tx) {
             }
         }
         catch (err) {
-            tx.deferred.reject(new Error(err.message));
+            throw new Error(err.message);
             advance_queue();
             return;
         }
@@ -149,7 +149,7 @@ function begin_tx(tx) {
             res = yield send_tx(app_endpoint, response.data, chain_id);
         }
         catch (err) {
-            tx.deferred.reject(new Error(err.message));
+            throw new Error(err.message);
             advance_queue();
             return;
         }
@@ -163,7 +163,7 @@ function begin_tx(tx) {
         if (!res.code) {
             // bump our sequence number
             account_info.sequence++;
-            tx.deferred.resolve(res.data);
+            return res.data;
             advance_queue();
         }
         else {
@@ -171,7 +171,7 @@ function begin_tx(tx) {
                 update_account_sequence(tx, exports.MAX_RETRIES);
             }
             else {
-                tx.deferred.reject(new Error(extract_error_from_message(res.raw_log)));
+                throw new Error(extract_error_from_message(res.raw_log));
                 advance_queue();
             }
         }
@@ -192,7 +192,7 @@ function update_account_sequence(tx, retries) {
     }
     else {
         // at this point, assume it's the chain id that is bad
-        tx.deferred.reject(new Error("Invalid chain id"));
+        throw new Error("Invalid chain id");
         advance_queue();
     }
 }
@@ -260,13 +260,19 @@ exports.init = (mnemonic, endpoint) => __awaiter(void 0, void 0, void 0, functio
     yield sendAccountQuery();
     return getAddress(secp256k1.keyFromPrivate(private_key, 'hex').getPublic(true, 'hex'));
 });
+let queue = Promise.resolve();
 exports.sendTransaction = (req_type, ep_name, data, gas_info) => {
     const def = new Deferred_1.Deferred();
     const tx = new Transaction_1.Transaction(req_type, ep_name, data, def);
     lodash_1.extend(tx, fixupGasInfo(gas_info));
-    tx_queue.push(tx);
-    tx_queue.length === 1 && setTimeout(next_tx, 0);
-    return def.promise;
+    return queue = queue.then(() => new Promise((resolve, reject) => {
+        begin_tx(tx)
+            .then(resolve)
+            .catch(reject);
+    }));
+    //    tx_queue.push(tx);
+    //    tx_queue.length === 1 && setTimeout(next_tx, 0);
+    //    return def.promise;
     function fixupGasInfo({ max_gas, max_fee, gas_price } = {}) {
         return ({
             max_gas: max_gas === null || max_gas === void 0 ? void 0 : max_gas.toString(),
