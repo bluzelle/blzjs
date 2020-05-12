@@ -301,16 +301,23 @@ export const init = async (mnemonic: string, endpoint: string): Promise<any> => 
     return getAddress(secp256k1.keyFromPrivate(private_key, 'hex').getPublic(true, 'hex'))
 }
 
+let queue: Promise<any> = Promise.resolve();
+
 export const sendTransaction = (req_type: string, ep_name: string, data: any, gas_info: GasInfo): Promise<any> => {
     const def = new Deferred();
     const tx = new Transaction(req_type, ep_name, data, def);
     extend(tx, fixupGasInfo(gas_info));
 
-    tx_queue.push(tx);
+    return queue = queue.then(() => new Promise((resolve, reject) => {
+        begin_tx(tx)
+            .then(resolve);
+    }))
 
-    tx_queue.length === 1 && setTimeout(next_tx, 0);
+//    tx_queue.push(tx);
 
-    return def.promise;
+//    tx_queue.length === 1 && setTimeout(next_tx, 0);
+
+//    return def.promise;
 
     function fixupGasInfo({max_gas, max_fee, gas_price}: GasInfo = {}): GasInfo {
         return ({
