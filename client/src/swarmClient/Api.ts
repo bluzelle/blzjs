@@ -150,7 +150,8 @@ export class API {
     }
 
     async count(): Promise<number> {
-        return cosmos.query(`/${APP_SERVICE}/count/${this.uuid}`).then(({result}) => parseInt(result.count));
+        return cosmos.query(`/${APP_SERVICE}/count/${this.uuid}`)
+            .then(({result}) => parseInt(result.count));
     }
 
     async txCount(gas_info: GasInfo): Promise<number> {

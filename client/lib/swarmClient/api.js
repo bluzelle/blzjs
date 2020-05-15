@@ -149,7 +149,8 @@ class API {
     }
     count() {
         return __awaiter(this, void 0, void 0, function* () {
-            return cosmos.query(`/${APP_SERVICE}/count/${this.uuid}`).then(({ result }) => parseInt(result.count));
+            return cosmos.query(`/${APP_SERVICE}/count/${this.uuid}`)
+                .then(({ result }) => parseInt(result.count));
         });
     }
     txCount(gas_info) {
