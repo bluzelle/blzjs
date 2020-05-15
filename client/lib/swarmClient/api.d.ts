@@ -13,7 +13,7 @@ export declare class API {
     status(): void;
     create(key: string, value: string, gas_info: GasInfo, lease_info?: LeaseInfo): Promise<void>;
     update(key: string, value: string, gas_info: GasInfo, lease_info?: LeaseInfo): Promise<void>;
-    read(key: string, prove?: string): Promise<string>;
+    read(key: string, prove?: boolean): Promise<string>;
     txRead(key: string, gas_info: GasInfo): Promise<string>;
     delete(key: string, gas_info: GasInfo): Promise<void>;
     has(key: string): Promise<boolean>;

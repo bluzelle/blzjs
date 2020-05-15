@@ -89,7 +89,7 @@ export class API {
         }, 'post', 'update', gas_info);
     }
 
-    async read(key: string, prove?: string): Promise<string> {
+    async read(key: string, prove?: boolean): Promise<string> {
         assert(isString(key), ClientErrors.KEY_MUST_BE_A_STRING);
 
         return cosmos.query(`${APP_SERVICE}/${prove ? 'pread' : 'read'}/${this.uuid}/${encodeSafe(key)}`)
