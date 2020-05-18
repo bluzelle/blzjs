@@ -26,3 +26,11 @@ version 1.0.11
 * UUID is not optional
 * Address is no longer a config option
 * Fixed bug where functions were not resolving promises on errors
+
+version 1.0.12
+--------------
+* changed read/prove flag to be boolean
+
+version 1.0.13
+--------------
+* Added a browser/pure-js version of the client

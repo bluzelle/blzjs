@@ -3,10 +3,15 @@
   "version": "1.0.12",
   "description": "Bluzelle Database client for JavaScript",
   "main": "lib/bluzelle-node.js",
+  "browserslist": [
+    "last 10 Chrome versions"
+  ],
   "scripts": {
     "test-node": "../node_modules/.bin/mocha \\\"`git rev-parse --show-toplevel`/src/**/*.test.js\\\" --exit --timeout 8000",
     "test": "../node_modules/.bin/nyc --reporter=text mocha **/tests/*_test.js --timeout 20000",
-    "build": "rm -rf lib && tsc",
+    "build": "rm -rf lib && yarn build-node && yarn build-js",
+    "build-node": "tsc",
+    "build-js": "parcel build src/bluzelle-js.ts --no-cache public-url='./' --out-dir 'lib'",
     "build:watch": "yarn build --watch",
     "publish-npm": "yarn build && yarn publish"
   },
@@ -39,6 +44,7 @@
     "express": "^4.17.1",
     "hash.js": "^1.1.5",
     "nyc": "^15.0.0",
+    "parcel-bundler": "^1.12.4",
     "typescript": "^3.8.3"
   }
 }
