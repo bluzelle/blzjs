@@ -4,4 +4,4 @@ export {bluzelle} from './bluzelle-node';
 
 import {bluzelle} from './bluzelle-node'
 
-typeof window !== undefined && ((window as any).bluzelle = bluzelle);
+typeof window === "undefined" || ((window as any).bluzelle = bluzelle);

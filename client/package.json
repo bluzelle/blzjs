@@ -17,12 +17,12 @@
   },
   "devDependencies": {
     "chai": "^4.2.0",
+    "coveralls": "^3.0.9",
     "fs": "^0.0.1-security",
     "mocha": "^5.2.0",
     "moxios": "^0.4.0",
-    "parcel-bundler": "^1.12.4",
     "nyc": "^15.0.0",
-    "coveralls": "^3.0.9"
+    "parcel-bundler": "^1.12.4"
   },
   "author": "Scott Burch <scott@bulldoginfo.com>",
   "license": "ISC",

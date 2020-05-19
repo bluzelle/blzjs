@@ -22,8 +22,8 @@ import {isString} from 'lodash'
 import {BLOCK_TIME_IN_SECONDS} from "./util";
 import {convertLease} from "./util";
 import {encodeSafe} from "./util";
+import {assert} from "../Assert";
 
-import assert from 'assert'
 import * as cosmos from './cosmos'
 import {BluzelleConfig} from "../BluzelleConfig";
 
@@ -66,6 +66,7 @@ export class API {
     async create(key: string, value: string, gas_info: GasInfo, lease_info: LeaseInfo = {}): Promise<void> {
         assert(isString(key), ClientErrors.KEY_MUST_BE_A_STRING);
         assert(isString(value), ClientErrors.VALUE_MUST_BE_A_STRING);
+        assert(!key.includes('/'), ClientErrors.KEY_CANNOT_CONTAIN_SLASH);
 
         const blocks = convertLease(lease_info);
 
@@ -228,7 +229,7 @@ export class API {
     }
 
     async getNShortestLeases(n: number): Promise<{ key: string, lease: { seconds: number } }[]> {
-        assert(n >= 0, Error(ClientErrors.INVALID_VALUE_SPECIFIED));
+        assert(n >= 0, ClientErrors.INVALID_VALUE_SPECIFIED);
 
         return cosmos.query(`${APP_SERVICE}/getnshortestleases/${this.uuid}/${n}`).then(({result}) => {
             return result.keyleases.map(({key, lease}: { key: string, lease: string }) => ({key, lease: parseInt(lease) * BLOCK_TIME_IN_SECONDS}));

@@ -9,6 +9,7 @@ export declare const enum ClientErrors {
     ADDRESS_MUST_BE_A_STRING = "address must be a string",
     MNEMONIC_MUST_BE_A_STRING = "mnemonic must be a string",
     UUID_MUST_BE_A_STRING = "uuid must be a string",
-    INVALID_TRANSACTION = "Invalid transaction."
+    INVALID_TRANSACTION = "Invalid transaction.",
+    KEY_CANNOT_CONTAIN_SLASH = "Key cannot contain a slash"
 }
 //# sourceMappingURL=ClientErrors.d.ts.map

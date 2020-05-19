@@ -8,9 +8,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 //
 // Copyright (C) 2020 Bluzelle
@@ -26,7 +23,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-const assert_1 = __importDefault(require("assert"));
+const Assert_1 = require("../Assert");
 const Transaction_1 = require("./Transaction");
 const Deferred_1 = require("./Deferred");
 const lodash_1 = require("lodash");
@@ -98,7 +95,7 @@ function signTransaction(key, data, chain_id) {
     };
 }
 function send_tx(url, data, chain_id) {
-    assert_1.default(!!data, "Invalid transaction." /* INVALID_TRANSACTION */);
+    Assert_1.assert(!!data, "Invalid transaction." /* INVALID_TRANSACTION */);
     // set up the signature
     data.value.memo = makeRandomString(32);
     const sig = signTransaction(private_key, data, chain_id);

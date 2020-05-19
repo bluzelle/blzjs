@@ -13,8 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {assert} from "../Assert";
 
-const assert = require('assert');
 const EC = require('elliptic').ec;
 const sha256 = require('hash.js/lib/hash/sha/256');
 
@@ -106,7 +106,7 @@ export const import_public_key_from_base64 = (pub_key_base64: string) => {
 
     const header = key_hex.substring(0, 46);
 
-    assert.equal(header, "3056301006072a8648ce3d020106052b8104000a034200",
+    assert(header === "3056301006072a8648ce3d020106052b8104000a034200",
         "ECDSA Signature Verification: public key header is malformed for secp256k1. This is the public key you're trying to decode: \"" + pub_key_base64 + '"');
 
 
@@ -149,13 +149,13 @@ export const import_private_key_from_base64 = (priv_key_base64: string) => {
 
     const header1 = key_hex.substring(0, 14);
 
-    assert.equal(header1, "30740201010420",
+    assert(header1 === "30740201010420",
         "ECDSA Private Key Import: private key header is malformed. This is the private key you're trying to decode: \"" + priv_key_base64 + '"');
 
     const header2 = key_hex.substring(78, 78 + 26)
 
 
-    assert.equal(header2, "a00706052b8104000aa1440342",
+    assert(header2 === "a00706052b8104000aa1440342",
         "ECDSA Private Key Import: private key header is malformed. This is the private key you're trying to decode: \"" + priv_key_base64 + '"');
 
 

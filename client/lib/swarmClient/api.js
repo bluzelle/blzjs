@@ -22,9 +22,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -37,7 +34,7 @@ const lodash_1 = require("lodash");
 const util_1 = require("./util");
 const util_2 = require("./util");
 const util_3 = require("./util");
-const assert_1 = __importDefault(require("assert"));
+const Assert_1 = require("../Assert");
 const cosmos = __importStar(require("./cosmos"));
 const APP_SERVICE = "crud";
 function hex2string(hex) {
@@ -50,8 +47,8 @@ const parse_result = (str) => JSON.parse(hex2string(str));
 class API {
     constructor({ mnemonic, endpoint, uuid, chain_id }) {
         this.address = '';
-        assert_1.default(lodash_1.isString(mnemonic), "mnemonic must be a string" /* MNEMONIC_MUST_BE_A_STRING */);
-        assert_1.default(lodash_1.isString(uuid), "uuid must be a string" /* UUID_MUST_BE_A_STRING */);
+        Assert_1.assert(lodash_1.isString(mnemonic), "mnemonic must be a string" /* MNEMONIC_MUST_BE_A_STRING */);
+        Assert_1.assert(lodash_1.isString(uuid), "uuid must be a string" /* UUID_MUST_BE_A_STRING */);
         this.mnemonic = mnemonic;
         this.uuid = uuid;
         this.chain_id = chain_id || "bluzelle";
@@ -67,10 +64,11 @@ class API {
     }
     create(key, value, gas_info, lease_info = {}) {
         return __awaiter(this, void 0, void 0, function* () {
-            assert_1.default(lodash_1.isString(key), "Key must be a string" /* KEY_MUST_BE_A_STRING */);
-            assert_1.default(lodash_1.isString(value), "Value must be a string" /* VALUE_MUST_BE_A_STRING */);
+            Assert_1.assert(lodash_1.isString(key), "Key must be a string" /* KEY_MUST_BE_A_STRING */);
+            Assert_1.assert(lodash_1.isString(value), "Value must be a string" /* VALUE_MUST_BE_A_STRING */);
+            Assert_1.assert(!key.includes('/'), "Key cannot contain a slash" /* KEY_CANNOT_CONTAIN_SLASH */);
             const blocks = util_2.convertLease(lease_info);
-            assert_1.default(blocks >= 0, "Invalid lease time" /* INVALID_LEASE_TIME */);
+            Assert_1.assert(blocks >= 0, "Invalid lease time" /* INVALID_LEASE_TIME */);
             return this.doTx({
                 Key: key,
                 Value: value,
@@ -80,8 +78,8 @@ class API {
     }
     update(key, value, gas_info, lease_info) {
         return __awaiter(this, void 0, void 0, function* () {
-            assert_1.default(lodash_1.isString(key), "Key must be a string" /* KEY_MUST_BE_A_STRING */);
-            assert_1.default(lodash_1.isString(value), "Value must be a string" /* VALUE_MUST_BE_A_STRING */);
+            Assert_1.assert(lodash_1.isString(key), "Key must be a string" /* KEY_MUST_BE_A_STRING */);
+            Assert_1.assert(lodash_1.isString(value), "Value must be a string" /* VALUE_MUST_BE_A_STRING */);
             return this.doTx({
                 Key: key,
                 Value: value,
@@ -91,14 +89,14 @@ class API {
     }
     read(key, prove) {
         return __awaiter(this, void 0, void 0, function* () {
-            assert_1.default(lodash_1.isString(key), "Key must be a string" /* KEY_MUST_BE_A_STRING */);
+            Assert_1.assert(lodash_1.isString(key), "Key must be a string" /* KEY_MUST_BE_A_STRING */);
             return cosmos.query(`${APP_SERVICE}/${prove ? 'pread' : 'read'}/${this.uuid}/${util_3.encodeSafe(key)}`)
                 .then(res => res.result.value);
         });
     }
     txRead(key, gas_info) {
         return __awaiter(this, void 0, void 0, function* () {
-            assert_1.default(lodash_1.isString(key), "Key must be a string" /* KEY_MUST_BE_A_STRING */);
+            Assert_1.assert(lodash_1.isString(key), "Key must be a string" /* KEY_MUST_BE_A_STRING */);
             return this.doTx({
                 Key: key
             }, 'post', 'read', gas_info).then(res => parse_result(res).value);
@@ -106,7 +104,7 @@ class API {
     }
     delete(key, gas_info) {
         return __awaiter(this, void 0, void 0, function* () {
-            assert_1.default(lodash_1.isString(key), "Key must be a string" /* KEY_MUST_BE_A_STRING */);
+            Assert_1.assert(lodash_1.isString(key), "Key must be a string" /* KEY_MUST_BE_A_STRING */);
             return this.doTx({
                 Key: key
             }, 'delete', 'delete', gas_info);
@@ -114,14 +112,14 @@ class API {
     }
     has(key) {
         return __awaiter(this, void 0, void 0, function* () {
-            assert_1.default(lodash_1.isString(key), "Key must be a string" /* KEY_MUST_BE_A_STRING */);
+            Assert_1.assert(lodash_1.isString(key), "Key must be a string" /* KEY_MUST_BE_A_STRING */);
             const uri_key = util_3.encodeSafe(key);
             return cosmos.query(`${APP_SERVICE}/has/${this.uuid}/${uri_key}`).then(({ result }) => result.has);
         });
     }
     txHas(key, gas_info) {
         return __awaiter(this, void 0, void 0, function* () {
-            assert_1.default(lodash_1.isString(key), "Key must be a string" /* KEY_MUST_BE_A_STRING */);
+            Assert_1.assert(lodash_1.isString(key), "Key must be a string" /* KEY_MUST_BE_A_STRING */);
             return this.doTx({
                 Key: key
             }, 'post', 'has', gas_info).then(res => parse_result(res).has);
@@ -139,8 +137,8 @@ class API {
     }
     rename(key, new_key, gas_info) {
         return __awaiter(this, void 0, void 0, function* () {
-            assert_1.default(lodash_1.isString(key), "Key must be a string" /* KEY_MUST_BE_A_STRING */);
-            assert_1.default(lodash_1.isString(new_key), "New key must be a string" /* NEW_KEY_MUST_BE_A_STRING */);
+            Assert_1.assert(lodash_1.isString(key), "Key must be a string" /* KEY_MUST_BE_A_STRING */);
+            Assert_1.assert(lodash_1.isString(new_key), "New key must be a string" /* NEW_KEY_MUST_BE_A_STRING */);
             return this.doTx({
                 Key: key,
                 NewKey: new_key
@@ -175,10 +173,10 @@ class API {
     }
     multiUpdate(keyvalues, gas_info) {
         return __awaiter(this, void 0, void 0, function* () {
-            assert_1.default(Array.isArray(keyvalues), 'keyvalues must be an array');
+            Assert_1.assert(Array.isArray(keyvalues), 'keyvalues must be an array');
             keyvalues.forEach(({ key, value }, index, array) => {
-                assert_1.default(lodash_1.isString(key), "All keys must be strings" /* ALL_KEYS_MUST_BE_STRINGS */);
-                assert_1.default(lodash_1.isString(value), "All values must be strings" /* ALL_VALUES_MUST_BE_STRINGS */);
+                Assert_1.assert(lodash_1.isString(key), "All keys must be strings" /* ALL_KEYS_MUST_BE_STRINGS */);
+                Assert_1.assert(lodash_1.isString(value), "All values must be strings" /* ALL_VALUES_MUST_BE_STRINGS */);
             });
             return this.doTx({
                 KeyValues: keyvalues
@@ -187,14 +185,14 @@ class API {
     }
     getLease(key) {
         return __awaiter(this, void 0, void 0, function* () {
-            assert_1.default(lodash_1.isString(key), "Key must be a string" /* KEY_MUST_BE_A_STRING */);
+            Assert_1.assert(lodash_1.isString(key), "Key must be a string" /* KEY_MUST_BE_A_STRING */);
             const uri_key = util_3.encodeSafe(key);
             return cosmos.query(`${APP_SERVICE}/getlease/${this.uuid}/${uri_key}`).then(({ result }) => result.lease * util_1.BLOCK_TIME_IN_SECONDS);
         });
     }
     txGetLease(key, gas_info) {
         return __awaiter(this, void 0, void 0, function* () {
-            assert_1.default(lodash_1.isString(key), "Key must be a string" /* KEY_MUST_BE_A_STRING */);
+            Assert_1.assert(lodash_1.isString(key), "Key must be a string" /* KEY_MUST_BE_A_STRING */);
             return this.doTx({
                 Key: key
             }, 'post', 'getlease', gas_info).then(res => parse_result(res).lease * util_1.BLOCK_TIME_IN_SECONDS);
@@ -202,9 +200,9 @@ class API {
     }
     renewLease(key, gas_info, lease_info) {
         return __awaiter(this, void 0, void 0, function* () {
-            assert_1.default(lodash_1.isString(key), "Key must be a string" /* KEY_MUST_BE_A_STRING */);
+            Assert_1.assert(lodash_1.isString(key), "Key must be a string" /* KEY_MUST_BE_A_STRING */);
             const blocks = util_2.convertLease(lease_info);
-            assert_1.default(blocks >= 0, "Invalid lease time" /* INVALID_LEASE_TIME */);
+            Assert_1.assert(blocks >= 0, "Invalid lease time" /* INVALID_LEASE_TIME */);
             return this.doTx({
                 Key: key,
                 Lease: blocks.toString()
@@ -214,7 +212,7 @@ class API {
     renewLeaseAll(gas_info, lease_info = {}) {
         return __awaiter(this, void 0, void 0, function* () {
             const blocks = util_2.convertLease(lease_info);
-            assert_1.default(blocks >= 0, "Invalid lease time" /* INVALID_LEASE_TIME */);
+            Assert_1.assert(blocks >= 0, "Invalid lease time" /* INVALID_LEASE_TIME */);
             return this.doTx({
                 Lease: blocks.toString()
             }, 'post', 'renewleaseall', gas_info);
@@ -222,7 +220,7 @@ class API {
     }
     getNShortestLeases(n) {
         return __awaiter(this, void 0, void 0, function* () {
-            assert_1.default(n >= 0, Error("Invalid value specified" /* INVALID_VALUE_SPECIFIED */));
+            Assert_1.assert(n >= 0, "Invalid value specified" /* INVALID_VALUE_SPECIFIED */);
             return cosmos.query(`${APP_SERVICE}/getnshortestleases/${this.uuid}/${n}`).then(({ result }) => {
                 return result.keyleases.map(({ key, lease }) => ({ key, lease: parseInt(lease) * util_1.BLOCK_TIME_IN_SECONDS }));
             });
@@ -230,7 +228,7 @@ class API {
     }
     txGetNShortestLeases(n, gas_info) {
         return __awaiter(this, void 0, void 0, function* () {
-            assert_1.default(n >= 0, "Invalid value specified" /* INVALID_VALUE_SPECIFIED */);
+            Assert_1.assert(n >= 0, "Invalid value specified" /* INVALID_VALUE_SPECIFIED */);
             return this.doTx({
                 N: n
             }, 'post', 'getnshortestleases', gas_info).then(res => {
