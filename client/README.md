@@ -6,16 +6,32 @@
 # blzjs Installation
 
 
-
 ```
 yarn add bluzelle
 or
 npm install bluzelle
 ```
+
+There are two versions of the bluzelle
+library.  `bluzelle-node.js` and `bluzelle-js.js`.  
+By default the NodeJS version will be used. 
+
+#### To use the NodeJS version
 ```
 import { bluzele } from 'bluzelle';
 or
 const { bluzelle } = require('bluzelle');
+```
+
+#### To use the pure JS version
+```
+import { bluzele } from 'bluzelle/lib/bluzelle-js';
+or
+const { bluzelle } = require('bluzelle/lib/bluzelle-js');
+```
+#### To load additional Typescript definitions
+```typescript
+import {bluzelle, API, BluzelleConfig} from 'bluzelle'
 ```
 
 # Getting Started
