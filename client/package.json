@@ -1,6 +1,6 @@
 {
   "name": "bluzelle",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "description": "Bluzelle Database client for JavaScript",
   "main": "lib/bluzelle-node.js",
   "browserslist": [
