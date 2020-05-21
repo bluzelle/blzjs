@@ -38,3 +38,7 @@ version 1.0.13
 version 1.0.14
 --------------
 * Added missing export for API and BluzelleConfig to bluzelle-js
+
+version 1.0.15
+--------------
+* Standardized assertions and added an error for '/' in keys
