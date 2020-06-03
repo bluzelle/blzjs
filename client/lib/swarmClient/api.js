@@ -67,6 +67,7 @@ class API {
             Assert_1.assert(lodash_1.isString(key), "Key must be a string" /* KEY_MUST_BE_A_STRING */);
             Assert_1.assert(lodash_1.isString(value), "Value must be a string" /* VALUE_MUST_BE_A_STRING */);
             Assert_1.assert(!key.includes('/'), "Key cannot contain a slash" /* KEY_CANNOT_CONTAIN_SLASH */);
+            Assert_1.assert(!!key.length, "Key cannot be empty" /* KEY_CANNOT_BE_EMPTY */);
             const blocks = util_2.convertLease(lease_info);
             Assert_1.assert(blocks >= 0, "Invalid lease time" /* INVALID_LEASE_TIME */);
             return this.doTx({
@@ -80,6 +81,7 @@ class API {
         return __awaiter(this, void 0, void 0, function* () {
             Assert_1.assert(lodash_1.isString(key), "Key must be a string" /* KEY_MUST_BE_A_STRING */);
             Assert_1.assert(lodash_1.isString(value), "Value must be a string" /* VALUE_MUST_BE_A_STRING */);
+            Assert_1.assert(!!key.length, "Key cannot be empty" /* KEY_CANNOT_BE_EMPTY */);
             return this.doTx({
                 Key: key,
                 Value: value,

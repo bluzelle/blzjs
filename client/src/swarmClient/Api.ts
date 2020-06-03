@@ -67,6 +67,7 @@ export class API {
         assert(isString(key), ClientErrors.KEY_MUST_BE_A_STRING);
         assert(isString(value), ClientErrors.VALUE_MUST_BE_A_STRING);
         assert(!key.includes('/'), ClientErrors.KEY_CANNOT_CONTAIN_SLASH);
+        assert(!!key.length, ClientErrors.KEY_CANNOT_BE_EMPTY);
 
         const blocks = convertLease(lease_info);
 
@@ -82,6 +83,8 @@ export class API {
     async update(key: string, value: string, gas_info: GasInfo, lease_info?: LeaseInfo): Promise<void> {
         assert(isString(key), ClientErrors.KEY_MUST_BE_A_STRING);
         assert(isString(value), ClientErrors.VALUE_MUST_BE_A_STRING);
+        assert(!!key.length, ClientErrors.KEY_CANNOT_BE_EMPTY);
+
 
         return this.doTx({
             Key: key,
