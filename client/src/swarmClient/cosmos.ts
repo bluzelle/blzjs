@@ -265,10 +265,6 @@ function sendAccountQuery(): Promise<boolean> {
 function handleAccountResponse(response: any): boolean {
 
     const {account_number, sequence} = response?.data?.result?.value || {};
-// TODO: This is temporary - remove after test
-    if (!isNumber(account_number) && !isNumber(sequence)) {
-        throw('not a number when it should be!!!!!');
-    }
     if (isNumber(account_number) && isNumber(sequence)) {
         account_info.account_number = `${account_number}`;
 

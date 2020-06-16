@@ -78,8 +78,8 @@ function help(bz, cmd) {
 
 
 bluzelle({
-    mnemonic: "desert base away wear author nerve annual thought early abstract page draft oxygen small object asset country client decline submit cat yellow tent verb",
-    endpoint: "http://testnet.public.bluzelle.com:1317",
+    mnemonic: "access forget leaf flat sleep across atom best dial diagram debate rose level planet food roast expand outside sustain hundred six ahead hip citizen",
+    endpoint: "http://dev.testnet.public.bluzelle.com:1317",
     chain_id: 'bluzelle',
     uuid: Date.now().toString()
 }).then(main);
