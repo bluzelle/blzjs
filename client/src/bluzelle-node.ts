@@ -12,6 +12,10 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//import {getAddress} from "./swarmClient/cosmos";
+
+import {mnemonicToAddress} from "./swarmClient/cosmos";
+
 export {API} from './swarmClient/Api'
 export {BluzelleConfig} from './BluzelleConfig'
 
@@ -23,3 +27,5 @@ export const bluzelle = async (config: BluzelleConfig): Promise<API> => {
     await api.init();
     return api;
 }
+
+bluzelle.mnemonicToAddress = mnemonicToAddress;

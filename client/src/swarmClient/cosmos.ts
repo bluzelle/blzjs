@@ -12,6 +12,19 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
+// Copyright (c) 2019 Cosmostation
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+//     The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+
 import {assert} from "../Assert";
 import {Transaction} from "./Transaction";
 import {Deferred} from "./Deferred";
@@ -57,7 +70,12 @@ async function getECPrivateKey(mnemonic: string): Promise<string> {
         .then((ecpair: ECPairInterface) => ecpair.privateKey?.toString('hex'));
 }
 
-function getAddress(pubkey: string): string {
+export const mnemonicToAddress = async (mnemonic: string): Promise<string> => {
+    private_key = await getECPrivateKey(mnemonic);
+    return getAddress(secp256k1.keyFromPrivate(private_key, 'hex').getPublic(true, 'hex'))
+}
+
+const getAddress = (pubkey: string): string => {
     const bytes = util.hash('ripemd160', util.hash('sha256', Buffer.from(pubkey, 'hex')));
     return bech32.encode(BECH32_PREFIX, bech32.toWords(bytes))
 }
@@ -257,10 +275,14 @@ function sendAccountQuery(): Promise<boolean> {
     // Fetch the current state of the account that's signing the transaction
     // We will need its account number and current sequence.
 
-    let url = `${app_endpoint}/auth/accounts/${getAddress(secp256k1.keyFromPrivate(private_key, 'hex').getPublic(true, 'hex'))}`;
+    const url = `${app_endpoint}/auth/accounts/${getAddress(secp256k1.keyFromPrivate(private_key, 'hex').getPublic(true, 'hex'))}`;
     return axios.get(url)
         .then(handleAccountResponse);
 }
+
+// export const transferTokensTo = (from: string) => {
+//     const url = `${app_endpoint}/bank/accounts/{address}/transfers`
+// }
 
 function handleAccountResponse(response: any): boolean {
 
