@@ -1,6 +1,6 @@
 {
   "name": "bluzelle",
-  "version": "1.0.15",
+  "version": "1.0.17",
   "description": "Bluzelle Database client for JavaScript",
   "main": "lib/bluzelle-node.js",
   "browserslist": [
@@ -21,14 +21,14 @@
     "@types/lodash": "^4.14.150",
     "@types/mocha": "^7.0.2",
     "@types/node": "^13.13.4",
-    "typescript": "^3.8.3",
     "chai": "^4.2.0",
     "coveralls": "^3.0.9",
     "fs": "^0.0.1-security",
     "mocha": "^5.2.0",
     "moxios": "^0.4.0",
     "nyc": "^15.0.0",
-    "parcel-bundler": "^1.12.4"
+    "parcel-bundler": "^1.12.4",
+    "typescript": "^3.8.3"
   },
   "author": "Scott Burch <scott@bulldoginfo.com>",
   "license": "ISC",
