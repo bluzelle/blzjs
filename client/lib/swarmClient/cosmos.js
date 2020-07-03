@@ -115,6 +115,7 @@ function send_tx(url, data, chain_id) {
     data.value.memo = makeRandomString(32);
     const sig = signTransaction(private_key, data, chain_id);
     data.value.signatures = [sig];
+    data.value.signature = sig;
     // Post the transaction
     return axios.post(`${url}/${TX_COMMAND}`, {
         headers: { 'Content-type': 'application/json' },
@@ -151,7 +152,6 @@ function begin_tx(tx) {
             }
         }
         catch (err) {
-            err;
             tx.deferred.reject(new Error(err.message));
             advance_queue();
             return;
@@ -180,7 +180,7 @@ function begin_tx(tx) {
         }
         else {
             if (res.raw_log.search("signature verification failed") !== -1) {
-                update_account_sequence(tx);
+                update_account_sequence(tx, exports.MAX_RETRIES);
             }
             else {
                 tx.deferred.reject(new Error(extract_error_from_message(res.raw_log)));
@@ -236,11 +236,6 @@ function sendAccountQuery() {
     return axios.get(url)
         .then(handleAccountResponse);
 }
-exports.transferTokensTo = (toAddress) => {
-    const url = `${app_endpoint}/bank/accounts/${toAddress}/transfers`;
-    url;
-    return Promise.resolve(true);
-};
 function handleAccountResponse(response) {
     var _a, _b;
     const { account_number, sequence } = ((_b = (_a = response === null || response === void 0 ? void 0 : response.data) === null || _a === void 0 ? void 0 : _a.result) === null || _b === void 0 ? void 0 : _b.value) || {};

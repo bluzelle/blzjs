@@ -249,25 +249,6 @@ class API {
             return cosmos.query('node_info').then(res => res.application_version.version);
         });
     }
-    sendTokensTo(address, amount, gas_info) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const data = {
-                BaseReq: {
-                    from: this.address,
-                    chain_id: this.chain_id
-                },
-                UUID: this.uuid,
-                Owner: this.address,
-                amount: [
-                    {
-                        "denom": "ubnt",
-                        "amount": `${amount}000000`
-                    }
-                ]
-            };
-            return cosmos.sendTransaction('post', `bank/accounts/${address}/transfers`, data, gas_info);
-        });
-    }
     doTx(params, type, cmd, gas_info) {
         const data = Object.assign({ BaseReq: {
                 from: this.address,
