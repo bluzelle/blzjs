@@ -54,6 +54,7 @@ export declare class API {
     }[]>;
     account(): Promise<AccountInfo>;
     version(): Promise<string>;
+    sendTokensTo(address: string, amount: number, gas_info: GasInfo): Promise<boolean>;
     private doTx;
 }
 //# sourceMappingURL=Api.d.ts.map

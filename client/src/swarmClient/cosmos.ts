@@ -133,7 +133,7 @@ function signTransaction(key: string, data: any, chain_id: string): any {
 
 
 function send_tx(url: string, data: any, chain_id: string): any {
-    assert(!!data, ClientErrors.INVALID_TRANSACTION);
+     assert(!!data, ClientErrors.INVALID_TRANSACTION);
 
     // set up the signature
     data.value.memo = makeRandomString(32);
@@ -160,7 +160,6 @@ async function begin_tx(tx: Transaction): Promise<void> {
         data: tx.data,
         headers: {'Content-type': 'application/json'}
     };
-
     try {
         // get tx skeleton
         response = await axios(request);
@@ -218,17 +217,11 @@ async function begin_tx(tx: Transaction): Promise<void> {
     }
 }
 
-function update_account_sequence(tx: Transaction, retries: number): void {
+const update_account_sequence = async (tx: Transaction, retries: number = MAX_RETRIES): Promise<void>  => {
     if (retries) {
-        setTimeout(async () => {
             // signature fail. Either sequence number or chain id is invalid
             const changed = await sendAccountQuery();
-            if (changed) {
-                await begin_tx(tx);
-            } else {
-                update_account_sequence(tx, retries - 1);
-            }
-        }, RETRY_INTERVAL);
+            changed ? begin_tx(tx) : setTimeout(() => update_account_sequence(tx, retries - 1), RETRY_INTERVAL);
     } else {
         // at this point, assume it's the chain id that is bad
         tx.deferred.reject(new Error("Invalid chain id"));
@@ -279,10 +272,6 @@ function sendAccountQuery(): Promise<boolean> {
     return axios.get(url)
         .then(handleAccountResponse);
 }
-
-// export const transferTokensTo = (from: string) => {
-//     const url = `${app_endpoint}/bank/accounts/{address}/transfers`
-// }
 
 function handleAccountResponse(response: any): boolean {
 

@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@cosmostation/cosmosjs": "^0.6.4",
+    "typescript": "^3.9.6"
+  }
+}

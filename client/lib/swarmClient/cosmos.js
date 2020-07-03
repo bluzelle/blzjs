@@ -1,14 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", { value: true });
 //
 // Copyright (C) 2020 Bluzelle
 //
@@ -23,6 +13,27 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+// Copyright (c) 2019 Cosmostation
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+//     The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
 const Assert_1 = require("../Assert");
 const Transaction_1 = require("./Transaction");
 const Deferred_1 = require("./Deferred");
@@ -54,10 +65,14 @@ function getECPrivateKey(mnemonic) {
             .then((ecpair) => { var _a; return (_a = ecpair.privateKey) === null || _a === void 0 ? void 0 : _a.toString('hex'); });
     });
 }
-function getAddress(pubkey) {
+exports.mnemonicToAddress = (mnemonic) => __awaiter(void 0, void 0, void 0, function* () {
+    private_key = yield getECPrivateKey(mnemonic);
+    return getAddress(secp256k1.keyFromPrivate(private_key, 'hex').getPublic(true, 'hex'));
+});
+const getAddress = (pubkey) => {
     const bytes = util.hash('ripemd160', util.hash('sha256', Buffer.from(pubkey, 'hex')));
     return bech32.encode(BECH32_PREFIX, bech32.toWords(bytes));
-}
+};
 function makeRandomString(length) {
     const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     return lodash_1.range(0, length).map(() => CHARS[lodash_1.random(0, CHARS.length - 1)]).join('');
@@ -100,7 +115,6 @@ function send_tx(url, data, chain_id) {
     data.value.memo = makeRandomString(32);
     const sig = signTransaction(private_key, data, chain_id);
     data.value.signatures = [sig];
-    data.value.signature = sig;
     // Post the transaction
     return axios.post(`${url}/${TX_COMMAND}`, {
         headers: { 'Content-type': 'application/json' },
@@ -137,6 +151,7 @@ function begin_tx(tx) {
             }
         }
         catch (err) {
+            err;
             tx.deferred.reject(new Error(err.message));
             advance_queue();
             return;
@@ -165,7 +180,7 @@ function begin_tx(tx) {
         }
         else {
             if (res.raw_log.search("signature verification failed") !== -1) {
-                update_account_sequence(tx, exports.MAX_RETRIES);
+                update_account_sequence(tx);
             }
             else {
                 tx.deferred.reject(new Error(extract_error_from_message(res.raw_log)));
@@ -174,25 +189,18 @@ function begin_tx(tx) {
         }
     });
 }
-function update_account_sequence(tx, retries) {
+const update_account_sequence = (tx, retries = exports.MAX_RETRIES) => __awaiter(void 0, void 0, void 0, function* () {
     if (retries) {
-        setTimeout(() => __awaiter(this, void 0, void 0, function* () {
-            // signature fail. Either sequence number or chain id is invalid
-            const changed = yield sendAccountQuery();
-            if (changed) {
-                yield begin_tx(tx);
-            }
-            else {
-                update_account_sequence(tx, retries - 1);
-            }
-        }), exports.RETRY_INTERVAL);
+        // signature fail. Either sequence number or chain id is invalid
+        const changed = yield sendAccountQuery();
+        changed ? begin_tx(tx) : setTimeout(() => update_account_sequence(tx, retries - 1), exports.RETRY_INTERVAL);
     }
     else {
         // at this point, assume it's the chain id that is bad
         tx.deferred.reject(new Error("Invalid chain id"));
         advance_queue();
     }
-}
+});
 function advance_queue() {
     tx_queue.shift();
     tx_queue.length && setTimeout(next_tx, 0);
@@ -224,17 +232,18 @@ function extract_error_from_message(msg) {
 function sendAccountQuery() {
     // Fetch the current state of the account that's signing the transaction
     // We will need its account number and current sequence.
-    let url = `${app_endpoint}/auth/accounts/${getAddress(secp256k1.keyFromPrivate(private_key, 'hex').getPublic(true, 'hex'))}`;
+    const url = `${app_endpoint}/auth/accounts/${getAddress(secp256k1.keyFromPrivate(private_key, 'hex').getPublic(true, 'hex'))}`;
     return axios.get(url)
         .then(handleAccountResponse);
 }
+exports.transferTokensTo = (toAddress) => {
+    const url = `${app_endpoint}/bank/accounts/${toAddress}/transfers`;
+    url;
+    return Promise.resolve(true);
+};
 function handleAccountResponse(response) {
     var _a, _b;
     const { account_number, sequence } = ((_b = (_a = response === null || response === void 0 ? void 0 : response.data) === null || _a === void 0 ? void 0 : _a.result) === null || _b === void 0 ? void 0 : _b.value) || {};
-    // TODO: This is temporary - remove after test
-    if (!lodash_1.isNumber(account_number) && !lodash_1.isNumber(sequence)) {
-        throw ('not a number when it should be!!!!!');
-    }
     if (lodash_1.isNumber(account_number) && lodash_1.isNumber(sequence)) {
         account_info.account_number = `${account_number}`;
         if (account_info.sequence !== sequence) {
