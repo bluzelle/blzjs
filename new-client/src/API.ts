@@ -1,10 +1,14 @@
 import {BluzelleConfig} from "./BluzelleConfig";
 import {GasInfo} from "./GasInfo";
+import {AccountResult} from "./types/AccountResult";
+import {AccountsResult} from "./types/AccountsResult";
+import {QueryResult} from "./types/QueryResult";
+import {sendTx} from "./services/CommunicationService";
 
 const cosmosjs = require('@cosmostation/cosmosjs');
 const fetch = require('node-fetch');
 
-const TOKEN_NAME = 'ubnt';
+
 
 export class API {
     cosmos: any;
@@ -29,6 +33,15 @@ export class API {
     }
 
 
+    account = (): Promise<AccountResult> =>
+        this.cosmos.getAccounts(this.address)
+            .then((x: AccountsResult) => x.result.value);
+
+    count = (): Promise<number> =>
+        this.#query<any>(`crud/count/${this.uuid}`)
+            .then((res: QueryResult) => parseInt(res.count || '0'));
+
+
     txRead(key: string, gasInfo: GasInfo): Promise<string> {
         const msgs = [
             {
@@ -41,7 +54,7 @@ export class API {
             }
         ];
 
-        return this.#sendTx(msgs, 'read', gasInfo)
+        return sendTx(this, msgs, 'read', gasInfo)
             .then((res: any) => Buffer.from(res.data, 'hex').toString())
             .then(JSON.parse)
             .then((x: any) => x.value)
@@ -61,7 +74,7 @@ export class API {
             }
         ];
 
-        return this.#sendTx(msgs, 'create', gasInfo);
+        return sendTx(this, msgs, 'create', gasInfo);
     }
 
     transferTokensTo(toAddress: string, amount: number, gasInfo: GasInfo): Promise<void> {
@@ -81,36 +94,20 @@ export class API {
             }
         ];
 
-        return this.#sendTx(msgs, 'transfer', gasInfo);
+        return sendTx(this, msgs, 'transfer', gasInfo);
     }
 
-    #sendTx = (msgs: any[], memo: string, gasInfo: GasInfo): Promise<any> => {
-        return this.cosmos.getAccounts(this.address).then((data: any) => {
-            const stdSignMsg = this.cosmos.newStdMsg({
-                msgs: msgs,
-                chain_id: this.chainId,
-                fee: getFeeInfo(gasInfo),
-                memo: memo,
-                account_number: String(data.result.value.account_number),
-                sequence: String(data.result.value.sequence)
-            });
+    #query = <T>(path: string): Promise<any> =>
+        fetch(`${this.url}/${path}`)
+            .then((res: any) => res.json())
+            .then((x: any) => x.result)
 
-            const signedTx = this.cosmos.sign(stdSignMsg, this.ecPairPriv, 'block');
-            return this.cosmos.broadcast(signedTx);
-        })
-    }
+
+
 
     #waitForTx = (txHash: string): Promise<void> => {
-        return fetch(`${this.url}/txs/${txHash}`)
+        return this.#query(`txs/${txHash}`)
             .then((response: any) => response.status === 404 ? this.#waitForTx(txHash) : response);
     }
 }
 
-const getFeeInfo = ({max_fee, gas_price = 10, max_gas = 200000}: GasInfo) => ({
-    amount: [{
-        denom: TOKEN_NAME,
-        amount: (max_fee ? max_fee : max_gas * gas_price).toString()
-
-    }],
-    gas: max_gas.toString()
-});
