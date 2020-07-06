@@ -23,8 +23,8 @@ export class CommunicationService {
         setTimeout(this.checkTransmitQueue.bind(this));
     }
 
-    sendTx<T>(msg: TxMessage<T>): Promise<TxResult> {
-        const p = new Promise<TxResult>((resolve, reject) => {
+    sendTx<T, R>(msg: TxMessage<T>): Promise<TxResult<R>> {
+        const p = new Promise<TxResult<R>>((resolve, reject) => {
             msg.resolve = resolve;
             msg.reject = reject;
         })

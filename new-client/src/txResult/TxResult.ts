@@ -1,3 +1,3 @@
-export interface TxResult {
-    data: any[]
+export interface TxResult<T> {
+    data: T[]
 }

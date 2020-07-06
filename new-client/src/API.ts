@@ -5,6 +5,7 @@ import {AccountsResult} from "./types/AccountsResult";
 import {QueryResult} from "./types/QueryResult";
 import {CommunicationService} from "./services/CommunicationService";
 import {TxCreateMessage, TxReadMessage} from "./txMessage/TxMessage";
+import {TxReadResult} from "./txResult/TxReadResult";
 
 const cosmosjs = require('@cosmostation/cosmosjs');
 const fetch = require('node-fetch');
@@ -44,8 +45,8 @@ export class API {
             .then((res: QueryResult) => parseInt(res.count || '0'));
 
 
-    txRead(key: string, gasInfo: GasInfo): Promise<string> {
-        return this.communicationService.sendTx<TxReadMessage>({
+    txRead(key: string, gasInfo: GasInfo): Promise<string | undefined> {
+        return this.communicationService.sendTx<TxReadMessage, TxReadResult>({
             type: 'crud/read',
             value: {
                 Key: key,
@@ -53,11 +54,11 @@ export class API {
                 Owner: this.address
             }
         })
-            .then(res => res.data.find((it: any) => it.value && it.key === key)?.value)
+            .then(res => res.data.find(it => it.value && it.key === key)?.value)
     }
 
     create(key: string, value: string, gasInfo: GasInfo): Promise<void> {
-        return this.communicationService.sendTx<TxCreateMessage>({
+        return this.communicationService.sendTx<TxCreateMessage, void>({
             type: "crud/create",
             value: {
                 Key: key,
