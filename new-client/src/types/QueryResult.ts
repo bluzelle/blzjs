@@ -1,3 +1,3 @@
-export interface QueryResult {
-    count?: string
+export interface QueryCountResult {
+    count: string
 }

@@ -21,4 +21,10 @@ export interface TxReadMessage {
     UUID: string
 }
 
+export interface TxDeleteMessage {
+    Key: string
+    Owner: string
+    UUID: string
+}
+
 

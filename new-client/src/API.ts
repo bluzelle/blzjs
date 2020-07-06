@@ -1,10 +1,10 @@
 import {BluzelleConfig} from "./types/BluzelleConfig";
 import {GasInfo} from "./types/GasInfo";
-import {AccountResult} from "./types/AccountResult";
-import {AccountsResult} from "./types/AccountsResult";
-import {QueryResult} from "./types/QueryResult";
+import {AccountResult} from "./types/cosmos/AccountResult";
+import {AccountsResult} from "./types/cosmos/AccountsResult";
+import {QueryCountResult} from "./types/QueryResult";
 import {CommunicationService} from "./services/CommunicationService";
-import {TxCreateMessage, TxReadMessage} from "./types/TxMessage";
+import {TxCreateMessage, TxDeleteMessage, TxReadMessage} from "./types/TxMessage";
 import {TxReadResult} from "./types/TxResult";
 
 const cosmosjs = require('@cosmostation/cosmosjs');
@@ -41,9 +41,19 @@ export class API {
             .then((x: AccountsResult) => x.result.value);
 
     count = (): Promise<number> =>
-        this.#query<any>(`crud/count/${this.uuid}`)
-            .then((res: QueryResult) => parseInt(res.count || '0'));
+        this.#query<QueryCountResult>(`crud/count/${this.uuid}`)
+            .then((res: QueryCountResult) => parseInt(res.count || '0'));
 
+    delete = (key: string): Promise<void> =>
+        this.communicationService.sendTx<TxDeleteMessage, void>({
+            type: 'crud/delete',
+            value: {
+                Key: key,
+                UUID: this.uuid,
+                Owner: this.address
+            }
+        })
+            .then(() => {})
 
     txRead(key: string, gasInfo: GasInfo): Promise<string | undefined> {
         return this.communicationService.sendTx<TxReadMessage, TxReadResult>({
@@ -95,7 +105,7 @@ export class API {
         // return sendTx(this, msgs, 'transfer', gasInfo);
     }
 
-    #query = <T>(path: string): Promise<any> =>
+    #query = <T>(path: string): Promise<T> =>
         fetch(`${this.url}/${path}`)
             .then((res: any) => res.json())
             .then((x: any) => x.result)
