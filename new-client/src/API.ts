@@ -10,7 +10,6 @@ const cosmosjs = require('@cosmostation/cosmosjs');
 const fetch = require('node-fetch');
 
 
-
 export class API {
     cosmos: any;
     address: string;
@@ -45,17 +44,17 @@ export class API {
             .then((res: QueryResult) => parseInt(res.count || '0'));
 
 
-     txRead(key: string, gasInfo: GasInfo): Promise<string> {
-         return this.communicationService.sendTx<TxReadMessage>( {
-             type: 'crud/read',
-             value: {
-                 Key: key,
-                 UUID: this.uuid,
-                 Owner: this.address
-             }
-         })
-             .then(() => 'reading')
-     }
+    txRead(key: string, gasInfo: GasInfo): Promise<string> {
+        return this.communicationService.sendTx<TxReadMessage>({
+            type: 'crud/read',
+            value: {
+                Key: key,
+                UUID: this.uuid,
+                Owner: this.address
+            }
+        })
+            .then((res: any) => res.data.find((it: any) => it.value && it.key === key)?.value)
+    }
 
     create(key: string, value: string, gasInfo: GasInfo): Promise<void> {
         return this.communicationService.sendTx<TxCreateMessage>({
@@ -69,12 +68,13 @@ export class API {
             }
         })
             .then(x => x)
-            .then(() => {})
+            .then(() => {
+            })
     }
 
 
     transferTokensTo(toAddress: string, amount: number, gasInfo: GasInfo): Promise<void> {
-         return Promise.resolve();
+        return Promise.resolve();
         // const msgs = [
         //     {
         //         type: "cosmos-sdk/MsgSend",
@@ -98,8 +98,6 @@ export class API {
         fetch(`${this.url}/${path}`)
             .then((res: any) => res.json())
             .then((x: any) => x.result)
-
-
 
 
     #waitForTx = (txHash: string): Promise<void> => {

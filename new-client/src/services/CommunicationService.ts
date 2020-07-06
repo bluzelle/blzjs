@@ -34,9 +34,9 @@ export class CommunicationService {
 
     checkTransmitQueue(): void {
         this.#messageQueue.hasMessages() ? (
-            this.transmitQueue(this.#messageQueue.fetch()).then(this.checkTransmitQueue)
+            this.transmitQueue(this.#messageQueue.fetch()).then(this.checkTransmitQueue.bind(this))
         ) : (
-            delay(100).then(this.checkTransmitQueue)
+            delay(100).then(this.checkTransmitQueue.bind(this))
         )
     }
 
@@ -54,16 +54,14 @@ export class CommunicationService {
                 .map((stdSignMsg: any) => this.#api.cosmos.sign(stdSignMsg, this.#api.ecPairPriv, 'block'))
                 .map(this.#api.cosmos.broadcast.bind(this.#api.cosmos))
                 .map((p: any) => p
-                    .then((res: any) => res.data ? Buffer.from(res.data, 'hex').toString() : undefined)
-                    .then((string: string) => string !== undefined ? JSON.parse(`[${string.split('}{').join('},{')}]`) : undefined)
-
+                    .then((res: any) => ({...res, data: res.data  ? Buffer.from(res.data, 'hex').toString() : undefined}))
+                    .then((res: any) => ({...res, data: res.data !== undefined ? JSON.parse(`[${res.data.split('}{').join('},{')}]`) : undefined}))
                 )
+                .map((p: any) => p
+                    .then((res: any) => msgs.forEach(msg => msg.resolve && msg.resolve(res))))
                 .join()
         )
-
-
     }
-
 }
 
 // const parseDataInResponse = (res:any) => {
