@@ -3,7 +3,7 @@ import {TxResult} from "./TxResult";
 export interface TxMessage<T> {
     type: string
     value: T
-    resolve?: (value: TxResult) => void
+    resolve?: (value: TxResult<any>) => void
     reject?: (reason: any) => void
 }
 

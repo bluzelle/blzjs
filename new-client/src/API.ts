@@ -1,4 +1,4 @@
-import {BluzelleConfig} from "./BluzelleConfig";
+import {BluzelleConfig} from "./types/BluzelleConfig";
 import {GasInfo} from "./types/GasInfo";
 import {AccountResult} from "./types/AccountResult";
 import {AccountsResult} from "./types/AccountsResult";

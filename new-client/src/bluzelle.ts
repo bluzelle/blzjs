@@ -1,4 +1,4 @@
-import {BluzelleConfig} from "./BluzelleConfig";
+import {BluzelleConfig} from "./types/BluzelleConfig";
 import {API} from "./API";
 
 
