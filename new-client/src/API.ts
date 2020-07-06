@@ -4,6 +4,7 @@ import {AccountResult} from "./types/AccountResult";
 import {AccountsResult} from "./types/AccountsResult";
 import {QueryResult} from "./types/QueryResult";
 import {sendTx} from "./services/CommunicationService";
+import {Identity} from "monet";
 
 const cosmosjs = require('@cosmostation/cosmosjs');
 const fetch = require('node-fetch');
@@ -55,9 +56,6 @@ export class API {
         ];
 
         return sendTx(this, msgs, 'read', gasInfo)
-            .then((res: any) => Buffer.from(res.data, 'hex').toString())
-            .then(JSON.parse)
-            .then((x: any) => x.value)
     }
 
     create(key: string, value: string, gasInfo: GasInfo): Promise<void> {
@@ -76,6 +74,46 @@ export class API {
 
         return sendTx(this, msgs, 'create', gasInfo);
     }
+
+
+    doIt = () =>
+        Identity.of([{
+            type: "crud/create",
+            value: {
+                Key: 'foo1',
+                Value: 'bar1',
+                UUID: this.uuid,
+                Owner: this.address,
+                Lease: '10000'
+            }
+        }, {
+            type: "crud/create",
+            value: {
+                Key: 'foo2',
+                Value: 'bar2',
+                UUID: this.uuid,
+                Owner: this.address,
+                Lease: '10000'
+            }
+        }, {
+            type: "crud/read",
+            value: {
+                Key: 'foo1',
+                UUID: this.uuid,
+                Owner: this.address
+            }
+        }, {
+            type: "crud/read",
+            value: {
+                Key: 'foo2',
+                UUID: this.uuid,
+                Owner: this.address
+            }
+        }])
+            .map(msgs => sendTx(this, msgs, 'group', {gas_price: 10}))
+            .join()
+
+
 
     transferTokensTo(toAddress: string, amount: number, gasInfo: GasInfo): Promise<void> {
         const msgs = [

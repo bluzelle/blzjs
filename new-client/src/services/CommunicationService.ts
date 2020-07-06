@@ -19,6 +19,11 @@ export const sendTx = (api: any, msgs: any[], memo: string, gasInfo: GasInfo): P
                 .map(api.cosmos.newStdMsg.bind(api.cosmos))
                 .map((stdSignMsg: any) => api.cosmos.sign(stdSignMsg, api.ecPairPriv, 'block'))
                 .map(api.cosmos.broadcast.bind(api.cosmos))
+                .map((p: any) => p
+                    .then((res: any) => {console.log('gas used:', res.gas_used); return res})
+                    .then((res: any) => res.data ? Buffer.from(res.data, 'hex').toString() : undefined)
+                    .then((string: string) => string !== undefined ? JSON.parse(`[${string.split('}{').join(',')}]`) : undefined)
+                )
                 .join()
         )
     )
