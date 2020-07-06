@@ -8,6 +8,11 @@ export interface TxMessage<T> {
     reject?: (reason: any) => void
 }
 
+export interface TxCountMessage {
+    UUID: string
+    Owner: string
+}
+
 export interface TxCreateMessage {
     Key: string
     Value: string
@@ -15,6 +20,13 @@ export interface TxCreateMessage {
     Lease: string
     UUID: string
 }
+
+export interface TxMultiUpdateMessage {
+    KeyValues: {key: string, value: string}[]
+    Owner: string
+    UUID: string
+}
+
 
 export interface TxReadMessage {
     Key: string

@@ -7,3 +7,6 @@ export interface TxReadResult {
     key: string
 }
 
+export interface TxCountResult {
+    count: string
+}

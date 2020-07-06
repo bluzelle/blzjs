@@ -11,13 +11,14 @@ import {
 } from "./types/QueryResult";
 import {CommunicationService} from "./services/CommunicationService";
 import {
+    TxCountMessage,
     TxCreateMessage,
     TxDeleteAllMessage,
-    TxDeleteMessage,
+    TxDeleteMessage, TxMultiUpdateMessage,
     TxReadMessage, TxRenewLeaseAllMessage,
     TxRenewLeaseMessage
 } from "./types/TxMessage";
-import {TxReadResult} from "./types/TxResult";
+import {TxCountResult, TxReadResult} from "./types/TxResult";
 import {LeaseInfo} from "./types/LeaseInfo";
 import {assert} from "../../client/src/Assert";
 import {ClientErrors} from "./ClientErrors";
@@ -126,6 +127,25 @@ export class API {
         this.#query<QueryKeyValuesResult>(`crud/keyvalues/${this.uuid}`)
             .then(res => res.keyvalues)
 
+    multiUpdate = async (keyValues: { key: string, value: string }[], gas_info: GasInfo): Promise<void> => {
+        assert(Array.isArray(keyValues), 'keyValues must be an array');
+
+        keyValues.forEach(({key, value}, index, array) => {
+            assert(typeof key === 'string', ClientErrors.ALL_KEYS_MUST_BE_STRINGS);
+            assert(typeof value === 'string', ClientErrors.ALL_VALUES_MUST_BE_STRINGS);
+        });
+
+        return this.communicationService.sendTx<TxMultiUpdateMessage, void>({
+            type: 'crud/multiupdate',
+            value: {
+                KeyValues: keyValues,
+                UUID: this.uuid,
+                Owner: this.address
+            }
+        })
+            .then(() => {})
+    }
+
     read = (key: string): Promise<string> =>
         this.#query<QueryReadResult>(`crud/read/${this.uuid}/${key}`)
             .then(res => res.value);
@@ -163,6 +183,19 @@ export class API {
             }
         })
             .then(res => {})
+
+    }
+
+    txCount = async (gas_info: GasInfo): Promise<number> => {
+        return this.communicationService.sendTx<TxCountMessage, TxCountResult>({
+            type: 'crud/count',
+            value: {
+                UUID: this.uuid,
+                Owner: this.address
+            }
+        })
+            .then(res => res.data.find(it => it.count !== undefined)?.count)
+            .then(count => count === undefined ? 0 : parseInt(count))
 
     }
 
