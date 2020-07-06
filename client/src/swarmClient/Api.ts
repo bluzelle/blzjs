@@ -135,6 +135,7 @@ export class API {
 
     async keys(): Promise<string[]> {
         return cosmos.query(`${APP_SERVICE}/keys/${this.uuid}`).then(({result}) => result.keys || []);
+        return cosmos.query(`${APP_SERVICE}/keys/${this.uuid}`).then(({result}) => result.keys || []);
     }
 
     async txKeys(gas_info: GasInfo): Promise<string[]> {

@@ -27,4 +27,9 @@ export interface TxDeleteMessage {
     UUID: string
 }
 
+export interface TxDeleteAllMessage {
+    Owner: string
+    UUID: string
+}
+
 

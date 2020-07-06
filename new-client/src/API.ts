@@ -2,9 +2,9 @@ import {BluzelleConfig} from "./types/BluzelleConfig";
 import {GasInfo} from "./types/GasInfo";
 import {AccountResult} from "./types/cosmos/AccountResult";
 import {AccountsResult} from "./types/cosmos/AccountsResult";
-import {QueryCountResult, QueryKeysResult} from "./types/QueryResult";
+import {QueryCountResult, QueryHasResult, QueryKeysResult} from "./types/QueryResult";
 import {CommunicationService} from "./services/CommunicationService";
-import {TxCreateMessage, TxDeleteMessage, TxReadMessage} from "./types/TxMessage";
+import {TxCreateMessage, TxDeleteAllMessage, TxDeleteMessage, TxReadMessage} from "./types/TxMessage";
 import {TxReadResult} from "./types/TxResult";
 
 const cosmosjs = require('@cosmostation/cosmosjs');
@@ -54,6 +54,19 @@ export class API {
             }
         })
             .then(() => {})
+
+    deleteAll = (gasInfo: GasInfo) =>
+        this.communicationService.sendTx<TxDeleteAllMessage, void>({
+            type: 'crud/deleteall',
+            value: {
+                UUID: this.uuid,
+                Owner: this.address
+            }
+        })
+
+    has = (key: string): Promise<boolean> =>
+        this.#query<QueryHasResult>(`crud/has/${this.uuid}/${key}`)
+            .then(res => res.has);
 
     keys = (): Promise<string[]> =>
         this.#query<QueryKeysResult>(`crud/keys/${this.uuid}`)
