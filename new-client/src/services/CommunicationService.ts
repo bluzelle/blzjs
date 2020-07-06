@@ -1,9 +1,9 @@
-import {GasInfo} from "../GasInfo";
+import {GasInfo} from "../types/GasInfo";
 import {Identity} from "monet";
-import {TxMessage} from "../txMessage/TxMessage";
-import {TxMessageQueue} from "../txMessage/TxMessageQueue";
+import {TxMessage} from "../types/TxMessage";
+import {TxMessageQueue} from "../types/TxMessageQueue";
 import {API} from "../API";
-import {TxResult} from "../txResult/TxResult";
+import {TxResult} from "../types/TxResult";
 import delay from "delay";
 
 const TOKEN_NAME = 'ubnt';

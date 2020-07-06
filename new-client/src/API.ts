@@ -1,11 +1,11 @@
 import {BluzelleConfig} from "./BluzelleConfig";
-import {GasInfo} from "./GasInfo";
+import {GasInfo} from "./types/GasInfo";
 import {AccountResult} from "./types/AccountResult";
 import {AccountsResult} from "./types/AccountsResult";
 import {QueryResult} from "./types/QueryResult";
 import {CommunicationService} from "./services/CommunicationService";
-import {TxCreateMessage, TxReadMessage} from "./txMessage/TxMessage";
-import {TxReadResult} from "./txResult/TxReadResult";
+import {TxCreateMessage, TxReadMessage} from "./types/TxMessage";
+import {TxReadResult} from "./types/TxResult";
 
 const cosmosjs = require('@cosmostation/cosmosjs');
 const fetch = require('node-fetch');
