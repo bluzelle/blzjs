@@ -15,9 +15,13 @@ export interface QueryReadResult {
 }
 
 export interface QueryKeyValuesResult {
-    keyvalues: {key: string, value: string}[]
+    keyvalues: { key: string, value: string }[]
 }
 
 export interface QueryGetLeaseResult {
     lease: number
+}
+
+export interface QueryGetNShortestLeasesResult {
+    keyleases: { key: string, lease: string }[]
 }

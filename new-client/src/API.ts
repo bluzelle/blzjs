@@ -3,16 +3,24 @@ import {GasInfo} from "./types/GasInfo";
 import {AccountResult} from "./types/cosmos/AccountResult";
 import {AccountsResult} from "./types/cosmos/AccountsResult";
 import {
-    QueryCountResult, QueryGetLeaseResult,
+    QueryCountResult, QueryGetLeaseResult, QueryGetNShortestLeasesResult,
     QueryHasResult,
     QueryKeysResult,
     QueryKeyValuesResult,
     QueryReadResult
 } from "./types/QueryResult";
 import {CommunicationService} from "./services/CommunicationService";
-import {TxCreateMessage, TxDeleteAllMessage, TxDeleteMessage, TxReadMessage} from "./types/TxMessage";
+import {
+    TxCreateMessage,
+    TxDeleteAllMessage,
+    TxDeleteMessage,
+    TxReadMessage, TxRenewLeaseAllMessage,
+    TxRenewLeaseMessage
+} from "./types/TxMessage";
 import {TxReadResult} from "./types/TxResult";
 import {LeaseInfo} from "./types/LeaseInfo";
+import {assert} from "../../client/src/Assert";
+import {ClientErrors} from "./ClientErrors";
 
 const cosmosjs = require('@cosmostation/cosmosjs');
 const fetch = require('node-fetch');
@@ -52,20 +60,26 @@ export class API {
         this.#query<QueryCountResult>(`crud/count/${this.uuid}`)
             .then((res: QueryCountResult) => parseInt(res.count || '0'));
 
-    create(key: string, value: string, gasInfo: GasInfo, leaseInfo: LeaseInfo): Promise<void> {
-        return this.communicationService.sendTx<TxCreateMessage, void>({
+    async create(key: string, value: string, gasInfo: GasInfo, leaseInfo: LeaseInfo = {}): Promise<void> {
+        const blocks = convertLease(leaseInfo);
+
+        assert(!!key, ClientErrors.KEY_CANNOT_BE_EMPTY);
+        assert(typeof key === 'string', ClientErrors.KEY_MUST_BE_A_STRING);
+        assert(typeof value === 'string', ClientErrors.VALUE_MUST_BE_A_STRING);
+        assert(blocks >= 0, ClientErrors.INVALID_LEASE_TIME);
+        assert(!key.includes('/'), ClientErrors.KEY_CANNOT_CONTAIN_SLASH)
+
+        await this.communicationService.sendTx<TxCreateMessage, void>({
             type: "crud/create",
             value: {
                 Key: encodeSafe(key),
-                Value: value,
+                Value: encodeSafe(value),
                 UUID: this.uuid,
                 Owner: this.address,
-                Lease: convertLease(leaseInfo).toString(),
+                Lease: blocks.toString(),
             }
         })
-            .then(x => x)
-            .then(() => {
-            })
+            .then(() => {})
     }
 
 
@@ -93,6 +107,12 @@ export class API {
         this.#query<QueryGetLeaseResult>(`crud/getlease/${this.uuid}/${encodeSafe(key)}`)
             .then(res => res.lease * BLOCK_TIME_IN_SECONDS)
 
+    getNShortestLeases = async (count: number) => {
+        assert(count >= 0, ClientErrors.INVALID_VALUE_SPECIFIED);
+        return this.#query<QueryGetNShortestLeasesResult>(`crud/getnshortestleases/${this.uuid}/${count}`)
+            .then(res => res.keyleases.map(({key, lease}) => ({key, lease: parseInt(lease) * BLOCK_TIME_IN_SECONDS})));
+    }
+
 
     has = (key: string): Promise<boolean> =>
         this.#query<QueryHasResult>(`crud/has/${this.uuid}/${key}`)
@@ -110,6 +130,41 @@ export class API {
         this.#query<QueryReadResult>(`crud/read/${this.uuid}/${key}`)
             .then(res => res.value);
 
+    renewLease = async (key: string, gasInfo: GasInfo, leaseInfo: LeaseInfo): Promise<void> => {
+        assert(typeof key === 'string', ClientErrors.KEY_MUST_BE_A_STRING);
+
+        const blocks = convertLease(leaseInfo);
+
+        assert(blocks >= 0, ClientErrors.INVALID_LEASE_TIME)
+
+        return this.communicationService.sendTx<TxRenewLeaseMessage, void>({
+            type: 'crud/renewlease',
+            value: {
+                Key: key,
+                Lease: blocks.toString(),
+                UUID: this.uuid,
+                Owner: this.address
+            }
+        })
+            .then(res => {})
+    }
+
+
+    renewLeaseAll = async (gasInfo: GasInfo, leaseInfo: LeaseInfo): Promise<void> => {
+        const blocks = convertLease(leaseInfo);
+        assert(blocks >= 0, ClientErrors.INVALID_LEASE_TIME);
+
+        return this.communicationService.sendTx<TxRenewLeaseAllMessage, void>({
+            type: 'crud/renewleaseall',
+            value: {
+                Lease: blocks.toString(),
+                UUID: this.uuid,
+                Owner: this.address
+            }
+        })
+            .then(res => {})
+
+    }
 
 
     txRead(key: string, gasInfo: GasInfo): Promise<string | undefined> {
@@ -168,5 +223,5 @@ const MINUTE = 60
 const HOUR = MINUTE * 60
 const DAY = HOUR * 24
 const convertLease = ({seconds = 0, minutes = 0, hours = 0, days = 0}: LeaseInfo): number =>
-    (seconds + (minutes * MINUTE) + (hours * HOUR) + (days * DAY)) / BLOCK_TIME_IN_SECONDS
+    Math.ceil((seconds + (minutes * MINUTE) + (hours * HOUR) + (days * DAY)) / BLOCK_TIME_IN_SECONDS)
 

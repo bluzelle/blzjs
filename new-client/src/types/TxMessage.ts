@@ -1,4 +1,5 @@
 import {TxResult} from "./TxResult";
+import {LeaseInfo} from "./LeaseInfo";
 
 export interface TxMessage<T> {
     type: string
@@ -17,6 +18,19 @@ export interface TxCreateMessage {
 
 export interface TxReadMessage {
     Key: string
+    Owner: string
+    UUID: string
+}
+
+export interface TxRenewLeaseMessage {
+    Key: string
+    Lease: string
+    Owner: string
+    UUID: string
+}
+
+export interface TxRenewLeaseAllMessage {
+    Lease: string
     Owner: string
     UUID: string
 }
