@@ -2,7 +2,7 @@ import {BluzelleConfig} from "./types/BluzelleConfig";
 import {GasInfo} from "./types/GasInfo";
 import {AccountResult} from "./types/cosmos/AccountResult";
 import {AccountsResult} from "./types/cosmos/AccountsResult";
-import {QueryCountResult} from "./types/QueryResult";
+import {QueryCountResult, QueryKeysResult} from "./types/QueryResult";
 import {CommunicationService} from "./services/CommunicationService";
 import {TxCreateMessage, TxDeleteMessage, TxReadMessage} from "./types/TxMessage";
 import {TxReadResult} from "./types/TxResult";
@@ -54,6 +54,11 @@ export class API {
             }
         })
             .then(() => {})
+
+    keys = (): Promise<string[]> =>
+        this.#query<QueryKeysResult>(`crud/keys/${this.uuid}`)
+            .then(res => res.keys);
+
 
     txRead(key: string, gasInfo: GasInfo): Promise<string | undefined> {
         return this.communicationService.sendTx<TxReadMessage, TxReadResult>({
