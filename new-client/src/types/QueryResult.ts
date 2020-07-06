@@ -9,3 +9,15 @@ export interface QueryKeysResult {
 export interface QueryHasResult {
     has: boolean
 }
+
+export interface QueryReadResult {
+    value: string
+}
+
+export interface QueryKeyValuesResult {
+    keyvalues: {key: string, value: string}[]
+}
+
+export interface QueryGetLeaseResult {
+    lease: number
+}

@@ -2,14 +2,22 @@ import {BluzelleConfig} from "./types/BluzelleConfig";
 import {GasInfo} from "./types/GasInfo";
 import {AccountResult} from "./types/cosmos/AccountResult";
 import {AccountsResult} from "./types/cosmos/AccountsResult";
-import {QueryCountResult, QueryHasResult, QueryKeysResult} from "./types/QueryResult";
+import {
+    QueryCountResult, QueryGetLeaseResult,
+    QueryHasResult,
+    QueryKeysResult,
+    QueryKeyValuesResult,
+    QueryReadResult
+} from "./types/QueryResult";
 import {CommunicationService} from "./services/CommunicationService";
 import {TxCreateMessage, TxDeleteAllMessage, TxDeleteMessage, TxReadMessage} from "./types/TxMessage";
 import {TxReadResult} from "./types/TxResult";
+import {LeaseInfo} from "./types/LeaseInfo";
 
 const cosmosjs = require('@cosmostation/cosmosjs');
 const fetch = require('node-fetch');
 
+const BLOCK_TIME_IN_SECONDS = 5;
 
 export class API {
     cosmos: any;
@@ -44,6 +52,23 @@ export class API {
         this.#query<QueryCountResult>(`crud/count/${this.uuid}`)
             .then((res: QueryCountResult) => parseInt(res.count || '0'));
 
+    create(key: string, value: string, gasInfo: GasInfo, leaseInfo: LeaseInfo): Promise<void> {
+        return this.communicationService.sendTx<TxCreateMessage, void>({
+            type: "crud/create",
+            value: {
+                Key: encodeSafe(key),
+                Value: value,
+                UUID: this.uuid,
+                Owner: this.address,
+                Lease: convertLease(leaseInfo).toString(),
+            }
+        })
+            .then(x => x)
+            .then(() => {
+            })
+    }
+
+
     delete = (key: string): Promise<void> =>
         this.communicationService.sendTx<TxDeleteMessage, void>({
             type: 'crud/delete',
@@ -64,6 +89,11 @@ export class API {
             }
         })
 
+    getLease = (key: string) =>
+        this.#query<QueryGetLeaseResult>(`crud/getlease/${this.uuid}/${encodeSafe(key)}`)
+            .then(res => res.lease * BLOCK_TIME_IN_SECONDS)
+
+
     has = (key: string): Promise<boolean> =>
         this.#query<QueryHasResult>(`crud/has/${this.uuid}/${key}`)
             .then(res => res.has);
@@ -71,6 +101,15 @@ export class API {
     keys = (): Promise<string[]> =>
         this.#query<QueryKeysResult>(`crud/keys/${this.uuid}`)
             .then(res => res.keys);
+
+    keyValues = (): Promise<{key: string, value: string}[]> =>
+        this.#query<QueryKeyValuesResult>(`crud/keyvalues/${this.uuid}`)
+            .then(res => res.keyvalues)
+
+    read = (key: string): Promise<string> =>
+        this.#query<QueryReadResult>(`crud/read/${this.uuid}/${key}`)
+            .then(res => res.value);
+
 
 
     txRead(key: string, gasInfo: GasInfo): Promise<string | undefined> {
@@ -85,21 +124,6 @@ export class API {
             .then(res => res.data.find(it => it.value && it.key === key)?.value)
     }
 
-    create(key: string, value: string, gasInfo: GasInfo): Promise<void> {
-        return this.communicationService.sendTx<TxCreateMessage, void>({
-            type: "crud/create",
-            value: {
-                Key: key,
-                Value: value,
-                UUID: this.uuid,
-                Owner: this.address,
-                Lease: '10000',
-            }
-        })
-            .then(x => x)
-            .then(() => {
-            })
-    }
 
 
     transferTokensTo(toAddress: string, amount: number, gasInfo: GasInfo): Promise<void> {
@@ -134,4 +158,15 @@ export class API {
             .then((response: any) => response.status === 404 ? this.#waitForTx(txHash) : response);
     }
 }
+
+const encodeSafe = (str: string): string =>
+    encodeURI(str)
+        .replace(/([\#\?])/g, ch => `%${ch.charCodeAt(0).toString(16)}`);
+
+
+const MINUTE = 60
+const HOUR = MINUTE * 60
+const DAY = HOUR * 24
+const convertLease = ({seconds = 0, minutes = 0, hours = 0, days = 0}: LeaseInfo): number =>
+    (seconds + (minutes * MINUTE) + (hours * HOUR) + (days * DAY)) / BLOCK_TIME_IN_SECONDS
 
