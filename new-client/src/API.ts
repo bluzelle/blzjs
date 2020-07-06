@@ -53,7 +53,7 @@ export class API {
                 Owner: this.address
             }
         })
-            .then((res: any) => res.data.find((it: any) => it.value && it.key === key)?.value)
+            .then(res => res.data.find((it: any) => it.value && it.key === key)?.value)
     }
 
     create(key: string, value: string, gasInfo: GasInfo): Promise<void> {

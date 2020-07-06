@@ -1,4 +1,4 @@
-import {TxResult} from "../services/TxResult";
+import {TxResult} from "../txResult/TxResult";
 
 export interface TxMessage<T> {
     type: string

@@ -3,7 +3,7 @@ import {Identity} from "monet";
 import {TxMessage} from "../txMessage/TxMessage";
 import {TxMessageQueue} from "../txMessage/TxMessageQueue";
 import {API} from "../API";
-import {TxResult} from "./TxResult";
+import {TxResult} from "../txResult/TxResult";
 import delay from "delay";
 
 const TOKEN_NAME = 'ubnt';

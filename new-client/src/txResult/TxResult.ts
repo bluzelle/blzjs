@@ -1,3 +1,3 @@
 export interface TxResult {
-    value: any
+    data: any[]
 }
