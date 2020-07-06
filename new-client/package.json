@@ -2,7 +2,10 @@
   "name": "bluzelle-new",
   "dependencies": {
     "@cosmostation/cosmosjs": "^0.6.4",
+    "@types/lodash": "^4.14.157",
     "@types/node": "^14.0.14",
+    "delay": "^4.3.0",
+    "lodash": "^4.17.15",
     "monet": "^0.9.1",
     "node-fetch": "^2.6.0",
     "typescript": "^3.9.6"

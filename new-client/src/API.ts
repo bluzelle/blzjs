@@ -3,8 +3,8 @@ import {GasInfo} from "./GasInfo";
 import {AccountResult} from "./types/AccountResult";
 import {AccountsResult} from "./types/AccountsResult";
 import {QueryResult} from "./types/QueryResult";
-import {sendTx} from "./services/CommunicationService";
-import {Identity} from "monet";
+import {CommunicationService} from "./services/CommunicationService";
+import {TxCreateMessage, TxReadMessage} from "./txMessage/TxMessage";
 
 const cosmosjs = require('@cosmostation/cosmosjs');
 const fetch = require('node-fetch');
@@ -19,6 +19,7 @@ export class API {
     chainId: string;
     uuid: string;
     url: string;
+    communicationService: CommunicationService
 
 
     constructor(config: BluzelleConfig) {
@@ -31,6 +32,7 @@ export class API {
         this.chainId = config.chain_id;
         this.uuid = config.uuid;
         this.url = config.endpoint;
+        this.communicationService = CommunicationService.create(this);
     }
 
 
@@ -43,96 +45,53 @@ export class API {
             .then((res: QueryResult) => parseInt(res.count || '0'));
 
 
-    txRead(key: string, gasInfo: GasInfo): Promise<string> {
-        const msgs = [
-            {
-                type: "crud/read",
-                value: {
-                    Key: key,
-                    UUID: this.uuid,
-                    Owner: this.address
-                }
-            }
-        ];
-
-        return sendTx(this, msgs, 'read', gasInfo)
-    }
+     txRead(key: string, gasInfo: GasInfo): Promise<string> {
+         return this.communicationService.sendTx<TxReadMessage>( {
+             type: 'crud/read',
+             value: {
+                 Key: key,
+                 UUID: this.uuid,
+                 Owner: this.address
+             }
+         })
+             .then(() => 'reading')
+     }
 
     create(key: string, value: string, gasInfo: GasInfo): Promise<void> {
-        const msgs = [
-            {
-                type: "crud/create",
-                value: {
-                    Key: key,
-                    Value: value,
-                    UUID: this.uuid,
-                    Owner: this.address,
-                    Lease: '10000',
-                }
+        return this.communicationService.sendTx<TxCreateMessage>({
+            type: "crud/create",
+            value: {
+                Key: key,
+                Value: value,
+                UUID: this.uuid,
+                Owner: this.address,
+                Lease: '10000',
             }
-        ];
-
-        return sendTx(this, msgs, 'create', gasInfo);
+        })
+            .then(x => x)
+            .then(() => {})
     }
-
-
-    doIt = () =>
-        Identity.of([{
-            type: "crud/create",
-            value: {
-                Key: 'foo1',
-                Value: 'bar1',
-                UUID: this.uuid,
-                Owner: this.address,
-                Lease: '10000'
-            }
-        }, {
-            type: "crud/create",
-            value: {
-                Key: 'foo2',
-                Value: 'bar2',
-                UUID: this.uuid,
-                Owner: this.address,
-                Lease: '10000'
-            }
-        }, {
-            type: "crud/read",
-            value: {
-                Key: 'foo1',
-                UUID: this.uuid,
-                Owner: this.address
-            }
-        }, {
-            type: "crud/read",
-            value: {
-                Key: 'foo2',
-                UUID: this.uuid,
-                Owner: this.address
-            }
-        }])
-            .map(msgs => sendTx(this, msgs, 'group', {gas_price: 10}))
-            .join()
-
 
 
     transferTokensTo(toAddress: string, amount: number, gasInfo: GasInfo): Promise<void> {
-        const msgs = [
-            {
-                type: "cosmos-sdk/MsgSend",
-                value: {
-                    amount: [
-                        {
-                            amount: String(`${amount}000000`),
-                            denom: "ubnt"
-                        }
-                    ],
-                    from_address: this.address,
-                    to_address: toAddress
-                }
-            }
-        ];
-
-        return sendTx(this, msgs, 'transfer', gasInfo);
+         return Promise.resolve();
+        // const msgs = [
+        //     {
+        //         type: "cosmos-sdk/MsgSend",
+        //         value: {
+        //             amount: [
+        //                 {
+        //                     amount: String(`${amount}000000`),
+        //                     denom: "ubnt"
+        //                 }
+        //             ],
+        //             from_address: this.address,
+        //             to_address: toAddress
+        //         }
+        //     }
+        // ];
+        //
+        // return sendTx(this, msgs, 'transfer', gasInfo);
     }
 
     #query = <T>(path: string): Promise<any> =>
