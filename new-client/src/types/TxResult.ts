@@ -10,6 +10,10 @@ export interface TxHasResult {
     has: boolean
 }
 
+export interface TxKeysResult {
+    keys: string[]
+}
+
 export interface TxReadResult {
     value: string
     key: string

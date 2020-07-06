@@ -14,11 +14,11 @@ import {
     TxCountMessage,
     TxCreateMessage,
     TxDeleteAllMessage,
-    TxDeleteMessage, TxHasMessage, TxMultiUpdateMessage,
+    TxDeleteMessage, TxHasMessage, TxKeysMessage, TxMultiUpdateMessage,
     TxReadMessage, TxRenewLeaseAllMessage,
     TxRenewLeaseMessage
 } from "./types/TxMessage";
-import {TxCountResult, TxHasResult, TxReadResult} from "./types/TxResult";
+import {TxCountResult, TxHasResult, TxKeysResult, TxReadResult} from "./types/TxResult";
 import {LeaseInfo} from "./types/LeaseInfo";
 import {assert} from "../../client/src/Assert";
 import {ClientErrors} from "./ClientErrors";
@@ -212,6 +212,17 @@ export class API {
         })
             .then(res => res.data.find(it => it.has) ? true: false)
 
+    }
+
+    txKeys = async (gasInfo: GasInfo): Promise<string[]> => {
+        return this.communicationService.sendTx<TxKeysMessage, TxKeysResult>({
+            type: 'crud/keys',
+            value: {
+                UUID: this.uuid,
+                Owner: this.address
+            }
+        })
+            .then(res => res.data.find(it => it.keys)?.keys || [])
     }
 
 

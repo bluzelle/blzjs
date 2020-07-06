@@ -27,6 +27,11 @@ export interface TxHasMessage {
     UUID: string
 }
 
+export interface TxKeysMessage {
+    Owner: string
+    UUID: string
+}
+
 export interface TxMultiUpdateMessage {
     KeyValues: {key: string, value: string}[]
     Owner: string

@@ -64,11 +64,6 @@ export class CommunicationService {
     }
 }
 
-// const parseDataInResponse = (res:any) => {
-//
-// }
-
-
 const getFeeInfo = ({max_fee, gas_price = 10, max_gas = 200000}: GasInfo) => ({
     amount: [{
         denom: TOKEN_NAME,
