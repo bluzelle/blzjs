@@ -210,7 +210,7 @@ export class API {
                 Owner: this.address,
             }
         })
-            .then(res => res.data.find(it => it.has) ? true: false)
+            .then(res => res.data.find(it => it.key === key && it.has) ? true: false)
 
     }
 

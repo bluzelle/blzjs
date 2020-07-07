@@ -7,6 +7,7 @@ export interface TxCountResult {
 }
 
 export interface TxHasResult {
+    key: string
     has: boolean
 }
 
