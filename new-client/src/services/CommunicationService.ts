@@ -1,10 +1,10 @@
 import {GasInfo} from "../types/GasInfo";
 import {Identity} from "monet";
-import {Transaction} from "../types/TxMessage";
 import {TxMessageQueue} from "../types/TxMessageQueue";
 import {API} from "../API";
 import {TxResponse} from "../types/TxResponse";
 import delay from "delay";
+import {Transaction} from "../types/Transaction";
 
 const TOKEN_NAME = 'ubnt';
 
@@ -45,7 +45,7 @@ export class CommunicationService {
             Identity.of({
                 msgs: transactions.map(tx => tx.msg),
                 chain_id: this.#api.chainId,
-                fee: getFeeInfo({}),
+                fee: getFeeInfo(combineGas(transactions)),
                 memo: 'group',
                 account_number: String(data.result.value.account_number),
                 sequence: String(data.result.value.sequence)
@@ -78,14 +78,17 @@ const getFeeInfo = ({max_fee, gas_price = 10, max_gas = 200000}: GasInfo) => ({
     amount: [{
         denom: TOKEN_NAME,
         amount: (max_fee ? max_fee : max_gas * gas_price).toString()
-
     }],
     gas: max_gas.toString()
 });
 
-// const calculateFee = (gasInfos: GasInfo[]) =>
-//     gasInfos.reduce((fee, {max_gas, gas_price, max_fee}) => {
-//         return fee + (max_fee ? max_fee : (max_gas || 0) * (gas_price || 0))
-//     }, 0);
+const combineGas = (transactions: Transaction<unknown>[]): GasInfo =>
+    transactions.reduce((gasInfo: GasInfo, transaction: Transaction<unknown>) => {
+        return {
+            max_gas: (gasInfo.max_gas || 0) + (transaction.gasInfo.max_gas || 200000),
+            max_fee: (gasInfo.max_fee || 0) + (transaction.gasInfo.max_fee || 0),
+            gas_price: Math.max(gasInfo.gas_price || 0,  transaction.gasInfo.gas_price || 0)
+        } as GasInfo
+    }, {});
 
 

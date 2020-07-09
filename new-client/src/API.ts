@@ -73,6 +73,7 @@ export class API {
         assert(!key.includes('/'), ClientErrors.KEY_CANNOT_CONTAIN_SLASH)
 
         await this.communicationService.sendTx<TxCreateMessage, void>({
+        gasInfo,
         msg: {
             type: "crud/create",
             value: {
@@ -88,8 +89,9 @@ export class API {
     }
 
 
-    delete = (key: string): Promise<void> =>
+    delete = (key: string, gasInfo: GasInfo): Promise<void> =>
         this.communicationService.sendTx<TxDeleteMessage, void>({
+            gasInfo,
             msg: {
                 type: 'crud/delete',
                 value: {
@@ -103,6 +105,7 @@ export class API {
 
     deleteAll = (gasInfo: GasInfo) =>
         this.communicationService.sendTx<TxDeleteAllMessage, void>({
+            gasInfo,
             msg: {
                 type: 'crud/deleteall',
                 value: {
@@ -135,7 +138,7 @@ export class API {
         this.#query<QueryKeyValuesResult>(`crud/keyvalues/${this.uuid}`)
             .then(res => res.keyvalues)
 
-    multiUpdate = async (keyValues: { key: string, value: string }[], gas_info: GasInfo): Promise<void> => {
+    multiUpdate = async (keyValues: { key: string, value: string }[], gasInfo: GasInfo): Promise<void> => {
         assert(Array.isArray(keyValues), 'keyValues must be an array');
 
         keyValues.forEach(({key, value}, index, array) => {
@@ -144,6 +147,7 @@ export class API {
         });
 
         return this.communicationService.sendTx<TxMultiUpdateMessage, void>({
+            gasInfo,
             msg: {
                 type: 'crud/multiupdate',
                 value: {
@@ -168,6 +172,7 @@ export class API {
         assert(blocks >= 0, ClientErrors.INVALID_LEASE_TIME)
 
         return this.communicationService.sendTx<TxRenewLeaseMessage, void>({
+            gasInfo,
             msg: {
                 type: 'crud/renewlease',
                 value: {
@@ -187,6 +192,7 @@ export class API {
         assert(blocks >= 0, ClientErrors.INVALID_LEASE_TIME);
 
         return this.communicationService.sendTx<TxRenewLeaseAllMessage, void>({
+            gasInfo,
             msg: {
                 type: 'crud/renewleaseall',
                 value: {
@@ -200,8 +206,9 @@ export class API {
 
     }
 
-    txCount = async (gas_info: GasInfo): Promise<number> => {
+    txCount = async (gasInfo: GasInfo): Promise<number> => {
         return this.communicationService.sendTx<TxCountMessage, TxCountResponse>({
+            gasInfo,
             msg: {
                 type: 'crud/count',
                 value: {
@@ -219,6 +226,7 @@ export class API {
         assert(typeof key === 'string', ClientErrors.KEY_MUST_BE_A_STRING);
 
         return this.communicationService.sendTx<TxHasMessage, TxHasResponse>({
+            gasInfo,
             msg: {
                 type: 'crud/has',
                 value: {
@@ -234,6 +242,7 @@ export class API {
 
     txKeys = async (gasInfo: GasInfo): Promise<string[]> => {
         return this.communicationService.sendTx<TxKeysMessage, TxKeysResponse>({
+            gasInfo,
             msg: {
                 type: 'crud/keys',
                 value: {
@@ -248,6 +257,7 @@ export class API {
 
     txRead(key: string, gasInfo: GasInfo): Promise<TxReadResult | undefined> {
         return this.communicationService.sendTx<TxReadMessage, TxReadResponse>({
+            gasInfo,
             msg: {type: 'crud/read',
             value: {
                 Key: key,

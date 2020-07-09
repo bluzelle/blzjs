@@ -1,4 +1,4 @@
-import {Transaction} from "./TxMessage";
+import {Transaction} from "./Transaction";
 
 export class TxMessageQueue {
     #queue: Transaction<unknown>[] = [];
