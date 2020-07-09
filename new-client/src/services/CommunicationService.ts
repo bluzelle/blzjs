@@ -1,6 +1,6 @@
 import {GasInfo} from "../types/GasInfo";
 import {Identity} from "monet";
-import {TxMessage} from "../types/TxMessage";
+import {Transaction} from "../types/TxMessage";
 import {TxMessageQueue} from "../types/TxMessageQueue";
 import {API} from "../API";
 import {TxResponse} from "../types/TxResponse";
@@ -23,12 +23,12 @@ export class CommunicationService {
         setTimeout(this.checkTransmitQueue.bind(this));
     }
 
-    sendTx<T, R>(msg: TxMessage<T>): Promise<TxResponse<R>> {
+    sendTx<T, R>(tx: Transaction<T>): Promise<TxResponse<R>> {
         const p = new Promise<TxResponse<R>>((resolve, reject) => {
-            msg.resolve = resolve;
-            msg.reject = reject;
+            tx.resolve = resolve;
+            tx.reject = reject;
         })
-        this.#messageQueue.add<T>(msg as TxMessage<T>)
+        this.#messageQueue.add<T>(tx as Transaction<T>)
         return p;
     }
 
@@ -40,10 +40,10 @@ export class CommunicationService {
         )
     }
 
-    transmitQueue(msgs: TxMessage<unknown>[]): Promise<void> {
+    transmitQueue(transactions: Transaction<unknown>[]): Promise<void> {
         return this.#api.cosmos.getAccounts(this.#api.address).then((data: any) =>
             Identity.of({
-                msgs,
+                msgs: transactions.map(tx => tx.msg),
                 chain_id: this.#api.chainId,
                 fee: getFeeInfo({}),
                 memo: 'group',
@@ -59,7 +59,7 @@ export class CommunicationService {
                     .then((x: any) => ({...x, height: parseInt(x.height)}))
                 )
                 .map((p: any) => p
-                    .then(callRequestorsWithData(msgs)),
+                    .then(callRequestorsWithData(transactions)),
                 )
                 .join()
         )
@@ -71,7 +71,6 @@ const convertDataToObject = (res: any) => ({...res, data: res.data !== undefined
 const callRequestorsWithData = (msgs: any[]) =>
     (res: any) =>
         msgs.reduce((memo: any, msg) => {
-            memo.time = Date.now() - msg.startTime
             return msg.resolve ? msg.resolve(memo) || memo : memo
         }, res)
 
@@ -83,5 +82,10 @@ const getFeeInfo = ({max_fee, gas_price = 10, max_gas = 200000}: GasInfo) => ({
     }],
     gas: max_gas.toString()
 });
+
+// const calculateFee = (gasInfos: GasInfo[]) =>
+//     gasInfos.reduce((fee, {max_gas, gas_price, max_fee}) => {
+//         return fee + (max_fee ? max_fee : (max_gas || 0) * (gas_price || 0))
+//     }, 0);
 
 

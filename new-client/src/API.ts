@@ -73,6 +73,7 @@ export class API {
         assert(!key.includes('/'), ClientErrors.KEY_CANNOT_CONTAIN_SLASH)
 
         await this.communicationService.sendTx<TxCreateMessage, void>({
+        msg: {
             type: "crud/create",
             value: {
                 Key: encodeSafe(key),
@@ -81,6 +82,7 @@ export class API {
                 Owner: this.address,
                 Lease: blocks.toString(),
             }
+            }
         })
             .then(() => {})
     }
@@ -88,21 +90,25 @@ export class API {
 
     delete = (key: string): Promise<void> =>
         this.communicationService.sendTx<TxDeleteMessage, void>({
-            type: 'crud/delete',
-            value: {
-                Key: key,
-                UUID: this.uuid,
-                Owner: this.address
+            msg: {
+                type: 'crud/delete',
+                value: {
+                    Key: key,
+                    UUID: this.uuid,
+                    Owner: this.address
+                }
             }
         })
             .then(() => {})
 
     deleteAll = (gasInfo: GasInfo) =>
         this.communicationService.sendTx<TxDeleteAllMessage, void>({
-            type: 'crud/deleteall',
-            value: {
-                UUID: this.uuid,
-                Owner: this.address
+            msg: {
+                type: 'crud/deleteall',
+                value: {
+                    UUID: this.uuid,
+                    Owner: this.address
+                }
             }
         })
 
@@ -138,11 +144,13 @@ export class API {
         });
 
         return this.communicationService.sendTx<TxMultiUpdateMessage, void>({
-            type: 'crud/multiupdate',
-            value: {
-                KeyValues: keyValues,
-                UUID: this.uuid,
-                Owner: this.address
+            msg: {
+                type: 'crud/multiupdate',
+                value: {
+                    KeyValues: keyValues,
+                    UUID: this.uuid,
+                    Owner: this.address
+                }
             }
         })
             .then(() => {})
@@ -160,12 +168,14 @@ export class API {
         assert(blocks >= 0, ClientErrors.INVALID_LEASE_TIME)
 
         return this.communicationService.sendTx<TxRenewLeaseMessage, void>({
-            type: 'crud/renewlease',
-            value: {
-                Key: key,
-                Lease: blocks.toString(),
-                UUID: this.uuid,
-                Owner: this.address
+            msg: {
+                type: 'crud/renewlease',
+                value: {
+                    Key: key,
+                    Lease: blocks.toString(),
+                    UUID: this.uuid,
+                    Owner: this.address
+                }
             }
         })
             .then(res => {})
@@ -177,11 +187,13 @@ export class API {
         assert(blocks >= 0, ClientErrors.INVALID_LEASE_TIME);
 
         return this.communicationService.sendTx<TxRenewLeaseAllMessage, void>({
-            type: 'crud/renewleaseall',
-            value: {
-                Lease: blocks.toString(),
-                UUID: this.uuid,
-                Owner: this.address
+            msg: {
+                type: 'crud/renewleaseall',
+                value: {
+                    Lease: blocks.toString(),
+                    UUID: this.uuid,
+                    Owner: this.address
+                }
             }
         })
             .then(res => {})
@@ -190,10 +202,12 @@ export class API {
 
     txCount = async (gas_info: GasInfo): Promise<number> => {
         return this.communicationService.sendTx<TxCountMessage, TxCountResponse>({
-            type: 'crud/count',
-            value: {
-                UUID: this.uuid,
-                Owner: this.address
+            msg: {
+                type: 'crud/count',
+                value: {
+                    UUID: this.uuid,
+                    Owner: this.address
+                }
             }
         })
             .then(res => res.data.find(it => it.count !== undefined)?.count)
@@ -205,11 +219,13 @@ export class API {
         assert(typeof key === 'string', ClientErrors.KEY_MUST_BE_A_STRING);
 
         return this.communicationService.sendTx<TxHasMessage, TxHasResponse>({
-            type: 'crud/has',
-            value: {
-                Key: key,
-                UUID: this.uuid,
-                Owner: this.address,
+            msg: {
+                type: 'crud/has',
+                value: {
+                    Key: key,
+                    UUID: this.uuid,
+                    Owner: this.address,
+                }
             }
         })
             .then(res => res.data.find(it => it.key === key && it.has) ? true: false)
@@ -218,10 +234,12 @@ export class API {
 
     txKeys = async (gasInfo: GasInfo): Promise<string[]> => {
         return this.communicationService.sendTx<TxKeysMessage, TxKeysResponse>({
-            type: 'crud/keys',
-            value: {
-                UUID: this.uuid,
-                Owner: this.address
+            msg: {
+                type: 'crud/keys',
+                value: {
+                    UUID: this.uuid,
+                    Owner: this.address
+                }
             }
         })
             .then(res => res.data.find(it => it.keys)?.keys || [])
@@ -230,15 +248,15 @@ export class API {
 
     txRead(key: string, gasInfo: GasInfo): Promise<TxReadResult | undefined> {
         return this.communicationService.sendTx<TxReadMessage, TxReadResponse>({
-            type: 'crud/read',
+            msg: {type: 'crud/read',
             value: {
                 Key: key,
                 UUID: this.uuid,
                 Owner: this.address
             }
-        })
+        }})
             .then(res => findMine<TxReadResponse>(res, it => it.value !== undefined && it.key === key))
-            .then(({res, data}) => ({height: res.height, txhash: res.txhash, value: data?.value}))
+            .then(({res, data}) => ({height: res.height,  txhash: res.txhash, value: data?.value}))
     }
 
 

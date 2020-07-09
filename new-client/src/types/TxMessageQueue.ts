@@ -1,7 +1,7 @@
-import {TxMessage} from "./TxMessage";
+import {Transaction} from "./TxMessage";
 
 export class TxMessageQueue {
-    #queue: TxMessage<unknown>[] = [];
+    #queue: Transaction<unknown>[] = [];
 
     static create = () => {
         return new TxMessageQueue();
@@ -9,15 +9,15 @@ export class TxMessageQueue {
 
     private constructor() {}
 
-    add<T>(msg: TxMessage<T>):void {
-        this.#queue.push(msg);
+    add<T>(transaction: Transaction<T>):void {
+        this.#queue.push(transaction);
     }
 
     hasMessages():boolean {
         return !!this.#queue.length
     }
 
-    fetch(): TxMessage<unknown>[] {
+    fetch(): Transaction<unknown>[] {
         const temp = this.#queue;
         this.#queue = [];
         return temp;
