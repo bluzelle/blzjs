@@ -3,8 +3,8 @@ import {Identity} from "monet";
 import {TxMessageQueue} from "../types/TxMessageQueue";
 import {API} from "../API";
 import {TxResponse} from "../types/TxResponse";
-import delay from "delay";
 import {Transaction} from "../types/Transaction";
+import Timeout = NodeJS.Timeout;
 
 const TOKEN_NAME = 'ubnt';
 
@@ -12,6 +12,7 @@ const TOKEN_NAME = 'ubnt';
 export class CommunicationService {
     #api: API
     #messageQueue: TxMessageQueue = TxMessageQueue.create()
+    #waiter?: Timeout
 
 
     static create(api: API): CommunicationService {
@@ -20,7 +21,6 @@ export class CommunicationService {
 
     private constructor(api: API) {
         this.#api = api;
-        setTimeout(this.checkTransmitQueue.bind(this));
     }
 
     sendTx<T, R>(tx: Transaction<T>): Promise<TxResponse<R>> {
@@ -29,18 +29,13 @@ export class CommunicationService {
             tx.reject = reject;
         })
         this.#messageQueue.add<T>(tx as Transaction<T>)
+        this.#waiter || (this.#waiter = setTimeout(this.transmitQueue.bind(this), 100))
         return p;
     }
 
-    checkTransmitQueue(): void {
-        this.#messageQueue.hasMessages() ? (
-            this.transmitQueue(this.#messageQueue.fetch()).then(this.checkTransmitQueue.bind(this))
-        ) : (
-            delay(100).then(this.checkTransmitQueue.bind(this))
-        )
-    }
-
-    transmitQueue(transactions: Transaction<unknown>[]): Promise<void> {
+    transmitQueue(): Promise<void> {
+        this.#waiter = undefined;
+        const transactions = this.#messageQueue.fetch();
         return this.#api.cosmos.getAccounts(this.#api.address).then((data: any) =>
             Identity.of({
                 msgs: transactions.map(tx => tx.msg),
