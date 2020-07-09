@@ -1,10 +1,10 @@
-import {TxResult} from "./TxResult";
+import {TxResponse} from "./TxResponse";
 import {LeaseInfo} from "./LeaseInfo";
 
 export interface TxMessage<T> {
     type: string
     value: T
-    resolve?: (value: TxResult<any>) => void
+    resolve?: (value: TxResponse<any>) => void
     reject?: (reason: any) => void
 }
 

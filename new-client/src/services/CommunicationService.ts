@@ -3,7 +3,7 @@ import {Identity} from "monet";
 import {TxMessage} from "../types/TxMessage";
 import {TxMessageQueue} from "../types/TxMessageQueue";
 import {API} from "../API";
-import {TxResult} from "../types/TxResult";
+import {TxResponse} from "../types/TxResponse";
 import delay from "delay";
 
 const TOKEN_NAME = 'ubnt';
@@ -23,12 +23,12 @@ export class CommunicationService {
         setTimeout(this.checkTransmitQueue.bind(this));
     }
 
-    sendTx<T, R>(msg: TxMessage<T>): Promise<TxResult<R>> {
-        const p = new Promise<TxResult<R>>((resolve, reject) => {
+    sendTx<T, R>(msg: TxMessage<T>): Promise<TxResponse<R>> {
+        const p = new Promise<TxResponse<R>>((resolve, reject) => {
             msg.resolve = resolve;
             msg.reject = reject;
         })
-        this.#messageQueue.add<T>(msg)
+        this.#messageQueue.add<T>(msg as TxMessage<T>)
         return p;
     }
 
@@ -54,15 +54,26 @@ export class CommunicationService {
                 .map((stdSignMsg: any) => this.#api.cosmos.sign(stdSignMsg, this.#api.ecPairPriv, 'block'))
                 .map(this.#api.cosmos.broadcast.bind(this.#api.cosmos))
                 .map((p: any) => p
-                    .then((res: any) => ({...res, data: res.data  ? Buffer.from(res.data, 'hex').toString() : undefined}))
-                    .then((res: any) => ({...res, data: res.data !== undefined ? JSON.parse(`[${res.data.split('}{').join('},{')}]`) : undefined}))
+                    .then(convertDataFromHexToString)
+                    .then(convertDataToObject)
+                    .then((x: any) => ({...x, height: parseInt(x.height)}))
                 )
                 .map((p: any) => p
-                    .then((res: any) => msgs.forEach(msg => msg.resolve && msg.resolve(res))))
+                    .then(callRequestorsWithData(msgs)),
+                )
                 .join()
         )
     }
 }
+
+const convertDataFromHexToString = (res: any) => ({...res, data: res.data  ? Buffer.from(res.data, 'hex').toString() : undefined})
+const convertDataToObject = (res: any) => ({...res, data: res.data !== undefined ? JSON.parse(`[${res.data.split('}{').join('},{')}]`) : undefined})
+const callRequestorsWithData = (msgs: any[]) =>
+    (res: any) =>
+        msgs.reduce((memo: any, msg) => {
+            memo.time = Date.now() - msg.startTime
+            return msg.resolve ? msg.resolve(memo) || memo : memo
+        }, res)
 
 const getFeeInfo = ({max_fee, gas_price = 10, max_gas = 200000}: GasInfo) => ({
     amount: [{

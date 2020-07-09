@@ -18,10 +18,12 @@ import {
     TxReadMessage, TxRenewLeaseAllMessage,
     TxRenewLeaseMessage
 } from "./types/TxMessage";
-import {TxCountResult, TxHasResult, TxKeysResult, TxReadResult} from "./types/TxResult";
+import {TxCountResponse, TxHasResponse, TxKeysResponse, TxReadResponse} from "./types/TxResponse";
 import {LeaseInfo} from "./types/LeaseInfo";
 import {assert} from "../../client/src/Assert";
 import {ClientErrors} from "./ClientErrors";
+import {pullAt} from 'lodash'
+import {TxReadResult} from "./types/TxResult";
 
 const cosmosjs = require('@cosmostation/cosmosjs');
 const fetch = require('node-fetch');
@@ -187,7 +189,7 @@ export class API {
     }
 
     txCount = async (gas_info: GasInfo): Promise<number> => {
-        return this.communicationService.sendTx<TxCountMessage, TxCountResult>({
+        return this.communicationService.sendTx<TxCountMessage, TxCountResponse>({
             type: 'crud/count',
             value: {
                 UUID: this.uuid,
@@ -202,7 +204,7 @@ export class API {
     txHas = async (key: string, gasInfo: GasInfo): Promise<boolean> => {
         assert(typeof key === 'string', ClientErrors.KEY_MUST_BE_A_STRING);
 
-        return this.communicationService.sendTx<TxHasMessage, TxHasResult>({
+        return this.communicationService.sendTx<TxHasMessage, TxHasResponse>({
             type: 'crud/has',
             value: {
                 Key: key,
@@ -215,7 +217,7 @@ export class API {
     }
 
     txKeys = async (gasInfo: GasInfo): Promise<string[]> => {
-        return this.communicationService.sendTx<TxKeysMessage, TxKeysResult>({
+        return this.communicationService.sendTx<TxKeysMessage, TxKeysResponse>({
             type: 'crud/keys',
             value: {
                 UUID: this.uuid,
@@ -226,8 +228,8 @@ export class API {
     }
 
 
-    txRead(key: string, gasInfo: GasInfo): Promise<string | undefined> {
-        return this.communicationService.sendTx<TxReadMessage, TxReadResult>({
+    txRead(key: string, gasInfo: GasInfo): Promise<TxReadResult | undefined> {
+        return this.communicationService.sendTx<TxReadMessage, TxReadResponse>({
             type: 'crud/read',
             value: {
                 Key: key,
@@ -235,7 +237,8 @@ export class API {
                 Owner: this.address
             }
         })
-            .then(res => res.data.find(it => it.value && it.key === key)?.value)
+            .then(res => findMine<TxReadResponse>(res, it => it.value !== undefined && it.key === key))
+            .then(({res, data}) => ({height: res.height, txhash: res.txhash, value: data?.value}))
     }
 
 
@@ -284,3 +287,13 @@ const DAY = HOUR * 24
 const convertLease = ({seconds = 0, minutes = 0, hours = 0, days = 0}: LeaseInfo): number =>
     Math.ceil((seconds + (minutes * MINUTE) + (hours * HOUR) + (days * DAY)) / BLOCK_TIME_IN_SECONDS)
 
+const findMine = <T>(res: {data:T[]}, condition: (x: T) => boolean): {res: any, data: T | undefined} => {
+    for(let i: number = 0; i < res.data.length; i++) {
+        if(condition(res.data[i])) {
+            const found = res.data[i];
+            pullAt(res.data, i)
+            return {res, data: found}
+        }
+    }
+    return {res, data: undefined}
+}

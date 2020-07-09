@@ -1,7 +1,25 @@
-interface TxResponse {
+export interface TxResponse<T> {
     height: number
     txhash: string
-    log: any[]
+    gasUsed: number
+    data: T[]
 }
 
-export interface StdTxResponse extends TxResponse {}
+export interface TxCountResponse {
+    count: string
+}
+
+export interface TxHasResponse {
+    key: string
+    has: boolean
+}
+
+export interface TxKeysResponse {
+    keys: string[]
+}
+
+export interface TxReadResponse {
+    value: string
+    key: string
+}
+

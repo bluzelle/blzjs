@@ -79,8 +79,8 @@ function help(bz, cmd) {
 
 bluzelle({
     mnemonic: "cradle labor rural kiwi slice very barrel oven afraid idea mistake mouse garden bless miss next collect notice dove cook replace scale gym tennis",
-    endpoint: "http://54.166.96.165:1317",
-    chain_id: 'bluzelle',
+    endpoint: "http://client.sentry.testnet.public.bluzelle.com:1317",
+    chain_id: 'bluzelleTestPublic-1',
     uuid: Date.now().toString()
 }).then(main);
 

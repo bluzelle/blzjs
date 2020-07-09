@@ -1,22 +1,8 @@
-export interface TxResult<T> {
-    data: T[]
+interface TxResult {
+    height: number
+    txhash: string
 }
 
-export interface TxCountResult {
-    count: string
+export interface TxReadResult extends TxResult {
+    value: string | undefined
 }
-
-export interface TxHasResult {
-    key: string
-    has: boolean
-}
-
-export interface TxKeysResult {
-    keys: string[]
-}
-
-export interface TxReadResult {
-    value: string
-    key: string
-}
-
