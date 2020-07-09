@@ -16,6 +16,14 @@ export interface TxCreateMessage {
     UUID: string
 }
 
+export interface TxUpdateMessage {
+    Key: string
+    Value: string
+    Owner: string
+    UUID: string
+    Lease: string
+}
+
 export interface TxHasMessage {
     Key: string
     Owner: string

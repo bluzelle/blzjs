@@ -23,12 +23,12 @@ export class CommunicationService {
         this.#api = api;
     }
 
-    sendTx<T, R>(tx: Transaction<T>): Promise<TxResponse<R>> {
+    sendTx<T, R>(transaction: Transaction<T>): Promise<TxResponse<R>> {
         const p = new Promise<TxResponse<R>>((resolve, reject) => {
-            tx.resolve = resolve;
-            tx.reject = reject;
+            transaction.resolve = resolve;
+            transaction.reject = reject;
         })
-        this.#messageQueue.add<T>(tx as Transaction<T>)
+        this.#messageQueue.add<T>(transaction)
         this.#waiter || (this.#waiter = setTimeout(this.transmitQueue.bind(this), 100))
         return p;
     }

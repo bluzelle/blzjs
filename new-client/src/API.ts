@@ -16,7 +16,7 @@ import {
     TxDeleteAllMessage,
     TxDeleteMessage, TxHasMessage, TxKeysMessage, TxMultiUpdateMessage,
     TxReadMessage, TxRenewLeaseAllMessage,
-    TxRenewLeaseMessage
+    TxRenewLeaseMessage, TxUpdateMessage
 } from "./types/TxMessage";
 import {TxCountResponse, TxHasResponse, TxKeysResponse, TxReadResponse} from "./types/TxResponse";
 import {LeaseInfo} from "./types/LeaseInfo";
@@ -267,6 +267,32 @@ export class API {
         }})
             .then(res => findMine<TxReadResponse>(res, it => it.value !== undefined && it.key === key))
             .then(({res, data}) => ({height: res.height,  txhash: res.txhash, value: data?.value}))
+    }
+
+    async update(key: string, value: string, gasInfo: GasInfo, leaseInfo: LeaseInfo = {}): Promise<void> {
+
+        const blocks = convertLease(leaseInfo);
+
+        assert(!!key, ClientErrors.KEY_CANNOT_BE_EMPTY);
+        assert(typeof key === 'string', ClientErrors.KEY_MUST_BE_A_STRING);
+        assert(typeof value === 'string', ClientErrors.VALUE_MUST_BE_A_STRING);
+        assert(blocks >= 0, ClientErrors.INVALID_LEASE_TIME);
+        assert(!key.includes('/'), ClientErrors.KEY_CANNOT_CONTAIN_SLASH)
+
+        await this.communicationService.sendTx<TxUpdateMessage, void>({
+            gasInfo,
+            msg: {
+                type: "crud/update",
+                value: {
+                    Key: encodeSafe(key),
+                    Value: encodeSafe(value),
+                    UUID: this.uuid,
+                    Owner: this.address,
+                    Lease: blocks.toString()
+                }
+            }
+        })
+            .then(() => {})
     }
 
 
