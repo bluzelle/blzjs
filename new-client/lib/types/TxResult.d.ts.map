@@ -1,0 +1,1 @@
+{"version":3,"file":"TxResult.d.ts","sourceRoot":"","sources":["../../src/types/TxResult.ts"],"names":[],"mappings":"AAAA,UAAU,QAAQ;IACd,MAAM,EAAE,MAAM,CAAA;IACd,MAAM,EAAE,MAAM,CAAA;CACjB;AAED,MAAM,WAAW,YAAa,SAAQ,QAAQ;IAC1C,KAAK,EAAE,MAAM,GAAG,SAAS,CAAA;CAC5B"}

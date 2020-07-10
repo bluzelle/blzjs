@@ -1,5 +1,5 @@
 {
-  "name": "bluzelle-new",
+  "name": "bluzelle",
   "dependencies": {
     "@cosmostation/cosmosjs": "^0.6.4",
     "@types/lodash": "^4.14.157",

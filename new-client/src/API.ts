@@ -20,10 +20,10 @@ import {
 } from "./types/TxMessage";
 import {TxCountResponse, TxHasResponse, TxKeysResponse, TxReadResponse} from "./types/TxResponse";
 import {LeaseInfo} from "./types/LeaseInfo";
-import {assert} from "../../client/src/Assert";
 import {ClientErrors} from "./ClientErrors";
 import {pullAt} from 'lodash'
 import {TxReadResult} from "./types/TxResult";
+import {assert} from "./Assert";
 
 const cosmosjs = require('@cosmostation/cosmosjs');
 const fetch = require('node-fetch');
