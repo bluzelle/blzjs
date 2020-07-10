@@ -22,7 +22,7 @@ import {TxCountResponse, TxHasResponse, TxKeysResponse, TxReadResponse} from "./
 import {LeaseInfo} from "./types/LeaseInfo";
 import {ClientErrors} from "./ClientErrors";
 import {pullAt} from 'lodash'
-import {TxReadResult} from "./types/TxResult";
+import {TxReadResult, TxResult} from "./types/TxResult";
 import {assert} from "./Assert";
 
 const cosmosjs = require('@cosmostation/cosmosjs');
@@ -63,7 +63,7 @@ export class API {
         this.#query<QueryCountResult>(`crud/count/${this.uuid}`)
             .then((res: QueryCountResult) => parseInt(res.count || '0'));
 
-    async create(key: string, value: string, gasInfo: GasInfo, leaseInfo: LeaseInfo = {}): Promise<void> {
+    async create(key: string, value: string, gasInfo: GasInfo, leaseInfo: LeaseInfo = {}): Promise<TxResult> {
         const blocks = convertLease(leaseInfo);
 
         assert(!!key, ClientErrors.KEY_CANNOT_BE_EMPTY);
@@ -72,7 +72,7 @@ export class API {
         assert(blocks >= 0, ClientErrors.INVALID_LEASE_TIME);
         assert(!key.includes('/'), ClientErrors.KEY_CANNOT_CONTAIN_SLASH)
 
-        await this.communicationService.sendTx<TxCreateMessage, void>({
+        return this.communicationService.sendTx<TxCreateMessage, void>({
         gasInfo,
         msg: {
             type: "crud/create",
@@ -85,7 +85,7 @@ export class API {
             }
             }
         })
-            .then(() => {})
+            .then(res => ({height: res.height, txhash: res.txhash}))
     }
 
 

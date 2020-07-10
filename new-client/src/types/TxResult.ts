@@ -1,4 +1,4 @@
-interface TxResult {
+export interface TxResult {
     height: number
     txhash: string
 }
