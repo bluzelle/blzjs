@@ -52,7 +52,8 @@ class CommunicationService {
             .flatMap(queue => queue.length ? monet_1.Some(__classPrivateFieldGet(this, _messageQueue)) : monet_1.None())
             .map(queue => [queue[0].transactionId, queue])
             .map(([transactionId, queue]) => [
-            lodash_1.takeWhile(queue, (it, idx) => it.transactionId === transactionId && idx < __classPrivateFieldGet(this, _maxMessagesPerTransaction)),
+            lodash_1.takeWhile(queue, (it, idx) => it.transactionId === transactionId
+                && (it.transactionId === 0 && idx < __classPrivateFieldGet(this, _maxMessagesPerTransaction))),
             queue
         ])
             .map(([messages, queue]) => {
@@ -84,8 +85,14 @@ class CommunicationService {
 }
 exports.CommunicationService = CommunicationService;
 _api = new WeakMap(), _messageQueue = new WeakMap(), _maxMessagesPerTransaction = new WeakMap(), _checkTransmitQueueTail = new WeakMap(), _currentTransactionId = new WeakMap();
-const convertDataFromHexToString = (res) => ({ ...res, data: res.data ? Buffer.from(res.data, 'hex').toString() : undefined });
-const convertDataToObject = (res) => ({ ...res, data: res.data !== undefined ? JSON.parse(`[${res.data.split('}{').join('},{')}]`) : undefined });
+const convertDataFromHexToString = (res) => ({
+    ...res,
+    data: res.data ? Buffer.from(res.data, 'hex').toString() : undefined
+});
+const convertDataToObject = (res) => ({
+    ...res,
+    data: res.data !== undefined ? JSON.parse(`[${res.data.split('}{').join('},{')}]`) : undefined
+});
 const callRequestorsWithData = (msgs) => (res) => msgs.reduce((memo, msg) => {
     return msg.resolve ? msg.resolve(memo) || memo : memo;
 }, res);

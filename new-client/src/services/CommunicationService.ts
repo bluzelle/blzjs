@@ -23,7 +23,7 @@ const counter = (() => {
 
 export class CommunicationService {
     #api: API
-    #messageQueue:  MessageQueueItem<any, any>[] = [];
+    #messageQueue: MessageQueueItem<any, any>[] = [];
     #maxMessagesPerTransaction = 1;
     #checkTransmitQueueTail: Promise<any> = Promise.resolve();
     #currentTransactionId: number = 0;
@@ -56,7 +56,10 @@ export class CommunicationService {
             .flatMap(queue => queue.length ? Some<MessageQueueItem<any, any>[]>(this.#messageQueue) : None<any>())
             .map(queue => [queue[0].transactionId, queue])
             .map(([transactionId, queue]) => [
-                takeWhile(queue, (it: MessageQueueItem<any, any>, idx: number) => it.transactionId === transactionId && idx < this.#maxMessagesPerTransaction),
+                takeWhile(queue, (it: MessageQueueItem<any, any>, idx: number) =>
+                    it.transactionId === transactionId
+                    && (it.transactionId === 0 && idx < this.#maxMessagesPerTransaction)
+                ),
                 queue
             ])
             .map(([messages, queue]) => {
@@ -93,8 +96,14 @@ export class CommunicationService {
     }
 }
 
-const convertDataFromHexToString = (res: any) => ({...res, data: res.data  ? Buffer.from(res.data, 'hex').toString() : undefined})
-const convertDataToObject = (res: any) => ({...res, data: res.data !== undefined ? JSON.parse(`[${res.data.split('}{').join('},{')}]`) : undefined})
+const convertDataFromHexToString = (res: any) => ({
+    ...res,
+    data: res.data ? Buffer.from(res.data, 'hex').toString() : undefined
+})
+const convertDataToObject = (res: any) => ({
+    ...res,
+    data: res.data !== undefined ? JSON.parse(`[${res.data.split('}{').join('},{')}]`) : undefined
+})
 const callRequestorsWithData = (msgs: any[]) =>
     (res: any) =>
         msgs.reduce((memo: any, msg) => {
@@ -114,7 +123,7 @@ const combineGas = (transactions: MessageQueueItem<any, any>[]): GasInfo =>
         return {
             max_gas: (gasInfo.max_gas || 0) + (transaction.gasInfo.max_gas || 200000),
             max_fee: (gasInfo.max_fee || 0) + (transaction.gasInfo.max_fee || 0),
-            gas_price: Math.max(gasInfo.gas_price || 0,  transaction.gasInfo.gas_price || 0)
+            gas_price: Math.max(gasInfo.gas_price || 0, transaction.gasInfo.gas_price || 0)
         } as GasInfo
     }, {});
 
