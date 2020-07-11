@@ -52,7 +52,7 @@ class CommunicationService {
             .flatMap(queue => queue.length ? monet_1.Some(__classPrivateFieldGet(this, _messageQueue)) : monet_1.None())
             .map(queue => [queue[0].transactionId, queue])
             .map(([transactionId, queue]) => [
-            lodash_1.takeWhile(queue, (it) => it.transactionId === transactionId),
+            lodash_1.takeWhile(queue, (it, idx) => it.transactionId === transactionId && idx < __classPrivateFieldGet(this, _maxMessagesPerTransaction)),
             queue
         ])
             .map(([messages, queue]) => {

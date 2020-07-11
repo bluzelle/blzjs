@@ -53,10 +53,10 @@ export class CommunicationService {
 
     checkMessageQueueNeedsTransmit() {
         Some(this.#messageQueue)
-            .flatMap(queue => queue.length ? Some<any>(this.#messageQueue) : None())
+            .flatMap(queue => queue.length ? Some<MessageQueueItem<any, any>[]>(this.#messageQueue) : None<any>())
             .map(queue => [queue[0].transactionId, queue])
             .map(([transactionId, queue]) => [
-                takeWhile(queue, (it: MessageQueueItem<any, any>) => it.transactionId === transactionId),
+                takeWhile(queue, (it: MessageQueueItem<any, any>, idx: number) => it.transactionId === transactionId && idx < this.#maxMessagesPerTransaction),
                 queue
             ])
             .map(([messages, queue]) => {
