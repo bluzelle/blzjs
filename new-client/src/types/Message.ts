@@ -1,14 +1,14 @@
-export interface TxMessage<T> {
+export interface Message<T> {
     type: string
     value: T
 }
 
-export interface TxCountMessage {
+export interface CountMessage {
     UUID: string
     Owner: string
 }
 
-export interface TxCreateMessage {
+export interface CreateMessage {
     Key: string
     Value: string
     Owner: string
@@ -16,7 +16,7 @@ export interface TxCreateMessage {
     UUID: string
 }
 
-export interface TxUpdateMessage {
+export interface UpdateMessage {
     Key: string
     Value: string
     Owner: string
@@ -24,50 +24,50 @@ export interface TxUpdateMessage {
     Lease: string
 }
 
-export interface TxHasMessage {
+export interface HasMessage {
     Key: string
     Owner: string
     UUID: string
 }
 
-export interface TxKeysMessage {
+export interface KeysMessage {
     Owner: string
     UUID: string
 }
 
-export interface TxMultiUpdateMessage {
+export interface MultiUpdateMessage {
     KeyValues: {key: string, value: string}[]
     Owner: string
     UUID: string
 }
 
 
-export interface TxReadMessage {
+export interface ReadMessage {
     Key: string
     Owner: string
     UUID: string
 }
 
-export interface TxRenewLeaseMessage {
+export interface RenewLeaseMessage {
     Key: string
     Lease: string
     Owner: string
     UUID: string
 }
 
-export interface TxRenewLeaseAllMessage {
+export interface RenewLeaseAllMessage {
     Lease: string
     Owner: string
     UUID: string
 }
 
-export interface TxDeleteMessage {
+export interface DeleteMessage {
     Key: string
     Owner: string
     UUID: string
 }
 
-export interface TxDeleteAllMessage {
+export interface DeleteAllMessage {
     Owner: string
     UUID: string
 }

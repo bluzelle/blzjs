@@ -11,18 +11,18 @@ import {
 } from "./types/QueryResult";
 import {CommunicationService} from "./services/CommunicationService";
 import {
-    TxCountMessage,
-    TxCreateMessage,
-    TxDeleteAllMessage,
-    TxDeleteMessage, TxHasMessage, TxKeysMessage, TxMultiUpdateMessage,
-    TxReadMessage, TxRenewLeaseAllMessage,
-    TxRenewLeaseMessage, TxUpdateMessage
-} from "./types/TxMessage";
-import {TxCountResponse, TxHasResponse, TxKeysResponse, TxReadResponse} from "./types/TxResponse";
+    CountMessage,
+    CreateMessage,
+    DeleteAllMessage,
+    DeleteMessage, HasMessage, KeysMessage, MultiUpdateMessage,
+    ReadMessage, RenewLeaseAllMessage,
+    RenewLeaseMessage, UpdateMessage
+} from "./types/Message";
+import {TxCountResponse, TxHasResponse, TxKeysResponse, TxReadResponse} from "./types/MessageResponse";
 import {LeaseInfo} from "./types/LeaseInfo";
 import {ClientErrors} from "./ClientErrors";
 import {pullAt} from 'lodash'
-import {TxReadResult, TxResult} from "./types/TxResult";
+import {TxCountResult, TxReadResult, TxResult} from "./types/TxResult";
 import {assert} from "./Assert";
 
 const cosmosjs = require('@cosmostation/cosmosjs');
@@ -72,9 +72,7 @@ export class API {
         assert(blocks >= 0, ClientErrors.INVALID_LEASE_TIME);
         assert(!key.includes('/'), ClientErrors.KEY_CANNOT_CONTAIN_SLASH)
 
-        return this.communicationService.sendTx<TxCreateMessage, void>({
-        gasInfo,
-        msg: {
+        return this.communicationService.sendMessage<CreateMessage, void>({
             type: "crud/create",
             value: {
                 Key: encodeSafe(key),
@@ -83,37 +81,31 @@ export class API {
                 Owner: this.address,
                 Lease: blocks.toString(),
             }
-            }
-        })
+        }, gasInfo)
             .then(res => ({height: res.height, txhash: res.txhash}))
     }
 
 
-    delete = (key: string, gasInfo: GasInfo): Promise<void> =>
-        this.communicationService.sendTx<TxDeleteMessage, void>({
-            gasInfo,
-            msg: {
-                type: 'crud/delete',
-                value: {
-                    Key: key,
-                    UUID: this.uuid,
-                    Owner: this.address
-                }
+    delete = (key: string, gasInfo: GasInfo): Promise<TxResult> =>
+        this.communicationService.sendMessage<DeleteMessage, void>({
+            type: 'crud/delete',
+            value: {
+                Key: key,
+                UUID: this.uuid,
+                Owner: this.address
             }
-        })
-            .then(() => {})
+        }, gasInfo)
+            .then(res => ({height: res.height, txhash: res.txhash}))
 
-    deleteAll = (gasInfo: GasInfo) =>
-        this.communicationService.sendTx<TxDeleteAllMessage, void>({
-            gasInfo,
-            msg: {
-                type: 'crud/deleteall',
-                value: {
-                    UUID: this.uuid,
-                    Owner: this.address
-                }
+    deleteAll = (gasInfo: GasInfo): Promise<TxResult> =>
+        this.communicationService.sendMessage<DeleteAllMessage, void>({
+            type: 'crud/deleteall',
+            value: {
+                UUID: this.uuid,
+                Owner: this.address
             }
-        })
+        }, gasInfo)
+            .then(res => ({height: res.height, txhash: res.txhash}))
 
     getLease = (key: string) =>
         this.#query<QueryGetLeaseResult>(`crud/getlease/${this.uuid}/${encodeSafe(key)}`)
@@ -134,11 +126,11 @@ export class API {
         this.#query<QueryKeysResult>(`crud/keys/${this.uuid}`)
             .then(res => res.keys);
 
-    keyValues = (): Promise<{key: string, value: string}[]> =>
+    keyValues = (): Promise<{ key: string, value: string }[]> =>
         this.#query<QueryKeyValuesResult>(`crud/keyvalues/${this.uuid}`)
             .then(res => res.keyvalues)
 
-    multiUpdate = async (keyValues: { key: string, value: string }[], gasInfo: GasInfo): Promise<void> => {
+    multiUpdate = async (keyValues: { key: string, value: string }[], gasInfo: GasInfo): Promise<TxResult> => {
         assert(Array.isArray(keyValues), 'keyValues must be an array');
 
         keyValues.forEach(({key, value}, index, array) => {
@@ -146,127 +138,108 @@ export class API {
             assert(typeof value === 'string', ClientErrors.ALL_VALUES_MUST_BE_STRINGS);
         });
 
-        return this.communicationService.sendTx<TxMultiUpdateMessage, void>({
-            gasInfo,
-            msg: {
-                type: 'crud/multiupdate',
-                value: {
-                    KeyValues: keyValues,
-                    UUID: this.uuid,
-                    Owner: this.address
-                }
+        return this.communicationService.sendMessage<MultiUpdateMessage, void>({
+            type: 'crud/multiupdate',
+            value: {
+                KeyValues: keyValues,
+                UUID: this.uuid,
+                Owner: this.address
             }
-        })
-            .then(() => {})
+        }, gasInfo)
+            .then(res => ({txhash: res.txhash, height: res.height}))
     }
 
     read = (key: string): Promise<string> =>
         this.#query<QueryReadResult>(`crud/read/${this.uuid}/${key}`)
             .then(res => res.value);
 
-    renewLease = async (key: string, gasInfo: GasInfo, leaseInfo: LeaseInfo): Promise<void> => {
+    renewLease = async (key: string, gasInfo: GasInfo, leaseInfo: LeaseInfo): Promise<TxResult> => {
         assert(typeof key === 'string', ClientErrors.KEY_MUST_BE_A_STRING);
 
         const blocks = convertLease(leaseInfo);
 
         assert(blocks >= 0, ClientErrors.INVALID_LEASE_TIME)
 
-        return this.communicationService.sendTx<TxRenewLeaseMessage, void>({
-            gasInfo,
-            msg: {
-                type: 'crud/renewlease',
-                value: {
-                    Key: key,
-                    Lease: blocks.toString(),
-                    UUID: this.uuid,
-                    Owner: this.address
-                }
+        return this.communicationService.sendMessage<RenewLeaseMessage, void>({
+            type: 'crud/renewlease',
+            value: {
+                Key: key,
+                Lease: blocks.toString(),
+                UUID: this.uuid,
+                Owner: this.address
             }
-        })
-            .then(res => {})
+        }, gasInfo)
+            .then(res => ({height: res.height, txhash: res.txhash}))
     }
 
 
-    renewLeaseAll = async (gasInfo: GasInfo, leaseInfo: LeaseInfo): Promise<void> => {
+    renewLeaseAll = async (gasInfo: GasInfo, leaseInfo: LeaseInfo): Promise<TxResult> => {
         const blocks = convertLease(leaseInfo);
         assert(blocks >= 0, ClientErrors.INVALID_LEASE_TIME);
 
-        return this.communicationService.sendTx<TxRenewLeaseAllMessage, void>({
-            gasInfo,
-            msg: {
-                type: 'crud/renewleaseall',
-                value: {
-                    Lease: blocks.toString(),
-                    UUID: this.uuid,
-                    Owner: this.address
-                }
+        return this.communicationService.sendMessage<RenewLeaseAllMessage, void>({
+            type: 'crud/renewleaseall',
+            value: {
+                Lease: blocks.toString(),
+                UUID: this.uuid,
+                Owner: this.address
             }
-        })
-            .then(res => {})
+        }, gasInfo)
+            .then(res => ({height: res.height, txhash: res.txhash}))
 
     }
 
-    txCount = async (gasInfo: GasInfo): Promise<number> => {
-        return this.communicationService.sendTx<TxCountMessage, TxCountResponse>({
-            gasInfo,
-            msg: {
-                type: 'crud/count',
-                value: {
-                    UUID: this.uuid,
-                    Owner: this.address
-                }
+    txCount = async (gasInfo: GasInfo): Promise<TxCountResult> => {
+        return this.communicationService.sendMessage<CountMessage, TxCountResponse>({
+            type: 'crud/count',
+            value: {
+                UUID: this.uuid,
+                Owner: this.address
             }
-        })
-            .then(res => res.data.find(it => it.count !== undefined)?.count)
-            .then(count => count === undefined ? 0 : parseInt(count))
+        }, gasInfo)
+            .then(res => findMine<TxCountResponse>(res, it => it.count !== undefined))
+            .then(({res, data}) => ({height: res.height, txhash: res.txhash, count: parseInt(data?.count || '0')}))
 
     }
 
     txHas = async (key: string, gasInfo: GasInfo): Promise<boolean> => {
         assert(typeof key === 'string', ClientErrors.KEY_MUST_BE_A_STRING);
 
-        return this.communicationService.sendTx<TxHasMessage, TxHasResponse>({
-            gasInfo,
-            msg: {
-                type: 'crud/has',
-                value: {
-                    Key: key,
-                    UUID: this.uuid,
-                    Owner: this.address,
-                }
+        return this.communicationService.sendMessage<HasMessage, TxHasResponse>({
+            type: 'crud/has',
+            value: {
+                Key: key,
+                UUID: this.uuid,
+                Owner: this.address,
             }
-        })
-            .then(res => res.data.find(it => it.key === key && it.has) ? true: false)
+        }, gasInfo)
+            .then(res => res.data.find(it => it.key === key && it.has) ? true : false)
 
     }
 
     txKeys = async (gasInfo: GasInfo): Promise<string[]> => {
-        return this.communicationService.sendTx<TxKeysMessage, TxKeysResponse>({
-            gasInfo,
-            msg: {
-                type: 'crud/keys',
-                value: {
-                    UUID: this.uuid,
-                    Owner: this.address
-                }
+        return this.communicationService.sendMessage<KeysMessage, TxKeysResponse>({
+            type: 'crud/keys',
+            value: {
+                UUID: this.uuid,
+                Owner: this.address
             }
-        })
+        }, gasInfo)
             .then(res => res.data.find(it => it.keys)?.keys || [])
     }
 
 
     txRead(key: string, gasInfo: GasInfo): Promise<TxReadResult | undefined> {
-        return this.communicationService.sendTx<TxReadMessage, TxReadResponse>({
-            gasInfo,
-            msg: {type: 'crud/read',
+        return this.communicationService.sendMessage<ReadMessage, TxReadResponse>({
+            type: 'crud/read',
             value: {
                 Key: key,
                 UUID: this.uuid,
                 Owner: this.address
             }
-        }})
+        }, gasInfo)
             .then(res => findMine<TxReadResponse>(res, it => it.value !== undefined && it.key === key))
-            .then(({res, data}) => ({height: res.height,  txhash: res.txhash, value: data?.value}))
+            .then(({res, data}) => ({height: res.height, txhash: res.txhash, value: data?.value}))
     }
 
     async update(key: string, value: string, gasInfo: GasInfo, leaseInfo: LeaseInfo = {}): Promise<void> {
@@ -279,22 +252,19 @@ export class API {
         assert(blocks >= 0, ClientErrors.INVALID_LEASE_TIME);
         assert(!key.includes('/'), ClientErrors.KEY_CANNOT_CONTAIN_SLASH)
 
-        await this.communicationService.sendTx<TxUpdateMessage, void>({
-            gasInfo,
-            msg: {
-                type: "crud/update",
-                value: {
-                    Key: encodeSafe(key),
-                    Value: encodeSafe(value),
-                    UUID: this.uuid,
-                    Owner: this.address,
-                    Lease: blocks.toString()
-                }
+        await this.communicationService.sendMessage<UpdateMessage, void>({
+            type: "crud/update",
+            value: {
+                Key: encodeSafe(key),
+                Value: encodeSafe(value),
+                UUID: this.uuid,
+                Owner: this.address,
+                Lease: blocks.toString()
             }
-        })
-            .then(() => {})
+        }, gasInfo)
+            .then(() => {
+            })
     }
-
 
 
     transferTokensTo(toAddress: string, amount: number, gasInfo: GasInfo): Promise<void> {
@@ -341,9 +311,9 @@ const DAY = HOUR * 24
 const convertLease = ({seconds = 0, minutes = 0, hours = 0, days = 0}: LeaseInfo): number =>
     Math.ceil((seconds + (minutes * MINUTE) + (hours * HOUR) + (days * DAY)) / BLOCK_TIME_IN_SECONDS)
 
-const findMine = <T>(res: {data:T[]}, condition: (x: T) => boolean): {res: any, data: T | undefined} => {
-    for(let i: number = 0; i < res.data.length; i++) {
-        if(condition(res.data[i])) {
+const findMine = <T>(res: { data: T[] }, condition: (x: T) => boolean): { res: any, data: T | undefined } => {
+    for (let i: number = 0; i < res.data.length; i++) {
+        if (condition(res.data[i])) {
             const found = res.data[i];
             pullAt(res.data, i)
             return {res, data: found}

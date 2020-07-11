@@ -1,10 +1,5 @@
-import { TxResponse } from "./TxResponse";
-import { TxMessage } from "./TxMessage";
-import { GasInfo } from "./GasInfo";
-export interface Transaction<T> {
-    msg: TxMessage<T>;
-    gasInfo: GasInfo;
-    resolve?: (value: TxResponse<any>) => void;
-    reject?: (reason: any) => void;
+import { TransactionMessage } from "./TransactionMessage";
+export interface Transaction {
+    messages: TransactionMessage<unknown>[];
 }
 //# sourceMappingURL=Transaction.d.ts.map

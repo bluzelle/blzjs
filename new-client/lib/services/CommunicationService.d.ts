@@ -1,11 +1,13 @@
+import { GasInfo } from "../types/GasInfo";
 import { API } from "../API";
-import { TxResponse } from "../types/TxResponse";
-import { Transaction } from "../types/Transaction";
+import { MessageResponse } from "../types/MessageResponse";
+import { Message } from "../types/Message";
 export declare class CommunicationService {
     #private;
     static create(api: API): CommunicationService;
     private constructor();
-    sendTx<T, R>(transaction: Transaction<T>): Promise<TxResponse<R>>;
+    sendMessage<T, R>(message: Message<T>, gasInfo: GasInfo): Promise<MessageResponse<R>>;
+    checkTransmitQueueNeedsTransmit(): void;
     transmitQueue(): Promise<void>;
 }
 //# sourceMappingURL=CommunicationService.d.ts.map

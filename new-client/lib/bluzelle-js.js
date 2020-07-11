@@ -6,3 +6,4 @@ var bluzelle_node_2 = require("./bluzelle-node");
 Object.defineProperty(exports, "bluzelle", { enumerable: true, get: function () { return bluzelle_node_2.bluzelle; } });
 const bluzelle_node_3 = require("./bluzelle-node");
 typeof window === "undefined" || (window.bluzelle = bluzelle_node_3.bluzelle);
+//# sourceMappingURL=bluzelle-js.js.map

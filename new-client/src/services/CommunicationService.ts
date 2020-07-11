@@ -1,18 +1,23 @@
 import {GasInfo} from "../types/GasInfo";
 import {Identity} from "monet";
-import {TxMessageQueue} from "../types/TxMessageQueue";
 import {API} from "../API";
-import {TxResponse} from "../types/TxResponse";
-import {Transaction} from "../types/Transaction";
+import {MessageResponse} from "../types/MessageResponse";
 import Timeout = NodeJS.Timeout;
+import {Message} from "../types/Message";
+import {TransactionQueue} from "../TransactionQueue";
+import {TransactionMessage} from "../types/TransactionMessage";
+import {Transaction} from "../Transaction";
 
 const TOKEN_NAME = 'ubnt';
 
 
+
+
 export class CommunicationService {
     #api: API
-    #messageQueue: TxMessageQueue = TxMessageQueue.create()
+    #transactionQueue = TransactionQueue.create();
     #waiter?: Timeout
+    #maxMessagesPerTransaction = 1;
 
 
     static create(api: API): CommunicationService {
@@ -23,24 +28,34 @@ export class CommunicationService {
         this.#api = api;
     }
 
-    sendTx<T, R>(transaction: Transaction<T>): Promise<TxResponse<R>> {
-        const p = new Promise<TxResponse<R>>((resolve, reject) => {
-            transaction.resolve = resolve;
-            transaction.reject = reject;
-        })
-        this.#messageQueue.add<T>(transaction)
-        this.#waiter || (this.#waiter = setTimeout(this.transmitQueue.bind(this), 100))
-        return p;
+    sendMessage<T, R>(message: Message<T>, gasInfo: GasInfo): Promise<MessageResponse<R>> {
+        const msg = TransactionMessage.create<T, R>(message, gasInfo);
+        this.#transactionQueue.tail || this.#transactionQueue.append(Transaction.create());
+        this.#transactionQueue.tail?.addMessage(msg);
+
+        this.checkTransmitQueueNeedsTransmit();
+        return msg.promise;
+    }
+
+    checkTransmitQueueNeedsTransmit(): void {
+        if(this.#transactionQueue.head && this.#transactionQueue.head.messageCount() >= this.#maxMessagesPerTransaction) {
+            this.#waiter && clearTimeout(this.#waiter);
+            this.#waiter = undefined;
+            this.transmitQueue();
+        } else {
+            this.#waiter || (this.#waiter = setTimeout(() => this.#transactionQueue.head && this.transmitQueue.bind(this), 100))
+        }
+
     }
 
     transmitQueue(): Promise<void> {
         this.#waiter = undefined;
-        const transactions = this.#messageQueue.fetch();
+        const transaction = this.#transactionQueue.head?.detach();
         return this.#api.cosmos.getAccounts(this.#api.address).then((data: any) =>
             Identity.of({
-                msgs: transactions.map(tx => tx.msg),
+                msgs: transaction?.getMessages().map(x => x.getMessage()),
                 chain_id: this.#api.chainId,
-                fee: getFeeInfo(combineGas(transactions)),
+                fee: getFeeInfo(combineGas(transaction?.getMessages() || [])),
                 memo: 'group',
                 account_number: String(data.result.value.account_number),
                 sequence: String(data.result.value.sequence)
@@ -54,7 +69,7 @@ export class CommunicationService {
                     .then((x: any) => ({...x, height: parseInt(x.height)}))
                 )
                 .map((p: any) => p
-                    .then(callRequestorsWithData(transactions)),
+//                    .then(callRequestorsWithData(transaction)),
                 )
                 .join()
         )
@@ -77,8 +92,8 @@ const getFeeInfo = ({max_fee, gas_price = 10, max_gas = 200000}: GasInfo) => ({
     gas: max_gas.toString()
 });
 
-const combineGas = (transactions: Transaction<unknown>[]): GasInfo =>
-    transactions.reduce((gasInfo: GasInfo, transaction: Transaction<unknown>) => {
+const combineGas = (transactions: TransactionMessage<any, any>[]): GasInfo =>
+    transactions.reduce((gasInfo: GasInfo, transaction: TransactionMessage<any, any>) => {
         return {
             max_gas: (gasInfo.max_gas || 0) + (transaction.gasInfo.max_gas || 200000),
             max_fee: (gasInfo.max_fee || 0) + (transaction.gasInfo.max_fee || 0),

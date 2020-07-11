@@ -20,28 +20,23 @@ class API {
             .then((x) => x.result.value);
         this.count = () => __classPrivateFieldGet(this, _query).call(this, `crud/count/${this.uuid}`)
             .then((res) => parseInt(res.count || '0'));
-        this.delete = (key, gasInfo) => this.communicationService.sendTx({
-            gasInfo,
-            msg: {
-                type: 'crud/delete',
-                value: {
-                    Key: key,
-                    UUID: this.uuid,
-                    Owner: this.address
-                }
+        this.delete = (key, gasInfo) => this.communicationService.sendMessage({
+            type: 'crud/delete',
+            value: {
+                Key: key,
+                UUID: this.uuid,
+                Owner: this.address
             }
-        })
-            .then(() => { });
-        this.deleteAll = (gasInfo) => this.communicationService.sendTx({
-            gasInfo,
-            msg: {
-                type: 'crud/deleteall',
-                value: {
-                    UUID: this.uuid,
-                    Owner: this.address
-                }
+        }, gasInfo)
+            .then(res => ({ height: res.height, txhash: res.txhash }));
+        this.deleteAll = (gasInfo) => this.communicationService.sendMessage({
+            type: 'crud/deleteall',
+            value: {
+                UUID: this.uuid,
+                Owner: this.address
             }
-        });
+        }, gasInfo)
+            .then(res => ({ height: res.height, txhash: res.txhash }));
         this.getLease = (key) => __classPrivateFieldGet(this, _query).call(this, `crud/getlease/${this.uuid}/${encodeSafe(key)}`)
             .then(res => res.lease * BLOCK_TIME_IN_SECONDS);
         this.getNShortestLeases = async (count) => {
@@ -61,18 +56,15 @@ class API {
                 Assert_1.assert(typeof key === 'string', "All keys must be strings" /* ALL_KEYS_MUST_BE_STRINGS */);
                 Assert_1.assert(typeof value === 'string', "All values must be strings" /* ALL_VALUES_MUST_BE_STRINGS */);
             });
-            return this.communicationService.sendTx({
-                gasInfo,
-                msg: {
-                    type: 'crud/multiupdate',
-                    value: {
-                        KeyValues: keyValues,
-                        UUID: this.uuid,
-                        Owner: this.address
-                    }
+            return this.communicationService.sendMessage({
+                type: 'crud/multiupdate',
+                value: {
+                    KeyValues: keyValues,
+                    UUID: this.uuid,
+                    Owner: this.address
                 }
-            })
-                .then(() => { });
+            }, gasInfo)
+                .then(res => ({ txhash: res.txhash, height: res.height }));
         };
         this.read = (key) => __classPrivateFieldGet(this, _query).call(this, `crud/read/${this.uuid}/${key}`)
             .then(res => res.value);
@@ -80,76 +72,61 @@ class API {
             Assert_1.assert(typeof key === 'string', "Key must be a string" /* KEY_MUST_BE_A_STRING */);
             const blocks = convertLease(leaseInfo);
             Assert_1.assert(blocks >= 0, "Invalid lease time" /* INVALID_LEASE_TIME */);
-            return this.communicationService.sendTx({
-                gasInfo,
-                msg: {
-                    type: 'crud/renewlease',
-                    value: {
-                        Key: key,
-                        Lease: blocks.toString(),
-                        UUID: this.uuid,
-                        Owner: this.address
-                    }
+            return this.communicationService.sendMessage({
+                type: 'crud/renewlease',
+                value: {
+                    Key: key,
+                    Lease: blocks.toString(),
+                    UUID: this.uuid,
+                    Owner: this.address
                 }
-            })
-                .then(res => { });
+            }, gasInfo)
+                .then(res => ({ height: res.height, txhash: res.txhash }));
         };
         this.renewLeaseAll = async (gasInfo, leaseInfo) => {
             const blocks = convertLease(leaseInfo);
             Assert_1.assert(blocks >= 0, "Invalid lease time" /* INVALID_LEASE_TIME */);
-            return this.communicationService.sendTx({
-                gasInfo,
-                msg: {
-                    type: 'crud/renewleaseall',
-                    value: {
-                        Lease: blocks.toString(),
-                        UUID: this.uuid,
-                        Owner: this.address
-                    }
+            return this.communicationService.sendMessage({
+                type: 'crud/renewleaseall',
+                value: {
+                    Lease: blocks.toString(),
+                    UUID: this.uuid,
+                    Owner: this.address
                 }
-            })
-                .then(res => { });
+            }, gasInfo)
+                .then(res => ({ height: res.height, txhash: res.txhash }));
         };
         this.txCount = async (gasInfo) => {
-            return this.communicationService.sendTx({
-                gasInfo,
-                msg: {
-                    type: 'crud/count',
-                    value: {
-                        UUID: this.uuid,
-                        Owner: this.address
-                    }
+            return this.communicationService.sendMessage({
+                type: 'crud/count',
+                value: {
+                    UUID: this.uuid,
+                    Owner: this.address
                 }
-            })
-                .then(res => { var _a; return (_a = res.data.find(it => it.count !== undefined)) === null || _a === void 0 ? void 0 : _a.count; })
-                .then(count => count === undefined ? 0 : parseInt(count));
+            }, gasInfo)
+                .then(res => findMine(res, it => it.count !== undefined))
+                .then(({ res, data }) => ({ height: res.height, txhash: res.txhash, count: parseInt((data === null || data === void 0 ? void 0 : data.count) || '0') }));
         };
         this.txHas = async (key, gasInfo) => {
             Assert_1.assert(typeof key === 'string', "Key must be a string" /* KEY_MUST_BE_A_STRING */);
-            return this.communicationService.sendTx({
-                gasInfo,
-                msg: {
-                    type: 'crud/has',
-                    value: {
-                        Key: key,
-                        UUID: this.uuid,
-                        Owner: this.address,
-                    }
+            return this.communicationService.sendMessage({
+                type: 'crud/has',
+                value: {
+                    Key: key,
+                    UUID: this.uuid,
+                    Owner: this.address,
                 }
-            })
+            }, gasInfo)
                 .then(res => res.data.find(it => it.key === key && it.has) ? true : false);
         };
         this.txKeys = async (gasInfo) => {
-            return this.communicationService.sendTx({
-                gasInfo,
-                msg: {
-                    type: 'crud/keys',
-                    value: {
-                        UUID: this.uuid,
-                        Owner: this.address
-                    }
+            return this.communicationService.sendMessage({
+                type: 'crud/keys',
+                value: {
+                    UUID: this.uuid,
+                    Owner: this.address
                 }
-            })
+            }, gasInfo)
                 .then(res => { var _a; return ((_a = res.data.find(it => it.keys)) === null || _a === void 0 ? void 0 : _a.keys) || []; });
         };
         _query.set(this, (path) => fetch(`${this.url}/${path}`)
@@ -177,32 +154,27 @@ class API {
         Assert_1.assert(typeof value === 'string', "Value must be a string" /* VALUE_MUST_BE_A_STRING */);
         Assert_1.assert(blocks >= 0, "Invalid lease time" /* INVALID_LEASE_TIME */);
         Assert_1.assert(!key.includes('/'), "Key cannot contain a slash" /* KEY_CANNOT_CONTAIN_SLASH */);
-        await this.communicationService.sendTx({
-            gasInfo,
-            msg: {
-                type: "crud/create",
-                value: {
-                    Key: encodeSafe(key),
-                    Value: encodeSafe(value),
-                    UUID: this.uuid,
-                    Owner: this.address,
-                    Lease: blocks.toString(),
-                }
+        return this.communicationService.sendMessage({
+            type: "crud/create",
+            value: {
+                Key: encodeSafe(key),
+                Value: encodeSafe(value),
+                UUID: this.uuid,
+                Owner: this.address,
+                Lease: blocks.toString(),
             }
-        })
-            .then(() => { });
+        }, gasInfo)
+            .then(res => ({ height: res.height, txhash: res.txhash }));
     }
     txRead(key, gasInfo) {
-        return this.communicationService.sendTx({
-            gasInfo,
-            msg: { type: 'crud/read',
-                value: {
-                    Key: key,
-                    UUID: this.uuid,
-                    Owner: this.address
-                }
+        return this.communicationService.sendMessage({
+            type: 'crud/read',
+            value: {
+                Key: key,
+                UUID: this.uuid,
+                Owner: this.address
             }
-        })
+        }, gasInfo)
             .then(res => findMine(res, it => it.value !== undefined && it.key === key))
             .then(({ res, data }) => ({ height: res.height, txhash: res.txhash, value: data === null || data === void 0 ? void 0 : data.value }));
     }
@@ -213,20 +185,18 @@ class API {
         Assert_1.assert(typeof value === 'string', "Value must be a string" /* VALUE_MUST_BE_A_STRING */);
         Assert_1.assert(blocks >= 0, "Invalid lease time" /* INVALID_LEASE_TIME */);
         Assert_1.assert(!key.includes('/'), "Key cannot contain a slash" /* KEY_CANNOT_CONTAIN_SLASH */);
-        await this.communicationService.sendTx({
-            gasInfo,
-            msg: {
-                type: "crud/update",
-                value: {
-                    Key: encodeSafe(key),
-                    Value: encodeSafe(value),
-                    UUID: this.uuid,
-                    Owner: this.address,
-                    Lease: blocks.toString()
-                }
+        await this.communicationService.sendMessage({
+            type: "crud/update",
+            value: {
+                Key: encodeSafe(key),
+                Value: encodeSafe(value),
+                UUID: this.uuid,
+                Owner: this.address,
+                Lease: blocks.toString()
             }
-        })
-            .then(() => { });
+        }, gasInfo)
+            .then(() => {
+        });
     }
     transferTokensTo(toAddress, amount, gasInfo) {
         return Promise.resolve();
@@ -267,3 +237,4 @@ const findMine = (res, condition) => {
     }
     return { res, data: undefined };
 };
+//# sourceMappingURL=API.js.map

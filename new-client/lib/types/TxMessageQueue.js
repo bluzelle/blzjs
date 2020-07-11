@@ -19,6 +19,9 @@ class TxMessageQueue {
     constructor() {
         _queue.set(this, []);
     }
+    size() {
+        return __classPrivateFieldGet(this, _queue).length;
+    }
     add(transaction) {
         __classPrivateFieldGet(this, _queue).push(transaction);
     }
@@ -36,3 +39,4 @@ _queue = new WeakMap();
 TxMessageQueue.create = () => {
     return new TxMessageQueue();
 };
+//# sourceMappingURL=TxMessageQueue.js.map

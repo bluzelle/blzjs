@@ -1,4 +1,4 @@
-export interface TxMessage<T> {
+export interface txMessage<T> {
     type: string;
     value: T;
 }

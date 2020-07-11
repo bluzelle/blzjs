@@ -3,7 +3,7 @@ import { GasInfo } from "./types/GasInfo";
 import { AccountResult } from "./types/cosmos/AccountResult";
 import { CommunicationService } from "./services/CommunicationService";
 import { LeaseInfo } from "./types/LeaseInfo";
-import { TxReadResult } from "./types/TxResult";
+import { TxCountResult, TxReadResult, TxResult } from "./types/TxResult";
 export declare class API {
     #private;
     cosmos: any;
@@ -17,9 +17,9 @@ export declare class API {
     constructor(config: BluzelleConfig);
     account: () => Promise<AccountResult>;
     count: () => Promise<number>;
-    create(key: string, value: string, gasInfo: GasInfo, leaseInfo?: LeaseInfo): Promise<void>;
-    delete: (key: string, gasInfo: GasInfo) => Promise<void>;
-    deleteAll: (gasInfo: GasInfo) => Promise<import("./types/TxResponse").TxResponse<void>>;
+    create(key: string, value: string, gasInfo: GasInfo, leaseInfo?: LeaseInfo): Promise<TxResult>;
+    delete: (key: string, gasInfo: GasInfo) => Promise<TxResult>;
+    deleteAll: (gasInfo: GasInfo) => Promise<TxResult>;
     getLease: (key: string) => Promise<number>;
     getNShortestLeases: (count: number) => Promise<{
         key: string;
@@ -34,11 +34,11 @@ export declare class API {
     multiUpdate: (keyValues: {
         key: string;
         value: string;
-    }[], gasInfo: GasInfo) => Promise<void>;
+    }[], gasInfo: GasInfo) => Promise<TxResult>;
     read: (key: string) => Promise<string>;
-    renewLease: (key: string, gasInfo: GasInfo, leaseInfo: LeaseInfo) => Promise<void>;
-    renewLeaseAll: (gasInfo: GasInfo, leaseInfo: LeaseInfo) => Promise<void>;
-    txCount: (gasInfo: GasInfo) => Promise<number>;
+    renewLease: (key: string, gasInfo: GasInfo, leaseInfo: LeaseInfo) => Promise<TxResult>;
+    renewLeaseAll: (gasInfo: GasInfo, leaseInfo: LeaseInfo) => Promise<TxResult>;
+    txCount: (gasInfo: GasInfo) => Promise<TxCountResult>;
     txHas: (key: string, gasInfo: GasInfo) => Promise<boolean>;
     txKeys: (gasInfo: GasInfo) => Promise<string[]>;
     txRead(key: string, gasInfo: GasInfo): Promise<TxReadResult | undefined>;

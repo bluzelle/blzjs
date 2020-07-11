@@ -1,0 +1,1 @@
+{"version":3,"file":"TransactionQueue.d.ts","sourceRoot":"","sources":["../src/TransactionQueue.ts"],"names":[],"mappings":"AAAA,OAAO,UAAU,MAAM,aAAa,CAAA;AACpC,OAAO,EAAC,WAAW,EAAC,MAAM,eAAe,CAAC;AAE1C,qBAAa,gBAAiB,SAAQ,UAAU,CAAC,WAAW,CAAC;IACzD,MAAM,CAAC,MAAM;CAGhB"}

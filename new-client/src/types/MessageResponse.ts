@@ -1,4 +1,4 @@
-export interface TxResponse<T> {
+export interface MessageResponse<T> {
     height: number
     txhash: string
     gasUsed: number
