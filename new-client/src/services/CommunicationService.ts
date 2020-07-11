@@ -47,11 +47,11 @@ export class CommunicationService {
                 transactionId: this.#currentTransactionId
             })
         })
-        this.#messageQueue.length === 1 && (this.#checkTransmitQueueTail = this.#checkTransmitQueueTail.then(this.transmitQueueNeedsTransmit.bind(this)));
+        this.#messageQueue.length === 1 && (this.#checkTransmitQueueTail = this.#checkTransmitQueueTail.then(this.checkMessageQueueNeedsTransmit.bind(this)));
         return p;
     }
 
-    transmitQueueNeedsTransmit() {
+    checkMessageQueueNeedsTransmit() {
         Some(this.#messageQueue)
             .flatMap(queue => queue.length ? Some<any>(this.#messageQueue) : None())
             .map(queue => [queue[0].transactionId, queue])
@@ -60,14 +60,14 @@ export class CommunicationService {
                 queue
             ])
             .map(([messages, queue]) => {
-                this.#messageQueue = without(queue, messages);
+                this.#messageQueue = without(queue, ...messages);
                 return messages
             })
-            .map(this.transmitQueue.bind(this))
+            .map(messages => this.transmitTransaction(messages).then(this.checkMessageQueueNeedsTransmit.bind(this)))
     }
 
 
-    transmitQueue(messages: MessageQueueItem<any, any>[]): Promise<void> {
+    transmitTransaction(messages: MessageQueueItem<any, any>[]): Promise<void> {
         return this.#api.cosmos.getAccounts(this.#api.address).then((data: any) =>
             Some({
                 msgs: messages.map(m => m.message),

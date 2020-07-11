@@ -44,10 +44,10 @@ class CommunicationService {
                 transactionId: __classPrivateFieldGet(this, _currentTransactionId)
             });
         });
-        __classPrivateFieldGet(this, _messageQueue).length === 1 && (__classPrivateFieldSet(this, _checkTransmitQueueTail, __classPrivateFieldGet(this, _checkTransmitQueueTail).then(this.transmitQueueNeedsTransmit.bind(this))));
+        __classPrivateFieldGet(this, _messageQueue).length === 1 && (__classPrivateFieldSet(this, _checkTransmitQueueTail, __classPrivateFieldGet(this, _checkTransmitQueueTail).then(this.checkMessageQueueNeedsTransmit.bind(this))));
         return p;
     }
-    transmitQueueNeedsTransmit() {
+    checkMessageQueueNeedsTransmit() {
         monet_1.Some(__classPrivateFieldGet(this, _messageQueue))
             .flatMap(queue => queue.length ? monet_1.Some(__classPrivateFieldGet(this, _messageQueue)) : monet_1.None())
             .map(queue => [queue[0].transactionId, queue])
@@ -56,12 +56,12 @@ class CommunicationService {
             queue
         ])
             .map(([messages, queue]) => {
-            __classPrivateFieldSet(this, _messageQueue, lodash_1.without(queue, messages));
+            __classPrivateFieldSet(this, _messageQueue, lodash_1.without(queue, ...messages));
             return messages;
         })
-            .map(this.transmitQueue.bind(this));
+            .map(messages => this.transmitTransaction(messages).then(this.checkMessageQueueNeedsTransmit.bind(this)));
     }
-    transmitQueue(messages) {
+    transmitTransaction(messages) {
         return __classPrivateFieldGet(this, _api).cosmos.getAccounts(__classPrivateFieldGet(this, _api).address).then((data) => monet_1.Some({
             msgs: messages.map(m => m.message),
             chain_id: __classPrivateFieldGet(this, _api).chainId,

@@ -14,8 +14,8 @@ export declare class CommunicationService {
     static create(api: API): CommunicationService;
     private constructor();
     sendMessage<T, R>(message: Message<T>, gasInfo: GasInfo): Promise<MessageResponse<R>>;
-    transmitQueueNeedsTransmit(): void;
-    transmitQueue(messages: MessageQueueItem<any, any>[]): Promise<void>;
+    checkMessageQueueNeedsTransmit(): void;
+    transmitTransaction(messages: MessageQueueItem<any, any>[]): Promise<void>;
 }
 export {};
 //# sourceMappingURL=CommunicationService.d.ts.map
