@@ -12,51 +12,60 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     }
     return privateMap.get(receiver);
 };
-var _api, _transactionQueue, _waiter, _maxMessagesPerTransaction;
+var _api, _messageQueue, _maxMessagesPerTransaction, _checkTransmitQueueTail, _currentTransactionId;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CommunicationService = void 0;
 const monet_1 = require("monet");
-const TransactionQueue_1 = require("../TransactionQueue");
-const TransactionMessage_1 = require("../types/TransactionMessage");
-const Transaction_1 = require("../Transaction");
+const lodash_1 = require("lodash");
 const TOKEN_NAME = 'ubnt';
+const counter = (() => {
+    let start = 1;
+    return () => start++;
+})();
 class CommunicationService {
     constructor(api) {
         _api.set(this, void 0);
-        _transactionQueue.set(this, TransactionQueue_1.TransactionQueue.create());
-        _waiter.set(this, void 0);
+        _messageQueue.set(this, []);
         _maxMessagesPerTransaction.set(this, 1);
+        _checkTransmitQueueTail.set(this, Promise.resolve());
+        _currentTransactionId.set(this, 0);
         __classPrivateFieldSet(this, _api, api);
     }
     static create(api) {
         return new CommunicationService(api);
     }
     sendMessage(message, gasInfo) {
-        var _a;
-        const msg = TransactionMessage_1.TransactionMessage.create(message, gasInfo);
-        __classPrivateFieldGet(this, _transactionQueue).tail || __classPrivateFieldGet(this, _transactionQueue).append(Transaction_1.Transaction.create());
-        (_a = __classPrivateFieldGet(this, _transactionQueue).tail) === null || _a === void 0 ? void 0 : _a.addMessage(msg);
-        this.checkTransmitQueueNeedsTransmit();
-        return msg.promise;
+        const p = new Promise((resolve, reject) => {
+            __classPrivateFieldGet(this, _messageQueue).push({
+                message: message,
+                gasInfo: gasInfo,
+                resolve: resolve,
+                reject: reject,
+                transactionId: __classPrivateFieldGet(this, _currentTransactionId)
+            });
+        });
+        __classPrivateFieldGet(this, _messageQueue).length === 1 && (__classPrivateFieldSet(this, _checkTransmitQueueTail, __classPrivateFieldGet(this, _checkTransmitQueueTail).then(this.transmitQueueNeedsTransmit.bind(this))));
+        return p;
     }
-    checkTransmitQueueNeedsTransmit() {
-        if (__classPrivateFieldGet(this, _transactionQueue).head && __classPrivateFieldGet(this, _transactionQueue).head.messageCount() >= __classPrivateFieldGet(this, _maxMessagesPerTransaction)) {
-            __classPrivateFieldGet(this, _waiter) && clearTimeout(__classPrivateFieldGet(this, _waiter));
-            __classPrivateFieldSet(this, _waiter, undefined);
-            this.transmitQueue();
-        }
-        else {
-            __classPrivateFieldGet(this, _waiter) || (__classPrivateFieldSet(this, _waiter, setTimeout(() => __classPrivateFieldGet(this, _transactionQueue).head && this.transmitQueue.bind(this), 100)));
-        }
+    transmitQueueNeedsTransmit() {
+        monet_1.Some(__classPrivateFieldGet(this, _messageQueue))
+            .flatMap(queue => queue.length ? monet_1.Some(__classPrivateFieldGet(this, _messageQueue)) : monet_1.None())
+            .map(queue => [queue[0].transactionId, queue])
+            .map(([transactionId, queue]) => [
+            lodash_1.takeWhile(queue, (it) => it.transactionId === transactionId),
+            queue
+        ])
+            .map(([messages, queue]) => {
+            __classPrivateFieldSet(this, _messageQueue, lodash_1.without(queue, messages));
+            return messages;
+        })
+            .map(this.transmitQueue.bind(this));
     }
-    transmitQueue() {
-        var _a;
-        __classPrivateFieldSet(this, _waiter, undefined);
-        const transaction = (_a = __classPrivateFieldGet(this, _transactionQueue).head) === null || _a === void 0 ? void 0 : _a.detach();
-        return __classPrivateFieldGet(this, _api).cosmos.getAccounts(__classPrivateFieldGet(this, _api).address).then((data) => monet_1.Identity.of({
-            msgs: transaction === null || transaction === void 0 ? void 0 : transaction.getMessages().map(x => x.getMessage()),
+    transmitQueue(messages) {
+        return __classPrivateFieldGet(this, _api).cosmos.getAccounts(__classPrivateFieldGet(this, _api).address).then((data) => monet_1.Some({
+            msgs: messages.map(m => m.message),
             chain_id: __classPrivateFieldGet(this, _api).chainId,
-            fee: getFeeInfo(combineGas((transaction === null || transaction === void 0 ? void 0 : transaction.getMessages()) || [])),
+            fee: getFeeInfo(combineGas(messages)),
             memo: 'group',
             account_number: String(data.result.value.account_number),
             sequence: String(data.result.value.sequence)
@@ -69,13 +78,12 @@ class CommunicationService {
             .then(convertDataToObject)
             .then((x) => ({ ...x, height: parseInt(x.height) })))
             .map((p) => p
-        //                    .then(callRequestorsWithData(transaction)),
-        )
+            .then(callRequestorsWithData(messages)))
             .join());
     }
 }
 exports.CommunicationService = CommunicationService;
-_api = new WeakMap(), _transactionQueue = new WeakMap(), _waiter = new WeakMap(), _maxMessagesPerTransaction = new WeakMap();
+_api = new WeakMap(), _messageQueue = new WeakMap(), _maxMessagesPerTransaction = new WeakMap(), _checkTransmitQueueTail = new WeakMap(), _currentTransactionId = new WeakMap();
 const convertDataFromHexToString = (res) => ({ ...res, data: res.data ? Buffer.from(res.data, 'hex').toString() : undefined });
 const convertDataToObject = (res) => ({ ...res, data: res.data !== undefined ? JSON.parse(`[${res.data.split('}{').join('},{')}]`) : undefined });
 const callRequestorsWithData = (msgs) => (res) => msgs.reduce((memo, msg) => {
