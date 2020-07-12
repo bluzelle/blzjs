@@ -109,7 +109,20 @@ const convertDataToObject = (res) => ({
     data: res.data !== undefined ? JSON.parse(`[${res.data.split('}{').join('},{')}]`) : undefined
 });
 const callRequestorsWithData = (msgs) => (res) => msgs.reduce((memo, msg) => {
-    return msg.resolve ? msg.resolve(memo) || memo : memo;
+    if (msg.data) {
+        return msg.resolve ? msg.resolve(memo) || memo : memo;
+    }
+    else {
+        let [x, error, y, failedMsgIdx] = res.raw_log.split(':');
+        failedMsgIdx = parseInt(failedMsgIdx);
+        msg.reject({
+            txhash: res.txhash,
+            height: parseInt(res.height),
+            failedMsg: msgs[failedMsgIdx].message,
+            failedMsgIdx: parseInt(failedMsgIdx),
+            error: error.trim()
+        });
+    }
 }, res);
 const getFeeInfo = ({ max_fee, gas_price = 10, max_gas = 200000 }) => ({
     amount: [{

@@ -7,6 +7,10 @@ export interface MessageResponse<T> {
 export interface TxCountResponse {
     count: string;
 }
+export interface TxGetLeaseResponse {
+    key: string;
+    lease: string;
+}
 export interface TxHasResponse {
     key: string;
     has: boolean;

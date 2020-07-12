@@ -5,7 +5,7 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     }
     return privateMap.get(receiver);
 };
-var _query, _waitForTx;
+var _query;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.API = void 0;
 const CommunicationService_1 = require("./services/CommunicationService");
@@ -38,7 +38,12 @@ class API {
         }, gasInfo)
             .then(res => ({ height: res.height, txhash: res.txhash }));
         this.getLease = (key) => __classPrivateFieldGet(this, _query).call(this, `crud/getlease/${this.uuid}/${encodeSafe(key)}`)
-            .then(res => res.lease * BLOCK_TIME_IN_SECONDS);
+            .then(res => {
+            if (res.error) {
+                throw res.error;
+            }
+            return res.lease * BLOCK_TIME_IN_SECONDS;
+        });
         this.getNShortestLeases = async (count) => {
             Assert_1.assert(count >= 0, "Invalid value specified" /* INVALID_VALUE_SPECIFIED */);
             return __classPrivateFieldGet(this, _query).call(this, `crud/getnshortestleases/${this.uuid}/${count}`)
@@ -108,7 +113,20 @@ class API {
                 .then(({ res, data }) => ({ height: res.height, txhash: res.txhash, count: parseInt((data === null || data === void 0 ? void 0 : data.count) || '0') }));
         };
         this.txGetLease = async (key, gasInfo) => {
-            return { height: 1, txhash: 'xxx', lease: 2 };
+            return this.communicationService.sendMessage({
+                type: 'crud/getlease',
+                value: {
+                    Key: key,
+                    UUID: this.uuid,
+                    Owner: this.address
+                }
+            }, gasInfo)
+                .then(res => findMine(res, it => it.key === key && it.lease !== undefined))
+                .then(({ res, data }) => ({
+                height: res.height,
+                txhash: res.txhash,
+                lease: parseInt((data === null || data === void 0 ? void 0 : data.lease) || '0') * BLOCK_TIME_IN_SECONDS
+            }));
         };
         this.txGetNShortestLeases = async (n, gasInfo) => {
             return {
@@ -143,12 +161,7 @@ class API {
             // TODO: Finish this
         };
         _query.set(this, (path) => fetch(`${this.url}/${path}`)
-            .then((res) => res.json())
-            .then((x) => x.result));
-        _waitForTx.set(this, (txHash) => {
-            return __classPrivateFieldGet(this, _query).call(this, `txs/${txHash}`)
-                .then((response) => response.status === 404 ? __classPrivateFieldGet(this, _waitForTx).call(this, txHash) : response);
-        });
+            .then((res) => res.json()));
         this.cosmos = cosmosjs.network(config.endpoint, config.chain_id);
         this.cosmos.setPath("m/44'/118'/0'/0/0");
         this.cosmos.bech32MainPrefix = "bluzelle";
@@ -242,7 +255,7 @@ class API {
     }
 }
 exports.API = API;
-_query = new WeakMap(), _waitForTx = new WeakMap();
+_query = new WeakMap();
 const encodeSafe = (str) => encodeURI(str)
     .replace(/([\#\?])/g, ch => `%${ch.charCodeAt(0).toString(16)}`);
 const MINUTE = 60;

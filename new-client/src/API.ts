@@ -14,11 +14,17 @@ import {
     CountMessage,
     CreateMessage,
     DeleteAllMessage,
-    DeleteMessage, HasMessage, KeysMessage, MultiUpdateMessage,
+    DeleteMessage, GetLeaseMessage, HasMessage, KeysMessage, MultiUpdateMessage,
     ReadMessage, RenewLeaseAllMessage,
     RenewLeaseMessage, UpdateMessage
 } from "./types/Message";
-import {TxCountResponse, TxHasResponse, TxKeysResponse, TxReadResponse} from "./types/MessageResponse";
+import {
+    TxCountResponse,
+    TxGetLeaseResponse,
+    TxHasResponse,
+    TxKeysResponse,
+    TxReadResponse
+} from "./types/MessageResponse";
 import {LeaseInfo} from "./types/LeaseInfo";
 import {ClientErrors} from "./ClientErrors";
 import {pullAt} from 'lodash'
@@ -116,8 +122,13 @@ export class API {
             .then(res => ({height: res.height, txhash: res.txhash}))
 
     getLease = (key: string) =>
-        this.#query<QueryGetLeaseResult>(`crud/getlease/${this.uuid}/${encodeSafe(key)}`)
-            .then(res => res.lease * BLOCK_TIME_IN_SECONDS)
+        this.#query<QueryGetLeaseResult & { error: string }>(`crud/getlease/${this.uuid}/${encodeSafe(key)}`)
+            .then(res => {
+                if (res.error) {
+                    throw res.error
+                }
+                return res.lease * BLOCK_TIME_IN_SECONDS
+            })
 
     getNShortestLeases = async (count: number) => {
         assert(count >= 0, ClientErrors.INVALID_VALUE_SPECIFIED);
@@ -211,7 +222,20 @@ export class API {
     }
 
     txGetLease = async (key: string, gasInfo: GasInfo): Promise<TxGetLeaseResult> => {
-        return {height: 1, txhash: 'xxx', lease: 2}
+        return this.communicationService.sendMessage<GetLeaseMessage, TxGetLeaseResponse>({
+            type: 'crud/getlease',
+            value: {
+                Key: key,
+                UUID: this.uuid,
+                Owner: this.address
+            }
+        }, gasInfo)
+            .then(res => findMine<TxGetLeaseResponse>(res, it => it.key === key && it.lease !== undefined))
+            .then(({res, data}) => ({
+                height: res.height,
+                txhash: res.txhash,
+                lease: parseInt(data?.lease || '0') * BLOCK_TIME_IN_SECONDS
+            }))
     }
 
     txGetNShortestLeases = async (n: number, gasInfo: GasInfo): Promise<TxGetNShortestLeasesResult> => {
@@ -318,13 +342,6 @@ export class API {
     #query = <T>(path: string): Promise<T> =>
         fetch(`${this.url}/${path}`)
             .then((res: any) => res.json())
-            .then((x: any) => x.result)
-
-
-    #waitForTx = (txHash: string): Promise<void> => {
-        return this.#query(`txs/${txHash}`)
-            .then((response: any) => response.status === 404 ? this.#waitForTx(txHash) : response);
-    }
 }
 
 const encodeSafe = (str: string): string =>

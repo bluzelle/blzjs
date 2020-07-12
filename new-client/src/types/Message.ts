@@ -16,6 +16,12 @@ export interface CreateMessage {
     UUID: string
 }
 
+export interface GetLeaseMessage {
+    Key: string
+    Owner: string
+    UUID: string
+}
+
 export interface UpdateMessage {
     Key: string
     Value: string

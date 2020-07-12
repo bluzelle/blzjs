@@ -15,6 +15,14 @@ interface MessageQueueItem<T, R> {
     transactionId: number
 }
 
+interface FailedTransaction {
+    txhash: string
+    height: number
+    failedMsg: Message<any>
+    failedMsgIdx: number
+    error: string
+}
+
 const count = (() => {
     let start = 1;
     return () => start++;
@@ -125,7 +133,19 @@ const convertDataToObject = (res: any) => ({
 const callRequestorsWithData = (msgs: any[]) =>
     (res: any) =>
         msgs.reduce((memo: any, msg) => {
-            return msg.resolve ? msg.resolve(memo) || memo : memo
+            if(msg.data) {
+                return msg.resolve ? msg.resolve(memo) || memo : memo
+            } else {
+                let [x, error, y, failedMsgIdx] = res.raw_log.split(':');
+                failedMsgIdx = parseInt(failedMsgIdx)
+                msg.reject({
+                    txhash: res.txhash,
+                    height: parseInt(res.height),
+                    failedMsg: msgs[failedMsgIdx].message,
+                    failedMsgIdx: parseInt(failedMsgIdx),
+                    error: error.trim()
+                } as FailedTransaction)
+            }
         }, res)
 
 const getFeeInfo = ({max_fee, gas_price = 10, max_gas = 200000}: GasInfo) => ({
