@@ -66,7 +66,7 @@ class API {
             }, gasInfo)
                 .then(res => ({ txhash: res.txhash, height: res.height }));
         };
-        this.read = (key) => __classPrivateFieldGet(this, _query).call(this, `crud/read/${this.uuid}/${key}`)
+        this.read = (key, prove = false) => __classPrivateFieldGet(this, _query).call(this, `crud/${prove ? 'pread' : 'read'}/${this.uuid}/${encodeSafe(key)}`)
             .then(res => res.value);
         this.renewLease = async (key, gasInfo, leaseInfo) => {
             Assert_1.assert(typeof key === 'string', "Key must be a string" /* KEY_MUST_BE_A_STRING */);
@@ -83,7 +83,7 @@ class API {
             }, gasInfo)
                 .then(res => ({ height: res.height, txhash: res.txhash }));
         };
-        this.renewLeaseAll = async (gasInfo, leaseInfo) => {
+        this.renewLeaseAll = async (gasInfo, leaseInfo = {}) => {
             const blocks = convertLease(leaseInfo);
             Assert_1.assert(blocks >= 0, "Invalid lease time" /* INVALID_LEASE_TIME */);
             return this.communicationService.sendMessage({
@@ -107,6 +107,16 @@ class API {
                 .then(res => findMine(res, it => it.count !== undefined))
                 .then(({ res, data }) => ({ height: res.height, txhash: res.txhash, count: parseInt((data === null || data === void 0 ? void 0 : data.count) || '0') }));
         };
+        this.txGetLease = async (key, gasInfo) => {
+            return { height: 1, txhash: 'xxx', lease: 2 };
+        };
+        this.txGetNShortestLeases = async (n, gasInfo) => {
+            return {
+                txhash: 'xxx',
+                height: 1,
+                leases: []
+            };
+        };
         this.txHas = async (key, gasInfo) => {
             Assert_1.assert(typeof key === 'string', "Key must be a string" /* KEY_MUST_BE_A_STRING */);
             return this.communicationService.sendMessage({
@@ -128,6 +138,9 @@ class API {
                 }
             }, gasInfo)
                 .then(res => { var _a; return ((_a = res.data.find(it => it.keys)) === null || _a === void 0 ? void 0 : _a.keys) || []; });
+        };
+        this.txKeyValues = async (gasinfo) => {
+            // TODO: Finish this
         };
         _query.set(this, (path) => fetch(`${this.url}/${path}`)
             .then((res) => res.json())
@@ -203,6 +216,9 @@ class API {
         }, gasInfo)
             .then(() => {
         });
+    }
+    version() {
+        return 'finish here';
     }
     transferTokensTo(toAddress, amount, gasInfo) {
         return Promise.resolve();

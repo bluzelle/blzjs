@@ -22,7 +22,7 @@ import {TxCountResponse, TxHasResponse, TxKeysResponse, TxReadResponse} from "./
 import {LeaseInfo} from "./types/LeaseInfo";
 import {ClientErrors} from "./ClientErrors";
 import {pullAt} from 'lodash'
-import {TxCountResult, TxReadResult, TxResult} from "./types/TxResult";
+import {TxCountResult, TxGetLeaseResult, TxGetNShortestLeasesResult, TxReadResult, TxResult} from "./types/TxResult";
 import {assert} from "./Assert";
 
 const cosmosjs = require('@cosmostation/cosmosjs');
@@ -53,6 +53,7 @@ export class API {
         this.url = config.endpoint;
         this.communicationService = CommunicationService.create(this);
     }
+
 
     withTransaction(fn: Function) {
         return this.communicationService.withTransaction(fn);
@@ -156,8 +157,8 @@ export class API {
             .then(res => ({txhash: res.txhash, height: res.height}))
     }
 
-    read = (key: string): Promise<string> =>
-        this.#query<QueryReadResult>(`crud/read/${this.uuid}/${key}`)
+    read = (key: string, prove: boolean = false): Promise<string> =>
+        this.#query<QueryReadResult>(`crud/${prove ? 'pread' : 'read'}/${this.uuid}/${encodeSafe(key)}`)
             .then(res => res.value);
 
     renewLease = async (key: string, gasInfo: GasInfo, leaseInfo: LeaseInfo): Promise<TxResult> => {
@@ -180,7 +181,7 @@ export class API {
     }
 
 
-    renewLeaseAll = async (gasInfo: GasInfo, leaseInfo: LeaseInfo): Promise<TxResult> => {
+    renewLeaseAll = async (gasInfo: GasInfo, leaseInfo: LeaseInfo = {}): Promise<TxResult> => {
         const blocks = convertLease(leaseInfo);
         assert(blocks >= 0, ClientErrors.INVALID_LEASE_TIME);
 
@@ -209,6 +210,18 @@ export class API {
 
     }
 
+    txGetLease = async (key: string, gasInfo: GasInfo): Promise<TxGetLeaseResult> => {
+        return {height: 1, txhash: 'xxx', lease: 2}
+    }
+
+    txGetNShortestLeases = async (n: number, gasInfo: GasInfo): Promise<TxGetNShortestLeasesResult> => {
+        return {
+            txhash: 'xxx',
+            height: 1,
+            leases: []
+        }
+    }
+
     txHas = async (key: string, gasInfo: GasInfo): Promise<boolean> => {
         assert(typeof key === 'string', ClientErrors.KEY_MUST_BE_A_STRING);
 
@@ -233,6 +246,10 @@ export class API {
             }
         }, gasInfo)
             .then(res => res.data.find(it => it.keys)?.keys || [])
+    }
+
+    txKeyValues = async (gasinfo: GasInfo): Promise<any> => {
+        // TODO: Finish this
     }
 
 
@@ -273,6 +290,9 @@ export class API {
             })
     }
 
+    version(): string {
+        return 'finish here'
+    }
 
     transferTokensTo(toAddress: string, amount: number, gasInfo: GasInfo): Promise<void> {
         return Promise.resolve();

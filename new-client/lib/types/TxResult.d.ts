@@ -8,4 +8,13 @@ export interface TxReadResult extends TxResult {
 export interface TxCountResult extends TxResult {
     count: number;
 }
+export interface TxGetLeaseResult extends TxResult {
+    lease: number;
+}
+export interface TxGetNShortestLeasesResult extends TxResult {
+    leases: {
+        key: string;
+        lease: number;
+    }[];
+}
 //# sourceMappingURL=TxResult.d.ts.map

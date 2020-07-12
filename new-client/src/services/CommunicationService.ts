@@ -1,8 +1,7 @@
 import {GasInfo} from "../types/GasInfo";
-import {Identity, Maybe, None, Some} from "monet";
+import {None, Some} from "monet";
 import {API} from "../API";
 import {MessageResponse} from "../types/MessageResponse";
-import Timeout = NodeJS.Timeout;
 import {Message} from "../types/Message";
 import {takeWhile, without} from 'lodash'
 
