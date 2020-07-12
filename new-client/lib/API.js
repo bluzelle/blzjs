@@ -72,7 +72,8 @@ class API {
                 .then(res => ({ txhash: res.txhash, height: res.height }));
         };
         this.read = (key, prove = false) => __classPrivateFieldGet(this, _query).call(this, `crud/${prove ? 'pread' : 'read'}/${this.uuid}/${encodeSafe(key)}`)
-            .then(res => res.value);
+            .then(res => res.value)
+            .catch(({ error }) => { throw (new Error(error === 'Not Found' ? 'key not found' : error)); });
         this.renewLease = async (key, gasInfo, leaseInfo) => {
             Assert_1.assert(typeof key === 'string', "Key must be a string" /* KEY_MUST_BE_A_STRING */);
             const blocks = convertLease(leaseInfo);
@@ -161,7 +162,15 @@ class API {
             // TODO: Finish this
         };
         _query.set(this, (path) => fetch(`${this.url}/${path}`)
-            .then((res) => res.json()));
+            .then((res) => {
+            if (res.status !== 200) {
+                throw {
+                    status: res.status,
+                    error: res.statusText
+                };
+            }
+            return res.json();
+        }));
         this.cosmos = cosmosjs.network(config.endpoint, config.chain_id);
         this.cosmos.setPath("m/44'/118'/0'/0/0");
         this.cosmos.bech32MainPrefix = "bluzelle";

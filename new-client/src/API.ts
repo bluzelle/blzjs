@@ -170,7 +170,8 @@ export class API {
 
     read = (key: string, prove: boolean = false): Promise<string> =>
         this.#query<QueryReadResult>(`crud/${prove ? 'pread' : 'read'}/${this.uuid}/${encodeSafe(key)}`)
-            .then(res => res.value);
+            .then(res => res.value)
+            .catch(({error}) => {throw(new Error(error === 'Not Found' ? 'key not found' : error))});
 
     renewLease = async (key: string, gasInfo: GasInfo, leaseInfo: LeaseInfo): Promise<TxResult> => {
         assert(typeof key === 'string', ClientErrors.KEY_MUST_BE_A_STRING);
@@ -341,7 +342,15 @@ export class API {
 
     #query = <T>(path: string): Promise<T> =>
         fetch(`${this.url}/${path}`)
-            .then((res: any) => res.json())
+            .then((res: any) => {
+                if(res.status !== 200) {
+                    throw {
+                        status: res.status,
+                        error: res.statusText
+                    }
+                }
+                return res.json()
+            })
 }
 
 const encodeSafe = (str: string): string =>
