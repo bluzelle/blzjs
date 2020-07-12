@@ -16,7 +16,7 @@ interface MessageQueueItem<T, R> {
     transactionId: number
 }
 
-const counter = (() => {
+const count = (() => {
     let start = 1;
     return () => start++;
 })()
@@ -36,6 +36,25 @@ export class CommunicationService {
     private constructor(api: API) {
         this.#api = api;
     }
+
+    setMaxMessagesPerTransaction(count: number):void  {
+        this.#maxMessagesPerTransaction = count;
+    }
+
+   startTransaction(): void {
+        this.#currentTransactionId = count();
+   }
+
+   endTransaction(): void {
+        this.#currentTransactionId = 0;
+   }
+
+   withTransaction(fn: Function) : any{
+        this.startTransaction();
+        const result = fn();
+        this.endTransaction();
+        return result;
+   }
 
     sendMessage<T, R>(message: Message<T>, gasInfo: GasInfo): Promise<MessageResponse<R>> {
         const p = new Promise<MessageResponse<R>>((resolve, reject) => {
@@ -58,7 +77,7 @@ export class CommunicationService {
             .map(([transactionId, queue]) => [
                 takeWhile(queue, (it: MessageQueueItem<any, any>, idx: number) =>
                     it.transactionId === transactionId
-                    && (it.transactionId === 0 && idx < this.#maxMessagesPerTransaction)
+                    && (it.transactionId === 0 ? idx < this.#maxMessagesPerTransaction : true)
                 ),
                 queue
             ])

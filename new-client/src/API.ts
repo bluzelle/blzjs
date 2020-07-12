@@ -54,6 +54,13 @@ export class API {
         this.communicationService = CommunicationService.create(this);
     }
 
+    withTransaction(fn: Function) {
+        return this.communicationService.withTransaction(fn);
+    }
+
+    setMaxMessagesPerTransaction(count: number) {
+        this.communicationService.setMaxMessagesPerTransaction(count);
+    }
 
     account = (): Promise<AccountResult> =>
         this.cosmos.getAccounts(this.address)

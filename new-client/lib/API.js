@@ -147,6 +147,12 @@ class API {
         this.url = config.endpoint;
         this.communicationService = CommunicationService_1.CommunicationService.create(this);
     }
+    withTransaction(fn) {
+        return this.communicationService.withTransaction(fn);
+    }
+    setMaxMessagesPerTransaction(count) {
+        this.communicationService.setMaxMessagesPerTransaction(count);
+    }
     async create(key, value, gasInfo, leaseInfo = {}) {
         const blocks = convertLease(leaseInfo);
         Assert_1.assert(!!key, "Key cannot be empty" /* KEY_CANNOT_BE_EMPTY */);

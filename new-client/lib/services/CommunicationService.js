@@ -18,7 +18,7 @@ exports.CommunicationService = void 0;
 const monet_1 = require("monet");
 const lodash_1 = require("lodash");
 const TOKEN_NAME = 'ubnt';
-const counter = (() => {
+const count = (() => {
     let start = 1;
     return () => start++;
 })();
@@ -33,6 +33,21 @@ class CommunicationService {
     }
     static create(api) {
         return new CommunicationService(api);
+    }
+    setMaxMessagesPerTransaction(count) {
+        __classPrivateFieldSet(this, _maxMessagesPerTransaction, count);
+    }
+    startTransaction() {
+        __classPrivateFieldSet(this, _currentTransactionId, count());
+    }
+    endTransaction() {
+        __classPrivateFieldSet(this, _currentTransactionId, 0);
+    }
+    withTransaction(fn) {
+        this.startTransaction();
+        const result = fn();
+        this.endTransaction();
+        return result;
     }
     sendMessage(message, gasInfo) {
         const p = new Promise((resolve, reject) => {
@@ -53,7 +68,7 @@ class CommunicationService {
             .map(queue => [queue[0].transactionId, queue])
             .map(([transactionId, queue]) => [
             lodash_1.takeWhile(queue, (it, idx) => it.transactionId === transactionId
-                && (it.transactionId === 0 && idx < __classPrivateFieldGet(this, _maxMessagesPerTransaction))),
+                && (it.transactionId === 0 ? idx < __classPrivateFieldGet(this, _maxMessagesPerTransaction) : true)),
             queue
         ])
             .map(([messages, queue]) => {

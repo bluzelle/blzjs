@@ -13,6 +13,10 @@ export declare class CommunicationService {
     #private;
     static create(api: API): CommunicationService;
     private constructor();
+    setMaxMessagesPerTransaction(count: number): void;
+    startTransaction(): void;
+    endTransaction(): void;
+    withTransaction(fn: Function): any;
     sendMessage<T, R>(message: Message<T>, gasInfo: GasInfo): Promise<MessageResponse<R>>;
     checkMessageQueueNeedsTransmit(): void;
     transmitTransaction(messages: MessageQueueItem<any, any>[]): Promise<void>;

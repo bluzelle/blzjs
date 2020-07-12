@@ -15,6 +15,8 @@ export declare class API {
     url: string;
     communicationService: CommunicationService;
     constructor(config: BluzelleConfig);
+    withTransaction(fn: Function): any;
+    setMaxMessagesPerTransaction(count: number): void;
     account: () => Promise<AccountResult>;
     count: () => Promise<number>;
     create(key: string, value: string, gasInfo: GasInfo, leaseInfo?: LeaseInfo): Promise<TxResult>;
