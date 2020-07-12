@@ -133,9 +133,7 @@ const convertDataToObject = (res: any) => ({
 const callRequestorsWithData = (msgs: any[]) =>
     (res: any) =>
         msgs.reduce((memo: any, msg) => {
-            if(msg.data) {
-                return msg.resolve ? msg.resolve(memo) || memo : memo
-            } else {
+            if(/failed to execute message/.test(res.raw_log)) {
                 let [x, error, y, failedMsgIdx] = res.raw_log.split(':');
                 failedMsgIdx = parseInt(failedMsgIdx)
                 msg.reject({
@@ -145,6 +143,8 @@ const callRequestorsWithData = (msgs: any[]) =>
                     failedMsgIdx: parseInt(failedMsgIdx),
                     error: error.trim()
                 } as FailedTransaction)
+            } else {
+                return msg.resolve ? msg.resolve(memo) || memo : memo
             }
         }, res)
 

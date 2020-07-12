@@ -109,10 +109,7 @@ const convertDataToObject = (res) => ({
     data: res.data !== undefined ? JSON.parse(`[${res.data.split('}{').join('},{')}]`) : undefined
 });
 const callRequestorsWithData = (msgs) => (res) => msgs.reduce((memo, msg) => {
-    if (msg.data) {
-        return msg.resolve ? msg.resolve(memo) || memo : memo;
-    }
-    else {
+    if (/failed to execute message/.test(res.raw_log)) {
         let [x, error, y, failedMsgIdx] = res.raw_log.split(':');
         failedMsgIdx = parseInt(failedMsgIdx);
         msg.reject({
@@ -122,6 +119,9 @@ const callRequestorsWithData = (msgs) => (res) => msgs.reduce((memo, msg) => {
             failedMsgIdx: parseInt(failedMsgIdx),
             error: error.trim()
         });
+    }
+    else {
+        return msg.resolve ? msg.resolve(memo) || memo : memo;
     }
 }, res);
 const getFeeInfo = ({ max_fee, gas_price = 10, max_gas = 200000 }) => ({
