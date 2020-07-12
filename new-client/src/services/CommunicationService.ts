@@ -18,8 +18,8 @@ interface MessageQueueItem<T, R> {
 interface FailedTransaction {
     txhash: string
     height: number
-    failedMsg: Message<any>
-    failedMsgIdx: number
+    failedMsg?: Message<any>
+    failedMsgIdx?: number
     error: string
 }
 
@@ -133,19 +133,29 @@ const convertDataToObject = (res: any) => ({
 const callRequestorsWithData = (msgs: any[]) =>
     (res: any) =>
         msgs.reduce((memo: any, msg) => {
+            if(/insufficient fee/.test(res.raw_log)) {
+                let [x, error] = res.raw_log.split(/[:;]/);
+                return msg.reject({
+                    txhash: res.txhash,
+                    height: parseInt(res.height),
+                    failedMsg: undefined,
+                    failedMsgIdx: undefined,
+                    error: error.trim()
+                } as FailedTransaction)
+            }
             if(/failed to execute message/.test(res.raw_log)) {
                 let [x, error, y, failedMsgIdx] = res.raw_log.split(':');
                 failedMsgIdx = parseInt(failedMsgIdx)
-                msg.reject({
+                return msg.reject({
                     txhash: res.txhash,
                     height: parseInt(res.height),
                     failedMsg: msgs[failedMsgIdx].message,
                     failedMsgIdx: parseInt(failedMsgIdx),
                     error: error.trim()
                 } as FailedTransaction)
-            } else {
-                return msg.resolve ? msg.resolve(memo) || memo : memo
             }
+            return msg.resolve ? msg.resolve(memo) || memo : memo
+
         }, res)
 
 const getFeeInfo = ({max_fee, gas_price = 10, max_gas = 200000}: GasInfo) => ({

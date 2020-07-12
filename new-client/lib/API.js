@@ -38,11 +38,10 @@ class API {
         }, gasInfo)
             .then(res => ({ height: res.height, txhash: res.txhash }));
         this.getLease = (key) => __classPrivateFieldGet(this, _query).call(this, `crud/getlease/${this.uuid}/${encodeSafe(key)}`)
-            .then(res => {
-            if (res.error) {
-                throw res.error;
-            }
-            return res.lease * BLOCK_TIME_IN_SECONDS;
+            .then(res => res.lease * BLOCK_TIME_IN_SECONDS)
+            .catch(res => {
+            throw res.error === 'Not Found' ? 'key not found' : res.error;
+            return;
         });
         this.getNShortestLeases = async (count) => {
             Assert_1.assert(count >= 0, "Invalid value specified" /* INVALID_VALUE_SPECIFIED */);
@@ -73,7 +72,9 @@ class API {
         };
         this.read = (key, prove = false) => __classPrivateFieldGet(this, _query).call(this, `crud/${prove ? 'pread' : 'read'}/${this.uuid}/${encodeSafe(key)}`)
             .then(res => res.value)
-            .catch(({ error }) => { throw (new Error(error === 'Not Found' ? 'key not found' : error)); });
+            .catch(({ error }) => {
+            throw (new Error(error === 'Not Found' ? 'key not found' : error));
+        });
         this.renewLease = async (key, gasInfo, leaseInfo) => {
             Assert_1.assert(typeof key === 'string', "Key must be a string" /* KEY_MUST_BE_A_STRING */);
             const blocks = convertLease(leaseInfo);
@@ -169,7 +170,7 @@ class API {
                     error: res.statusText
                 };
             }
-            return res.json();
+            return res.json().then((obj) => obj.result);
         }));
         this.cosmos = cosmosjs.network(config.endpoint, config.chain_id);
         this.cosmos.setPath("m/44'/118'/0'/0/0");

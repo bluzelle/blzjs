@@ -36,6 +36,11 @@ const fetch = require('node-fetch');
 
 const BLOCK_TIME_IN_SECONDS = 5;
 
+interface QueryError {
+    status: number
+    error: string
+}
+
 export class API {
     cosmos: any;
     address: string;
@@ -123,11 +128,10 @@ export class API {
 
     getLease = (key: string) =>
         this.#query<QueryGetLeaseResult & { error: string }>(`crud/getlease/${this.uuid}/${encodeSafe(key)}`)
-            .then(res => {
-                if (res.error) {
-                    throw res.error
-                }
-                return res.lease * BLOCK_TIME_IN_SECONDS
+            .then(res => res.lease * BLOCK_TIME_IN_SECONDS)
+            .catch(res => {
+                throw res.error === 'Not Found' ? 'key not found' : res.error
+                return
             })
 
     getNShortestLeases = async (count: number) => {
@@ -171,7 +175,10 @@ export class API {
     read = (key: string, prove: boolean = false): Promise<string> =>
         this.#query<QueryReadResult>(`crud/${prove ? 'pread' : 'read'}/${this.uuid}/${encodeSafe(key)}`)
             .then(res => res.value)
-            .catch(({error}) => {throw(new Error(error === 'Not Found' ? 'key not found' : error))});
+            .catch(({error}) => {
+                throw(new Error(error === 'Not Found' ? 'key not found' : error))
+            });
+
 
     renewLease = async (key: string, gasInfo: GasInfo, leaseInfo: LeaseInfo): Promise<TxResult> => {
         assert(typeof key === 'string', ClientErrors.KEY_MUST_BE_A_STRING);
@@ -343,13 +350,13 @@ export class API {
     #query = <T>(path: string): Promise<T> =>
         fetch(`${this.url}/${path}`)
             .then((res: any) => {
-                if(res.status !== 200) {
+                if (res.status !== 200) {
                     throw {
                         status: res.status,
                         error: res.statusText
-                    }
+                    } as QueryError
                 }
-                return res.json()
+                return res.json().then((obj: any) => obj.result)
             })
 }
 
