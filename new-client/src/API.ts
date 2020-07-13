@@ -14,7 +14,7 @@ import {
     CountMessage,
     CreateMessage,
     DeleteAllMessage,
-    DeleteMessage, GetLeaseMessage, HasMessage, KeysMessage, MultiUpdateMessage,
+    DeleteMessage, GetLeaseMessage, HasMessage, KeysMessage, KeyValuesMessage, MultiUpdateMessage,
     ReadMessage, RenewLeaseAllMessage,
     RenewLeaseMessage, UpdateMessage
 } from "./types/Message";
@@ -22,7 +22,7 @@ import {
     TxCountResponse,
     TxGetLeaseResponse,
     TxHasResponse,
-    TxKeysResponse,
+    TxKeysResponse, TxKeyValuesResponse,
     TxReadResponse
 } from "./types/MessageResponse";
 import {LeaseInfo} from "./types/LeaseInfo";
@@ -280,8 +280,19 @@ export class API {
             .then(res => res.data.find(it => it.keys)?.keys || [])
     }
 
-    txKeyValues = async (gasinfo: GasInfo): Promise<any> => {
-        // TODO: Finish this
+    txKeyValues = async (gasInfo: GasInfo): Promise<any> => {
+        return this.communicationService.sendMessage<KeyValuesMessage, TxKeyValuesResponse>({
+            type: 'crud/keyvalues',
+            value: {
+                Owner: this.address,
+                UUID: this.uuid
+            }
+        }, gasInfo)
+            .then(res => findMine<TxKeyValuesResponse>(res, it => {
+                return Array.isArray(it.keyvalues) &&
+                    !!(it.keyvalues.length === 0 || (it.keyvalues[0].key && it.keyvalues[0].value))
+            }))
+            .then(({res, data}) => ({height: res.height, txhash: res.txhash, keyvalues: data?.keyvalues}))
     }
 
 

@@ -34,6 +34,10 @@ export interface KeysMessage {
     Owner: string;
     UUID: string;
 }
+export interface KeyValuesMessage {
+    Owner: string;
+    UUID: string;
+}
 export interface MultiUpdateMessage {
     KeyValues: {
         key: string;

@@ -45,7 +45,7 @@ export declare class API {
     txGetNShortestLeases: (n: number, gasInfo: GasInfo) => Promise<TxGetNShortestLeasesResult>;
     txHas: (key: string, gasInfo: GasInfo) => Promise<boolean>;
     txKeys: (gasInfo: GasInfo) => Promise<string[]>;
-    txKeyValues: (gasinfo: GasInfo) => Promise<any>;
+    txKeyValues: (gasInfo: GasInfo) => Promise<any>;
     txRead(key: string, gasInfo: GasInfo): Promise<TxReadResult | undefined>;
     update(key: string, value: string, gasInfo: GasInfo, leaseInfo?: LeaseInfo): Promise<void>;
     version(): Promise<string>;

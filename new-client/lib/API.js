@@ -159,8 +159,19 @@ class API {
             }, gasInfo)
                 .then(res => { var _a; return ((_a = res.data.find(it => it.keys)) === null || _a === void 0 ? void 0 : _a.keys) || []; });
         };
-        this.txKeyValues = async (gasinfo) => {
-            // TODO: Finish this
+        this.txKeyValues = async (gasInfo) => {
+            return this.communicationService.sendMessage({
+                type: 'crud/keyvalues',
+                value: {
+                    Owner: this.address,
+                    UUID: this.uuid
+                }
+            }, gasInfo)
+                .then(res => findMine(res, it => {
+                return Array.isArray(it.keyvalues) &&
+                    !!(it.keyvalues.length === 0 || (it.keyvalues[0].key && it.keyvalues[0].value));
+            }))
+                .then(({ res, data }) => ({ height: res.height, txhash: res.txhash, keyvalues: data === null || data === void 0 ? void 0 : data.keyvalues }));
         };
         _query.set(this, (path) => fetch(`${this.url}/${path}`)
             .then((res) => {
