@@ -164,13 +164,14 @@ class API {
         };
         _query.set(this, (path) => fetch(`${this.url}/${path}`)
             .then((res) => {
+            res;
             if (res.status !== 200) {
                 throw {
                     status: res.status,
                     error: res.statusText
                 };
             }
-            return res.json().then((obj) => obj.result);
+            return res.json().then((obj) => { var _a; return (_a = obj.result) !== null && _a !== void 0 ? _a : obj; });
         }));
         this.cosmos = cosmosjs.network(config.endpoint, config.chain_id);
         this.cosmos.setPath("m/44'/118'/0'/0/0");
@@ -241,7 +242,7 @@ class API {
         });
     }
     version() {
-        return 'finish here';
+        return __classPrivateFieldGet(this, _query).call(this, 'node_info').then(res => res.application_version.version);
     }
     transferTokensTo(toAddress, amount, gasInfo) {
         return Promise.resolve();

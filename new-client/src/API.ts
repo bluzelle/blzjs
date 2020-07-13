@@ -322,8 +322,8 @@ export class API {
             })
     }
 
-    version(): string {
-        return 'finish here'
+    version(): Promise<string> {
+        return this.#query<any>('node_info').then(res => res.application_version.version);
     }
 
     transferTokensTo(toAddress: string, amount: number, gasInfo: GasInfo): Promise<void> {
@@ -350,13 +350,14 @@ export class API {
     #query = <T>(path: string): Promise<T> =>
         fetch(`${this.url}/${path}`)
             .then((res: any) => {
+                res;
                 if (res.status !== 200) {
                     throw {
                         status: res.status,
                         error: res.statusText
                     } as QueryError
                 }
-                return res.json().then((obj: any) => obj.result)
+                return res.json().then((obj: any) => obj.result ?? obj)
             })
 }
 

@@ -48,7 +48,7 @@ export declare class API {
     txKeyValues: (gasinfo: GasInfo) => Promise<any>;
     txRead(key: string, gasInfo: GasInfo): Promise<TxReadResult | undefined>;
     update(key: string, value: string, gasInfo: GasInfo, leaseInfo?: LeaseInfo): Promise<void>;
-    version(): string;
+    version(): Promise<string>;
     transferTokensTo(toAddress: string, amount: number, gasInfo: GasInfo): Promise<void>;
 }
 //# sourceMappingURL=API.d.ts.map
