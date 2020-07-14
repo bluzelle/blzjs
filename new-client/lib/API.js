@@ -11,6 +11,7 @@ exports.API = void 0;
 const CommunicationService_1 = require("./services/CommunicationService");
 const lodash_1 = require("lodash");
 const Assert_1 = require("./Assert");
+const monet_1 = require("monet");
 const cosmosjs = require('@cosmostation/cosmosjs');
 const fetch = require('node-fetch');
 const BLOCK_TIME_IN_SECONDS = 5;
@@ -40,8 +41,7 @@ class API {
         this.getLease = (key) => __classPrivateFieldGet(this, _query).call(this, `crud/getlease/${this.uuid}/${encodeSafe(key)}`)
             .then(res => res.lease * BLOCK_TIME_IN_SECONDS)
             .catch(res => {
-            throw res.error === 'Not Found' ? 'key not found' : res.error;
-            return;
+            throw res.error === 'Not Found' ? `key "${key}" not found` : res.error;
         });
         this.getNShortestLeases = async (count) => {
             Assert_1.assert(count >= 0, "Invalid value specified" /* INVALID_VALUE_SPECIFIED */);
@@ -51,7 +51,8 @@ class API {
         this.has = (key) => __classPrivateFieldGet(this, _query).call(this, `crud/has/${this.uuid}/${key}`)
             .then(res => res.has);
         this.keys = () => __classPrivateFieldGet(this, _query).call(this, `crud/keys/${this.uuid}`)
-            .then(res => res.keys);
+            .then(res => res.keys)
+            .then(keys => keys.map(decodeSafe));
         this.keyValues = () => __classPrivateFieldGet(this, _query).call(this, `crud/keyvalues/${this.uuid}`)
             .then(res => res.keyvalues);
         this.multiUpdate = async (keyValues, gasInfo) => {
@@ -72,8 +73,9 @@ class API {
         };
         this.read = (key, prove = false) => __classPrivateFieldGet(this, _query).call(this, `crud/${prove ? 'pread' : 'read'}/${this.uuid}/${encodeSafe(key)}`)
             .then(res => res.value)
+            .then(decodeSafe)
             .catch(({ error }) => {
-            throw (new Error(error === 'Not Found' ? 'key not found' : error));
+            throw (new Error(error === 'Not Found' ? `key "${key}" not found` : error));
         });
         this.renewLease = async (key, gasInfo, leaseInfo) => {
             Assert_1.assert(typeof key === 'string', "Key must be a string" /* KEY_MUST_BE_A_STRING */);
@@ -175,7 +177,6 @@ class API {
         };
         _query.set(this, (path) => fetch(`${this.url}/${path}`)
             .then((res) => {
-            res;
             if (res.status !== 200) {
                 throw {
                     status: res.status,
@@ -249,37 +250,44 @@ class API {
                 Lease: blocks.toString()
             }
         }, gasInfo)
-            .then(() => {
-        });
+            .then(res => ({ height: res.height, txhash: res.txhash }));
     }
     version() {
         return __classPrivateFieldGet(this, _query).call(this, 'node_info').then(res => res.application_version.version);
     }
     transferTokensTo(toAddress, amount, gasInfo) {
-        return Promise.resolve();
-        // const msgs = [
-        //     {
-        //         type: "cosmos-sdk/MsgSend",
-        //         value: {
-        //             amount: [
-        //                 {
-        //                     amount: String(`${amount}000000`),
-        //                     denom: "ubnt"
-        //                 }
-        //             ],
-        //             from_address: this.address,
-        //             to_address: toAddress
-        //         }
-        //     }
-        // ];
-        //
-        // return sendTx(this, msgs, 'transfer', gasInfo);
+        return this.communicationService.sendMessage({
+            type: "crud/update",
+            value: {
+                amount: [
+                    {
+                        amount: String(`${amount}000000`),
+                        denom: "ubnt"
+                    }
+                ],
+                from_address: this.address,
+                to_address: toAddress
+            }
+        }, gasInfo)
+            .then(() => {
+        });
     }
 }
 exports.API = API;
 _query = new WeakMap();
-const encodeSafe = (str) => encodeURI(str)
-    .replace(/([\#\?])/g, ch => `%${ch.charCodeAt(0).toString(16)}`);
+const decodeSafe = (str) => decodeURI(str)
+    .replace(/%../g, x => monet_1.Some(x)
+    .map(x => x.replace('%', ''))
+    .map(x => parseInt(x, 16))
+    .map(String.fromCharCode)
+    .join());
+const encodeSafe = (str) => monet_1.Some(str)
+    .map(str => str.replace(/([%])/g, ch => `%${ch.charCodeAt(0).toString(16)}`))
+    .map(encodeURI)
+    .map(str => str.replace(/([\#\?\&])/g, ch => `%${ch.charCodeAt(0).toString(16)}`))
+    .join();
+// encodeURI(str)
+//     .replace(/([\#\?\&])/g, ch => `%${ch.charCodeAt(0).toString(16)}`);
 const MINUTE = 60;
 const HOUR = MINUTE * 60;
 const DAY = HOUR * 24;

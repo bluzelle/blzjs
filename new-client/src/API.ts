@@ -16,7 +16,7 @@ import {
     DeleteAllMessage,
     DeleteMessage, GetLeaseMessage, HasMessage, KeysMessage, KeyValuesMessage, MultiUpdateMessage,
     ReadMessage, RenewLeaseAllMessage,
-    RenewLeaseMessage, UpdateMessage
+    RenewLeaseMessage, TransferTokensMessage, UpdateMessage
 } from "./types/Message";
 import {
     TxCountResponse,
@@ -30,6 +30,7 @@ import {ClientErrors} from "./ClientErrors";
 import {pullAt} from 'lodash'
 import {TxCountResult, TxGetLeaseResult, TxGetNShortestLeasesResult, TxReadResult, TxResult} from "./types/TxResult";
 import {assert} from "./Assert";
+import {Some} from "monet";
 
 const cosmosjs = require('@cosmostation/cosmosjs');
 const fetch = require('node-fetch');
@@ -130,8 +131,7 @@ export class API {
         this.#query<QueryGetLeaseResult & { error: string }>(`crud/getlease/${this.uuid}/${encodeSafe(key)}`)
             .then(res => res.lease * BLOCK_TIME_IN_SECONDS)
             .catch(res => {
-                throw res.error === 'Not Found' ? 'key not found' : res.error
-                return
+                throw res.error === 'Not Found' ? `key "${key}" not found` : res.error
             })
 
     getNShortestLeases = async (count: number) => {
@@ -147,7 +147,8 @@ export class API {
 
     keys = (): Promise<string[]> =>
         this.#query<QueryKeysResult>(`crud/keys/${this.uuid}`)
-            .then(res => res.keys);
+            .then(res => res.keys)
+            .then(keys => keys.map(decodeSafe));
 
     keyValues = (): Promise<{ key: string, value: string }[]> =>
         this.#query<QueryKeyValuesResult>(`crud/keyvalues/${this.uuid}`)
@@ -175,8 +176,9 @@ export class API {
     read = (key: string, prove: boolean = false): Promise<string> =>
         this.#query<QueryReadResult>(`crud/${prove ? 'pread' : 'read'}/${this.uuid}/${encodeSafe(key)}`)
             .then(res => res.value)
+                        .then(decodeSafe)
             .catch(({error}) => {
-                throw(new Error(error === 'Not Found' ? 'key not found' : error))
+                throw(new Error(error === 'Not Found' ? `key "${key}" not found` : error))
             });
 
 
@@ -329,8 +331,7 @@ export class API {
                 Lease: blocks.toString()
             }
         }, gasInfo)
-            .then(() => {
-            })
+            .then(res => ({height: res.height, txhash: res.txhash}))
     }
 
     version(): Promise<string> {
@@ -338,30 +339,26 @@ export class API {
     }
 
     transferTokensTo(toAddress: string, amount: number, gasInfo: GasInfo): Promise<void> {
-        return Promise.resolve();
-        // const msgs = [
-        //     {
-        //         type: "cosmos-sdk/MsgSend",
-        //         value: {
-        //             amount: [
-        //                 {
-        //                     amount: String(`${amount}000000`),
-        //                     denom: "ubnt"
-        //                 }
-        //             ],
-        //             from_address: this.address,
-        //             to_address: toAddress
-        //         }
-        //     }
-        // ];
-        //
-        // return sendTx(this, msgs, 'transfer', gasInfo);
+        return this.communicationService.sendMessage<TransferTokensMessage, void>({
+            type: "crud/update",
+            value: {
+                amount: [
+                    {
+                        amount: String(`${amount}000000`),
+                        denom: "ubnt"
+                    }
+                ],
+                from_address: this.address,
+                to_address: toAddress
+            }
+        }, gasInfo)
+            .then(() => {
+            })
     }
 
     #query = <T>(path: string): Promise<T> =>
         fetch(`${this.url}/${path}`)
             .then((res: any) => {
-                res;
                 if (res.status !== 200) {
                     throw {
                         status: res.status,
@@ -372,9 +369,27 @@ export class API {
             })
 }
 
-const encodeSafe = (str: string): string =>
-    encodeURI(str)
-        .replace(/([\#\?])/g, ch => `%${ch.charCodeAt(0).toString(16)}`);
+
+const decodeSafe = (str: string): string =>
+    decodeURI(str)
+        .replace(/%../g, x => Some(x)
+            .map(x => x.replace('%', ''))
+            .map(x => parseInt(x, 16))
+            .map(String.fromCharCode)
+            .join()
+        )
+
+
+const encodeSafe = (str: string): string => Some(str)
+    .map(str => str.replace(/([%])/g, ch => `%${ch.charCodeAt(0).toString(16)}`))
+    .map(encodeURI)
+    .map(str => str.replace(/([\#\?\&])/g, ch => `%${ch.charCodeAt(0).toString(16)}`))
+    .join();
+
+
+
+// encodeURI(str)
+//     .replace(/([\#\?\&])/g, ch => `%${ch.charCodeAt(0).toString(16)}`);
 
 
 const MINUTE = 60

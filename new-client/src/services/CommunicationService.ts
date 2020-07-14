@@ -57,6 +57,9 @@ export class CommunicationService {
    }
 
    withTransaction(fn: Function) : any{
+        if(this.#currentTransactionId > 0) {
+            throw new Error('withTransaction() can not be nested')
+        }
         this.startTransaction();
         const result = fn();
         this.endTransaction();
@@ -130,9 +133,19 @@ const convertDataToObject = (res: any) => ({
     ...res,
     data: res.data !== undefined ? JSON.parse(`[${res.data.split('}{').join('},{')}]`) : undefined
 })
+
 const callRequestorsWithData = (msgs: any[]) =>
     (res: any) =>
         msgs.reduce((memo: any, msg) => {
+            if(/signature verification failed/.test(res.raw_log)) {
+                return msg.reject({
+                    txhash: res.txhash,
+                    height: parseInt(res.height),
+                    failedMsg: undefined,
+                    failedMsgIdx: undefined,
+                    error: 'Unknown error'
+                } as FailedTransaction)
+            }
             if(/insufficient fee/.test(res.raw_log)) {
                 let [x, error] = res.raw_log.split(/[:;]/);
                 return msg.reject({
@@ -155,7 +168,6 @@ const callRequestorsWithData = (msgs: any[]) =>
                 } as FailedTransaction)
             }
             return msg.resolve ? msg.resolve(memo) || memo : memo
-
         }, res)
 
 const getFeeInfo = ({max_fee, gas_price = 10, max_gas = 200000}: GasInfo) => ({

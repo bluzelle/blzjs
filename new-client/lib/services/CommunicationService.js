@@ -44,6 +44,9 @@ class CommunicationService {
         __classPrivateFieldSet(this, _currentTransactionId, 0);
     }
     withTransaction(fn) {
+        if (__classPrivateFieldGet(this, _currentTransactionId) > 0) {
+            throw new Error('withTransaction() can not be nested');
+        }
         this.startTransaction();
         const result = fn();
         this.endTransaction();
@@ -109,6 +112,15 @@ const convertDataToObject = (res) => ({
     data: res.data !== undefined ? JSON.parse(`[${res.data.split('}{').join('},{')}]`) : undefined
 });
 const callRequestorsWithData = (msgs) => (res) => msgs.reduce((memo, msg) => {
+    if (/signature verification failed/.test(res.raw_log)) {
+        return msg.reject({
+            txhash: res.txhash,
+            height: parseInt(res.height),
+            failedMsg: undefined,
+            failedMsgIdx: undefined,
+            error: 'Unknown error'
+        });
+    }
     if (/insufficient fee/.test(res.raw_log)) {
         let [x, error] = res.raw_log.split(/[:;]/);
         return msg.reject({

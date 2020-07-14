@@ -22,7 +22,7 @@ export declare class API {
     create(key: string, value: string, gasInfo: GasInfo, leaseInfo?: LeaseInfo): Promise<TxResult>;
     delete: (key: string, gasInfo: GasInfo) => Promise<TxResult>;
     deleteAll: (gasInfo: GasInfo) => Promise<TxResult>;
-    getLease: (key: string) => Promise<number | void>;
+    getLease: (key: string) => Promise<number>;
     getNShortestLeases: (count: number) => Promise<{
         key: string;
         lease: number;
