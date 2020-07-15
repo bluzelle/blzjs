@@ -13,170 +13,10 @@ const lodash_1 = require("lodash");
 const Assert_1 = require("./Assert");
 const monet_1 = require("monet");
 const cosmosjs = require('@cosmostation/cosmosjs');
-if (typeof window === "undefined") {
-    global.fetch = require('node-fetch');
-}
+global.fetch || (global.fetch = require('node-fetch'));
 const BLOCK_TIME_IN_SECONDS = 5;
 class API {
     constructor(config) {
-        this.account = () => this.cosmos.getAccounts(this.address)
-            .then((x) => x.result.value);
-        this.count = () => __classPrivateFieldGet(this, _query).call(this, `crud/count/${this.uuid}`)
-            .then((res) => parseInt(res.count || '0'));
-        this.delete = (key, gasInfo) => this.communicationService.sendMessage({
-            type: 'crud/delete',
-            value: {
-                Key: key,
-                UUID: this.uuid,
-                Owner: this.address
-            }
-        }, gasInfo)
-            .then(res => ({ height: res.height, txhash: res.txhash }));
-        this.deleteAll = (gasInfo) => this.communicationService.sendMessage({
-            type: 'crud/deleteall',
-            value: {
-                UUID: this.uuid,
-                Owner: this.address
-            }
-        }, gasInfo)
-            .then(res => ({ height: res.height, txhash: res.txhash }));
-        this.getLease = (key) => __classPrivateFieldGet(this, _query).call(this, `crud/getlease/${this.uuid}/${encodeSafe(key)}`)
-            .then(res => res.lease * BLOCK_TIME_IN_SECONDS)
-            .catch(res => {
-            throw res.error === 'Not Found' ? `key "${key}" not found` : res.error;
-        });
-        this.getNShortestLeases = async (count) => {
-            Assert_1.assert(count >= 0, "Invalid value specified" /* INVALID_VALUE_SPECIFIED */);
-            return __classPrivateFieldGet(this, _query).call(this, `crud/getnshortestleases/${this.uuid}/${count}`)
-                .then(res => res.keyleases.map(({ key, lease }) => ({ key, lease: parseInt(lease) * BLOCK_TIME_IN_SECONDS })));
-        };
-        this.has = (key) => __classPrivateFieldGet(this, _query).call(this, `crud/has/${this.uuid}/${key}`)
-            .then(res => res.has);
-        this.keys = () => __classPrivateFieldGet(this, _query).call(this, `crud/keys/${this.uuid}`)
-            .then(res => res.keys)
-            .then(keys => keys.map(decodeSafe));
-        this.keyValues = () => __classPrivateFieldGet(this, _query).call(this, `crud/keyvalues/${this.uuid}`)
-            .then(res => res.keyvalues);
-        this.multiUpdate = async (keyValues, gasInfo) => {
-            Assert_1.assert(Array.isArray(keyValues), 'keyValues must be an array');
-            keyValues.forEach(({ key, value }, index, array) => {
-                Assert_1.assert(typeof key === 'string', "All keys must be strings" /* ALL_KEYS_MUST_BE_STRINGS */);
-                Assert_1.assert(typeof value === 'string', "All values must be strings" /* ALL_VALUES_MUST_BE_STRINGS */);
-            });
-            return this.communicationService.sendMessage({
-                type: 'crud/multiupdate',
-                value: {
-                    KeyValues: keyValues,
-                    UUID: this.uuid,
-                    Owner: this.address
-                }
-            }, gasInfo)
-                .then(res => ({ txhash: res.txhash, height: res.height }));
-        };
-        this.read = (key, prove = false) => __classPrivateFieldGet(this, _query).call(this, `crud/${prove ? 'pread' : 'read'}/${this.uuid}/${encodeSafe(key)}`)
-            .then(res => res.value)
-            .then(decodeSafe)
-            .catch(({ error }) => {
-            throw (new Error(error === 'Not Found' ? `key "${key}" not found` : error));
-        });
-        this.renewLease = async (key, gasInfo, leaseInfo) => {
-            Assert_1.assert(typeof key === 'string', "Key must be a string" /* KEY_MUST_BE_A_STRING */);
-            const blocks = convertLease(leaseInfo);
-            Assert_1.assert(blocks >= 0, "Invalid lease time" /* INVALID_LEASE_TIME */);
-            return this.communicationService.sendMessage({
-                type: 'crud/renewlease',
-                value: {
-                    Key: key,
-                    Lease: blocks.toString(),
-                    UUID: this.uuid,
-                    Owner: this.address
-                }
-            }, gasInfo)
-                .then(res => ({ height: res.height, txhash: res.txhash }));
-        };
-        this.renewLeaseAll = async (gasInfo, leaseInfo = {}) => {
-            const blocks = convertLease(leaseInfo);
-            Assert_1.assert(blocks >= 0, "Invalid lease time" /* INVALID_LEASE_TIME */);
-            return this.communicationService.sendMessage({
-                type: 'crud/renewleaseall',
-                value: {
-                    Lease: blocks.toString(),
-                    UUID: this.uuid,
-                    Owner: this.address
-                }
-            }, gasInfo)
-                .then(res => ({ height: res.height, txhash: res.txhash }));
-        };
-        this.txCount = async (gasInfo) => {
-            return this.communicationService.sendMessage({
-                type: 'crud/count',
-                value: {
-                    UUID: this.uuid,
-                    Owner: this.address
-                }
-            }, gasInfo)
-                .then(res => findMine(res, it => it.count !== undefined))
-                .then(({ res, data }) => ({ height: res.height, txhash: res.txhash, count: parseInt((data === null || data === void 0 ? void 0 : data.count) || '0') }));
-        };
-        this.txGetLease = async (key, gasInfo) => {
-            return this.communicationService.sendMessage({
-                type: 'crud/getlease',
-                value: {
-                    Key: key,
-                    UUID: this.uuid,
-                    Owner: this.address
-                }
-            }, gasInfo)
-                .then(res => findMine(res, it => it.key === key && it.lease !== undefined))
-                .then(({ res, data }) => ({
-                height: res.height,
-                txhash: res.txhash,
-                lease: parseInt((data === null || data === void 0 ? void 0 : data.lease) || '0') * BLOCK_TIME_IN_SECONDS
-            }));
-        };
-        this.txGetNShortestLeases = async (n, gasInfo) => {
-            return {
-                txhash: 'xxx',
-                height: 1,
-                leases: []
-            };
-        };
-        this.txHas = async (key, gasInfo) => {
-            Assert_1.assert(typeof key === 'string', "Key must be a string" /* KEY_MUST_BE_A_STRING */);
-            return this.communicationService.sendMessage({
-                type: 'crud/has',
-                value: {
-                    Key: key,
-                    UUID: this.uuid,
-                    Owner: this.address,
-                }
-            }, gasInfo)
-                .then(res => res.data.find(it => it.key === key && it.has) ? true : false);
-        };
-        this.txKeys = async (gasInfo) => {
-            return this.communicationService.sendMessage({
-                type: 'crud/keys',
-                value: {
-                    UUID: this.uuid,
-                    Owner: this.address
-                }
-            }, gasInfo)
-                .then(res => { var _a; return ((_a = res.data.find(it => it.keys)) === null || _a === void 0 ? void 0 : _a.keys) || []; });
-        };
-        this.txKeyValues = async (gasInfo) => {
-            return this.communicationService.sendMessage({
-                type: 'crud/keyvalues',
-                value: {
-                    Owner: this.address,
-                    UUID: this.uuid
-                }
-            }, gasInfo)
-                .then(res => findMine(res, it => {
-                return Array.isArray(it.keyvalues) &&
-                    !!(it.keyvalues.length === 0 || (it.keyvalues[0].key && it.keyvalues[0].value));
-            }))
-                .then(({ res, data }) => ({ height: res.height, txhash: res.txhash, keyvalues: data === null || data === void 0 ? void 0 : data.keyvalues }));
-        };
         _query.set(this, (path) => fetch(`${this.url}/${path}`)
             .then((res) => {
             if (res.status !== 200) {
@@ -204,6 +44,14 @@ class API {
     setMaxMessagesPerTransaction(count) {
         this.communicationService.setMaxMessagesPerTransaction(count);
     }
+    account() {
+        return this.cosmos.getAccounts(this.address)
+            .then((x) => x.result.value);
+    }
+    count() {
+        return __classPrivateFieldGet(this, _query).call(this, `crud/count/${this.uuid}`)
+            .then((res) => parseInt(res.count || '0'));
+    }
     async create(key, value, gasInfo, leaseInfo = {}) {
         const blocks = convertLease(leaseInfo);
         Assert_1.assert(!!key, "Key cannot be empty" /* KEY_CANNOT_BE_EMPTY */);
@@ -222,6 +70,174 @@ class API {
             }
         }, gasInfo)
             .then(res => ({ height: res.height, txhash: res.txhash }));
+    }
+    delete(key, gasInfo) {
+        return this.communicationService.sendMessage({
+            type: 'crud/delete',
+            value: {
+                Key: key,
+                UUID: this.uuid,
+                Owner: this.address
+            }
+        }, gasInfo)
+            .then(res => ({ height: res.height, txhash: res.txhash }));
+    }
+    deleteAll(gasInfo) {
+        return this.communicationService.sendMessage({
+            type: 'crud/deleteall',
+            value: {
+                UUID: this.uuid,
+                Owner: this.address
+            }
+        }, gasInfo)
+            .then(res => ({ height: res.height, txhash: res.txhash }));
+    }
+    getLease(key) {
+        return __classPrivateFieldGet(this, _query).call(this, `crud/getlease/${this.uuid}/${encodeSafe(key)}`)
+            .then(res => res.lease * BLOCK_TIME_IN_SECONDS)
+            .catch(res => {
+            throw res.error === 'Not Found' ? `key "${key}" not found` : res.error;
+        });
+    }
+    async getNShortestLeases(count) {
+        Assert_1.assert(count >= 0, "Invalid value specified" /* INVALID_VALUE_SPECIFIED */);
+        return __classPrivateFieldGet(this, _query).call(this, `crud/getnshortestleases/${this.uuid}/${count}`)
+            .then(res => res.keyleases.map(({ key, lease }) => ({ key, lease: parseInt(lease) * BLOCK_TIME_IN_SECONDS })));
+    }
+    has(key) {
+        return __classPrivateFieldGet(this, _query).call(this, `crud/has/${this.uuid}/${key}`)
+            .then(res => res.has);
+    }
+    keys() {
+        return __classPrivateFieldGet(this, _query).call(this, `crud/keys/${this.uuid}`)
+            .then(res => res.keys)
+            .then(keys => keys.map(decodeSafe));
+    }
+    keyValues() {
+        return __classPrivateFieldGet(this, _query).call(this, `crud/keyvalues/${this.uuid}`)
+            .then(res => res.keyvalues);
+    }
+    async multiUpdate(keyValues, gasInfo) {
+        Assert_1.assert(Array.isArray(keyValues), 'keyValues must be an array');
+        keyValues.forEach(({ key, value }, index, array) => {
+            Assert_1.assert(typeof key === 'string', "All keys must be strings" /* ALL_KEYS_MUST_BE_STRINGS */);
+            Assert_1.assert(typeof value === 'string', "All values must be strings" /* ALL_VALUES_MUST_BE_STRINGS */);
+        });
+        return this.communicationService.sendMessage({
+            type: 'crud/multiupdate',
+            value: {
+                KeyValues: keyValues,
+                UUID: this.uuid,
+                Owner: this.address
+            }
+        }, gasInfo)
+            .then(res => ({ txhash: res.txhash, height: res.height }));
+    }
+    read(key, prove = false) {
+        return __classPrivateFieldGet(this, _query).call(this, `crud/${prove ? 'pread' : 'read'}/${this.uuid}/${encodeSafe(key)}`)
+            .then(res => res.value)
+            .then(decodeSafe)
+            .catch(({ error }) => {
+            throw (new Error(error === 'Not Found' ? `key "${key}" not found` : error));
+        });
+    }
+    async renewLease(key, gasInfo, leaseInfo) {
+        Assert_1.assert(typeof key === 'string', "Key must be a string" /* KEY_MUST_BE_A_STRING */);
+        const blocks = convertLease(leaseInfo);
+        Assert_1.assert(blocks >= 0, "Invalid lease time" /* INVALID_LEASE_TIME */);
+        return this.communicationService.sendMessage({
+            type: 'crud/renewlease',
+            value: {
+                Key: key,
+                Lease: blocks.toString(),
+                UUID: this.uuid,
+                Owner: this.address
+            }
+        }, gasInfo)
+            .then(res => ({ height: res.height, txhash: res.txhash }));
+    }
+    async renewLeaseAll(gasInfo, leaseInfo = {}) {
+        const blocks = convertLease(leaseInfo);
+        Assert_1.assert(blocks >= 0, "Invalid lease time" /* INVALID_LEASE_TIME */);
+        return this.communicationService.sendMessage({
+            type: 'crud/renewleaseall',
+            value: {
+                Lease: blocks.toString(),
+                UUID: this.uuid,
+                Owner: this.address
+            }
+        }, gasInfo)
+            .then(res => ({ height: res.height, txhash: res.txhash }));
+    }
+    async txCount(gasInfo) {
+        return this.communicationService.sendMessage({
+            type: 'crud/count',
+            value: {
+                UUID: this.uuid,
+                Owner: this.address
+            }
+        }, gasInfo)
+            .then(res => findMine(res, it => it.count !== undefined))
+            .then(({ res, data }) => ({ height: res.height, txhash: res.txhash, count: parseInt((data === null || data === void 0 ? void 0 : data.count) || '0') }));
+    }
+    async txGetLease(key, gasInfo) {
+        return this.communicationService.sendMessage({
+            type: 'crud/getlease',
+            value: {
+                Key: key,
+                UUID: this.uuid,
+                Owner: this.address
+            }
+        }, gasInfo)
+            .then(res => findMine(res, it => it.key === key && it.lease !== undefined))
+            .then(({ res, data }) => ({
+            height: res.height,
+            txhash: res.txhash,
+            lease: parseInt((data === null || data === void 0 ? void 0 : data.lease) || '0') * BLOCK_TIME_IN_SECONDS
+        }));
+    }
+    async txGetNShortestLeases(n, gasInfo) {
+        return {
+            txhash: 'xxx',
+            height: 1,
+            leases: []
+        };
+    }
+    async txHas(key, gasInfo) {
+        Assert_1.assert(typeof key === 'string', "Key must be a string" /* KEY_MUST_BE_A_STRING */);
+        return this.communicationService.sendMessage({
+            type: 'crud/has',
+            value: {
+                Key: key,
+                UUID: this.uuid,
+                Owner: this.address,
+            }
+        }, gasInfo)
+            .then(res => res.data.find(it => it.key === key && it.has) ? true : false);
+    }
+    async txKeys(gasInfo) {
+        return this.communicationService.sendMessage({
+            type: 'crud/keys',
+            value: {
+                UUID: this.uuid,
+                Owner: this.address
+            }
+        }, gasInfo)
+            .then(res => { var _a; return ((_a = res.data.find(it => it.keys)) === null || _a === void 0 ? void 0 : _a.keys) || []; });
+    }
+    async txKeyValues(gasInfo) {
+        return this.communicationService.sendMessage({
+            type: 'crud/keyvalues',
+            value: {
+                Owner: this.address,
+                UUID: this.uuid
+            }
+        }, gasInfo)
+            .then(res => findMine(res, it => {
+            return Array.isArray(it.keyvalues) &&
+                !!(it.keyvalues.length === 0 || (it.keyvalues[0].key && it.keyvalues[0].value));
+        }))
+            .then(({ res, data }) => ({ height: res.height, txhash: res.txhash, keyvalues: data === null || data === void 0 ? void 0 : data.keyvalues }));
     }
     txRead(key, gasInfo) {
         return this.communicationService.sendMessage({

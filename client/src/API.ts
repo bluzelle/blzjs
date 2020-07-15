@@ -76,13 +76,15 @@ export class API {
         this.communicationService.setMaxMessagesPerTransaction(count);
     }
 
-    account = (): Promise<AccountResult> =>
-        this.cosmos.getAccounts(this.address)
+    account(): Promise<AccountResult> {
+        return this.cosmos.getAccounts(this.address)
             .then((x: AccountsResult) => x.result.value);
+    }
 
-    count = (): Promise<number> =>
-        this.#query<QueryCountResult>(`crud/count/${this.uuid}`)
+    count(): Promise<number> {
+        return this.#query<QueryCountResult>(`crud/count/${this.uuid}`)
             .then((res: QueryCountResult) => parseInt(res.count || '0'));
+    }
 
     async create(key: string, value: string, gasInfo: GasInfo, leaseInfo: LeaseInfo = {}): Promise<TxResult> {
         const blocks = convertLease(leaseInfo);
@@ -107,8 +109,8 @@ export class API {
     }
 
 
-    delete = (key: string, gasInfo: GasInfo): Promise<TxResult> =>
-        this.communicationService.sendMessage<DeleteMessage, void>({
+    delete(key: string, gasInfo: GasInfo): Promise<TxResult> {
+        return this.communicationService.sendMessage<DeleteMessage, void>({
             type: 'crud/delete',
             value: {
                 Key: key,
@@ -117,9 +119,10 @@ export class API {
             }
         }, gasInfo)
             .then(res => ({height: res.height, txhash: res.txhash}))
+    }
 
-    deleteAll = (gasInfo: GasInfo): Promise<TxResult> =>
-        this.communicationService.sendMessage<DeleteAllMessage, void>({
+    deleteAll(gasInfo: GasInfo): Promise<TxResult> {
+        return this.communicationService.sendMessage<DeleteAllMessage, void>({
             type: 'crud/deleteall',
             value: {
                 UUID: this.uuid,
@@ -127,35 +130,40 @@ export class API {
             }
         }, gasInfo)
             .then(res => ({height: res.height, txhash: res.txhash}))
+    }
 
-    getLease = (key: string) =>
-        this.#query<QueryGetLeaseResult & { error: string }>(`crud/getlease/${this.uuid}/${encodeSafe(key)}`)
+    getLease(key: string): Promise<number> {
+        return this.#query<QueryGetLeaseResult & { error: string }>(`crud/getlease/${this.uuid}/${encodeSafe(key)}`)
             .then(res => res.lease * BLOCK_TIME_IN_SECONDS)
             .catch(res => {
                 throw res.error === 'Not Found' ? `key "${key}" not found` : res.error
             })
+    }
 
-    getNShortestLeases = async (count: number) => {
+    async getNShortestLeases(count: number)  {
         assert(count >= 0, ClientErrors.INVALID_VALUE_SPECIFIED);
         return this.#query<QueryGetNShortestLeasesResult>(`crud/getnshortestleases/${this.uuid}/${count}`)
             .then(res => res.keyleases.map(({key, lease}) => ({key, lease: parseInt(lease) * BLOCK_TIME_IN_SECONDS})));
     }
 
 
-    has = (key: string): Promise<boolean> =>
-        this.#query<QueryHasResult>(`crud/has/${this.uuid}/${key}`)
+    has(key: string): Promise<boolean> {
+        return this.#query<QueryHasResult>(`crud/has/${this.uuid}/${key}`)
             .then(res => res.has);
+    }
 
-    keys = (): Promise<string[]> =>
-        this.#query<QueryKeysResult>(`crud/keys/${this.uuid}`)
+    keys(): Promise<string[]> {
+        return this.#query<QueryKeysResult>(`crud/keys/${this.uuid}`)
             .then(res => res.keys)
             .then(keys => keys.map(decodeSafe));
+    }
 
-    keyValues = (): Promise<{ key: string, value: string }[]> =>
-        this.#query<QueryKeyValuesResult>(`crud/keyvalues/${this.uuid}`)
+    keyValues(): Promise<{ key: string, value: string }[]> {
+        return this.#query<QueryKeyValuesResult>(`crud/keyvalues/${this.uuid}`)
             .then(res => res.keyvalues)
+    }
 
-    multiUpdate = async (keyValues: { key: string, value: string }[], gasInfo: GasInfo): Promise<TxResult> => {
+    async multiUpdate(keyValues: { key: string, value: string }[], gasInfo: GasInfo): Promise<TxResult> {
         assert(Array.isArray(keyValues), 'keyValues must be an array');
 
         keyValues.forEach(({key, value}, index, array) => {
@@ -174,16 +182,17 @@ export class API {
             .then(res => ({txhash: res.txhash, height: res.height}))
     }
 
-    read = (key: string, prove: boolean = false): Promise<string> =>
-        this.#query<QueryReadResult>(`crud/${prove ? 'pread' : 'read'}/${this.uuid}/${encodeSafe(key)}`)
+    read(key: string, prove: boolean = false): Promise<string> {
+        return this.#query<QueryReadResult>(`crud/${prove ? 'pread' : 'read'}/${this.uuid}/${encodeSafe(key)}`)
             .then(res => res.value)
-                        .then(decodeSafe)
+            .then(decodeSafe)
             .catch(({error}) => {
                 throw(new Error(error === 'Not Found' ? `key "${key}" not found` : error))
             });
+    }
 
 
-    renewLease = async (key: string, gasInfo: GasInfo, leaseInfo: LeaseInfo): Promise<TxResult> => {
+    async renewLease(key: string, gasInfo: GasInfo, leaseInfo: LeaseInfo): Promise<TxResult> {
         assert(typeof key === 'string', ClientErrors.KEY_MUST_BE_A_STRING);
 
         const blocks = convertLease(leaseInfo);
@@ -203,7 +212,7 @@ export class API {
     }
 
 
-    renewLeaseAll = async (gasInfo: GasInfo, leaseInfo: LeaseInfo = {}): Promise<TxResult> => {
+    async renewLeaseAll(gasInfo: GasInfo, leaseInfo: LeaseInfo = {}): Promise<TxResult> {
         const blocks = convertLease(leaseInfo);
         assert(blocks >= 0, ClientErrors.INVALID_LEASE_TIME);
 
@@ -219,7 +228,7 @@ export class API {
 
     }
 
-    txCount = async (gasInfo: GasInfo): Promise<TxCountResult> => {
+    async txCount(gasInfo: GasInfo): Promise<TxCountResult> {
         return this.communicationService.sendMessage<CountMessage, TxCountResponse>({
             type: 'crud/count',
             value: {
@@ -229,10 +238,9 @@ export class API {
         }, gasInfo)
             .then(res => findMine<TxCountResponse>(res, it => it.count !== undefined))
             .then(({res, data}) => ({height: res.height, txhash: res.txhash, count: parseInt(data?.count || '0')}))
-
     }
 
-    txGetLease = async (key: string, gasInfo: GasInfo): Promise<TxGetLeaseResult> => {
+    async txGetLease(key: string, gasInfo: GasInfo): Promise<TxGetLeaseResult> {
         return this.communicationService.sendMessage<GetLeaseMessage, TxGetLeaseResponse>({
             type: 'crud/getlease',
             value: {
@@ -249,7 +257,7 @@ export class API {
             }))
     }
 
-    txGetNShortestLeases = async (n: number, gasInfo: GasInfo): Promise<TxGetNShortestLeasesResult> => {
+    async txGetNShortestLeases(n: number, gasInfo: GasInfo): Promise<TxGetNShortestLeasesResult> {
         return {
             txhash: 'xxx',
             height: 1,
@@ -257,7 +265,7 @@ export class API {
         }
     }
 
-    txHas = async (key: string, gasInfo: GasInfo): Promise<boolean> => {
+    async txHas(key: string, gasInfo: GasInfo): Promise<boolean> {
         assert(typeof key === 'string', ClientErrors.KEY_MUST_BE_A_STRING);
 
         return this.communicationService.sendMessage<HasMessage, TxHasResponse>({
@@ -272,7 +280,7 @@ export class API {
 
     }
 
-    txKeys = async (gasInfo: GasInfo): Promise<string[]> => {
+    async txKeys(gasInfo: GasInfo): Promise<string[]> {
         return this.communicationService.sendMessage<KeysMessage, TxKeysResponse>({
             type: 'crud/keys',
             value: {
@@ -283,7 +291,7 @@ export class API {
             .then(res => res.data.find(it => it.keys)?.keys || [])
     }
 
-    txKeyValues = async (gasInfo: GasInfo): Promise<any> => {
+    async txKeyValues(gasInfo: GasInfo): Promise<any> {
         return this.communicationService.sendMessage<KeyValuesMessage, TxKeyValuesResponse>({
             type: 'crud/keyvalues',
             value: {

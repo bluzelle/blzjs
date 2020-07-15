@@ -1,17 +1,25 @@
 import {bluzelle, API} from 'bluzelle'
 import {partial} from 'lodash'
 import repl from 'repl'
-import {GasInfo} from "bluzelle/lib/GasInfo";
+import {GasInfo} from "bluzelle/lib/types/GasInfo";
+import {Some} from 'monet'
 
 export default {}
+
+
+const getCommandList = (bz: API): string[] => Some(bz)
+    .map(bz => Object.getOwnPropertyNames(bz).concat(Object.getOwnPropertyNames(Object.getPrototypeOf(bz))))
+    .map(fnNames => fnNames.filter(name => typeof bz[name] === 'function'))
+    .join();
+
 
 const main = async (bz: API) => {
     console.log('Bluzelle REPL');
     console.log('To see a list of commands or get help with a specific command type ".help [command]"')
     const replServer = repl.start({useColors: true})
-    Object.getOwnPropertyNames(Object.getPrototypeOf(bz)).forEach(name => {
+    getCommandList(bz).forEach(name =>
         replServer.context[name] = async (...args) => bz[name](...args)
-    })
+    )
 
     replServer.defineCommand('help', partial(help, bz))
 
@@ -31,7 +39,7 @@ function help(bz, cmd) {
 
     function checkForCommandList(str) {
         cmd || (str +=
-                Object.getOwnPropertyNames(Object.getPrototypeOf(bz))
+                getCommandList(bz)
                     .map(name => `    ${functionToSignature(bz[name])}`)
                     .filter(string => !string.includes('API'))
                     .sort()
@@ -42,7 +50,11 @@ function help(bz, cmd) {
 
 
     function functionToSignature(fn: Function) {
-        return fn.toString().split('\n')[0].replace(/^([^\)]*\)).*/, '$1')
+        return Some(fn.toString())
+            .map(str => str.split('\n')[0])
+            .map(str => str.replace(/^([^\)]*\)).*/, '$1'))
+            .map(str => str.replace(/^async /, ''))
+            .join();
     }
 
     function checkForBzCmd(str) {
@@ -76,12 +88,14 @@ function help(bz, cmd) {
 
 }
 
-
-bluzelle({
-    mnemonic: "cradle labor rural kiwi slice very barrel oven afraid idea mistake mouse garden bless miss next collect notice dove cook replace scale gym tennis",
+Some({
+    mnemonic: "auction resemble there doll room uncle since gloom unfold service ghost beach cargo loyal govern orient book shrug heavy kit coil truly describe narrow",
     endpoint: "http://client.sentry.testnet.public.bluzelle.com:1317",
     chain_id: 'bluzelleTestPublic-1',
     uuid: Date.now().toString()
-}).then(main);
+
+})
+    .map(bluzelle)
+    .map(main)
 
 
