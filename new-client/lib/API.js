@@ -257,7 +257,7 @@ class API {
     }
     transferTokensTo(toAddress, amount, gasInfo) {
         return this.communicationService.sendMessage({
-            type: "crud/update",
+            type: "cosmos-sdk/MsgSend",
             value: {
                 amount: [
                     {
@@ -286,8 +286,6 @@ const encodeSafe = (str) => monet_1.Some(str)
     .map(encodeURI)
     .map(str => str.replace(/([\#\?\&])/g, ch => `%${ch.charCodeAt(0).toString(16)}`))
     .join();
-// encodeURI(str)
-//     .replace(/([\#\?\&])/g, ch => `%${ch.charCodeAt(0).toString(16)}`);
 const MINUTE = 60;
 const HOUR = MINUTE * 60;
 const DAY = HOUR * 24;

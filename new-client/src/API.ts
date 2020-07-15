@@ -340,7 +340,7 @@ export class API {
 
     transferTokensTo(toAddress: string, amount: number, gasInfo: GasInfo): Promise<void> {
         return this.communicationService.sendMessage<TransferTokensMessage, void>({
-            type: "crud/update",
+            type: "cosmos-sdk/MsgSend",
             value: {
                 amount: [
                     {
@@ -385,11 +385,6 @@ const encodeSafe = (str: string): string => Some(str)
     .map(encodeURI)
     .map(str => str.replace(/([\#\?\&])/g, ch => `%${ch.charCodeAt(0).toString(16)}`))
     .join();
-
-
-
-// encodeURI(str)
-//     .replace(/([\#\?\&])/g, ch => `%${ch.charCodeAt(0).toString(16)}`);
 
 
 const MINUTE = 60
