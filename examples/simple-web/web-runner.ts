@@ -1,12 +1,11 @@
 import {bluzelle, API} from 'bluzelle'
-import {bluzelleConfig} from "../example-config";
+const {bluzelleConfig} = require("../example-config");
 
 
-bluzelle(bluzelleConfig).then(async (bz: API) => {
+const bz: API = bluzelle(bluzelleConfig);
     window.document.body.innerHTML = 'Creating key...'
-    await bz.create('myKey', 'myValue', {gas_price: 10})
 
-    window.document.body.innerHTML = 'Reading key...'
-    const result = await bz.read('myKey');
-    window.document.body.innerHTML = `result = ${result}`
-});
+    bz.create('myKey', 'myValue', {gas_price: 10})
+        .then(() => window.document.body.innerHTML = 'Reading key...')
+        .then(() => bz.read('myKey'))
+        .then(result => window.document.body.innerHTML = `result = ${result}`);
