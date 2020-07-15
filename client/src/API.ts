@@ -33,7 +33,8 @@ import {assert} from "./Assert";
 import {Some} from "monet";
 
 const cosmosjs = require('@cosmostation/cosmosjs');
-const fetch = require('node-fetch');
+
+global.fetch || (global.fetch = require('node-fetch'));
 
 const BLOCK_TIME_IN_SECONDS = 5;
 

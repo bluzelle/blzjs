@@ -10,11 +10,13 @@
     "lodash": "^4.17.15",
     "monet": "^0.9.1",
     "node-fetch": "^2.6.0",
+    "parcel-bundler": "^1.12.4",
     "typescript": "^3.9.6"
   },
   "scripts": {
-    "build:watch": "tsc --watch",
-    "build": "tsc",
+    "build": "rm -rf lib && yarn build-js && yarn build-node",
+    "build-node": "tsc",
+    "build-js": "parcel build src/bluzelle-js.ts --no-cache public-url='./' --out-dir 'lib'",
     "publish-npm": "yarn build && yarn publish --tag next"
   },
   "version": "2.0.1"

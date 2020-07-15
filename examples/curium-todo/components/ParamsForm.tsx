@@ -3,7 +3,7 @@ import {params as bluzelleParams} from '../services/TodoService'
 import {ChangeEvent, EventHandler, useState} from "react";
 import {useRouter} from "next/router";
 import {extend} from 'lodash'
-import {BluzelleConfig} from "../../../client/src/BluzelleConfig";
+import {BluzelleConfig} from "bluzelle";
 
 export const ParamsForm: React.FC = () => {
     const [params, setParams] = useState<BluzelleConfig>(bluzelleParams);

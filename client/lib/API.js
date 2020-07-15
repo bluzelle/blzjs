@@ -13,7 +13,9 @@ const lodash_1 = require("lodash");
 const Assert_1 = require("./Assert");
 const monet_1 = require("monet");
 const cosmosjs = require('@cosmostation/cosmosjs');
-const fetch = require('node-fetch');
+if (typeof window === "undefined") {
+    global.fetch = require('node-fetch');
+}
 const BLOCK_TIME_IN_SECONDS = 5;
 class API {
     constructor(config) {

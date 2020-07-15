@@ -6,7 +6,7 @@
     "@fortawesome/react-fontawesome": "^0.1.9",
     "@types/node": "^13.13.4",
     "@types/react": "^16.9.34",
-    "bluzelle": "^1.0.11",
+    "bluzelle": "^2.0.1",
     "bootstrap": "^4.4.1",
     "date-fns": "^2.12.0",
     "lodash": "^4.17.15",
