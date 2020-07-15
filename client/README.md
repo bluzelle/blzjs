@@ -155,7 +155,7 @@ const info = await api.account();
 ```
 Returns: Promise=>object
 
-```json
+```javascript
 { 
     address: 'bluzelle1lgpau85z0hueyz6rraqqnskzmcz4zuzkfeqls7',
   	coins: [ { denom: 'bnt', amount: '9899567400' } ],
