@@ -138,17 +138,13 @@ const version = await api.version();
 
 ```
 
-
-```
-
 Returns: Promise=>string
-
 
 ### account\()
 
 Retrieve information about the currently active Bluzelle account.
 
-​```javascript
+```javascript
 // promise syntax
 api.account()
 	.then((info) => { ... })
@@ -159,12 +155,14 @@ const info = await api.account();
 ```
 Returns: Promise=>object
 
-```
-{ address: 'bluzelle1lgpau85z0hueyz6rraqqnskzmcz4zuzkfeqls7',
-  coins: [ { denom: 'bnt', amount: '9899567400' } ],
-  public_key: 'bluzellepub1addwnpepqd63w08dcrleyukxs4kq0n7ngalgyjdnu7jpf5khjmpykskyph2vypv6wms',
-  account_number: 3,
-  sequence: 218 }
+```json
+{ 
+    address: 'bluzelle1lgpau85z0hueyz6rraqqnskzmcz4zuzkfeqls7',
+  	coins: [ { denom: 'bnt', amount: '9899567400' } ],
+  	public_key: 'bluzellepub1addwnpepqd63w08dcrleyukxs4kq0n7ngalgyjdnu7jpf5khjmpykskyph2vypv6wms',
+  	account_number: 3,
+  	sequence: 218 
+}
 ```
 
 ## Database Functions
