@@ -1,31 +1,11 @@
-//
-// Copyright (C) 2020 Bluzelle
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//import {getAddress} from "./swarmClient/cosmos";
+import {BluzelleConfig} from "./types/BluzelleConfig";
+import {API} from "./API";
 
-import {mnemonicToAddress} from "./swarmClient/cosmos";
+export {API} from './API';
+export {BluzelleConfig} from './types/BluzelleConfig'
 
-export {API} from './swarmClient/Api'
-export {BluzelleConfig} from './BluzelleConfig'
 
-import {API} from './swarmClient/Api'
-import {BluzelleConfig} from "./BluzelleConfig";
 
-export const bluzelle = async (config: BluzelleConfig): Promise<API> => {
-    const api = new API(config);
-    await api.init();
-    return api;
-}
+export const bluzelle = (config: BluzelleConfig) => new API(config);
 
-bluzelle.mnemonicToAddress = mnemonicToAddress;
+

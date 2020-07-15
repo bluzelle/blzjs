@@ -1,9 +1,6 @@
-export { API } from './swarmClient/Api';
-export { BluzelleConfig } from './BluzelleConfig';
-import { API } from './swarmClient/Api';
-import { BluzelleConfig } from "./BluzelleConfig";
-export declare const bluzelle: {
-    (config: BluzelleConfig): Promise<API>;
-    mnemonicToAddress: (mnemonic: string) => Promise<string>;
-};
+import { BluzelleConfig } from "./types/BluzelleConfig";
+import { API } from "./API";
+export { API } from './API';
+export { BluzelleConfig } from './types/BluzelleConfig';
+export declare const bluzelle: (config: BluzelleConfig) => API;
 //# sourceMappingURL=bluzelle-node.d.ts.map
