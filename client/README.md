@@ -3,7 +3,7 @@
 
 **blzjs** is a JavaScript library that can be used to access the Bluzelle database service.
 
-NOTE: This is the documentation for the current 1.x version of the bluzelle library.  [Click here for the next 2.0 version.](https://github.com/bluzelle/blzjs/tree/2.0-next/client)
+**NOTE: This is the documentation for the current 1.x version of the bluzelle library.  [Click here for the next 2.0 version.](https://github.com/bluzelle/blzjs/tree/2.0-next/client)**
 
 # blzjs Installation
 
