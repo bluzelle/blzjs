@@ -3,6 +3,8 @@
 
 **blzjs** is a JavaScript library that can be used to access the Bluzelle database service.
 
+NOTE: This is the documentation for the current 1.x version of the bluzelle library.  [Click here for the next 2.0 version.](https://github.com/bluzelle/blzjs/tree/2.0-next/client)
+
 # blzjs Installation
 
 
@@ -61,18 +63,18 @@ const api = await bluzelle({
     max_gas: 20000,    // maximum amount of gas to consume for this call (integer)
     max_fee: 20000 // maximum amount to charge for this call (integer, in ubnt)
 };
-````
+​````
 All values are optional. The `max_gas` value will always be honored if present, otherwise a default value will be used. If both `max_fee` and `gas_price` are specified, `gas_price` will be ignored and calculated based on the provided `max_fee`.
 
 ![#1589F0](https://placehold.it/15/1589F0/000000?text=+) Some API functions take ***lease_info*** as a parameter. This is a JavaScript object containing parameters related to the minimum time a key should be maintained in the database, as follows:
-```javascript
+​```javascript
 {
     'days':    0, // number of days (integer)
     'hours':   0, // number of hours (integer)
     'minutes': 0  // number of minutes (integer)
     'seconds': 0  // number of seconds (integer)
 };
-````
+​````
 All values are optional. If none are provided a default value of 10 days will be used.
 
 
@@ -86,7 +88,7 @@ Configures the Bluzelle connection. This may be called multiple times to create 
 
 #### Plain Javascript
 
-```javascript
+​```javascript
 const {bluzelle} = require('bluzelle');
 
 const api = await bluzelle({
