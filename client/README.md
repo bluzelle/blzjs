@@ -156,14 +156,16 @@ const info = await api.account();
 Returns: Promise=>object
 
 ```javascript
-{ 
+{
     address: 'bluzelle1lgpau85z0hueyz6rraqqnskzmcz4zuzkfeqls7',
-  	coins: [ { denom: 'bnt', amount: '9899567400' } ],
+	coins: [ { denom: 'bnt', amount: '9899567400' } ],
   	public_key: 'bluzellepub1addwnpepqd63w08dcrleyukxs4kq0n7ngalgyjdnu7jpf5khjmpykskyph2vypv6wms',
   	account_number: 3,
   	sequence: 218 
 }
 ```
+
+
 
 ## Database Functions
 
@@ -190,7 +192,7 @@ await api.create('mykey', 'myValue', {gas_price: 10}, {days: 100});
 | gas_info | Object containing gas parameters (see above) |
 | lease_info (optional) | Minimum time for key to remain in database (see above) |
 
-Returns: Promise=>void
+Returns: Promise=>{txhash: string, height: number}
 
 ### read\(key, [prove]\)
 
@@ -220,7 +222,7 @@ Retrieve the value of a key with consensus.
 ```javascript
 // promise syntax
 api.txRead('mykey', {gas_price: 10})
-	.then(value => { ... })
+	.then(obj => { ... })
 	.catch(error => { ... });
 
 // async/await syntax
@@ -232,7 +234,7 @@ const value = await api.txRead('mykey', {gas_price: 10});
 | key | The key to retrieve |
 | gas_info | Object containing gas parameters (see above) |
 
-Returns: Promise=>value
+Returns: Promise=>{txhash: string, height: number, value: string}
 
 ### update\(key, value, gas_info [, lease_info]\)
 
@@ -255,7 +257,7 @@ await api.update('mykey', '{ a: 13 }, {gas_price: 10}', {days: 100});
 | gas_info | Object containing gas parameters (see above) |
 | lease_info (optional) | Positive or negative amount of time to alter the lease by. If not specified, the existing lease will not be changed. |
 
-Returns: Promise=>void
+Returns: Promise=>{txhash: string, height: number}
 
 ### delete\(key, gas_info\)
 

@@ -125,10 +125,12 @@ async function main()
     {
         return bz.read("mykey");
     });
+
     p2 = do_func("", async function()
     {
         return bz.read("mykey", true);
     });
+
     await Promise.all([p1, p2]);
 
     await do_func("\n*** transactional read ***", async function()
