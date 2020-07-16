@@ -77,7 +77,6 @@ const txReadWithTransaction = () => withTime(`read ${numberOfKeys} keys with tra
     ))
 )
 
-
 Promise.resolve()
     .then(() => program.transactionOnly ? undefined : createWithoutTransaction())
     .then(createWithTransaction)

@@ -3,13 +3,15 @@
 
 **blzjs** is a JavaScript library that can be used to access the Bluzelle database service.
 
-# blzjs Installation
+**NOTE: This is the documentation for the next 2.0 version [click here for the current 1.x version](https://github.com/bluzelle/blzjs)**
+
+# blzjs 2.0 Installation
 
 
 ```
-yarn add bluzelle
+yarn add bluzelle@next
 or
-npm install bluzelle
+npm install bluzelle@next
 ```
 
 There are two versions of the bluzelle
@@ -48,6 +50,22 @@ const bz = bluzelle({
     });
 
 ```
+
+
+
+# Major changes from BluzelleJS 1.x
+
+## Transactions
+
+The major new feature in 2.0 is the ability to use transactions.  All functions that start with 'tx' can be bundled into transactions using the new withTransaction() wrapper.  See withTransaction() below.  This will allow you to write code that can provide a significant performance improvement over the 1.x library.
+
+Transactions are also transactional, meaning that if a function fails in a transaction, they all fail.  This can help with reference integrity in your applications.
+
+## Return types from 'tx' functions
+
+All 'tx' functions now return an object that includes the txhash and block height of the transaction as well as the value instead of either a value or undefined.  The documentation below has been updated to reflect the return values.
+
+
 
 # blzjs API documentation
 
