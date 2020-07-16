@@ -20,11 +20,14 @@ const numberOfKeys = parseInt(process.argv[2] || '1');
 const valueLength = parseInt(process.argv[3] || '1');
 
 
+const error = (e: any) => console.log('ERROR:', e);
+
 const createWithTransaction = () => withTime(`transactional create ${numberOfKeys} keys with ${valueLength} length values`, () =>
     bz.withTransaction(() => Promise.all(
         times(numberOfKeys, (n) =>
             bz.create(`key-transactional-${n}`, '#'.repeat(valueLength), GAS_INFO)
                 .then(res => console.log(`key-${n} created  (${res.txhash})`))
+                .catch(error)
         )
     ))
 )
@@ -34,6 +37,7 @@ const createWithoutTransaction = () => withTime(`non-transactional create ${numb
         times(numberOfKeys, (n) =>
             bz.create(`key-non-transactional-${n}`, '#'.repeat(valueLength), GAS_INFO)
                 .then(res => console.log(`key-${n} created (${res.txhash})`))
+                .catch(error)
         )
     )
 )
@@ -43,6 +47,7 @@ const txReadWithoutTransaction = () => withTime(`read ${numberOfKeys} keys witho
         times(numberOfKeys, (n) =>
             bz.txRead(`key-non-transactional-${n}`, GAS_INFO)
                 .then(res => console.log(`key-${n} read`))
+                .catch(error)
         )
     )
 )
@@ -50,14 +55,16 @@ const txReadWithoutTransaction = () => withTime(`read ${numberOfKeys} keys witho
 const txReadWithTransaction = () => withTime(`read ${numberOfKeys} keys with transaction`, () =>
     bz.withTransaction(() => Promise.all(
         times(numberOfKeys, (n) =>
-            bz.txRead(`key-non-transactional-${n}`, GAS_INFO)
+            bz.txRead(`key-transactional-${n}`, GAS_INFO)
                 .then(res => console.log(`key-${n} read`))
+                .catch(error)
         )
     ))
 )
 
 
-createWithoutTransaction()
+Promise.resolve()
+//    .then(createWithoutTransaction)
     .then(createWithTransaction)
-    .then(txReadWithoutTransaction)
+//    .then(txReadWithoutTransaction)
     .then(txReadWithTransaction)
