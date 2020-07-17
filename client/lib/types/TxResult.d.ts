@@ -17,4 +17,10 @@ export interface TxGetNShortestLeasesResult extends TxResult {
         lease: number;
     }[];
 }
+export interface TxHasResult extends TxResult {
+    has: boolean;
+}
+export interface TxKeysResult extends TxResult {
+    keys: string[];
+}
 //# sourceMappingURL=TxResult.d.ts.map

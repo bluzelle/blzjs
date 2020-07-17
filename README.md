@@ -5,12 +5,14 @@
 
 # Installation
 
+#### **NOTE: This is the documentation for the 2.x-next version of BluzelleJS**
 
+[Click here for the 1.x version](https://github.com/bluzelle/blzjs)
 
 ```
-yarn add bluzelle
+yarn add bluzelle@next
 or
-npm install bluzelle
+npm install bluzelle@next
 ```
 There are two versions of the bluzelle
 library.  `bluzelle-node.js` and `bluzelle-js.js`.  
@@ -57,7 +59,7 @@ const config = {
 };
 
 (async () => {
-    const bz = await bluzelle(config);
+    const bz = bluzelle(config);
 
     await bz.create("somekey", "somevalue", {'gas_price': 10})
     console.log(await bz.read("somekey"))
@@ -78,7 +80,7 @@ const config: BluzelleConfig = {
 };
 
 (async () => {
-    const bz: API = await bluzelle(config);
+    const bz: API = bluzelle(config);
 
     await bz.create("somekey", "somevalue", {'gas_price': 10})
     console.log(await bz.read("somekey"))

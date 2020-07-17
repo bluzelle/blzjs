@@ -141,6 +141,20 @@ class API {
             throw (new Error(error === 'Not Found' ? `key "${key}" not found` : error));
         });
     }
+    async rename(key, newKey, gasInfo) {
+        Assert_1.assert(typeof key === 'string', "Key must be a string" /* KEY_MUST_BE_A_STRING */);
+        Assert_1.assert(typeof newKey === 'string', "New key must be a string" /* NEW_KEY_MUST_BE_A_STRING */);
+        return this.communicationService.sendMessage({
+            type: 'crud/rename',
+            value: {
+                Key: key,
+                NewKey: newKey,
+                UUID: this.uuid,
+                Owner: this.address
+            }
+        }, gasInfo)
+            .then(res => ({ height: res.height, txhash: res.txhash }));
+    }
     async renewLease(key, gasInfo, leaseInfo) {
         Assert_1.assert(typeof key === 'string', "Key must be a string" /* KEY_MUST_BE_A_STRING */);
         const blocks = convertLease(leaseInfo);
@@ -213,7 +227,8 @@ class API {
                 Owner: this.address,
             }
         }, gasInfo)
-            .then(res => res.data.find(it => it.key === key && it.has) ? true : false);
+            .then(res => findMine(res, it => it.key === key && it.has !== undefined))
+            .then(({ res, data }) => ({ height: res.height, txhash: res.txhash, key: (data === null || data === void 0 ? void 0 : data.key) || '', has: (data === null || data === void 0 ? void 0 : data.has) || false }));
     }
     async txKeys(gasInfo) {
         return this.communicationService.sendMessage({
@@ -223,7 +238,8 @@ class API {
                 Owner: this.address
             }
         }, gasInfo)
-            .then(res => { var _a; return ((_a = res.data.find(it => it.keys)) === null || _a === void 0 ? void 0 : _a.keys) || []; });
+            .then(res => findMine(res, it => it.keys !== undefined))
+            .then(({ res, data }) => ({ height: res.height, txhash: res.txhash, keys: (data === null || data === void 0 ? void 0 : data.keys) || [] }));
     }
     async txKeyValues(gasInfo) {
         return this.communicationService.sendMessage({
@@ -287,8 +303,7 @@ class API {
                 to_address: toAddress
             }
         }, gasInfo)
-            .then(() => {
-        });
+            .then((res) => ({ txhash: res.txhash, height: res.height }));
     }
 }
 exports.API = API;

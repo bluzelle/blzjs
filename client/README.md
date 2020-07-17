@@ -196,7 +196,7 @@ Create a field in the database.
 ```javascript
 // promise syntax
 api.create('mykey', 'myValue', {gas_price: 10}, {days: 100})
-	.then(() => { ... })
+	.then((result) => { ... })
 	.catch(error => { ... });
 
 // async/await syntax
@@ -210,7 +210,7 @@ await api.create('mykey', 'myValue', {gas_price: 10}, {days: 100});
 | gas_info | Object containing gas parameters (see above) |
 | lease_info (optional) | Minimum time for key to remain in database (see above) |
 
-Returns: Promise=>{txhash: string, height: number}
+Returns: Promise=>`{txhash: string, height: number}`
 
 ### read\(key, [prove]\)
 
@@ -252,7 +252,7 @@ const value = await api.txRead('mykey', {gas_price: 10});
 | key | The key to retrieve |
 | gas_info | Object containing gas parameters (see above) |
 
-Returns: Promise=>{txhash: string, height: number, value: string}
+Returns: Promise=>`{txhash: string, height: number, value: string}`
 
 ### update\(key, value, gas_info [, lease_info]\)
 
@@ -275,7 +275,7 @@ await api.update('mykey', '{ a: 13 }, {gas_price: 10}', {days: 100});
 | gas_info | Object containing gas parameters (see above) |
 | lease_info (optional) | Positive or negative amount of time to alter the lease by. If not specified, the existing lease will not be changed. |
 
-Returns: Promise=>{txhash: string, height: number}
+Returns: Promise=>`{txhash: string, height: number}`
 
 ### delete\(key, gas_info\)
 
@@ -296,7 +296,7 @@ await bluzelle.delete('mykey', {gas_price: 10});
 | key | The name of the key to delete |
 | gas_info | Object containing gas parameters (see above) |
 
-Returns: Promise=>void
+Returns: Promise=>`{txhash: string, height: number}`
 
 ### has\(key\)
 
@@ -338,7 +338,7 @@ const hasMyKey = await api.txHas('mykey', {gas_price: 10});
 | key | The name of the key to query |
 | gas_info | Object containing gas parameters (see above) |
 
-Returns: Promise=>boolean
+Returns: Promise=>`{txhash: string, height: number, has: boolean}`
 
 ### keys\(\)
 
@@ -374,7 +374,7 @@ const keys = await api.txKeys({gas_price: 10});
 | :--- | :--- |
 | gas_info | Object containing gas parameters (see above) |
 
-Returns: Promise=>array (array of keys)
+Returns: Promise=>`{txhash: string, height: number, keys: string[]}`
 
 ### rename\(key, new_key, gas_info\)
 
@@ -396,7 +396,7 @@ await api.rename("key", "newkey", {gas_price: 10});
 | new_key | The new name for the key |
 | gas_info | Object containing gas parameters (see above) |
 
-Returns: Promise=>void
+Returns: Promise=>`{txhash: string, height: number}`
 
 ### count\(\)
 
@@ -432,7 +432,7 @@ const number = await api.txCount({gas_price: 10});
 | :--- | :--- |
 | gas_info | Object containing gas parameters (see above) |
 
-Returns: Promise=>number
+Returns: Promise=> `{txhash: string, height: number, count: number}`
 
 ### deleteAll\(gas_info\)
 
@@ -452,7 +452,7 @@ await api.deleteAll({gas_price: 10});
 | :--- | :--- |
 | gas_info | Object containing gas parameters (see above) |
 
-Returns: Promise=>void
+Returns: Promise=> `{txhash: string, height: number}`
 
 ### keyValues\(\)
 
@@ -492,11 +492,9 @@ const kvs = await api.txKeyValues({gas_price: 10});
 | :--- | :--- |
 | gas_info | Object containing gas parameters (see above) |
 
-Returns: Promise=>object
+Returns: Promise=> `{txhash: string, height: number, keyvalues: [{key: string, value: string}]}`
 
-```
-[{"key": "key1", "value": "value1"}, {"key": "key2", "value": "value2"}]
-```
+
 
 ### multiUpdate\(key_values, gas_info\)
 
@@ -517,9 +515,9 @@ await api.multiUpdate([{key: "key1", value: "value1"}, {key: "key2", value: "val
 | key_values | An array of objects containing keys and values (see example avove) |
 | gas_info | Object containing gas parameters (see above) |
 
-Returns: Promise=>void
+Returns: Promise=> `{txhash: string, height: number}`
 
-### getLease\(key\)
+### getLease(key\)
 
 Retrieve the minimum time remaining on the lease for a key. This function bypasses the consensus and cryptography mechanisms in favor of speed.
 
@@ -558,7 +556,7 @@ const value = await api.txGetLease('mykey', {gas_price: 10});
 | key | The key to retrieve the lease information for |
 | gas_info | Object containing gas parameters (see above) |
 
-Returns: Promise=>number (minimum length of time remaining for the key's lease, in seconds)
+Returns: Promise=> `{txhash: string, height: number, lease: number}`
 
 ### renewLease\(key, gas_info[, lease_info]\)
 
@@ -580,7 +578,7 @@ const value = await api.renewLease('mykey', {gas_price: 10}, {days: 100});
 | gas_info | Object containing gas parameters (see above) |
 | lease_info (optional) | Minimum time for key to remain in database (see above) |
 
-Returns: Promise=>number (minimum length of time remaining for the key's lease)
+Returns: Promise=> `{txhash: string, height: number}`
 
 ### renewLeaseAll\(gas_info[, lease_info]\)
 
@@ -601,7 +599,7 @@ const value = await api.renewLease('mykey', {gas_price: 10}, {days: 100});
 | gas_info | Object containing gas parameters (see above) |
 | lease_info (optional) | Minimum time for key to remain in database (see above) |
 
-Returns: Promise=>number (minimum length of time remaining for the key's lease)
+Returns: Promise=> `{txhash: string, height: number}`
 
 ### getNShortestLeases\(n\)
 
@@ -623,30 +621,8 @@ const keys = await api.getNShortestLeases(10);
 
 Returns: Promise=>object (containing key, lease (in seconds))
 ```
-[ { key: "mykey", lease: { seconds: "12345" } }, {...}, ...]
+[ { key: "mykey", lease: 1234 }, {...}, ...]
 ```
 
-### txGetNShortestLeases\(n, gas_info\)
 
-Retrieve a list of the N keys/values in the database with the shortest leases, using a transaction.
 
-```javascript
-// promise syntax
-api.txGetNShortestLeases(10)
-	.then(keys => { ... })
-	.catch(error => { ... });
-
-// async/await syntax
-const keys = await api.txGetNShortestLeases(10);
-```
-
-| Argument | Description |
-| :--- | :--- |
-| n | The number of keys to retrieve the lease information for |
-| gas_info | Object containing gas parameters (see above) |
-
-Returns: Promise=>array (of objects containing key, lifetime (in seconds))
-
-```
-[ { key: "mykey", lifetime: "12345" }, {...}, ...]
-```

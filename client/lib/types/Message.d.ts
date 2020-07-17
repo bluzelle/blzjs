@@ -65,6 +65,12 @@ export interface RenewLeaseMessage {
     Owner: string;
     UUID: string;
 }
+export interface RenameMessage {
+    Key: string;
+    NewKey: string;
+    Owner: string;
+    UUID: string;
+}
 export interface RenewLeaseAllMessage {
     Lease: string;
     Owner: string;

@@ -15,7 +15,7 @@ import {
     CreateMessage,
     DeleteAllMessage,
     DeleteMessage, GetLeaseMessage, HasMessage, KeysMessage, KeyValuesMessage, MultiUpdateMessage,
-    ReadMessage, RenewLeaseAllMessage,
+    ReadMessage, RenameMessage, RenewLeaseAllMessage,
     RenewLeaseMessage, TransferTokensMessage, UpdateMessage
 } from "./types/Message";
 import {
@@ -28,7 +28,14 @@ import {
 import {LeaseInfo} from "./types/LeaseInfo";
 import {ClientErrors} from "./ClientErrors";
 import {pullAt} from 'lodash'
-import {TxCountResult, TxGetLeaseResult, TxGetNShortestLeasesResult, TxReadResult, TxResult} from "./types/TxResult";
+import {
+    TxCountResult,
+    TxGetLeaseResult,
+    TxGetNShortestLeasesResult,
+    TxHasResult, TxKeysResult,
+    TxReadResult,
+    TxResult
+} from "./types/TxResult";
 import {assert} from "./Assert";
 import {Some} from "monet";
 
@@ -191,6 +198,23 @@ export class API {
             });
     }
 
+    async rename(key: string, newKey: string, gasInfo: GasInfo): Promise<TxResult> {
+        assert(typeof key === 'string', ClientErrors.KEY_MUST_BE_A_STRING);
+        assert(typeof newKey === 'string', ClientErrors.NEW_KEY_MUST_BE_A_STRING);
+
+        return this.communicationService.sendMessage<RenameMessage, void>({
+            type: 'crud/rename',
+            value: {
+                Key: key,
+                NewKey: newKey,
+                UUID: this.uuid,
+                Owner: this.address
+            }
+        }, gasInfo)
+            .then(res => ({height: res.height, txhash: res.txhash}))
+
+    }
+
 
     async renewLease(key: string, gasInfo: GasInfo, leaseInfo: LeaseInfo): Promise<TxResult> {
         assert(typeof key === 'string', ClientErrors.KEY_MUST_BE_A_STRING);
@@ -265,7 +289,7 @@ export class API {
         }
     }
 
-    async txHas(key: string, gasInfo: GasInfo): Promise<boolean> {
+    async txHas(key: string, gasInfo: GasInfo): Promise<TxHasResult> {
         assert(typeof key === 'string', ClientErrors.KEY_MUST_BE_A_STRING);
 
         return this.communicationService.sendMessage<HasMessage, TxHasResponse>({
@@ -276,11 +300,12 @@ export class API {
                 Owner: this.address,
             }
         }, gasInfo)
-            .then(res => res.data.find(it => it.key === key && it.has) ? true : false)
+            .then(res => findMine<TxHasResponse>(res, it => it.key === key && it.has !== undefined))
+            .then(({res, data}) => ({height: res.height, txhash: res.txhash, key: data?.key || '', has: data?.has || false}))
 
     }
 
-    async txKeys(gasInfo: GasInfo): Promise<string[]> {
+    async txKeys(gasInfo: GasInfo): Promise<TxKeysResult> {
         return this.communicationService.sendMessage<KeysMessage, TxKeysResponse>({
             type: 'crud/keys',
             value: {
@@ -288,7 +313,8 @@ export class API {
                 Owner: this.address
             }
         }, gasInfo)
-            .then(res => res.data.find(it => it.keys)?.keys || [])
+            .then(res => findMine<TxKeysResponse>(res, it => it.keys !== undefined))
+            .then(({res, data}) => ({height: res.height, txhash: res.txhash, keys: data?.keys || []}))
     }
 
     async txKeyValues(gasInfo: GasInfo): Promise<any> {
@@ -347,7 +373,7 @@ export class API {
         return this.#query<any>('node_info').then(res => res.application_version.version);
     }
 
-    transferTokensTo(toAddress: string, amount: number, gasInfo: GasInfo): Promise<void> {
+    transferTokensTo(toAddress: string, amount: number, gasInfo: GasInfo): Promise<TxResult> {
         return this.communicationService.sendMessage<TransferTokensMessage, void>({
             type: "cosmos-sdk/MsgSend",
             value: {
@@ -361,8 +387,7 @@ export class API {
                 to_address: toAddress
             }
         }, gasInfo)
-            .then(() => {
-            })
+            .then((res) => ({txhash: res.txhash, height: res.height}))
     }
 
     #query = <T>(path: string): Promise<T> =>

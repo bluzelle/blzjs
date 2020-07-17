@@ -18,3 +18,11 @@ export interface TxGetLeaseResult extends TxResult {
 export interface TxGetNShortestLeasesResult extends TxResult {
     leases: {key: string, lease: number}[]
 }
+
+export interface TxHasResult extends TxResult {
+    has: boolean
+}
+
+export interface TxKeysResult extends TxResult {
+    keys: string[]
+}
