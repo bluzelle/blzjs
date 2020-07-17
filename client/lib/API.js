@@ -12,11 +12,16 @@ const CommunicationService_1 = require("./services/CommunicationService");
 const lodash_1 = require("lodash");
 const Assert_1 = require("./Assert");
 const monet_1 = require("monet");
+const bip39_1 = require("bip39");
 const cosmosjs = require('@cosmostation/cosmosjs');
 global.fetch || (global.fetch = require('node-fetch'));
 const BLOCK_TIME_IN_SECONDS = 5;
 class API {
     constructor(config) {
+        this.generateBIP39Account = (entropy = '') => {
+            Assert_1.assert(entropy.length === 0 || entropy.length === 64, 'Entropy must be 64 char hex');
+            return entropy ? bip39_1.entropyToMnemonic(entropy) : bip39_1.generateMnemonic(256);
+        };
         _query.set(this, (path) => fetch(`${this.url}/${path}`)
             .then((res) => {
             if (res.status !== 200) {
@@ -91,6 +96,9 @@ class API {
             }
         }, gasInfo)
             .then(res => ({ height: res.height, txhash: res.txhash }));
+    }
+    getAddress() {
+        return this.cosmos.getAddress(this.mnemonic);
     }
     getLease(key) {
         return __classPrivateFieldGet(this, _query).call(this, `crud/getlease/${this.uuid}/${encodeSafe(key)}`)

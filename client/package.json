@@ -5,6 +5,7 @@
     "@cosmostation/cosmosjs": "^0.6.4",
     "@types/lodash": "^4.14.157",
     "@types/node": "^14.0.14",
+    "bip39": "^3.0.2",
     "delay": "^4.3.0",
     "linked-list": "^2.1.0",
     "lodash": "^4.17.15",

@@ -38,6 +38,7 @@ import {
 } from "./types/TxResult";
 import {assert} from "./Assert";
 import {Some} from "monet";
+import {entropyToMnemonic, generateMnemonic} from "bip39";
 
 const cosmosjs = require('@cosmostation/cosmosjs');
 
@@ -139,12 +140,21 @@ export class API {
             .then(res => ({height: res.height, txhash: res.txhash}))
     }
 
+    getAddress() {
+        return this.cosmos.getAddress(this.mnemonic);
+    }
+
     getLease(key: string): Promise<number> {
         return this.#query<QueryGetLeaseResult & { error: string }>(`crud/getlease/${this.uuid}/${encodeSafe(key)}`)
             .then(res => res.lease * BLOCK_TIME_IN_SECONDS)
             .catch(res => {
                 throw res.error === 'Not Found' ? `key "${key}" not found` : res.error
             })
+    }
+
+    generateBIP39Account = (entropy: string = ''): string => {
+        assert(entropy.length === 0 || entropy.length === 64, 'Entropy must be 64 char hex');
+        return entropy ? entropyToMnemonic(entropy) : generateMnemonic(256);
     }
 
     async getNShortestLeases(count: number)  {
