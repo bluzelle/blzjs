@@ -626,3 +626,44 @@ Returns: Promise=>object (containing key, lease (in seconds))
 
 
 
+### withTransaction(fn)
+
+Execute commands inside of a transaction. 
+
+```typescript
+api.withTransaction(() => {
+    api.create('foo', 'bar', {gas_price: 10});
+    api.create('foo2', 'bar', {gas_price: 10});
+    api.txRead('foo', {gas_price: 10}).then(printIt)
+})
+```
+
+The above code will execute the two creates and the read in a single transaction.  If any of the commands fail, then they all will fail.  
+
+withTransaction() returns whatever the function inside of it returns, so if you need to return a promise for items inside of the transaction, simply wrap them in Promise.all
+
+```typescript
+api.withTransaction(() => Promise.all([
+    	api.create('foo', 'bar', {gas_price: 10}),
+    	api.create('foo2', 'bar', {gas_price: 10}),
+    	api.txRead('foo', {gas_price: 10}).then(printIt)
+    ])
+}).then(doSomething)
+```
+
+
+
+### transferTokensTo(address, amount, gas_info)
+
+Transfer tokens to another user
+
+| Argument | Description                                      |
+| -------- | ------------------------------------------------ |
+| address  | The address of the recipient                     |
+| amount   | The amount in BNT                                |
+| gas_info | Object containing the gas parameters (see above) |
+
+```typescript
+transferTokensTo('bluzellexxxxx', 10, {gas_price: 10})
+```
+
