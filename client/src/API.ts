@@ -164,6 +164,13 @@ export class API {
     }
 
 
+    getBNT(): Promise<number> {
+        return this.account()
+            .then(a =>
+                parseInt(a.coins[0]?.amount.replace(/0000$/, '') || '0') / 100
+            )
+    }
+
     has(key: string): Promise<boolean> {
         return this.#query<QueryHasResult>(`crud/has/${this.uuid}/${key}`)
             .then(res => res.has);

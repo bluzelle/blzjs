@@ -169,6 +169,23 @@ Returns: Promise=>object
 
 
 
+### getBNT()
+
+Retrieve the amount of BNT in an account
+
+```typescript
+// promise syntax
+api.getBNT()
+    .then(amt => .....);
+
+// async/await syntax
+const bnt = api.getBnt();
+```
+
+Returns: Promise => number (amount of BNT rounded to 2 decimal places)
+
+
+
 ### version\()
 
 Retrieve the version of the Bluzelle service.

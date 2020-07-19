@@ -38,14 +38,11 @@ export const fundAccounts = (from: API, config: Config) => (accounts: API[]): Pr
         .then(() => accounts)
 }
 
-const fundAccount = (from: API, config: Config, account: API): Promise<any> => account.account()
-    .then(a => {console.log('Account: ', account.address); return a})
-    .then(a => a.coins[0])
-    .then(coins => {console.log('current coins', coins); return coins})
-    .then(coins => coins ? parseInt(coins.amount || '0') / 1e6 : 0)
-    .then(amt => amt < config.NUMBER_OF_KEYS)
+const fundAccount = (from: API, config: Config, account: API): Promise<any> => account.getBNT()
+    .then(tokens => {console.log('current tokens', tokens); return tokens})
+    .then(amt => amt < config.NUMBER_OF_KEYS * 5)
     .then(needsFunding => {needsFunding && console.log('adding tokens'); return needsFunding})
-    .then(needsFunding => needsFunding ? from.transferTokensTo(account.address, config.NUMBER_OF_KEYS * 5, {gas_price: 10}).then(() => account) : account)
+    .then(needsFunding => needsFunding ? from.transferTokensTo(account.address, config.NUMBER_OF_KEYS * 10, {gas_price: 10}).then(() => account) : account)
 
 
 export const createAccounts = (bz: API, config: Pick<Config, 'NUMBER_OF_CLIENTS'>): Promise<API[]> => Promise.all(times(config.NUMBER_OF_CLIENTS, (n) => createAccount(bz, n)))

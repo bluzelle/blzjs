@@ -112,6 +112,10 @@ class API {
         return __classPrivateFieldGet(this, _query).call(this, `crud/getnshortestleases/${this.uuid}/${count}`)
             .then(res => res.keyleases.map(({ key, lease }) => ({ key, lease: parseInt(lease) * BLOCK_TIME_IN_SECONDS })));
     }
+    getBNT() {
+        return this.account()
+            .then(a => { var _a; return parseInt(((_a = a.coins[0]) === null || _a === void 0 ? void 0 : _a.amount.replace(/0000$/, '')) || '0') / 100; });
+    }
     has(key) {
         return __classPrivateFieldGet(this, _query).call(this, `crud/has/${this.uuid}/${key}`)
             .then(res => res.has);

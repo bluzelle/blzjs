@@ -29,6 +29,7 @@ export declare class API {
         key: string;
         lease: number;
     }[]>;
+    getBNT(): Promise<number>;
     has(key: string): Promise<boolean>;
     keys(): Promise<string[]>;
     keyValues(): Promise<{
