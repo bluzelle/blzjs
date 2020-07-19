@@ -20,5 +20,5 @@
     "build-js": "parcel build src/bluzelle-js.ts --no-cache public-url='./' --out-dir 'lib'",
     "publish-npm": "yarn build && yarn publish --tag next"
   },
-  "version": "2.0.2"
+  "version": "2.0.3"
 }
