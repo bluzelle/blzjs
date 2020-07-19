@@ -10,7 +10,7 @@
   },
   "scripts": {
     "start": "ts-node main.ts",
-    "multiple-accounts": "ts-node multiple-accounts.ts",
+    "create-keys-multiple-accounts": "ts-node create-keys-multiple-accounts.ts",
     "fund-accounts": "ts-node fund-accounts.ts"
   }
 }

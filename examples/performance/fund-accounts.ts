@@ -1,10 +1,7 @@
-import {bluzelle, BluzelleConfig} from 'bluzelle'
-import {GasInfo} from "bluzelle/lib/types/GasInfo";
+import {bluzelle} from 'bluzelle'
 import {Config, createAccounts, fundAccounts} from "./utils";
 
 const {bluzelleConfig} = require('../example-config.js')
-
-const GAS_INFO: GasInfo = {gas_price: 10};
 
 const bz = bluzelle(bluzelleConfig)
 
@@ -12,9 +9,12 @@ const program = require('commander');
 
 setTimeout(() =>
     program
-        .arguments('[numAccounts]')
+        .arguments('[numAccounts] [numberOfKeys')
         .description('create and fund accounts')
-        .action((numOfAccounts: string) => start(<Config>{NUMBER_OF_CLIENTS: parseInt(numOfAccounts || '1')}))
+        .action((numOfAccounts: string, numOfKeys: string) => start(<Config>{
+            NUMBER_OF_KEYS: parseInt(numOfKeys || '1'),
+            NUMBER_OF_CLIENTS: parseInt(numOfAccounts || '1')
+        }))
         .parse(process.argv)
 )
 
