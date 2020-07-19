@@ -1,13 +1,16 @@
 {
   "dependencies": {
+    "@types/lodash": "^4.14.157",
     "@types/node": "^14.0.23",
-    "bluzelle": "^2.0.2",
+    "commander": "^5.1.0",
     "lodash": "^4.17.19",
     "monet": "^0.9.1",
     "ts-node": "^8.10.2",
     "typescript": "^3.9.6"
   },
   "scripts": {
-    "start": "ts-node main.ts"
+    "start": "ts-node main.ts",
+    "multiple-accounts": "ts-node multiple-accounts.ts",
+    "fund-accounts": "ts-node fund-accounts.ts"
   }
 }
