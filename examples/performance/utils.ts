@@ -1,5 +1,5 @@
 import {bluzelle, API} from 'bluzelle'
-import {Some} from "monet";
+import {Left, Right, Some} from "monet";
 import {pad, times, uniqueId} from 'lodash'
 
 export interface Config {
@@ -23,7 +23,7 @@ export const verifyKeys = (config: Config) => (accounts: API[]) =>
     ))
 
 
-export const createKeys = async (config: Config, account: API): Promise<{account: API, time: number}> => account.withTransaction(async () => {
+export const createKeys = async (config: Config, account: API): Promise<{ account: API, time: number }> => account.withTransaction(async () => {
     const start = Date.now();
     await Promise.all(times(config.NUMBER_OF_KEYS, n => account.create(`key-${n}`, 'x'.repeat(config.VALUE_LENGTH), {gas_price: 10})))
     return {account, time: Date.now() - start};
@@ -38,15 +38,17 @@ export const fundAccounts = (from: API, config: Config) => (accounts: API[]): Pr
         .then(() => accounts)
 }
 
-const fundAccount = (from: API, config: Config, account: API): Promise<any> => account.getBNT()
-    .then(tokens => {console.log('current tokens', tokens); return tokens})
-    .then(amt => amt < config.NUMBER_OF_KEYS * 5)
-    .then(needsFunding => {needsFunding && console.log('adding tokens'); return needsFunding})
-    .then(needsFunding => needsFunding ? from.transferTokensTo(account.address, config.NUMBER_OF_KEYS * 10, {gas_price: 10}).then(() => account) : account)
 
+const log = (message: string) => (value: any) => {console.log(message, value); return value}
+
+const fundAccount = (from: API, config: Config, account: API): Promise<any> =>
+    account.getBNT()
+        .then(log('current tokens'))
+        .then(amt => amt < config.NUMBER_OF_KEYS * 5)
+        .then(log('needs funding'))
+        .then(needsFunding => needsFunding ? from.transferTokensTo(account.address, config.NUMBER_OF_KEYS * 10, {gas_price: 10}).then(() => account) : account)
 
 export const createAccounts = (bz: API, config: Pick<Config, 'NUMBER_OF_CLIENTS'>): Promise<API[]> => Promise.all(times(config.NUMBER_OF_CLIENTS, (n) => createAccount(bz, n)))
-
 
 const createAccount = (bz: API, n: number): API =>
     Some(n)
