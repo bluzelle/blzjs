@@ -12,7 +12,7 @@ interface MessageQueueItem<T, R> {
     resolve?: (value: MessageResponse<R>) => void
     reject?: (reason: any) => void
     gasInfo: GasInfo
-    transactionId: number
+    transaction?: Transaction
 }
 
 interface FailedTransaction {
@@ -21,6 +21,10 @@ interface FailedTransaction {
     failedMsg?: Message<any>
     failedMsgIdx?: number
     error: string
+}
+
+export interface Transaction {
+    memo: string
 }
 
 const count = (() => {
@@ -33,7 +37,7 @@ export class CommunicationService {
     #messageQueue: MessageQueueItem<any, any>[] = [];
     #maxMessagesPerTransaction = 1;
     #checkTransmitQueueTail: Promise<any> = Promise.resolve();
-    #currentTransactionId: number = 0;
+    #currentTransaction?: Transaction;
 
 
     static create(api: API): CommunicationService {
@@ -48,19 +52,19 @@ export class CommunicationService {
         this.#maxMessagesPerTransaction = count;
     }
 
-   startTransaction(): void {
-        this.#currentTransactionId = count();
+   startTransaction(transaction: Transaction): void {
+        this.#currentTransaction = transaction;
    }
 
    endTransaction(): void {
-        this.#currentTransactionId = 0;
+        this.#currentTransaction = undefined;
    }
 
-   withTransaction(fn: Function) : any{
-        if(this.#currentTransactionId > 0) {
+   withTransaction(fn: Function, transaction: {memo: string} = {memo: ''}) : any{
+        if(this.#currentTransaction) {
             throw new Error('withTransaction() can not be nested')
         }
-        this.startTransaction();
+        this.startTransaction(transaction);
         const result = fn();
         this.endTransaction();
         return result;
@@ -69,11 +73,11 @@ export class CommunicationService {
     sendMessage<T, R>(message: Message<T>, gasInfo: GasInfo): Promise<MessageResponse<R>> {
         const p = new Promise<MessageResponse<R>>((resolve, reject) => {
             this.#messageQueue.push({
-                message: message,
-                gasInfo: gasInfo,
-                resolve: resolve,
-                reject: reject,
-                transactionId: this.#currentTransactionId
+                message,
+                gasInfo,
+                resolve,
+                reject,
+                transaction: this.#currentTransaction
             })
         })
         this.#messageQueue.length === 1 && (this.#checkTransmitQueueTail = this.#checkTransmitQueueTail.then(this.checkMessageQueueNeedsTransmit.bind(this)));
@@ -83,11 +87,11 @@ export class CommunicationService {
     checkMessageQueueNeedsTransmit() {
         Some(this.#messageQueue)
             .flatMap(queue => queue.length ? Some<MessageQueueItem<any, any>[]>(this.#messageQueue) : None<any>())
-            .map(queue => [queue[0].transactionId, queue])
-            .map(([transactionId, queue]) => [
+            .map(queue => [queue[0].transaction, queue])
+            .map(([transaction, queue]) => [
                 takeWhile(queue, (it: MessageQueueItem<any, any>, idx: number) =>
-                    it.transactionId === transactionId
-                    && (it.transactionId === 0 ? idx < this.#maxMessagesPerTransaction : true)
+                    it.transaction === transaction
+                    && (it.transaction === undefined ? idx < this.#maxMessagesPerTransaction : true)
                 ),
                 queue
             ])
@@ -105,7 +109,7 @@ export class CommunicationService {
                 msgs: messages.map(m => m.message),
                 chain_id: this.#api.chainId,
                 fee: getFeeInfo(combineGas(messages)),
-                memo: 'group',
+                memo: messages[0].transaction?.memo || 'no memo',
                 account_number: String(data.result.value.account_number),
                 sequence: String(data.result.value.sequence)
             })

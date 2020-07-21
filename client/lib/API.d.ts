@@ -1,7 +1,7 @@
 import { BluzelleConfig } from "./types/BluzelleConfig";
 import { GasInfo } from "./types/GasInfo";
 import { AccountResult } from "./types/cosmos/AccountResult";
-import { CommunicationService } from "./services/CommunicationService";
+import { CommunicationService, Transaction } from "./services/CommunicationService";
 import { LeaseInfo } from "./types/LeaseInfo";
 import { TxCountResult, TxGetLeaseResult, TxGetNShortestLeasesResult, TxHasResult, TxKeysResult, TxReadResult, TxResult } from "./types/TxResult";
 export declare class API {
@@ -15,7 +15,7 @@ export declare class API {
     url: string;
     communicationService: CommunicationService;
     constructor(config: BluzelleConfig);
-    withTransaction(fn: Function): any;
+    withTransaction(fn: Function, transaction?: Transaction): any;
     setMaxMessagesPerTransaction(count: number): void;
     account(): Promise<AccountResult>;
     count(): Promise<number>;
@@ -29,7 +29,10 @@ export declare class API {
         key: string;
         lease: number;
     }[]>;
-    getBNT(): Promise<number>;
+    getTx(txhash: string): Promise<unknown>;
+    getBNT({ ubnt }?: {
+        ubnt?: boolean;
+    }): Promise<number>;
     has(key: string): Promise<boolean>;
     keys(): Promise<string[]>;
     keyValues(): Promise<{
@@ -53,6 +56,9 @@ export declare class API {
     txRead(key: string, gasInfo: GasInfo): Promise<TxReadResult | undefined>;
     update(key: string, value: string, gasInfo: GasInfo, leaseInfo?: LeaseInfo): Promise<void>;
     version(): Promise<string>;
-    transferTokensTo(toAddress: string, amount: number, gasInfo: GasInfo): Promise<TxResult>;
+    transferTokensTo(toAddress: string, amount: number, gasInfo: GasInfo, { ubnt, memo }?: {
+        ubnt?: boolean;
+        memo?: string;
+    }): Promise<TxResult>;
 }
 //# sourceMappingURL=API.d.ts.map

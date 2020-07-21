@@ -9,7 +9,7 @@ import {
     QueryKeyValuesResult,
     QueryReadResult
 } from "./types/QueryResult";
-import {CommunicationService} from "./services/CommunicationService";
+import {CommunicationService, Transaction} from "./services/CommunicationService";
 import {
     CountMessage,
     CreateMessage,
@@ -27,7 +27,7 @@ import {
 } from "./types/MessageResponse";
 import {LeaseInfo} from "./types/LeaseInfo";
 import {ClientErrors} from "./ClientErrors";
-import {pullAt} from 'lodash'
+import {pullAt, padStart} from 'lodash'
 import {
     TxCountResult,
     TxGetLeaseResult,
@@ -76,8 +76,8 @@ export class API {
     }
 
 
-    withTransaction(fn: Function) {
-        return this.communicationService.withTransaction(fn);
+    withTransaction(fn: Function, transaction?: Transaction) {
+        return this.communicationService.withTransaction(fn, transaction);
     }
 
     setMaxMessagesPerTransaction(count: number) {
@@ -157,18 +157,22 @@ export class API {
         return entropy ? entropyToMnemonic(entropy) : generateMnemonic(256);
     }
 
-    async getNShortestLeases(count: number)  {
+    async getNShortestLeases(count: number) {
         assert(count >= 0, ClientErrors.INVALID_VALUE_SPECIFIED);
         return this.#query<QueryGetNShortestLeasesResult>(`crud/getnshortestleases/${this.uuid}/${count}`)
             .then(res => res.keyleases.map(({key, lease}) => ({key, lease: parseInt(lease) * BLOCK_TIME_IN_SECONDS})));
     }
 
+    getTx(txhash: string) {
+        return this.#query(`txs/${txhash}`)
+    }
 
-    getBNT(): Promise<number> {
+    getBNT({ubnt}: { ubnt?: boolean } = {ubnt: false}): Promise<number> {
         return this.account()
-            .then(a =>
-                parseInt(a.coins[0]?.amount.replace(/0000$/, '') || '0') / 100
-            )
+            .then(a => a.coins[0]?.amount || '0')
+            .then(a => ubnt ? a : a.slice(0, -6) || '0')
+            .then(x => x)
+            .then(parseInt)
     }
 
     has(key: string): Promise<boolean> {
@@ -318,7 +322,12 @@ export class API {
             }
         }, gasInfo)
             .then(res => findMine<TxHasResponse>(res, it => it.key === key && it.has !== undefined))
-            .then(({res, data}) => ({height: res.height, txhash: res.txhash, key: data?.key || '', has: data?.has || false}))
+            .then(({res, data}) => ({
+                height: res.height,
+                txhash: res.txhash,
+                key: data?.key || '',
+                has: data?.has || false
+            }))
 
     }
 
@@ -390,13 +399,16 @@ export class API {
         return this.#query<any>('node_info').then(res => res.application_version.version);
     }
 
-    transferTokensTo(toAddress: string, amount: number, gasInfo: GasInfo): Promise<TxResult> {
+    transferTokensTo(toAddress: string, amount: number, gasInfo: GasInfo, {ubnt, memo}: { ubnt?: boolean, memo?: string } = {
+        ubnt: false,
+        memo: 'transfer'
+    }): Promise<TxResult> {
         return this.communicationService.sendMessage<TransferTokensMessage, void>({
             type: "cosmos-sdk/MsgSend",
             value: {
                 amount: [
                     {
-                        amount: String(`${amount}000000`),
+                        amount: String(ubnt ? amount.toString() : `${amount}000000`),
                         denom: "ubnt"
                     }
                 ],

@@ -7,16 +7,21 @@ interface MessageQueueItem<T, R> {
     resolve?: (value: MessageResponse<R>) => void;
     reject?: (reason: any) => void;
     gasInfo: GasInfo;
-    transactionId: number;
+    transaction?: Transaction;
+}
+export interface Transaction {
+    memo: string;
 }
 export declare class CommunicationService {
     #private;
     static create(api: API): CommunicationService;
     private constructor();
     setMaxMessagesPerTransaction(count: number): void;
-    startTransaction(): void;
+    startTransaction(transaction: Transaction): void;
     endTransaction(): void;
-    withTransaction(fn: Function): any;
+    withTransaction(fn: Function, transaction?: {
+        memo: string;
+    }): any;
     sendMessage<T, R>(message: Message<T>, gasInfo: GasInfo): Promise<MessageResponse<R>>;
     checkMessageQueueNeedsTransmit(): void;
     transmitTransaction(messages: MessageQueueItem<any, any>[]): Promise<void>;

@@ -43,8 +43,8 @@ class API {
         this.url = config.endpoint;
         this.communicationService = CommunicationService_1.CommunicationService.create(this);
     }
-    withTransaction(fn) {
-        return this.communicationService.withTransaction(fn);
+    withTransaction(fn, transaction) {
+        return this.communicationService.withTransaction(fn, transaction);
     }
     setMaxMessagesPerTransaction(count) {
         this.communicationService.setMaxMessagesPerTransaction(count);
@@ -112,9 +112,15 @@ class API {
         return __classPrivateFieldGet(this, _query).call(this, `crud/getnshortestleases/${this.uuid}/${count}`)
             .then(res => res.keyleases.map(({ key, lease }) => ({ key, lease: parseInt(lease) * BLOCK_TIME_IN_SECONDS })));
     }
-    getBNT() {
+    getTx(txhash) {
+        return __classPrivateFieldGet(this, _query).call(this, `txs/${txhash}`);
+    }
+    getBNT({ ubnt } = { ubnt: false }) {
         return this.account()
-            .then(a => { var _a; return parseInt(((_a = a.coins[0]) === null || _a === void 0 ? void 0 : _a.amount.replace(/0000$/, '')) || '0') / 100; });
+            .then(a => { var _a; return ((_a = a.coins[0]) === null || _a === void 0 ? void 0 : _a.amount) || '0'; })
+            .then(a => ubnt ? a : a.slice(0, -6) || '0')
+            .then(x => x)
+            .then(parseInt);
     }
     has(key) {
         return __classPrivateFieldGet(this, _query).call(this, `crud/has/${this.uuid}/${key}`)
@@ -240,7 +246,12 @@ class API {
             }
         }, gasInfo)
             .then(res => findMine(res, it => it.key === key && it.has !== undefined))
-            .then(({ res, data }) => ({ height: res.height, txhash: res.txhash, key: (data === null || data === void 0 ? void 0 : data.key) || '', has: (data === null || data === void 0 ? void 0 : data.has) || false }));
+            .then(({ res, data }) => ({
+            height: res.height,
+            txhash: res.txhash,
+            key: (data === null || data === void 0 ? void 0 : data.key) || '',
+            has: (data === null || data === void 0 ? void 0 : data.has) || false
+        }));
     }
     async txKeys(gasInfo) {
         return this.communicationService.sendMessage({
@@ -301,13 +312,16 @@ class API {
     version() {
         return __classPrivateFieldGet(this, _query).call(this, 'node_info').then(res => res.application_version.version);
     }
-    transferTokensTo(toAddress, amount, gasInfo) {
+    transferTokensTo(toAddress, amount, gasInfo, { ubnt, memo } = {
+        ubnt: false,
+        memo: 'transfer'
+    }) {
         return this.communicationService.sendMessage({
             type: "cosmos-sdk/MsgSend",
             value: {
                 amount: [
                     {
-                        amount: String(`${amount}000000`),
+                        amount: String(ubnt ? amount.toString() : `${amount}000000`),
                         denom: "ubnt"
                     }
                 ],
