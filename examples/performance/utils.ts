@@ -23,11 +23,12 @@ export const verifyKeys = (config: Config) => (accounts: API[]) =>
     ))
 
 
-export const createKeys = async (config: Config, account: API): Promise<{ account: API, time: number }> => account.withTransaction(async () => {
+export const createKeys = async (config: Config, account: API): Promise<{ account: API, time: number, txhash: string }> => account.withTransaction(async () => {
     const start = Date.now();
-    await Promise.all(times(config.NUMBER_OF_KEYS, n => account.create(`key-${n}`, 'x'.repeat(config.VALUE_LENGTH), {gas_price: 10})))
-    return {account, time: Date.now() - start};
+    const createResults = await Promise.all(times(config.NUMBER_OF_KEYS, n => account.create(`key-${n}`, 'x'.repeat(config.VALUE_LENGTH), {gas_price: 10})))
+    return {account, time: Date.now() - start, txhash: createResults[0].txhash};
 })
+    .then((x: any) => x)
 
 
 export const fundAccounts = (from: API, config: Config) => (accounts: API[]): Promise<any> => {

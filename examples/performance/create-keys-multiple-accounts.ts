@@ -1,5 +1,6 @@
 import {bluzelle} from 'bluzelle'
-import {Config, createKeys} from "./utils";
+import {Config, createAccounts, createKeys} from "./utils";
+import {times} from 'lodash'
 
 const {bluzelleConfig} = require('../example-config.js')
 
@@ -22,7 +23,14 @@ setTimeout(() =>
 
 const start = async (config: Config): Promise<any> => {
     const start = Date.now();
-    await createKeys(config, bz)
+
+    await createAccounts(bz, config)
+        .then(accounts => Promise.all(accounts.map(account =>
+            createKeys(config, account)
+        )))
+        .then(results => results.forEach(result => console.log(result.time, result.txhash)));
+
+
     const totalTime = ((Date.now() - start) / 1000)
     console.log('Clients: ', config.NUMBER_OF_CLIENTS);
     console.log('Keys per client:', config.NUMBER_OF_KEYS);
