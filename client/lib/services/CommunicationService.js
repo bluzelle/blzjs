@@ -14,7 +14,6 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
 };
 var _api, _messageQueue, _maxMessagesPerTransaction, _checkTransmitQueueTail, _currentTransaction;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CommunicationService = void 0;
 const monet_1 = require("monet");
 const lodash_1 = require("lodash");
 const TOKEN_NAME = 'ubnt';

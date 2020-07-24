@@ -7,7 +7,6 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
 };
 var _query;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.API = void 0;
 const CommunicationService_1 = require("./services/CommunicationService");
 const lodash_1 = require("lodash");
 const Assert_1 = require("./Assert");
@@ -119,7 +118,6 @@ class API {
         return this.account()
             .then(a => { var _a; return ((_a = a.coins[0]) === null || _a === void 0 ? void 0 : _a.amount) || '0'; })
             .then(a => ubnt ? a : a.slice(0, -6) || '0')
-            .then(x => x)
             .then(parseInt);
     }
     has(key) {

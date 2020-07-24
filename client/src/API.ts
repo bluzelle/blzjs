@@ -1,3 +1,7 @@
+global.fetch || (global.fetch = require('node-fetch'));
+
+
+
 import {BluzelleConfig} from "./types/BluzelleConfig";
 import {GasInfo} from "./types/GasInfo";
 import {AccountResult} from "./types/cosmos/AccountResult";
@@ -42,7 +46,6 @@ import {entropyToMnemonic, generateMnemonic} from "bip39";
 
 const cosmosjs = require('@cosmostation/cosmosjs');
 
-global.fetch || (global.fetch = require('node-fetch'));
 
 const BLOCK_TIME_IN_SECONDS = 5;
 
@@ -171,7 +174,6 @@ export class API {
         return this.account()
             .then(a => a.coins[0]?.amount || '0')
             .then(a => ubnt ? a : a.slice(0, -6) || '0')
-            .then(x => x)
             .then(parseInt)
     }
 

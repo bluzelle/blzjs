@@ -26,11 +26,11 @@ program
 
 
 
-const withTime = (label: string, fn: () => Promise<any>): Promise<void> => {
+const withTime = (label: string, fn: () => Promise<any>): Promise<any> => {
     console.log('start:', label)
     const start = Date.now();
     return fn()
-        .then(() => console.log('end:  ', label, Date.now() - start, '\n\n'))
+        .then(x => {console.log('end:  ', label, Date.now() - start, '\n\n'); return x})
 }
 
 
@@ -41,10 +41,11 @@ const createWithTransaction = () => withTime(`transactional create ${numberOfKey
     bz.withTransaction(() => Promise.all(
         times(numberOfKeys, (n) =>
             bz.create(`key-transactional-${n}`, '#'.repeat(valueLength), GAS_INFO)
-                .then(res => program.quiet || console.log(`key-${n} created  (${res.txhash})`))
+                .then(res => {program.quiet || console.log(`key-${n} created  (${res.txhash})`); return res})
                 .catch(error)
         )
     ))
+        .then((x: any) => x)
 )
 
 const createWithoutTransaction = () => withTime(`non-transactional create ${numberOfKeys} keys with ${valueLength} length values`, () =>
@@ -71,14 +72,25 @@ const txReadWithTransaction = () => withTime(`read ${numberOfKeys} keys with tra
     bz.withTransaction(() => Promise.all(
         times(numberOfKeys, (n) =>
             bz.txRead(`key-transactional-${n}`, GAS_INFO)
-                .then(res => program.quiet || console.log(`key-${n} read`))
+                .then(res => {program.quiet || console.log(`key-${n} read`); return res})
                 .catch(error)
         )
     ))
 )
 
+program.transactionOnly = true;
+
+let transactionalCreateHashes: string[];
+let transactionalReadHashes: string[];
+
 Promise.resolve()
     .then(() => program.transactionOnly ? undefined : createWithoutTransaction())
     .then(createWithTransaction)
+    .then(x => transactionalCreateHashes = x.map((x: any) => x.txhash))
     .then(() => program.transactionOnly ? undefined : txReadWithoutTransaction())
     .then(txReadWithTransaction)
+    .then(x => transactionalReadHashes = x.map((x: any) => x.txhash))
+    .then(() => {
+        console.log('Transactional create hashes\n', transactionalCreateHashes);
+        console.log('Transactional read hashes\n', transactionalReadHashes);
+    })
