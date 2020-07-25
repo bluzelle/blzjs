@@ -120,9 +120,8 @@ export class CommunicationService {
                     .then(convertDataFromHexToString)
                     .then(convertDataToObject)
                     .then((x: any) => ({...x, height: parseInt(x.height)}))
-                )
-                .map((p: any) => p
-                    .then(callRequestorsWithData(messages)),
+                    .then(callRequestorsWithData(messages))
+                    .catch((e: any) => callRequestorsWithData(messages)({error: e}))
                 )
                 .join()
         )
@@ -141,10 +140,19 @@ const convertDataToObject = (res: any) => ({
 const callRequestorsWithData = (msgs: any[]) =>
     (res: any) =>
         msgs.reduce((memo: any, msg) => {
+            if(res.error) {
+                return msg.reject({
+                    txhash: res.txhash,
+                    height: res.height,
+                    failedMsg: undefined,
+                    failedMsgIdx: undefined,
+                    error: res.error
+                })
+            }
             if(/signature verification failed/.test(res.raw_log)) {
                 return msg.reject({
                     txhash: res.txhash,
-                    height: parseInt(res.height),
+                    height: res.height,
                     failedMsg: undefined,
                     failedMsgIdx: undefined,
                     error: 'Unknown error'
@@ -154,7 +162,7 @@ const callRequestorsWithData = (msgs: any[]) =>
                 let [x, error] = res.raw_log.split(/[:;]/);
                 return msg.reject({
                     txhash: res.txhash,
-                    height: parseInt(res.height),
+                    height: res.height,
                     failedMsg: undefined,
                     failedMsgIdx: undefined,
                     error: error.trim()
@@ -165,11 +173,20 @@ const callRequestorsWithData = (msgs: any[]) =>
                 failedMsgIdx = parseInt(failedMsgIdx)
                 return msg.reject({
                     txhash: res.txhash,
-                    height: parseInt(res.height),
+                    height: res.height,
                     failedMsg: msgs[failedMsgIdx].message,
                     failedMsgIdx: parseInt(failedMsgIdx),
                     error: error.trim()
                 } as FailedTransaction)
+            }
+            if(/^\[.*\]$/.test(res.raw_log) === false) {
+                return msg.reject({
+                    txhash: res.txhash,
+                    height: res.height,
+                    failedMsg: undefined,
+                    failedMsgIdx: undefined,
+                    error: res.raw_log
+                })
             }
             return msg.resolve ? msg.resolve(memo) || memo : memo
         }, res)

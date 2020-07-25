@@ -7,13 +7,14 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
 };
 var _query;
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.API = void 0;
+global.fetch || (global.fetch = require('node-fetch'));
 const CommunicationService_1 = require("./services/CommunicationService");
 const lodash_1 = require("lodash");
 const Assert_1 = require("./Assert");
 const monet_1 = require("monet");
 const bip39_1 = require("bip39");
 const cosmosjs = require('@cosmostation/cosmosjs');
-global.fetch || (global.fetch = require('node-fetch'));
 const BLOCK_TIME_IN_SECONDS = 5;
 class API {
     constructor(config) {
@@ -153,8 +154,11 @@ class API {
         return __classPrivateFieldGet(this, _query).call(this, `crud/${prove ? 'pread' : 'read'}/${this.uuid}/${encodeSafe(key)}`)
             .then(res => res.value)
             .then(decodeSafe)
-            .catch(({ error }) => {
-            throw (new Error(error === 'Not Found' ? `key "${key}" not found` : error));
+            .catch((x) => {
+            if (x instanceof Error) {
+                throw x;
+            }
+            throw (new Error(x.error === 'Not Found' ? `key "${key}" not found` : x.error));
         });
     }
     async rename(key, newKey, gasInfo) {

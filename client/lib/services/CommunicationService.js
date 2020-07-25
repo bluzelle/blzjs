@@ -14,6 +14,7 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
 };
 var _api, _messageQueue, _maxMessagesPerTransaction, _checkTransmitQueueTail, _currentTransaction;
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.CommunicationService = void 0;
 const monet_1 = require("monet");
 const lodash_1 = require("lodash");
 const TOKEN_NAME = 'ubnt';
@@ -96,9 +97,9 @@ class CommunicationService {
                 .map((p) => p
                 .then(convertDataFromHexToString)
                 .then(convertDataToObject)
-                .then((x) => ({ ...x, height: parseInt(x.height) })))
-                .map((p) => p
-                .then(callRequestorsWithData(messages)))
+                .then((x) => ({ ...x, height: parseInt(x.height) }))
+                .then(callRequestorsWithData(messages))
+                .catch((e) => callRequestorsWithData(messages)({ error: e })))
                 .join();
         });
     }
@@ -114,10 +115,19 @@ const convertDataToObject = (res) => ({
     data: res.data !== undefined ? JSON.parse(`[${res.data.split('}{').join('},{')}]`) : undefined
 });
 const callRequestorsWithData = (msgs) => (res) => msgs.reduce((memo, msg) => {
+    if (res.error) {
+        return msg.reject({
+            txhash: res.txhash,
+            height: res.height,
+            failedMsg: undefined,
+            failedMsgIdx: undefined,
+            error: res.error
+        });
+    }
     if (/signature verification failed/.test(res.raw_log)) {
         return msg.reject({
             txhash: res.txhash,
-            height: parseInt(res.height),
+            height: res.height,
             failedMsg: undefined,
             failedMsgIdx: undefined,
             error: 'Unknown error'
@@ -127,7 +137,7 @@ const callRequestorsWithData = (msgs) => (res) => msgs.reduce((memo, msg) => {
         let [x, error] = res.raw_log.split(/[:;]/);
         return msg.reject({
             txhash: res.txhash,
-            height: parseInt(res.height),
+            height: res.height,
             failedMsg: undefined,
             failedMsgIdx: undefined,
             error: error.trim()
@@ -138,10 +148,19 @@ const callRequestorsWithData = (msgs) => (res) => msgs.reduce((memo, msg) => {
         failedMsgIdx = parseInt(failedMsgIdx);
         return msg.reject({
             txhash: res.txhash,
-            height: parseInt(res.height),
+            height: res.height,
             failedMsg: msgs[failedMsgIdx].message,
             failedMsgIdx: parseInt(failedMsgIdx),
             error: error.trim()
+        });
+    }
+    if (/^\[.*\]$/.test(res.raw_log) === false) {
+        return msg.reject({
+            txhash: res.txhash,
+            height: res.height,
+            failedMsg: undefined,
+            failedMsgIdx: undefined,
+            error: res.raw_log
         });
     }
     return msg.resolve ? msg.resolve(memo) || memo : memo;

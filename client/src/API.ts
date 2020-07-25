@@ -216,8 +216,11 @@ export class API {
         return this.#query<QueryReadResult>(`crud/${prove ? 'pread' : 'read'}/${this.uuid}/${encodeSafe(key)}`)
             .then(res => res.value)
             .then(decodeSafe)
-            .catch(({error}) => {
-                throw(new Error(error === 'Not Found' ? `key "${key}" not found` : error))
+            .catch((x) => {
+                if(x instanceof Error) {
+                    throw x;
+                }
+                throw(new Error(x.error === 'Not Found' ? `key "${key}" not found` : x.error))
             });
     }
 

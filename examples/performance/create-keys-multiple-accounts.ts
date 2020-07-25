@@ -40,4 +40,6 @@ const start = async (config: Config): Promise<any> => {
     console.log('Writes per second:', ((config.NUMBER_OF_CLIENTS * config.NUMBER_OF_KEYS) / totalTime).toFixed(2))
 }
 
+process.on('unhandledRejection', e => console.log(e))
+
 
