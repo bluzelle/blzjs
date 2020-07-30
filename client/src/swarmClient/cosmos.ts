@@ -28,7 +28,7 @@
 import {assert} from "../Assert";
 import {Transaction} from "./Transaction";
 import {Deferred} from "./Deferred";
-import {range, random, extend, isNumber} from 'lodash';
+import {range, random, extend} from 'lodash';
 import {ClientErrors} from "./ClientErrors";
 import {BIP32Interface} from "bip32";
 import {ECPairInterface} from "bitcoinjs-lib";
@@ -276,18 +276,14 @@ function sendAccountQuery(): Promise<boolean> {
 function handleAccountResponse(response: any): boolean {
 
     const {account_number, sequence} = response?.data?.result?.value || {};
-    if (isNumber(account_number) && isNumber(sequence)) {
-        account_info.account_number = `${account_number}`;
+    account_info.account_number = `${account_number}`;
 
-        if (account_info.sequence !== sequence) {
-            account_info.sequence = sequence;
-            return true;
-        }
-
-        return false;
+    if (account_info.sequence !== sequence) {
+        account_info.sequence = sequence;
+        return true;
     }
 
-    throw(new Error("Unable to retrieve account information"));
+    return false;
 }
 
 function next_tx(): Promise<void> {

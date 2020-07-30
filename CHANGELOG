@@ -27,18 +27,26 @@ version 1.0.11
 * Address is no longer a config option
 * Fixed bug where functions were not resolving promises on errors
 
-version 1.0.12
+version 1.1.0
 --------------
-* changed read/prove flag to be boolean
+* Breaking updates required to run with new version of Curium
+* accounts() now returns strings instead of numbers and private_key returns an object with the type
 
-version 1.0.13
+version 1.0.15
 --------------
-* Added a browser/pure-js version of the client
+* Standardized assertions and added an error for '/' in keys
 
 version 1.0.14
 --------------
 * Added missing export for API and BluzelleConfig to bluzelle-js
 
-version 1.0.15
+version 1.0.13
 --------------
-* Standardized assertions and added an error for '/' in keys
+* Added a browser/pure-js version of the client
+
+version 1.0.12
+--------------
+* changed read/prove flag to be boolean
+
+
+
