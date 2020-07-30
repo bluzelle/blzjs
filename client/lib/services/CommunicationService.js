@@ -88,8 +88,8 @@ class CommunicationService {
                 chain_id: __classPrivateFieldGet(this, _api).chainId,
                 fee: getFeeInfo(combineGas(messages)),
                 memo: ((_a = messages[0].transaction) === null || _a === void 0 ? void 0 : _a.memo) || 'no memo',
-                account_number: String(data.result.value.account_number),
-                sequence: String(data.result.value.sequence)
+                account_number: data.result.value.account_number,
+                sequence: data.result.value.sequence
             })
                 .map(__classPrivateFieldGet(this, _api).cosmos.newStdMsg.bind(__classPrivateFieldGet(this, _api).cosmos))
                 .map((stdSignMsg) => __classPrivateFieldGet(this, _api).cosmos.sign(stdSignMsg, __classPrivateFieldGet(this, _api).ecPairPriv, 'block'))

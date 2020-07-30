@@ -110,8 +110,8 @@ export class CommunicationService {
                 chain_id: this.#api.chainId,
                 fee: getFeeInfo(combineGas(messages)),
                 memo: messages[0].transaction?.memo || 'no memo',
-                account_number: String(data.result.value.account_number),
-                sequence: String(data.result.value.sequence)
+                account_number: data.result.value.account_number,
+                sequence: data.result.value.sequence
             })
                 .map(this.#api.cosmos.newStdMsg.bind(this.#api.cosmos))
                 .map((stdSignMsg: any) => this.#api.cosmos.sign(stdSignMsg, this.#api.ecPairPriv, 'block'))

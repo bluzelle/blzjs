@@ -4,7 +4,10 @@ export interface AccountResult {
         "denom": string;
         "amount": string;
     }[];
-    "public_key": string;
+    "public_key": {
+        type: string;
+        value: string;
+    };
     "account_number": number;
     "sequence": number;
 }
