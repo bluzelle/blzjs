@@ -239,15 +239,12 @@ function sendAccountQuery() {
 function handleAccountResponse(response) {
     var _a, _b;
     const { account_number, sequence } = ((_b = (_a = response === null || response === void 0 ? void 0 : response.data) === null || _a === void 0 ? void 0 : _a.result) === null || _b === void 0 ? void 0 : _b.value) || {};
-    if (lodash_1.isNumber(account_number) && lodash_1.isNumber(sequence)) {
-        account_info.account_number = `${account_number}`;
-        if (account_info.sequence !== sequence) {
-            account_info.sequence = sequence;
-            return true;
-        }
-        return false;
+    account_info.account_number = `${account_number}`;
+    if (account_info.sequence !== sequence) {
+        account_info.sequence = sequence;
+        return true;
     }
-    throw (new Error("Unable to retrieve account information"));
+    return false;
 }
 function next_tx() {
     return begin_tx(tx_queue[0]);
