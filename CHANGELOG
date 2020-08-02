@@ -20,25 +20,6 @@ To use the sample browser app
 * navigate to samples/curium-todo
 * Follow the provided instructions in the readme
 
-version 1.0.11
----------------
-* Added API and BluzelleConfig to bluzelle-node.js
-* UUID is not optional
-* Address is no longer a config option
-* Fixed bug where functions were not resolving promises on errors
-
-version 1.0.12
---------------
-* changed read/prove flag to be boolean
-
-version 1.0.13
---------------
-* Added a browser/pure-js version of the client
-
-version 1.0.14
---------------
-* Added missing export for API and BluzelleConfig to bluzelle-js
-
-version 1.0.15
---------------
-* Standardized assertions and added an error for '/' in keys
+version 2.0.6
+----------------
+Improved error handling
