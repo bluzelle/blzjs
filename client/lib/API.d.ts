@@ -15,11 +15,12 @@ export declare class API {
     url: string;
     communicationService: CommunicationService;
     constructor(config: BluzelleConfig);
-    withTransaction(fn: Function, transaction?: Transaction): any;
+    withTransaction(fn: () => any, transaction?: Transaction): any;
     setMaxMessagesPerTransaction(count: number): void;
     account(): Promise<AccountResult>;
     count(): Promise<number>;
     create(key: string, value: string, gasInfo: GasInfo, leaseInfo?: LeaseInfo): Promise<TxResult>;
+    sendMessage(message: any, gasInfo: GasInfo): Promise<import("./types/MessageResponse").MessageResponse<unknown>>;
     delete(key: string, gasInfo: GasInfo): Promise<TxResult>;
     deleteAll(gasInfo: GasInfo): Promise<TxResult>;
     getAddress(): any;

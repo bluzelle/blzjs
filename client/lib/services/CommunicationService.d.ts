@@ -19,9 +19,9 @@ export declare class CommunicationService {
     setMaxMessagesPerTransaction(count: number): void;
     startTransaction(transaction: Transaction): void;
     endTransaction(): void;
-    withTransaction(fn: Function, transaction?: {
+    withTransaction<T>(fn: () => T, transaction?: {
         memo: string;
-    }): any;
+    }): T;
     sendMessage<T, R>(message: Message<T>, gasInfo: GasInfo): Promise<MessageResponse<R>>;
     checkMessageQueueNeedsTransmit(): void;
     transmitTransaction(messages: MessageQueueItem<any, any>[]): Promise<void>;

@@ -60,7 +60,7 @@ export class CommunicationService {
         this.#currentTransaction = undefined;
    }
 
-   withTransaction(fn: Function, transaction: {memo: string} = {memo: ''}) : any{
+   withTransaction<T>(fn: () => T, transaction: {memo: string} = {memo: ''}) : T {
         if(this.#currentTransaction) {
             throw new Error('withTransaction() can not be nested')
         }

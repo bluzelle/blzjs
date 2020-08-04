@@ -79,7 +79,7 @@ export class API {
     }
 
 
-    withTransaction(fn: Function, transaction?: Transaction) {
+    withTransaction(fn: () => any, transaction?: Transaction) {
         return this.communicationService.withTransaction(fn, transaction);
     }
 
@@ -117,6 +117,10 @@ export class API {
             }
         }, gasInfo)
             .then(res => ({height: res.height, txhash: res.txhash}))
+    }
+
+    sendMessage(message: any, gasInfo: GasInfo) {
+        return this.communicationService.sendMessage(message, gasInfo);
     }
 
 
