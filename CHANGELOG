@@ -20,6 +20,10 @@ To use the sample browser app
 * navigate to samples/curium-todo
 * Follow the provided instructions in the readme
 
-version 2.0.6
+v2.0.7
+----------------
+Added sendMessage()
+
+v2.0.6
 ----------------
 Improved error handling
