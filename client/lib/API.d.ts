@@ -20,7 +20,6 @@ export declare class API {
     account(): Promise<AccountResult>;
     count(): Promise<number>;
     create(key: string, value: string, gasInfo: GasInfo, leaseInfo?: LeaseInfo): Promise<TxResult>;
-    sendMessage(message: any, gasInfo: GasInfo): Promise<import("./types/MessageResponse").MessageResponse<unknown>>;
     delete(key: string, gasInfo: GasInfo): Promise<TxResult>;
     deleteAll(gasInfo: GasInfo): Promise<TxResult>;
     getAddress(): any;
@@ -48,6 +47,7 @@ export declare class API {
     rename(key: string, newKey: string, gasInfo: GasInfo): Promise<TxResult>;
     renewLease(key: string, gasInfo: GasInfo, leaseInfo: LeaseInfo): Promise<TxResult>;
     renewLeaseAll(gasInfo: GasInfo, leaseInfo?: LeaseInfo): Promise<TxResult>;
+    sendMessage(message: any, gasInfo: GasInfo): Promise<import("./types/MessageResponse").MessageResponse<unknown>>;
     txCount(gasInfo: GasInfo): Promise<TxCountResult>;
     txGetLease(key: string, gasInfo: GasInfo): Promise<TxGetLeaseResult>;
     txGetNShortestLeases(n: number, gasInfo: GasInfo): Promise<TxGetNShortestLeasesResult>;

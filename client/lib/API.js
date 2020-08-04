@@ -76,9 +76,6 @@ class API {
         }, gasInfo)
             .then(res => ({ height: res.height, txhash: res.txhash }));
     }
-    sendMessage(message, gasInfo) {
-        return this.communicationService.sendMessage(message, gasInfo);
-    }
     delete(key, gasInfo) {
         return this.communicationService.sendMessage({
             type: 'crud/delete',
@@ -205,6 +202,9 @@ class API {
             }
         }, gasInfo)
             .then(res => ({ height: res.height, txhash: res.txhash }));
+    }
+    sendMessage(message, gasInfo) {
+        return this.communicationService.sendMessage(message, gasInfo);
     }
     async txCount(gasInfo) {
         return this.communicationService.sendMessage({

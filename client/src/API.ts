@@ -119,10 +119,6 @@ export class API {
             .then(res => ({height: res.height, txhash: res.txhash}))
     }
 
-    sendMessage(message: any, gasInfo: GasInfo) {
-        return this.communicationService.sendMessage(message, gasInfo);
-    }
-
 
     delete(key: string, gasInfo: GasInfo): Promise<TxResult> {
         return this.communicationService.sendMessage<DeleteMessage, void>({
@@ -279,7 +275,10 @@ export class API {
             }
         }, gasInfo)
             .then(res => ({height: res.height, txhash: res.txhash}))
+    }
 
+    sendMessage(message: any, gasInfo: GasInfo) {
+        return this.communicationService.sendMessage(message, gasInfo);
     }
 
     async txCount(gasInfo: GasInfo): Promise<TxCountResult> {
