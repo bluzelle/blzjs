@@ -89,9 +89,9 @@ function help(bz, cmd) {
 }
 
 Some({
-    mnemonic: "auction resemble there doll room uncle since gloom unfold service ghost beach cargo loyal govern orient book shrug heavy kit coil truly describe narrow",
+    mnemonic: "zone loop easily similar bacon enhance alone rely supply this recipe turkey nest jar struggle worth until essence globe during pelican until range truck",
     endpoint: "http://client.sentry.testnet.public.bluzelle.com:1317",
-    chain_id: 'bluzelleTestPublic-1',
+    chain_id: 'bluzelleTestNetPublic-5',
     uuid: Date.now().toString()
 
 })
