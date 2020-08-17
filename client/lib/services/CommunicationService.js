@@ -12,16 +12,13 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     }
     return privateMap.get(receiver);
 };
-var _api, _messageQueue, _maxMessagesPerTransaction, _checkTransmitQueueTail, _currentTransaction;
+var _api, _messageQueue, _maxMessagesPerTransaction, _checkTransmitQueueTail, _currentTransaction, _transactionInFlight;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CommunicationService = void 0;
 const monet_1 = require("monet");
 const lodash_1 = require("lodash");
 const TOKEN_NAME = 'ubnt';
-const count = (() => {
-    let start = 1;
-    return () => start++;
-})();
+const start = Date.now();
 class CommunicationService {
     constructor(api) {
         _api.set(this, void 0);
@@ -29,9 +26,11 @@ class CommunicationService {
         _maxMessagesPerTransaction.set(this, 1);
         _checkTransmitQueueTail.set(this, Promise.resolve());
         _currentTransaction.set(this, void 0);
+        _transactionInFlight.set(this, false);
         __classPrivateFieldSet(this, _api, api);
     }
     static create(api) {
+        console.log('CREATE', Date.now() - start);
         return new CommunicationService(api);
     }
     setMaxMessagesPerTransaction(count) {
@@ -53,6 +52,7 @@ class CommunicationService {
         return result;
     }
     sendMessage(message, gasInfo) {
+        console.log('SEND MESSAGE', Date.now() - start);
         const p = new Promise((resolve, reject) => {
             __classPrivateFieldGet(this, _messageQueue).push({
                 message,
@@ -62,10 +62,11 @@ class CommunicationService {
                 transaction: __classPrivateFieldGet(this, _currentTransaction)
             });
         });
-        __classPrivateFieldGet(this, _messageQueue).length === 1 && (__classPrivateFieldSet(this, _checkTransmitQueueTail, __classPrivateFieldGet(this, _checkTransmitQueueTail).then(this.checkMessageQueueNeedsTransmit.bind(this))));
+        __classPrivateFieldGet(this, _messageQueue).length === 1 && !__classPrivateFieldGet(this, _transactionInFlight) && (__classPrivateFieldSet(this, _checkTransmitQueueTail, __classPrivateFieldGet(this, _checkTransmitQueueTail).then(this.checkMessageQueueNeedsTransmit.bind(this))));
         return p;
     }
     checkMessageQueueNeedsTransmit() {
+        console.log('checkMessageQueueNeedsTransmit', Date.now() - start);
         monet_1.Some(__classPrivateFieldGet(this, _messageQueue))
             .flatMap(queue => queue.length ? monet_1.Some(__classPrivateFieldGet(this, _messageQueue)) : monet_1.None())
             .map(queue => [queue[0].transaction, queue])
@@ -81,6 +82,8 @@ class CommunicationService {
             .map(messages => this.transmitTransaction(messages).then(this.checkMessageQueueNeedsTransmit.bind(this)));
     }
     transmitTransaction(messages) {
+        __classPrivateFieldSet(this, _transactionInFlight, true);
+        console.log('transmitTransaction', Date.now() - start);
         return __classPrivateFieldGet(this, _api).cosmos.getAccounts(__classPrivateFieldGet(this, _api).address).then((data) => {
             var _a;
             return monet_1.Some({
@@ -94,6 +97,10 @@ class CommunicationService {
                 .map(__classPrivateFieldGet(this, _api).cosmos.newStdMsg.bind(__classPrivateFieldGet(this, _api).cosmos))
                 .map((stdSignMsg) => __classPrivateFieldGet(this, _api).cosmos.sign(stdSignMsg, __classPrivateFieldGet(this, _api).ecPairPriv, 'block'))
                 .map(__classPrivateFieldGet(this, _api).cosmos.broadcast.bind(__classPrivateFieldGet(this, _api).cosmos))
+                .map((x) => {
+                __classPrivateFieldSet(this, _transactionInFlight, false);
+                return x;
+            })
                 .map((p) => p
                 .then(convertDataFromHexToString)
                 .then(convertDataToObject)
@@ -105,7 +112,7 @@ class CommunicationService {
     }
 }
 exports.CommunicationService = CommunicationService;
-_api = new WeakMap(), _messageQueue = new WeakMap(), _maxMessagesPerTransaction = new WeakMap(), _checkTransmitQueueTail = new WeakMap(), _currentTransaction = new WeakMap();
+_api = new WeakMap(), _messageQueue = new WeakMap(), _maxMessagesPerTransaction = new WeakMap(), _checkTransmitQueueTail = new WeakMap(), _currentTransaction = new WeakMap(), _transactionInFlight = new WeakMap();
 const convertDataFromHexToString = (res) => ({
     ...res,
     data: res.data ? Buffer.from(res.data, 'hex').toString() : undefined

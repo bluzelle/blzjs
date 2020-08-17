@@ -27,17 +27,13 @@ export interface Transaction {
     memo: string
 }
 
-const count = (() => {
-    let start = 1;
-    return () => start++;
-})()
-
 export class CommunicationService {
     #api: API
     #messageQueue: MessageQueueItem<any, any>[] = [];
     #maxMessagesPerTransaction = 1;
     #checkTransmitQueueTail: Promise<any> = Promise.resolve();
     #currentTransaction?: Transaction;
+    #transactionInFlight: boolean = false;
 
 
     static create(api: API): CommunicationService {
@@ -80,7 +76,7 @@ export class CommunicationService {
                 transaction: this.#currentTransaction
             })
         })
-        this.#messageQueue.length === 1 && (this.#checkTransmitQueueTail = this.#checkTransmitQueueTail.then(this.checkMessageQueueNeedsTransmit.bind(this)));
+        this.#messageQueue.length === 1 && !this.#transactionInFlight && (this.#checkTransmitQueueTail = this.#checkTransmitQueueTail.then(this.checkMessageQueueNeedsTransmit.bind(this)));
         return p;
     }
 
@@ -104,6 +100,7 @@ export class CommunicationService {
 
 
     transmitTransaction(messages: MessageQueueItem<any, any>[]): Promise<void> {
+        this.#transactionInFlight = true;
         return this.#api.cosmos.getAccounts(this.#api.address).then((data: any) =>
             Some({
                 msgs: messages.map(m => m.message),
@@ -116,6 +113,10 @@ export class CommunicationService {
                 .map(this.#api.cosmos.newStdMsg.bind(this.#api.cosmos))
                 .map((stdSignMsg: any) => this.#api.cosmos.sign(stdSignMsg, this.#api.ecPairPriv, 'block'))
                 .map(this.#api.cosmos.broadcast.bind(this.#api.cosmos))
+                .map((x: any) => {
+                    this.#transactionInFlight = false
+                    return x;
+                })
                 .map((p: any) => p
                     .then(convertDataFromHexToString)
                     .then(convertDataToObject)
