@@ -18,7 +18,6 @@ exports.CommunicationService = void 0;
 const monet_1 = require("monet");
 const lodash_1 = require("lodash");
 const TOKEN_NAME = 'ubnt';
-const start = Date.now();
 class CommunicationService {
     constructor(api) {
         _api.set(this, void 0);
@@ -30,7 +29,6 @@ class CommunicationService {
         __classPrivateFieldSet(this, _api, api);
     }
     static create(api) {
-        console.log('CREATE', Date.now() - start);
         return new CommunicationService(api);
     }
     setMaxMessagesPerTransaction(count) {
@@ -52,7 +50,6 @@ class CommunicationService {
         return result;
     }
     sendMessage(message, gasInfo) {
-        console.log('SEND MESSAGE', Date.now() - start);
         const p = new Promise((resolve, reject) => {
             __classPrivateFieldGet(this, _messageQueue).push({
                 message,
@@ -66,7 +63,6 @@ class CommunicationService {
         return p;
     }
     checkMessageQueueNeedsTransmit() {
-        console.log('checkMessageQueueNeedsTransmit', Date.now() - start);
         monet_1.Some(__classPrivateFieldGet(this, _messageQueue))
             .flatMap(queue => queue.length ? monet_1.Some(__classPrivateFieldGet(this, _messageQueue)) : monet_1.None())
             .map(queue => [queue[0].transaction, queue])
@@ -83,7 +79,6 @@ class CommunicationService {
     }
     transmitTransaction(messages) {
         __classPrivateFieldSet(this, _transactionInFlight, true);
-        console.log('transmitTransaction', Date.now() - start);
         return __classPrivateFieldGet(this, _api).cosmos.getAccounts(__classPrivateFieldGet(this, _api).address).then((data) => {
             var _a;
             return monet_1.Some({
