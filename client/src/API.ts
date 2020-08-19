@@ -191,6 +191,7 @@ export class API {
     keyValues(): Promise<{ key: string, value: string }[]> {
         return this.#query<QueryKeyValuesResult>(`crud/keyvalues/${this.uuid}`)
             .then(res => res.keyvalues)
+            .then(keyvalues => keyvalues.map(({key, value}) => ({key, value: decodeSafe(value)})))
     }
 
     async multiUpdate(keyValues: { key: string, value: string }[], gasInfo: GasInfo): Promise<TxResult> {
@@ -364,6 +365,11 @@ export class API {
                     !!(it.keyvalues.length === 0 || (it.keyvalues[0].key && it.keyvalues[0].value))
             }))
             .then(({res, data}) => ({height: res.height, txhash: res.txhash, keyvalues: data?.keyvalues}))
+            .then(({height, txhash, keyvalues}) =>({
+                height,
+                txhash,
+                keyvalues: keyvalues?.map(({key, value}) => ({key, value: decodeSafe(value)}))
+            }))
     }
 
 

@@ -20,6 +20,14 @@ To use the sample browser app
 * navigate to samples/curium-todo
 * Follow the provided instructions in the readme
 
+v2.0.9
+----------------
+Fixed bug with keyValues and txKeyValues not converting values to safe values
+
+v2.0.8
+----------------
+Fixed bug that would cause transactions to be sent in parallel instead of series.
+
 v2.0.7
 ----------------
 Added sendMessage()

@@ -132,7 +132,8 @@ class API {
     }
     keyValues() {
         return __classPrivateFieldGet(this, _query).call(this, `crud/keyvalues/${this.uuid}`)
-            .then(res => res.keyvalues);
+            .then(res => res.keyvalues)
+            .then(keyvalues => keyvalues.map(({ key, value }) => ({ key, value: decodeSafe(value) })));
     }
     async multiUpdate(keyValues, gasInfo) {
         Assert_1.assert(Array.isArray(keyValues), 'keyValues must be an array');
@@ -281,7 +282,12 @@ class API {
             return Array.isArray(it.keyvalues) &&
                 !!(it.keyvalues.length === 0 || (it.keyvalues[0].key && it.keyvalues[0].value));
         }))
-            .then(({ res, data }) => ({ height: res.height, txhash: res.txhash, keyvalues: data === null || data === void 0 ? void 0 : data.keyvalues }));
+            .then(({ res, data }) => ({ height: res.height, txhash: res.txhash, keyvalues: data === null || data === void 0 ? void 0 : data.keyvalues }))
+            .then(({ height, txhash, keyvalues }) => ({
+            height,
+            txhash,
+            keyvalues: keyvalues === null || keyvalues === void 0 ? void 0 : keyvalues.map(({ key, value }) => ({ key, value: decodeSafe(value) }))
+        }));
     }
     txRead(key, gasInfo) {
         return this.communicationService.sendMessage({
