@@ -1,6 +1,6 @@
 module.exports.bluzelleConfig = {
-    mnemonic: "zone loop easily similar bacon enhance alone rely supply this recipe turkey nest jar struggle worth until essence globe during pelican until range truck",
-    endpoint: "http://client.sentry.testnet.public.bluzelle.com:1317",
-    chain_id: 'bluzelleTestNetPublic-5',
-    uuid: Date.now().toString()
+    mnemonic: "dish film auto bundle nest hospital arctic giraffe surface afford tribe toe swing flavor outdoor hand slice diesel awesome excess liar impulse trumpet rare",
+    chain_id: 'bluzelleTestNetPublic-6',
+    uuid: 'feeder-test',
+    endpoint: 'https://client.sentry.testnet.public.bluzelle.com:1319'
 };
