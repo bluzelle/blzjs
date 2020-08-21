@@ -2240,6 +2240,11 @@ es-to-primitive@^1.2.1:
     is-date-object "^1.0.1"
     is-symbol "^1.0.2"
 
+es6-promise@^4.1.1:
+  version "4.2.8"
+  resolved "https://registry.yarnpkg.com/es6-promise/-/es6-promise-4.2.8.tgz#4eb21594c972bc40553d276e510539143db53e0a"
+  integrity sha512-HJDGx5daxeIvxdBxvG2cb9g4tEvwIk3i8+nhX0yGrYmZUzbkdg8QbDevheDB8gd0//uPj4c1EQua8Q+MViT0/w==
+
 escalade@^3.0.1:
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/escalade/-/escalade-3.0.2.tgz#6a580d70edb87880f22b4c91d0d56078df6962c4"
@@ -4228,6 +4233,13 @@ process@^0.11.10:
   version "0.11.10"
   resolved "https://registry.yarnpkg.com/process/-/process-0.11.10.tgz#7332300e840161bda3e69a1d1d91a7d4bc16f182"
   integrity sha1-czIwDoQBYb2j5podHZGn1LwW8YI=
+
+promise-passthrough@^1.0.5:
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/promise-passthrough/-/promise-passthrough-1.0.5.tgz#12c3ae79295cb5adae2ca7d35474777fc07ef7d8"
+  integrity sha1-EsOueSlcta2uLKfTVHR3f8B+99g=
+  dependencies:
+    es6-promise "^4.1.1"
 
 psl@^1.1.28:
   version "1.8.0"
