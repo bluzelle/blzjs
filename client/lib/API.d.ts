@@ -43,6 +43,7 @@ export declare class API {
         key: string;
         value: string;
     }[], gasInfo: GasInfo): Promise<TxResult>;
+    owner(key: string): Promise<string>;
     read(key: string, prove?: boolean): Promise<string>;
     rename(key: string, newKey: string, gasInfo: GasInfo): Promise<TxResult>;
     renewLease(key: string, gasInfo: GasInfo, leaseInfo: LeaseInfo): Promise<TxResult>;

@@ -10,7 +10,7 @@ import {
     QueryCountResult, QueryGetLeaseResult, QueryGetNShortestLeasesResult,
     QueryHasResult,
     QueryKeysResult,
-    QueryKeyValuesResult,
+    QueryKeyValuesResult, QueryOwnerResult,
     QueryReadResult
 } from "./types/QueryResult";
 import {CommunicationService, Transaction} from "./services/CommunicationService";
@@ -212,6 +212,18 @@ export class API {
         }, gasInfo)
             .then(res => ({txhash: res.txhash, height: res.height}))
     }
+
+    owner(key: string): Promise<string> {
+        return this.#query<QueryOwnerResult>(`crud/owner/${this.uuid}/${encodeSafe(key)}`)
+            .then(res => res.owner)
+            .catch((x) => {
+                if(x instanceof Error) {
+                    throw x;
+                }
+                throw(new Error(x.error === 'Not Found' ? `key "${key}" not found` : x.error))
+            });
+    }
+
 
     read(key: string, prove: boolean = false): Promise<string> {
         return this.#query<QueryReadResult>(`crud/${prove ? 'pread' : 'read'}/${this.uuid}/${encodeSafe(key)}`)

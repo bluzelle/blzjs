@@ -10,6 +10,9 @@ export interface QueryHasResult {
 export interface QueryReadResult {
     value: string;
 }
+export interface QueryOwnerResult {
+    owner: string;
+}
 export interface QueryKeyValuesResult {
     keyvalues: {
         key: string;

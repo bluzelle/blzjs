@@ -439,7 +439,25 @@ await api.multiUpdate([{key: "key1", value: "value1"}, {key: "key2", value: "val
 
 Returns: Promise=> `{txhash: string, height: number}`
 
+### owner\(key\)
 
+Retrieve the owner of a key without consensus verification. 
+
+```javascript
+// promise syntax
+api.owner('mykey')
+	.then(value => { ... })
+	.catch(error => { ... });
+
+// async/await syntax
+const value = await api.owner('mykey');
+```
+
+| Argument | Description |
+| :--- | :--- |
+| key | The key to retrieve the owner for |
+
+Returns: Promise=>string (the owner address)
 
 ### read\(key, [prove]\)
 
