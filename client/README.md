@@ -551,6 +551,34 @@ const value = await api.renewLease('mykey', {gas_price: 10}, {days: 100});
 
 Returns: Promise=> `{txhash: string, height: number}`
 
+### search(\)
+
+Returns all keys and values in the current database/uuid that match a provided prefix. This function bypasses the consensus and cryptography mechanisms in favor of speed.
+
+```javascript
+// promise syntax
+api.search('my-prefix', {reverse: false, page: 1, limit: 10})
+	.then(kvs => { ... })
+	.catch(error => { ... });
+
+// async/await syntax
+const kvs = await api.search('my-prefix');
+```
+
+##### options
+
+| Option  | Description                      |
+| ------- | -------------------------------- |
+| reverse | Show results in descending order |
+| page    | Page number to display           |
+| limit   | Number of items per page         |
+
+Returns: Promise=>object
+
+```
+[{"key": "my-prefix.key1", "value": "value1"}, {"key": "my-prefix.key2", "value": "value2"}]
+```
+
 
 
 ### transferTokensTo(address, amount, gas_info)
