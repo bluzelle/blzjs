@@ -214,6 +214,11 @@ class API {
         }, gasInfo)
             .then(res => ({ height: res.height, txhash: res.txhash }));
     }
+    search(searchString, options = { page: 1, limit: Number.MAX_SAFE_INTEGER, reverse: false }) {
+        return __classPrivateFieldGet(this, _query).call(this, `crud/search/${this.uuid}/${searchString}/${options.page || 1}/${options.limit || Number.MAX_SAFE_INTEGER}/${options.reverse ? 'desc' : 'asc'}`)
+            .then(res => res.keyvalues)
+            .then(keyvalues => keyvalues.map(({ key, value }) => ({ key, value: decodeSafe(value) })));
+    }
     sendMessage(message, gasInfo) {
         return this.communicationService.sendMessage(message, gasInfo);
     }

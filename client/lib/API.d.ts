@@ -4,6 +4,11 @@ import { AccountResult } from "./types/cosmos/AccountResult";
 import { CommunicationService, Transaction } from "./services/CommunicationService";
 import { LeaseInfo } from "./types/LeaseInfo";
 import { TxCountResult, TxGetLeaseResult, TxGetNShortestLeasesResult, TxHasResult, TxKeysResult, TxReadResult, TxResult } from "./types/TxResult";
+export interface SearchOptions {
+    page?: number;
+    limit?: number;
+    reverse?: boolean;
+}
 export declare class API {
     #private;
     cosmos: any;
@@ -48,6 +53,10 @@ export declare class API {
     rename(key: string, newKey: string, gasInfo: GasInfo): Promise<TxResult>;
     renewLease(key: string, gasInfo: GasInfo, leaseInfo: LeaseInfo): Promise<TxResult>;
     renewLeaseAll(gasInfo: GasInfo, leaseInfo?: LeaseInfo): Promise<TxResult>;
+    search(searchString: string, options?: SearchOptions): Promise<{
+        key: string;
+        value: string;
+    }[]>;
     sendMessage(message: any, gasInfo: GasInfo): Promise<import("./types/MessageResponse").MessageResponse<unknown>>;
     txCount(gasInfo: GasInfo): Promise<TxCountResult>;
     txGetLease(key: string, gasInfo: GasInfo): Promise<TxGetLeaseResult>;

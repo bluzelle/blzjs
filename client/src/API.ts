@@ -1,3 +1,5 @@
+import {isNumber} from "util";
+
 global.fetch || (global.fetch = require('node-fetch'));
 
 
@@ -52,6 +54,12 @@ const BLOCK_TIME_IN_SECONDS = 5;
 interface QueryError {
     status: number
     error: string
+}
+
+export interface SearchOptions {
+    page?: number
+    limit?: number
+    reverse?: boolean
 }
 
 export class API {
@@ -289,6 +297,13 @@ export class API {
         }, gasInfo)
             .then(res => ({height: res.height, txhash: res.txhash}))
     }
+
+    search(searchString: string, options: SearchOptions = {page: 1, limit: Number.MAX_SAFE_INTEGER, reverse: false}): Promise<{ key: string, value: string }[]> {
+        return this.#query<QueryKeyValuesResult>(`crud/search/${this.uuid}/${searchString}/${options.page || 1}/${options.limit || Number.MAX_SAFE_INTEGER}/${options.reverse ? 'desc' : 'asc'}`)
+            .then(res => res.keyvalues)
+            .then(keyvalues => keyvalues.map(({key, value}) => ({key, value: decodeSafe(value)})))
+    }
+
 
     sendMessage(message: any, gasInfo: GasInfo) {
         return this.communicationService.sendMessage(message, gasInfo);
