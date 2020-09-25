@@ -1,6 +1,8 @@
 export interface TxResult {
     height: number;
     txhash: string;
+    gasWanted: number;
+    gasUsed: number;
 }
 export interface TxReadResult extends TxResult {
     value: string | undefined;

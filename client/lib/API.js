@@ -74,7 +74,7 @@ class API {
                 Lease: blocks.toString(),
             }
         }, gasInfo)
-            .then(res => ({ height: res.height, txhash: res.txhash }));
+            .then(standardTxResult);
     }
     delete(key, gasInfo) {
         return this.communicationService.sendMessage({
@@ -85,7 +85,7 @@ class API {
                 Owner: this.address
             }
         }, gasInfo)
-            .then(res => ({ height: res.height, txhash: res.txhash }));
+            .then(standardTxResult);
     }
     deleteAll(gasInfo) {
         return this.communicationService.sendMessage({
@@ -95,7 +95,7 @@ class API {
                 Owner: this.address
             }
         }, gasInfo)
-            .then(res => ({ height: res.height, txhash: res.txhash }));
+            .then(standardTxResult);
     }
     getAddress() {
         return this.cosmos.getAddress(this.mnemonic);
@@ -149,7 +149,7 @@ class API {
                 Owner: this.address
             }
         }, gasInfo)
-            .then(res => ({ txhash: res.txhash, height: res.height }));
+            .then(standardTxResult);
     }
     owner(key) {
         return __classPrivateFieldGet(this, _query).call(this, `crud/owner/${this.uuid}/${encodeSafe(key)}`)
@@ -184,7 +184,7 @@ class API {
                 Owner: this.address
             }
         }, gasInfo)
-            .then(res => ({ height: res.height, txhash: res.txhash }));
+            .then(standardTxResult);
     }
     async renewLease(key, gasInfo, leaseInfo) {
         Assert_1.assert(typeof key === 'string', "Key must be a string" /* KEY_MUST_BE_A_STRING */);
@@ -199,7 +199,7 @@ class API {
                 Owner: this.address
             }
         }, gasInfo)
-            .then(res => ({ height: res.height, txhash: res.txhash }));
+            .then(standardTxResult);
     }
     async renewLeaseAll(gasInfo, leaseInfo = {}) {
         const blocks = convertLease(leaseInfo);
@@ -212,7 +212,7 @@ class API {
                 Owner: this.address
             }
         }, gasInfo)
-            .then(res => ({ height: res.height, txhash: res.txhash }));
+            .then(standardTxResult);
     }
     search(searchString, options = { page: 1, limit: Number.MAX_SAFE_INTEGER, reverse: false }) {
         return __classPrivateFieldGet(this, _query).call(this, `crud/search/${this.uuid}/${searchString}/${options.page || 1}/${options.limit || Number.MAX_SAFE_INTEGER}/${options.reverse ? 'desc' : 'asc'}`)
@@ -231,7 +231,7 @@ class API {
             }
         }, gasInfo)
             .then(res => findMine(res, it => it.count !== undefined))
-            .then(({ res, data }) => ({ height: res.height, txhash: res.txhash, count: parseInt((data === null || data === void 0 ? void 0 : data.count) || '0') }));
+            .then(({ res, data }) => ({ ...standardTxResult(res), count: parseInt((data === null || data === void 0 ? void 0 : data.count) || '0') }));
     }
     async txGetLease(key, gasInfo) {
         return this.communicationService.sendMessage({
@@ -244,8 +244,7 @@ class API {
         }, gasInfo)
             .then(res => findMine(res, it => it.key === key && it.lease !== undefined))
             .then(({ res, data }) => ({
-            height: res.height,
-            txhash: res.txhash,
+            ...standardTxResult(res),
             lease: parseInt((data === null || data === void 0 ? void 0 : data.lease) || '0') * BLOCK_TIME_IN_SECONDS
         }));
     }
@@ -253,6 +252,8 @@ class API {
         return {
             txhash: 'xxx',
             height: 1,
+            gasWanted: 0,
+            gasUsed: 0,
             leases: []
         };
     }
@@ -268,8 +269,7 @@ class API {
         }, gasInfo)
             .then(res => findMine(res, it => it.key === key && it.has !== undefined))
             .then(({ res, data }) => ({
-            height: res.height,
-            txhash: res.txhash,
+            ...standardTxResult(res),
             key: (data === null || data === void 0 ? void 0 : data.key) || '',
             has: (data === null || data === void 0 ? void 0 : data.has) || false
         }));
@@ -283,7 +283,10 @@ class API {
             }
         }, gasInfo)
             .then(res => findMine(res, it => it.keys !== undefined))
-            .then(({ res, data }) => ({ height: res.height, txhash: res.txhash, keys: (data === null || data === void 0 ? void 0 : data.keys) || [] }));
+            .then(({ res, data }) => ({
+            ...standardTxResult(res),
+            keys: (data === null || data === void 0 ? void 0 : data.keys) || []
+        }));
     }
     async txKeyValues(gasInfo) {
         return this.communicationService.sendMessage({
@@ -314,7 +317,10 @@ class API {
             }
         }, gasInfo)
             .then(res => findMine(res, it => it.value !== undefined && it.key === key))
-            .then(({ res, data }) => ({ height: res.height, txhash: res.txhash, value: data === null || data === void 0 ? void 0 : data.value }));
+            .then(({ res, data }) => ({
+            ...standardTxResult(res),
+            value: data === null || data === void 0 ? void 0 : data.value
+        }));
     }
     async update(key, value, gasInfo, leaseInfo = {}) {
         const blocks = convertLease(leaseInfo);
@@ -355,7 +361,7 @@ class API {
                 to_address: toAddress
             }
         }, gasInfo)
-            .then((res) => ({ txhash: res.txhash, height: res.height }));
+            .then(standardTxResult);
     }
 }
 exports.API = API;
@@ -385,4 +391,10 @@ const findMine = (res, condition) => {
     }
     return { res, data: undefined };
 };
+const standardTxResult = (res) => ({
+    txhash: res.txhash,
+    height: res.height,
+    gasWanted: parseInt(res.gas_wanted),
+    gasUsed: parseInt(res.gas_used)
+});
 //# sourceMappingURL=API.js.map

@@ -25,6 +25,7 @@ import {
     RenewLeaseMessage, TransferTokensMessage, UpdateMessage
 } from "./types/Message";
 import {
+    MessageResponse,
     TxCountResponse,
     TxGetLeaseResponse,
     TxHasResponse,
@@ -87,8 +88,8 @@ export class API {
     }
 
 
-    withTransaction(fn: () => any, transaction?: Transaction) {
-        return this.communicationService.withTransaction(fn, transaction);
+    withTransaction<T>(fn: () => any, transaction?: Transaction): T {
+        return this.communicationService.withTransaction<T>(fn, transaction);
     }
 
     setMaxMessagesPerTransaction(count: number) {
@@ -124,7 +125,7 @@ export class API {
                 Lease: blocks.toString(),
             }
         }, gasInfo)
-            .then(res => ({height: res.height, txhash: res.txhash}))
+            .then(standardTxResult)
     }
 
 
@@ -137,7 +138,7 @@ export class API {
                 Owner: this.address
             }
         }, gasInfo)
-            .then(res => ({height: res.height, txhash: res.txhash}))
+            .then(standardTxResult)
     }
 
     deleteAll(gasInfo: GasInfo): Promise<TxResult> {
@@ -148,7 +149,7 @@ export class API {
                 Owner: this.address
             }
         }, gasInfo)
-            .then(res => ({height: res.height, txhash: res.txhash}))
+            .then(standardTxResult)
     }
 
     getAddress() {
@@ -218,7 +219,7 @@ export class API {
                 Owner: this.address
             }
         }, gasInfo)
-            .then(res => ({txhash: res.txhash, height: res.height}))
+            .then(standardTxResult)
     }
 
     owner(key: string): Promise<string> {
@@ -258,7 +259,7 @@ export class API {
                 Owner: this.address
             }
         }, gasInfo)
-            .then(res => ({height: res.height, txhash: res.txhash}))
+            .then(standardTxResult)
 
     }
 
@@ -279,7 +280,7 @@ export class API {
                 Owner: this.address
             }
         }, gasInfo)
-            .then(res => ({height: res.height, txhash: res.txhash}))
+            .then(standardTxResult)
     }
 
 
@@ -295,7 +296,7 @@ export class API {
                 Owner: this.address
             }
         }, gasInfo)
-            .then(res => ({height: res.height, txhash: res.txhash}))
+            .then(standardTxResult)
     }
 
     search(searchString: string, options: SearchOptions = {page: 1, limit: Number.MAX_SAFE_INTEGER, reverse: false}): Promise<{ key: string, value: string }[]> {
@@ -318,7 +319,7 @@ export class API {
             }
         }, gasInfo)
             .then(res => findMine<TxCountResponse>(res, it => it.count !== undefined))
-            .then(({res, data}) => ({height: res.height, txhash: res.txhash, count: parseInt(data?.count || '0')}))
+            .then(({res, data}) => ({...standardTxResult(res), count: parseInt(data?.count || '0')}))
     }
 
     async txGetLease(key: string, gasInfo: GasInfo): Promise<TxGetLeaseResult> {
@@ -332,8 +333,7 @@ export class API {
         }, gasInfo)
             .then(res => findMine<TxGetLeaseResponse>(res, it => it.key === key && it.lease !== undefined))
             .then(({res, data}) => ({
-                height: res.height,
-                txhash: res.txhash,
+                ...standardTxResult(res),
                 lease: parseInt(data?.lease || '0') * BLOCK_TIME_IN_SECONDS
             }))
     }
@@ -342,6 +342,8 @@ export class API {
         return {
             txhash: 'xxx',
             height: 1,
+            gasWanted: 0,
+            gasUsed: 0,
             leases: []
         }
     }
@@ -359,8 +361,7 @@ export class API {
         }, gasInfo)
             .then(res => findMine<TxHasResponse>(res, it => it.key === key && it.has !== undefined))
             .then(({res, data}) => ({
-                height: res.height,
-                txhash: res.txhash,
+                ...standardTxResult(res),
                 key: data?.key || '',
                 has: data?.has || false
             }))
@@ -376,7 +377,10 @@ export class API {
             }
         }, gasInfo)
             .then(res => findMine<TxKeysResponse>(res, it => it.keys !== undefined))
-            .then(({res, data}) => ({height: res.height, txhash: res.txhash, keys: data?.keys || []}))
+            .then(({res, data}) => ({
+                ...standardTxResult(res),
+                keys: data?.keys || []
+            }))
     }
 
     async txKeyValues(gasInfo: GasInfo): Promise<any> {
@@ -410,7 +414,10 @@ export class API {
             }
         }, gasInfo)
             .then(res => findMine<TxReadResponse>(res, it => it.value !== undefined && it.key === key))
-            .then(({res, data}) => ({height: res.height, txhash: res.txhash, value: data?.value}))
+            .then(({res, data}) => ({
+                ...standardTxResult(res),
+                value: data?.value
+            }))
     }
 
     async update(key: string, value: string, gasInfo: GasInfo, leaseInfo: LeaseInfo = {}): Promise<void> {
@@ -457,7 +464,7 @@ export class API {
                 to_address: toAddress
             }
         }, gasInfo)
-            .then((res) => ({txhash: res.txhash, height: res.height}))
+            .then(standardTxResult)
     }
 
     #query = <T>(path: string): Promise<T> =>
@@ -507,3 +514,10 @@ const findMine = <T>(res: { data: T[] }, condition: (x: T) => boolean): { res: a
     }
     return {res, data: undefined}
 }
+
+const standardTxResult = (res: MessageResponse<void>): TxResult => ({
+    txhash: res.txhash,
+    height: res.height,
+    gasWanted: parseInt(res.gas_wanted),
+    gasUsed: parseInt(res.gas_used)
+})

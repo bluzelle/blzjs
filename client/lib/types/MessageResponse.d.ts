@@ -1,7 +1,8 @@
 export interface MessageResponse<T> {
     height: number;
     txhash: string;
-    gasUsed: number;
+    gas_used: string;
+    gas_wanted: string;
     data: T[];
 }
 export interface TxCountResponse {
