@@ -19,10 +19,12 @@ export interface GetLeaseMessage {
     UUID: string;
 }
 export interface TransferTokensMessage {
-    amount: [{
-        amount: string;
-        denom: string;
-    }];
+    amount: [
+        {
+            amount: string;
+            denom: string;
+        }
+    ];
     from_address: string;
     to_address: string;
 }

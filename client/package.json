@@ -2,19 +2,19 @@
   "name": "bluzelle",
   "main": "lib/bluzelle-node.js",
   "dependencies": {
-    "@cosmostation/cosmosjs": "^0.6.7",
-    "@types/lodash": "^4.14.159",
-    "@types/node": "^14.0.27",
+    "@cosmostation/cosmosjs": "^0.6.8",
+    "@types/lodash": "^4.14.161",
+    "@types/node": "^14.11.2",
     "bip39": "^3.0.2",
     "delay": "^4.4.0",
     "lodash": "^4.17.20",
     "monet": "^0.9.1",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^2.6.1",
     "promise-passthrough": "^1.0.5"
   },
   "devDependencies": {
     "parcel-bundler": "^1.12.4",
-    "typescript": "^3.9.7"
+    "typescript": "^4.0.3"
   },
   "scripts": {
     "build": "rm -rf lib && yarn build-node && yarn build-js",
