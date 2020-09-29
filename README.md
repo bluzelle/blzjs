@@ -5,14 +5,11 @@
 
 # Installation
 
-#### **NOTE: This is the documentation for the 2.x-next version of BluzelleJS**
-
-[Click here for the 1.x version](https://github.com/bluzelle/blzjs)
 
 ```
-yarn add bluzelle@next
+yarn add bluzelle
 or
-npm install bluzelle@next
+npm install bluzelle
 ```
 There are two versions of the bluzelle
 library.  `bluzelle-node.js` and `bluzelle-js.js`.  
