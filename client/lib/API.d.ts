@@ -21,7 +21,7 @@ export declare class API {
     url: string;
     communicationService: CommunicationService;
     constructor(config: BluzelleConfig);
-    withTransaction(fn: () => any, transaction?: Transaction): any;
+    withTransaction<T>(fn: () => any, transaction?: Transaction): T;
     setMaxMessagesPerTransaction(count: number): void;
     account(): Promise<AccountResult>;
     count(): Promise<number>;
@@ -66,7 +66,7 @@ export declare class API {
     txKeys(gasInfo: GasInfo): Promise<TxKeysResult>;
     txKeyValues(gasInfo: GasInfo): Promise<any>;
     txRead(key: string, gasInfo: GasInfo): Promise<TxReadResult | undefined>;
-    update(key: string, value: string, gasInfo: GasInfo, leaseInfo?: LeaseInfo): Promise<void>;
+    update(key: string, value: string, gasInfo: GasInfo, leaseInfo?: LeaseInfo): Promise<TxResult>;
     version(): Promise<string>;
     transferTokensTo(toAddress: string, amount: number, gasInfo: GasInfo, { ubnt, memo }?: {
         ubnt?: boolean;

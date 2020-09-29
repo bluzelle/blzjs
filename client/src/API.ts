@@ -420,7 +420,7 @@ export class API {
             }))
     }
 
-    async update(key: string, value: string, gasInfo: GasInfo, leaseInfo: LeaseInfo = {}): Promise<void> {
+    async update(key: string, value: string, gasInfo: GasInfo, leaseInfo: LeaseInfo = {}): Promise<TxResult> {
 
         const blocks = convertLease(leaseInfo);
 
@@ -430,7 +430,7 @@ export class API {
         assert(blocks >= 0, ClientErrors.INVALID_LEASE_TIME);
         assert(!key.includes('/'), ClientErrors.KEY_CANNOT_CONTAIN_SLASH)
 
-        await this.communicationService.sendMessage<UpdateMessage, void>({
+        return this.communicationService.sendMessage<UpdateMessage, void>({
             type: "crud/update",
             value: {
                 Key: encodeSafe(key),
@@ -440,7 +440,7 @@ export class API {
                 Lease: blocks.toString()
             }
         }, gasInfo)
-            .then(res => ({height: res.height, txhash: res.txhash}))
+            .then(standardTxResult)
     }
 
     version(): Promise<string> {

@@ -329,7 +329,7 @@ class API {
         Assert_1.assert(typeof value === 'string', "Value must be a string" /* VALUE_MUST_BE_A_STRING */);
         Assert_1.assert(blocks >= 0, "Invalid lease time" /* INVALID_LEASE_TIME */);
         Assert_1.assert(!key.includes('/'), "Key cannot contain a slash" /* KEY_CANNOT_CONTAIN_SLASH */);
-        await this.communicationService.sendMessage({
+        return this.communicationService.sendMessage({
             type: "crud/update",
             value: {
                 Key: encodeSafe(key),
@@ -339,7 +339,7 @@ class API {
                 Lease: blocks.toString()
             }
         }, gasInfo)
-            .then(res => ({ height: res.height, txhash: res.txhash }));
+            .then(standardTxResult);
     }
     version() {
         return __classPrivateFieldGet(this, _query).call(this, 'node_info').then(res => res.application_version.version);
