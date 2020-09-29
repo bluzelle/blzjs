@@ -37,7 +37,7 @@ import {bluzelle, API, BluzelleConfig} from 'bluzelle/lib/bluzelle-js'
 ```
 
 
-* [API docs](https://github.com/bluzelle/blzjs/tree/2.0-next/client)
+* [API docs](https://github.com/bluzelle/blzjs/tree/devel/client)
 * [Download browser version for `<script>` tag](https://github.com/bluzelle/blzjs/raw/devel/client/lib/bluzelle-js.js)
 * [Examples](https://github.com/bluzelle/blzjs/tree/devel/samples)
 * [REPL (interactive console)](https://github.com/bluzelle/blzjs/tree/devel/repl)

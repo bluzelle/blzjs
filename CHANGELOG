@@ -40,3 +40,16 @@ Added sendMessage()
 v2.0.6
 ----------------
 Improved error handling
+
+v2.1.0
+-----------------
+Added search()
+Added owner()
+
+v2.1.1
+-----------------
+moved from @next to devel
+
+v2.1.2
+-----------------
+Updated npm modules
