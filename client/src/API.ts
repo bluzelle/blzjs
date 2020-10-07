@@ -1,4 +1,3 @@
-import {isNumber} from "util";
 
 global.fetch || (global.fetch = require('node-fetch'));
 
@@ -50,7 +49,7 @@ import {entropyToMnemonic, generateMnemonic} from "bip39";
 const cosmosjs = require('@cosmostation/cosmosjs');
 
 
-const BLOCK_TIME_IN_SECONDS = 5;
+const BLOCK_TIME_IN_SECONDS = 5.5;
 
 interface QueryError {
     status: number
@@ -158,7 +157,7 @@ export class API {
 
     getLease(key: string): Promise<number> {
         return this.#query<QueryGetLeaseResult & { error: string }>(`crud/getlease/${this.uuid}/${encodeSafe(key)}`)
-            .then(res => res.lease * BLOCK_TIME_IN_SECONDS)
+            .then(res => Math.round(res.lease * BLOCK_TIME_IN_SECONDS))
             .catch(res => {
                 throw res.error === 'Not Found' ? `key "${key}" not found` : res.error
             })
@@ -172,7 +171,7 @@ export class API {
     async getNShortestLeases(count: number) {
         assert(count >= 0, ClientErrors.INVALID_VALUE_SPECIFIED);
         return this.#query<QueryGetNShortestLeasesResult>(`crud/getnshortestleases/${this.uuid}/${count}`)
-            .then(res => res.keyleases.map(({key, lease}) => ({key, lease: parseInt(lease) * BLOCK_TIME_IN_SECONDS})));
+            .then(res => res.keyleases.map(({key, lease}) => ({key, lease: Math.round(parseInt(lease) * BLOCK_TIME_IN_SECONDS)})));
     }
 
     getTx(txhash: string) {
@@ -334,7 +333,7 @@ export class API {
             .then(res => findMine<TxGetLeaseResponse>(res, it => it.key === key && it.lease !== undefined))
             .then(({res, data}) => ({
                 ...standardTxResult(res),
-                lease: parseInt(data?.lease || '0') * BLOCK_TIME_IN_SECONDS
+                lease: Math.round(parseInt(data?.lease || '0') * BLOCK_TIME_IN_SECONDS)
             }))
     }
 
@@ -502,7 +501,7 @@ const MINUTE = 60
 const HOUR = MINUTE * 60
 const DAY = HOUR * 24
 const convertLease = ({seconds = 0, minutes = 0, hours = 0, days = 0}: LeaseInfo): number =>
-    Math.ceil((seconds + (minutes * MINUTE) + (hours * HOUR) + (days * DAY)) / BLOCK_TIME_IN_SECONDS)
+    Math.round((seconds + (minutes * MINUTE) + (hours * HOUR) + (days * DAY)) / BLOCK_TIME_IN_SECONDS)
 
 const findMine = <T>(res: { data: T[] }, condition: (x: T) => boolean): { res: any, data: T | undefined } => {
     for (let i: number = 0; i < res.data.length; i++) {
