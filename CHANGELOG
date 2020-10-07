@@ -20,6 +20,18 @@ To use the sample browser app
 * navigate to samples/curium-todo
 * Follow the provided instructions in the readme
 
+v2.1.3
+-----------------
+Changed block lease time from 5 seconds per block to 5.5 seconds per block
+
+v2.1.2
+-----------------
+Updated npm modules
+
+v2.1.1
+-----------------
+moved from @next to devel
+
 v2.1.0
 ---------------
 Added search()
@@ -41,15 +53,6 @@ v2.0.6
 ----------------
 Improved error handling
 
-v2.1.0
------------------
-Added search()
-Added owner()
 
-v2.1.1
------------------
-moved from @next to devel
 
-v2.1.2
------------------
-Updated npm modules
+
