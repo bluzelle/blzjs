@@ -21,7 +21,7 @@ import {
     DeleteAllMessage,
     DeleteMessage, GetLeaseMessage, HasMessage, KeysMessage, KeyValuesMessage, MultiUpdateMessage,
     ReadMessage, RenameMessage, RenewLeaseAllMessage,
-    RenewLeaseMessage, TransferTokensMessage, UpdateMessage
+    RenewLeaseMessage, TransferTokensMessage, UpdateMessage, UpsertMessage
 } from "./types/Message";
 import {
     MessageResponse,
@@ -441,6 +441,30 @@ export class API {
         }, gasInfo)
             .then(standardTxResult)
     }
+
+    async upsert(key: string, value: string, gasInfo: GasInfo, leaseInfo: LeaseInfo = {}): Promise<TxResult> {
+
+        const blocks = convertLease(leaseInfo);
+
+        assert(!!key, ClientErrors.KEY_CANNOT_BE_EMPTY);
+        assert(typeof key === 'string', ClientErrors.KEY_MUST_BE_A_STRING);
+        assert(typeof value === 'string', ClientErrors.VALUE_MUST_BE_A_STRING);
+        assert(blocks >= 0, ClientErrors.INVALID_LEASE_TIME);
+        assert(!key.includes('/'), ClientErrors.KEY_CANNOT_CONTAIN_SLASH)
+
+        return this.communicationService.sendMessage<UpsertMessage, void>({
+            type: "crud/upsert",
+            value: {
+                Key: encodeSafe(key),
+                Value: encodeSafe(value),
+                UUID: this.uuid,
+                Owner: this.address,
+                Lease: blocks.toString()
+            }
+        }, gasInfo)
+            .then(standardTxResult)
+    }
+
 
     version(): Promise<string> {
         return this.#query<any>('node_info').then(res => res.application_version.version);

@@ -42,6 +42,15 @@ export interface UpdateMessage {
     Lease: string
 }
 
+export interface UpsertMessage {
+    Key: string
+    Value: string
+    Owner: string
+    UUID: string
+    Lease: string
+}
+
+
 export interface HasMessage {
     Key: string
     Owner: string
