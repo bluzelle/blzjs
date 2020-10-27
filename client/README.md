@@ -168,20 +168,23 @@ Returns: Promise=>object
 
 
 
-### getBNT()
+### getBNT({bunt: boolean})
 
-Retrieve the amount of BNT in an account
+Retrieve the amount of BNT/UBNT in an account
 
 ```typescript
 // promise syntax
 api.getBNT()
-    .then(amt => .....);
+    .then(bntAmt => .....);
+
+api.getBNT({ubnt: true})
+	.then(ubntAmt => ....)
 
 // async/await syntax
 const bnt = api.getBnt();
 ```
 
-Returns: Promise => number (amount of BNT rounded to 2 decimal places)
+Returns: Promise => number (amount of BNT rounded to 2 decimal places or UBNT)
 
 
 
