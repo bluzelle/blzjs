@@ -756,6 +756,31 @@ Returns: Promise=>`{txhash: string, height: number}`
 
 
 
+### upsert(key, value, gas_info [, lease_info]\)
+
+Create or update a field in the database.
+
+```javascript
+// promise syntax
+api.upsert('mykey', '{ a: 13 }', {gas_price: 10}, {days: 100})
+	.then(() => { ... })
+	.catch(error => { ... });
+
+// async/await syntax
+await api.upsert('mykey', '{ a: 13 }, {gas_price: 10}', {days: 100});
+```
+
+| Argument              | Description                                                  |
+| :-------------------- | :----------------------------------------------------------- |
+| key                   | The name of the key to create                                |
+| value                 | The string value to set the key                              |
+| gas_info              | Object containing gas parameters (see above)                 |
+| lease_info (optional) | Positive or negative amount of time to alter the lease by. If not specified, the existing lease will not be changed. |
+
+Returns: Promise=>`{txhash: string, height: number}`
+
+
+
 ### withTransaction(fn)
 
 Execute commands inside of a transaction. 
