@@ -740,12 +740,12 @@ Update a field in the database.
 
 ```javascript
 // promise syntax
-api.update('mykey', '{ a: 13 }', {gas_price: 10}, {days: 100})
+api.update('myKey', 'myValue', {gas_price: 10}, {days: 100})
 	.then(() => { ... })
 	.catch(error => { ... });
 
 // async/await syntax
-await api.update('mykey', '{ a: 13 }, {gas_price: 10}', {days: 100});
+await api.update('myKey', 'myValue', {gas_price: 10}, {days: 100});
 ```
 
 | Argument | Description |
@@ -765,12 +765,12 @@ Create or update a field in the database.
 
 ```javascript
 // promise syntax
-api.upsert('mykey', '{ a: 13 }', {gas_price: 10}, {days: 100})
+api.upsert('myKey', 'myValue', {gas_price: 10}, {days: 100})
 	.then(() => { ... })
 	.catch(error => { ... });
 
 // async/await syntax
-await api.upsert('mykey', '{ a: 13 }, {gas_price: 10}', {days: 100});
+await api.upsert('myKey', 'myValue', {gas_price: 10}, {days: 100});
 ```
 
 | Argument              | Description                                                  |
