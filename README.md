@@ -17,14 +17,14 @@ By default the NodeJS version will be used.
 
 ##### To use the NodeJS version
 ```
-import { bluzele } from 'bluzelle';
+import { bluzelle } from 'bluzelle';
 or
 const { bluzelle } = require('bluzelle');
 ```
 
 ##### To use the pure JS version
 ```
-import { bluzele } from 'bluzelle/lib/bluzelle-js';
+import { bluzelle } from 'bluzelle/lib/bluzelle-js';
 or
 const { bluzelle } = require('bluzelle/lib/bluzelle-js');
 ```
