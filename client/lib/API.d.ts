@@ -10,17 +10,19 @@ export interface SearchOptions {
     limit?: number;
     reverse?: boolean;
 }
+export declare const mnemonicToAddress: (mnemonic: string) => any;
 export declare class API {
     #private;
     cosmos: any;
     address: string;
-    ecPairPriv: string;
     mnemonic: string;
     chainId: string;
     uuid: string;
     url: string;
+    config: BluzelleConfig;
     communicationService: CommunicationService;
     constructor(config: BluzelleConfig);
+    getCosmos: (() => Promise<any>) & import("lodash").MemoizedFunction;
     withTransaction<T>(fn: () => any, transaction?: Transaction): T;
     setMaxMessagesPerTransaction(count: number): void;
     account(): Promise<AccountResult>;

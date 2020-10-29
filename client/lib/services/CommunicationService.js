@@ -17,6 +17,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CommunicationService = void 0;
 const monet_1 = require("monet");
 const lodash_1 = require("lodash");
+const promise_passthrough_1 = require("promise-passthrough");
 const TOKEN_NAME = 'ubnt';
 class CommunicationService {
     constructor(api) {
@@ -79,23 +80,24 @@ class CommunicationService {
     }
     transmitTransaction(messages) {
         __classPrivateFieldSet(this, _transactionInFlight, true);
-        return __classPrivateFieldGet(this, _api).cosmos.getAccounts(__classPrivateFieldGet(this, _api).address).then((data) => {
+        let cosmos;
+        return __classPrivateFieldGet(this, _api).getCosmos()
+            .then(c => cosmos = c)
+            .then(() => cosmos.getAccounts(__classPrivateFieldGet(this, _api).address))
+            .then((data) => {
             var _a;
             return monet_1.Some({
                 msgs: messages.map(m => m.message),
-                chain_id: __classPrivateFieldGet(this, _api).chainId,
+                chain_id: cosmos.chainId,
                 fee: getFeeInfo(combineGas(messages)),
                 memo: ((_a = messages[0].transaction) === null || _a === void 0 ? void 0 : _a.memo) || 'no memo',
                 account_number: data.result.value.account_number,
                 sequence: data.result.value.sequence
             })
-                .map(__classPrivateFieldGet(this, _api).cosmos.newStdMsg.bind(__classPrivateFieldGet(this, _api).cosmos))
-                .map((stdSignMsg) => __classPrivateFieldGet(this, _api).cosmos.sign(stdSignMsg, __classPrivateFieldGet(this, _api).ecPairPriv, 'block'))
-                .map(__classPrivateFieldGet(this, _api).cosmos.broadcast.bind(__classPrivateFieldGet(this, _api).cosmos))
-                .map((x) => {
-                __classPrivateFieldSet(this, _transactionInFlight, false);
-                return x;
-            })
+                .map(cosmos.newStdMsg.bind(cosmos))
+                .map((stdSignMsg) => cosmos.sign(stdSignMsg, cosmos.getECPairPriv(__classPrivateFieldGet(this, _api).mnemonic), 'block'))
+                .map(cosmos.broadcast.bind(cosmos))
+                .map(promise_passthrough_1.passThrough(() => __classPrivateFieldSet(this, _transactionInFlight, false)))
                 .map((p) => p
                 .then(convertDataFromHexToString)
                 .then(convertDataToObject)

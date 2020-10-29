@@ -1,6 +1,6 @@
+import {passThrough} from "promise-passthrough";
 
 global.fetch || (global.fetch = require('node-fetch'));
-
 
 
 import {BluzelleConfig} from "./types/BluzelleConfig";
@@ -33,7 +33,7 @@ import {
 } from "./types/MessageResponse";
 import {LeaseInfo} from "./types/LeaseInfo";
 import {ClientErrors} from "./ClientErrors";
-import {pullAt, padStart} from 'lodash'
+import {pullAt, memoize} from 'lodash'
 import {
     TxCountResult,
     TxGetLeaseResult,
@@ -45,6 +45,7 @@ import {
 import {assert} from "./Assert";
 import {Some} from "monet";
 import {entropyToMnemonic, generateMnemonic} from "bip39";
+
 
 const cosmosjs = require('@cosmostation/cosmosjs');
 
@@ -62,30 +63,41 @@ export interface SearchOptions {
     reverse?: boolean
 }
 
+export const mnemonicToAddress = (mnemonic: string) => {
+    const c = cosmosjs.network('http://fake.com', 'fake_chain_id');
+    c.setPath("m/44'/118'/0'/0/0");
+    c.bech32MainPrefix = "bluzelle"
+    return c.getAddress(mnemonic);
+}
+
 export class API {
     cosmos: any;
     address: string;
-    ecPairPriv: string;
     mnemonic: string;
-    chainId: string;
+    chainId: string = '';
     uuid: string;
     url: string;
+    config: BluzelleConfig
     communicationService: CommunicationService
 
 
     constructor(config: BluzelleConfig) {
-        this.cosmos = cosmosjs.network(config.endpoint, config.chain_id);
-        this.cosmos.setPath("m/44'/118'/0'/0/0");
-        this.cosmos.bech32MainPrefix = "bluzelle"
+        this.config = config;
         this.mnemonic = config.mnemonic;
-        this.address = this.cosmos.getAddress(this.mnemonic);
-        this.ecPairPriv = this.cosmos.getECPairPriv(this.mnemonic);
-        this.chainId = config.chain_id;
+        this.address = mnemonicToAddress(this.mnemonic);
         this.uuid = config.uuid;
         this.url = config.endpoint;
         this.communicationService = CommunicationService.create(this);
     }
 
+    getCosmos = memoize(() =>
+        fetch(`${this.url}/node_info`)
+            .then(x => x.json())
+            .then(x => x.node_info.network)
+            .then(chainId => cosmosjs.network(this.url, chainId))
+            .then(passThrough<any>(cosmos => cosmos.setPath("m/44\'/118\'/0\'/0/0")))
+            .then(passThrough<any>(cosmos => cosmos.bech32MainPrefix = 'bluzelle'))
+    )
 
     withTransaction<T>(fn: () => any, transaction?: Transaction): T {
         return this.communicationService.withTransaction<T>(fn, transaction);
@@ -96,7 +108,8 @@ export class API {
     }
 
     account(): Promise<AccountResult> {
-        return this.cosmos.getAccounts(this.address)
+        return this.getCosmos()
+            .then(cosmos => cosmos.getAccounts(this.address))
             .then((x: AccountsResult) => x.result.value);
     }
 
@@ -152,7 +165,7 @@ export class API {
     }
 
     getAddress() {
-        return this.cosmos.getAddress(this.mnemonic);
+        return mnemonicToAddress(this.mnemonic);
     }
 
     getLease(key: string): Promise<number> {
@@ -225,7 +238,7 @@ export class API {
         return this.#query<QueryOwnerResult>(`crud/owner/${this.uuid}/${encodeSafe(key)}`)
             .then(res => res.owner)
             .catch((x) => {
-                if(x instanceof Error) {
+                if (x instanceof Error) {
                     throw x;
                 }
                 throw(new Error(x.error === 'Not Found' ? `key "${key}" not found` : x.error))
@@ -238,7 +251,7 @@ export class API {
             .then(res => res.value)
             .then(decodeSafe)
             .catch((x) => {
-                if(x instanceof Error) {
+                if (x instanceof Error) {
                     throw x;
                 }
                 throw(new Error(x.error === 'Not Found' ? `key "${key}" not found` : x.error))
@@ -395,7 +408,7 @@ export class API {
                     !!(it.keyvalues.length === 0 || (it.keyvalues[0].key && it.keyvalues[0].value))
             }))
             .then(({res, data}) => ({height: res.height, txhash: res.txhash, keyvalues: data?.keyvalues}))
-            .then(({height, txhash, keyvalues}) =>({
+            .then(({height, txhash, keyvalues}) => ({
                 height,
                 txhash,
                 keyvalues: keyvalues?.map(({key, value}) => ({key, value: decodeSafe(value)}))

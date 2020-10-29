@@ -7,7 +7,8 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
 };
 var _query;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.API = void 0;
+exports.API = exports.mnemonicToAddress = void 0;
+const promise_passthrough_1 = require("promise-passthrough");
 global.fetch || (global.fetch = require('node-fetch'));
 const CommunicationService_1 = require("./services/CommunicationService");
 const lodash_1 = require("lodash");
@@ -16,8 +17,21 @@ const monet_1 = require("monet");
 const bip39_1 = require("bip39");
 const cosmosjs = require('@cosmostation/cosmosjs');
 const BLOCK_TIME_IN_SECONDS = 5.5;
+exports.mnemonicToAddress = (mnemonic) => {
+    const c = cosmosjs.network('http://fake.com', 'fake_chain_id');
+    c.setPath("m/44'/118'/0'/0/0");
+    c.bech32MainPrefix = "bluzelle";
+    return c.getAddress(mnemonic);
+};
 class API {
     constructor(config) {
+        this.chainId = '';
+        this.getCosmos = lodash_1.memoize(() => fetch(`${this.url}/node_info`)
+            .then(x => x.json())
+            .then(x => x.node_info.network)
+            .then(chainId => cosmosjs.network(this.url, chainId))
+            .then(promise_passthrough_1.passThrough(cosmos => cosmos.setPath("m/44\'/118\'/0\'/0/0")))
+            .then(promise_passthrough_1.passThrough(cosmos => cosmos.bech32MainPrefix = 'bluzelle')));
         this.generateBIP39Account = (entropy = '') => {
             Assert_1.assert(entropy.length === 0 || entropy.length === 64, 'Entropy must be 64 char hex');
             return entropy ? bip39_1.entropyToMnemonic(entropy) : bip39_1.generateMnemonic(256);
@@ -32,13 +46,13 @@ class API {
             }
             return res.json().then((obj) => { var _a; return (_a = obj.result) !== null && _a !== void 0 ? _a : obj; });
         }));
-        this.cosmos = cosmosjs.network(config.endpoint, config.chain_id);
-        this.cosmos.setPath("m/44'/118'/0'/0/0");
-        this.cosmos.bech32MainPrefix = "bluzelle";
+        this.config = config;
+        // this.cosmos = cosmosjs.network(config.endpoint, config.chain_id);
+        // this.cosmos.setPath("m/44'/118'/0'/0/0");
+        // this.cosmos.bech32MainPrefix = "bluzelle"
         this.mnemonic = config.mnemonic;
-        this.address = this.cosmos.getAddress(this.mnemonic);
-        this.ecPairPriv = this.cosmos.getECPairPriv(this.mnemonic);
-        this.chainId = config.chain_id;
+        this.address = exports.mnemonicToAddress(this.mnemonic);
+        //        this.chainId = config.chain_id;
         this.uuid = config.uuid;
         this.url = config.endpoint;
         this.communicationService = CommunicationService_1.CommunicationService.create(this);
@@ -50,7 +64,8 @@ class API {
         this.communicationService.setMaxMessagesPerTransaction(count);
     }
     account() {
-        return this.cosmos.getAccounts(this.address)
+        return this.getCosmos()
+            .then(cosmos => cosmos.getAccounts(this.address))
             .then((x) => x.result.value);
     }
     count() {
@@ -98,7 +113,7 @@ class API {
             .then(standardTxResult);
     }
     getAddress() {
-        return this.cosmos.getAddress(this.mnemonic);
+        return exports.mnemonicToAddress(this.mnemonic);
     }
     getLease(key) {
         return __classPrivateFieldGet(this, _query).call(this, `crud/getlease/${this.uuid}/${encodeSafe(key)}`)

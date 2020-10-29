@@ -4,6 +4,7 @@ import {API} from "../API";
 import {MessageResponse} from "../types/MessageResponse";
 import {Message} from "../types/Message";
 import {takeWhile, without} from 'lodash'
+import {passThrough} from "promise-passthrough";
 
 const TOKEN_NAME = 'ubnt';
 
@@ -44,27 +45,27 @@ export class CommunicationService {
         this.#api = api;
     }
 
-    setMaxMessagesPerTransaction(count: number):void  {
+    setMaxMessagesPerTransaction(count: number): void {
         this.#maxMessagesPerTransaction = count;
     }
 
-   startTransaction(transaction: Transaction): void {
+    startTransaction(transaction: Transaction): void {
         this.#currentTransaction = transaction;
-   }
+    }
 
-   endTransaction(): void {
+    endTransaction(): void {
         this.#currentTransaction = undefined;
-   }
+    }
 
-   withTransaction<T>(fn: () => T, transaction: {memo: string} = {memo: ''}) : T {
-        if(this.#currentTransaction) {
+    withTransaction<T>(fn: () => T, transaction: { memo: string } = {memo: ''}): T {
+        if (this.#currentTransaction) {
             throw new Error('withTransaction() can not be nested')
         }
         this.startTransaction(transaction);
         const result = fn();
         this.endTransaction();
         return result;
-   }
+    }
 
     sendMessage<T, R>(message: Message<T>, gasInfo: GasInfo): Promise<MessageResponse<R>> {
         const p = new Promise<MessageResponse<R>>((resolve, reject) => {
@@ -101,31 +102,32 @@ export class CommunicationService {
 
     transmitTransaction(messages: MessageQueueItem<any, any>[]): Promise<void> {
         this.#transactionInFlight = true;
-        return this.#api.cosmos.getAccounts(this.#api.address).then((data: any) =>
-            Some({
-                msgs: messages.map(m => m.message),
-                chain_id: this.#api.chainId,
-                fee: getFeeInfo(combineGas(messages)),
-                memo: messages[0].transaction?.memo || 'no memo',
-                account_number: data.result.value.account_number,
-                sequence: data.result.value.sequence
-            })
-                .map(this.#api.cosmos.newStdMsg.bind(this.#api.cosmos))
-                .map((stdSignMsg: any) => this.#api.cosmos.sign(stdSignMsg, this.#api.ecPairPriv, 'block'))
-                .map(this.#api.cosmos.broadcast.bind(this.#api.cosmos))
-                .map((x: any) => {
-                    this.#transactionInFlight = false
-                    return x;
+        let cosmos: any;
+        return this.#api.getCosmos()
+            .then(c => cosmos = c)
+            .then(() => cosmos.getAccounts(this.#api.address))
+            .then((data: any) =>
+                Some({
+                    msgs: messages.map(m => m.message),
+                    chain_id: cosmos.chainId,
+                    fee: getFeeInfo(combineGas(messages)),
+                    memo: messages[0].transaction?.memo || 'no memo',
+                    account_number: data.result.value.account_number,
+                    sequence: data.result.value.sequence
                 })
-                .map((p: any) => p
-                    .then(convertDataFromHexToString)
-                    .then(convertDataToObject)
-                    .then((x: any) => ({...x, height: parseInt(x.height)}))
-                    .then(callRequestorsWithData(messages))
-                    .catch((e: any) => callRequestorsWithData(messages)({error: e}))
-                )
-                .join()
-        )
+                    .map(cosmos.newStdMsg.bind(cosmos))
+                    .map((stdSignMsg: any) => cosmos.sign(stdSignMsg, cosmos.getECPairPriv(this.#api.mnemonic), 'block'))
+                    .map(cosmos.broadcast.bind(cosmos))
+                    .map(passThrough(() => this.#transactionInFlight = false))
+                    .map((p: any) => p
+                        .then(convertDataFromHexToString)
+                        .then(convertDataToObject)
+                        .then((x: any) => ({...x, height: parseInt(x.height)}))
+                        .then(callRequestorsWithData(messages))
+                        .catch((e: any) => callRequestorsWithData(messages)({error: e}))
+                    )
+                    .join()
+            )
     }
 }
 
@@ -141,7 +143,7 @@ const convertDataToObject = (res: any) => ({
 const callRequestorsWithData = (msgs: any[]) =>
     (res: any) =>
         msgs.reduce((memo: any, msg) => {
-            if(res.error) {
+            if (res.error) {
                 return msg.reject({
                     txhash: res.txhash,
                     height: res.height,
@@ -150,7 +152,7 @@ const callRequestorsWithData = (msgs: any[]) =>
                     error: res.error
                 })
             }
-            if(/signature verification failed/.test(res.raw_log)) {
+            if (/signature verification failed/.test(res.raw_log)) {
                 return msg.reject({
                     txhash: res.txhash,
                     height: res.height,
@@ -159,7 +161,7 @@ const callRequestorsWithData = (msgs: any[]) =>
                     error: 'Unknown error'
                 } as FailedTransaction)
             }
-            if(/insufficient fee/.test(res.raw_log)) {
+            if (/insufficient fee/.test(res.raw_log)) {
                 let [x, error] = res.raw_log.split(/[:;]/);
                 return msg.reject({
                     txhash: res.txhash,
@@ -169,7 +171,7 @@ const callRequestorsWithData = (msgs: any[]) =>
                     error: error.trim()
                 } as FailedTransaction)
             }
-            if(/failed to execute message/.test(res.raw_log)) {
+            if (/failed to execute message/.test(res.raw_log)) {
                 let [x, error, y, failedMsgIdx] = res.raw_log.split(':');
                 failedMsgIdx = parseInt(failedMsgIdx)
                 return msg.reject({
@@ -180,7 +182,7 @@ const callRequestorsWithData = (msgs: any[]) =>
                     error: error.trim()
                 } as FailedTransaction)
             }
-            if(/^\[.*\]$/.test(res.raw_log) === false) {
+            if (/^\[.*\]$/.test(res.raw_log) === false) {
                 return msg.reject({
                     txhash: res.txhash,
                     height: res.height,
