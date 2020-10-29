@@ -84,7 +84,7 @@ export class API {
     constructor(config: BluzelleConfig) {
         this.config = config;
         this.mnemonic = config.mnemonic;
-        this.address = mnemonicToAddress(this.mnemonic);
+        this.address = this.mnemonic ? mnemonicToAddress(this.mnemonic) : '';
         this.uuid = config.uuid;
         this.url = config.endpoint;
         this.communicationService = CommunicationService.create(this);
@@ -111,6 +111,11 @@ export class API {
         return this.getCosmos()
             .then(cosmos => cosmos.getAccounts(this.address))
             .then((x: AccountsResult) => x.result.value);
+    }
+
+    isExistingAccount(): Promise<boolean> {
+        return this.account()
+            .then(x => !!x.coins.length)
     }
 
     count(): Promise<number> {

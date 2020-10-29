@@ -26,6 +26,7 @@ export declare class API {
     withTransaction<T>(fn: () => any, transaction?: Transaction): T;
     setMaxMessagesPerTransaction(count: number): void;
     account(): Promise<AccountResult>;
+    isExistingAccount(): Promise<boolean>;
     count(): Promise<number>;
     create(key: string, value: string, gasInfo: GasInfo, leaseInfo?: LeaseInfo): Promise<TxResult>;
     delete(key: string, gasInfo: GasInfo): Promise<TxResult>;

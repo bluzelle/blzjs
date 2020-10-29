@@ -47,12 +47,8 @@ class API {
             return res.json().then((obj) => { var _a; return (_a = obj.result) !== null && _a !== void 0 ? _a : obj; });
         }));
         this.config = config;
-        // this.cosmos = cosmosjs.network(config.endpoint, config.chain_id);
-        // this.cosmos.setPath("m/44'/118'/0'/0/0");
-        // this.cosmos.bech32MainPrefix = "bluzelle"
         this.mnemonic = config.mnemonic;
-        this.address = exports.mnemonicToAddress(this.mnemonic);
-        //        this.chainId = config.chain_id;
+        this.address = this.mnemonic ? exports.mnemonicToAddress(this.mnemonic) : '';
         this.uuid = config.uuid;
         this.url = config.endpoint;
         this.communicationService = CommunicationService_1.CommunicationService.create(this);
@@ -67,6 +63,10 @@ class API {
         return this.getCosmos()
             .then(cosmos => cosmos.getAccounts(this.address))
             .then((x) => x.result.value);
+    }
+    isExistingAccount() {
+        return this.account()
+            .then(x => !!x.coins.length);
     }
     count() {
         return __classPrivateFieldGet(this, _query).call(this, `crud/count/${this.uuid}`)
