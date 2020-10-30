@@ -44,7 +44,6 @@ To start a connection simply call *bluzelle* with your configuration.
 const bz = bluzelle({
         mnemonic: swarm_mnemonic,
         endpoint: swarm_endpoint,
-        chain_id: swarm_chain_id
         uuid:     my_uuid,
     });
 
@@ -110,8 +109,7 @@ const {bluzelle} = require('bluzelle');
 const api = bluzelle({
     mnemonic: 'volcano arrest ceiling physical concert sunset absent hungry tobacco canal census era pretty car code crunch inside behind afraid express giraffe reflect stadium luxury',
     endpoint: "http://localhost:1317",
-    uuid:     "20fc19d4-7c9d-4b5c-9578-8cedd756e0ea",
-    chain_id: "bluzelle"
+    uuid:     "20fc19d4-7c9d-4b5c-9578-8cedd756e0ea"
 });
 ```
 
@@ -124,8 +122,7 @@ import {bluzelle, API} from 'bluzelle';
 const api: API = bluzelle({
     mnemonic: 'volcano arrest ceiling physical concert sunset absent hungry tobacco canal census era pretty car code crunch inside behind afraid express giraffe reflect stadium luxury',
     endpoint: "http://localhost:1317",
-    uuid:     "20fc19d4-7c9d-4b5c-9578-8cedd756e0ea",
-    chain_id: "bluzelle"
+    uuid:     "20fc19d4-7c9d-4b5c-9578-8cedd756e0ea"
 });
 ```
 
@@ -135,7 +132,6 @@ const api: API = bluzelle({
 | **mnemonic** | The mnemonic of the private key for your Bluzelle account |
 | endpoint | \(Optional\) The hostname and port of your rest server. Default: http://localhost:1317 |
 | uuid | Bluzelle uses `UUID`'s to identify distinct databases on a single swarm. We recommend using [Version 4 of the universally unique identifier](https://en.wikipedia.org/wiki/Universally_unique_identifier#Version_4_%28random%29).  |
-| chain_id | The chain id of your Bluzelle account. |
 
 
 ## General Functions
@@ -375,6 +371,25 @@ const hasMyKey = await api.has('mykey');
 | Argument | Description                  |
 | :------- | :--------------------------- |
 | key      | The name of the key to query |
+
+Returns: Promise=>boolean
+
+
+
+### isExistingAccount()
+
+Returns true if the current account has transactions in the blockchain
+
+
+```javascript
+// promise syntax
+api.isExistingAccount('mykey')
+	.then(existing => { ... })
+	.catch(error => { ... });
+
+// async/await syntax
+const existing = await api.isExistingAccount();
+```
 
 Returns: Promise=>boolean
 
