@@ -58,8 +58,7 @@ const createAccount = (bz: API, n: number): API =>
         .map(mnemonic => bluzelle({
             mnemonic,
             endpoint: bz.url,
-            uuid: Date.now().toString() + uniqueId(),
-            chain_id: bz.chainId
+            uuid: Date.now().toString() + uniqueId()
         }))
         .map(x => x)
         .join()

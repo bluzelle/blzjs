@@ -20,6 +20,11 @@ To use the sample browser app
 * navigate to samples/curium-todo
 * Follow the provided instructions in the readme
 
+v2.1.5
+------------
+Removed the need for chain_id in initial config
+added isExistingAccount() function
+
 v2.1.4
 ---------------
 added upsert() function
