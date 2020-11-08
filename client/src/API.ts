@@ -239,6 +239,15 @@ export class API {
             .then(standardTxResult)
     }
 
+    myKeys(): Promise<string[]> {
+        return this.#query<QueryKeysResult>(`crud/mykeys/${this.address}/${this.uuid}`)
+            .then(res => res.keys)
+            .catch((x) => {
+                throw x
+            });
+    }
+
+
     owner(key: string): Promise<string> {
         return this.#query<QueryOwnerResult>(`crud/owner/${this.uuid}/${encodeSafe(key)}`)
             .then(res => res.owner)

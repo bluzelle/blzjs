@@ -166,6 +166,13 @@ class API {
         }, gasInfo)
             .then(standardTxResult);
     }
+    myKeys() {
+        return __classPrivateFieldGet(this, _query).call(this, `crud/mykeys/${this.address}/${this.uuid}`)
+            .then(res => res.keys)
+            .catch((x) => {
+            throw x;
+        });
+    }
     owner(key) {
         return __classPrivateFieldGet(this, _query).call(this, `crud/owner/${this.uuid}/${encodeSafe(key)}`)
             .then(res => res.owner)
