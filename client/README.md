@@ -435,6 +435,22 @@ Returns: Promise=>object
 
 
 
+### mint\(address, gas_info\)
+
+Mints new tokens and sends them to the provided address
+
+```javascript
+// promise syntax
+api.mint('bluzelle1hs3rpsdskp63vgpfud4nycxxacu69nwvzv5jgn', {gas_price: 0.002, max_gas: 10000000})
+
+// async/await syntax
+await api.mint('bluzelle1hs3rpsdskp63vgpfud4nycxxacu69nwvzv5jgn', {gas_price: 0.002, max_gas: 10000000});
+```
+
+Returns: Promise=> `{txhash: string, height: number}
+
+
+
 ### multiUpdate\(key_values, gas_info\)
 
 Update multiple fields in the database.

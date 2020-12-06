@@ -8,6 +8,12 @@ export interface CountMessage {
     Owner: string
 }
 
+export interface MintMessage {
+    Minter: string
+    Sender: string
+    Time: string
+}
+
 export interface CreateMessage {
     Key: string
     Value: string

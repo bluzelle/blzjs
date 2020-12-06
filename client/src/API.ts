@@ -19,7 +19,7 @@ import {
     CountMessage,
     CreateMessage,
     DeleteAllMessage,
-    DeleteMessage, GetLeaseMessage, HasMessage, KeysMessage, KeyValuesMessage, MultiUpdateMessage,
+    DeleteMessage, GetLeaseMessage, HasMessage, KeysMessage, KeyValuesMessage, MintMessage, MultiUpdateMessage,
     ReadMessage, RenameMessage, RenewLeaseAllMessage,
     RenewLeaseMessage, TransferTokensMessage, UpdateMessage, UpsertMessage
 } from "./types/Message";
@@ -63,7 +63,7 @@ export interface SearchOptions {
     reverse?: boolean
 }
 
-export const mnemonicToAddress = (mnemonic: string) => {
+export const mnemonicToAddress = (mnemonic: string): string => {
     const c = cosmosjs.network('http://fake.com', 'fake_chain_id');
     c.setPath("m/44'/118'/0'/0/0");
     c.bech32MainPrefix = "bluzelle"
@@ -121,6 +121,21 @@ export class API {
     count(): Promise<number> {
         return this.#query<QueryCountResult>(`crud/count/${this.uuid}`)
             .then((res: QueryCountResult) => parseInt(res.count || '0'));
+    }
+
+    async mint(address: string, gasInfo: GasInfo): Promise<TxResult> {
+        assert(!!address, ClientErrors.ADDRESS_MUST_BE_A_STRING);
+        assert(typeof address === 'string', ClientErrors.ADDRESS_MUST_BE_A_STRING);
+
+        return this.communicationService.sendMessage<MintMessage, void>({
+            type: "faucet/Mint",
+            value: {
+                Minter: address,
+                Sender: this.address,
+                Time: Date.now().toString()
+            }
+        }, gasInfo)
+            .then(standardTxResult);
     }
 
     async create(key: string, value: string, gasInfo: GasInfo, leaseInfo: LeaseInfo = {}): Promise<TxResult> {

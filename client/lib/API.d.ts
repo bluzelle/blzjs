@@ -10,7 +10,7 @@ export interface SearchOptions {
     limit?: number;
     reverse?: boolean;
 }
-export declare const mnemonicToAddress: (mnemonic: string) => any;
+export declare const mnemonicToAddress: (mnemonic: string) => string;
 export declare class API {
     #private;
     cosmos: any;
@@ -28,10 +28,11 @@ export declare class API {
     account(): Promise<AccountResult>;
     isExistingAccount(): Promise<boolean>;
     count(): Promise<number>;
+    mint(address: string, gasInfo: GasInfo): Promise<TxResult>;
     create(key: string, value: string, gasInfo: GasInfo, leaseInfo?: LeaseInfo): Promise<TxResult>;
     delete(key: string, gasInfo: GasInfo): Promise<TxResult>;
     deleteAll(gasInfo: GasInfo): Promise<TxResult>;
-    getAddress(): any;
+    getAddress(): string;
     getLease(key: string): Promise<number>;
     generateBIP39Account: (entropy?: string) => string;
     getNShortestLeases(count: number): Promise<{

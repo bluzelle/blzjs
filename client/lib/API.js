@@ -72,6 +72,19 @@ class API {
         return __classPrivateFieldGet(this, _query).call(this, `crud/count/${this.uuid}`)
             .then((res) => parseInt(res.count || '0'));
     }
+    async mint(address, gasInfo) {
+        Assert_1.assert(!!address, "address must be a string" /* ADDRESS_MUST_BE_A_STRING */);
+        Assert_1.assert(typeof address === 'string', "address must be a string" /* ADDRESS_MUST_BE_A_STRING */);
+        return this.communicationService.sendMessage({
+            type: "faucet/Mint",
+            value: {
+                Minter: address,
+                Sender: this.address,
+                Time: Date.now().toString()
+            }
+        }, gasInfo)
+            .then(standardTxResult);
+    }
     async create(key, value, gasInfo, leaseInfo = {}) {
         const blocks = convertLease(leaseInfo);
         Assert_1.assert(!!key, "Key cannot be empty" /* KEY_CANNOT_BE_EMPTY */);
