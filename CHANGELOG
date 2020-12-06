@@ -1,24 +1,7 @@
-version 0.7.0
-----------------------------------
-BluzelleJS cleanup features
-* Typescript compatible for typing and auto-completion/suggest in your IDE
-* Includes source maps for easier debugging
-* Refactored for size and performance
-* Backward compatible with earlier version (should not require any code changes)
-* Browser compatible using compilers (Babel, Typescript...)
-
-Includes a sample client-side browser todo demo app
-* Typescript code
-* Using NextJS (https://nextjs.org/) server/client framework with server and client side rendering
-* Demonstrates how to use basic CRUD functions to develop a fully functioning application
-* Provides a boilerplate for your own project
-* Includes a form to enter parameters
-
-To use the sample browser app
-* https://github.com/bluzelle/blzjs
-* Switch to the 'next-gen' branch
-* navigate to samples/curium-todo
-* Follow the provided instructions in the readme
+v2.1.6
+------------
+Added mint() function
+Added myKeys() function
 
 v2.1.5
 ------------
@@ -63,5 +46,26 @@ v2.0.6
 Improved error handling
 
 
+version 0.7.0
+----------------------------------
+BluzelleJS cleanup features
+* Typescript compatible for typing and auto-completion/suggest in your IDE
+* Includes source maps for easier debugging
+* Refactored for size and performance
+* Backward compatible with earlier version (should not require any code changes)
+* Browser compatible using compilers (Babel, Typescript...)
+
+Includes a sample client-side browser todo demo app
+* Typescript code
+* Using NextJS (https://nextjs.org/) server/client framework with server and client side rendering
+* Demonstrates how to use basic CRUD functions to develop a fully functioning application
+* Provides a boilerplate for your own project
+* Includes a form to enter parameters
+
+To use the sample browser app
+* https://github.com/bluzelle/blzjs
+* Switch to the 'next-gen' branch
+* navigate to samples/curium-todo
+* Follow the provided instructions in the readme
 
 
