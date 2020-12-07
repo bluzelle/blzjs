@@ -820,6 +820,7 @@ Returns: Promise=>`{txhash: string, height: number}`
 Execute commands inside of a transaction. 
 
 ```typescript
+api.setMaxMessagesPerTransaction(10);
 api.withTransaction(() => {
     api.create('foo', 'bar', {gas_price: 10});
     api.create('foo2', 'bar', {gas_price: 10});
@@ -832,6 +833,7 @@ The above code will execute the two creates and the read in a single transaction
 withTransaction() returns whatever the function inside of it returns, so if you need to return a promise for items inside of the transaction, simply wrap them in Promise.all
 
 ```typescript
+api.setMaxMessagesPerTransaction(10);
 api.withTransaction(() => Promise.all([
     	api.create('foo', 'bar', {gas_price: 10}),
     	api.create('foo2', 'bar', {gas_price: 10}),
@@ -840,7 +842,7 @@ api.withTransaction(() => Promise.all([
 }).then(doSomething)
 ```
 
-
+**NOTE:  In order for withTransaction() to work, you must set the api.setMaxMessagesPerTransaction([number of transactions]) first.**
 
 
 
