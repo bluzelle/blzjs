@@ -257,6 +257,9 @@ class API {
     sendMessage(message, gasInfo) {
         return this.communicationService.sendMessage(message, gasInfo);
     }
+    taxInfo() {
+        return __classPrivateFieldGet(this, _query).call(this, '/tax/info').then(res => res);
+    }
     async txCount(gasInfo) {
         return this.communicationService.sendMessage({
             type: 'crud/count',

@@ -351,6 +351,10 @@ export class API {
         return this.communicationService.sendMessage(message, gasInfo);
     }
 
+    taxInfo() {
+        return this.#query<any>('/tax/info').then(res => res);
+    }
+
     async txCount(gasInfo: GasInfo): Promise<TxCountResult> {
         return this.communicationService.sendMessage<CountMessage, TxCountResponse>({
             type: 'crud/count',

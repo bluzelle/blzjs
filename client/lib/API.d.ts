@@ -64,6 +64,7 @@ export declare class API {
         value: string;
     }[]>;
     sendMessage(message: any, gasInfo: GasInfo): Promise<MessageResponse<unknown>>;
+    taxInfo(): Promise<any>;
     txCount(gasInfo: GasInfo): Promise<TxCountResult>;
     txGetLease(key: string, gasInfo: GasInfo): Promise<TxGetLeaseResult>;
     txGetNShortestLeases(n: number, gasInfo: GasInfo): Promise<TxGetNShortestLeasesResult>;
