@@ -107,9 +107,9 @@ export class API {
         this.communicationService.setMaxMessagesPerTransaction(count);
     }
 
-    account(): Promise<AccountResult> {
+    account(address: string = this.address): Promise<AccountResult> {
         return this.getCosmos()
-            .then(cosmos => cosmos.getAccounts(this.address))
+            .then(cosmos => cosmos.getAccounts(address))
             .then((x: AccountsResult) => x.result.value);
     }
 
@@ -211,8 +211,8 @@ export class API {
         return this.#query(`txs/${txhash}`)
     }
 
-    getBNT({ubnt}: { ubnt?: boolean } = {ubnt: false}): Promise<number> {
-        return this.account()
+    getBNT({ubnt, address}: { ubnt?: boolean, address?: string} = {ubnt: false, address: this.address}): Promise<number> {
+        return this.account(address)
             .then(a => a.coins[0]?.amount || '0')
             .then(a => ubnt ? a : a.slice(0, -6) || '0')
             .then(parseInt)

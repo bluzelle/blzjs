@@ -1,3 +1,7 @@
+v2.1.9
+------------
+Added address option to account() and getBNT()
+
 v2.1.8
 --------------
 Added taxInfo() function

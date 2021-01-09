@@ -59,9 +59,9 @@ class API {
     setMaxMessagesPerTransaction(count) {
         this.communicationService.setMaxMessagesPerTransaction(count);
     }
-    account() {
+    account(address = this.address) {
         return this.getCosmos()
-            .then(cosmos => cosmos.getAccounts(this.address))
+            .then(cosmos => cosmos.getAccounts(address))
             .then((x) => x.result.value);
     }
     isExistingAccount() {
@@ -143,8 +143,8 @@ class API {
     getTx(txhash) {
         return __classPrivateFieldGet(this, _query).call(this, `txs/${txhash}`);
     }
-    getBNT({ ubnt } = { ubnt: false }) {
-        return this.account()
+    getBNT({ ubnt, address } = { ubnt: false, address: this.address }) {
+        return this.account(address)
             .then(a => { var _a; return ((_a = a.coins[0]) === null || _a === void 0 ? void 0 : _a.amount) || '0'; })
             .then(a => ubnt ? a : a.slice(0, -6) || '0')
             .then(parseInt);

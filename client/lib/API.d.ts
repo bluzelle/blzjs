@@ -25,7 +25,7 @@ export declare class API {
     getCosmos: (() => Promise<any>) & import("lodash").MemoizedFunction;
     withTransaction<T>(fn: () => any, transaction?: Transaction): T;
     setMaxMessagesPerTransaction(count: number): void;
-    account(): Promise<AccountResult>;
+    account(address?: string): Promise<AccountResult>;
     isExistingAccount(): Promise<boolean>;
     count(): Promise<number>;
     mint(address: string, gasInfo: GasInfo): Promise<TxResult>;
@@ -40,8 +40,9 @@ export declare class API {
         lease: number;
     }[]>;
     getTx(txhash: string): Promise<unknown>;
-    getBNT({ ubnt }?: {
+    getBNT({ ubnt, address }?: {
         ubnt?: boolean;
+        address?: string;
     }): Promise<number>;
     has(key: string): Promise<boolean>;
     keys(): Promise<string[]>;

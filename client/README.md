@@ -136,13 +136,17 @@ const api: API = bluzelle({
 
 ## General Functions
 
-### account\()
+### account\([address])
 
 Retrieve information about the currently active Bluzelle account.
 
 ```javascript
 // promise syntax
 api.account()
+	.then((info) => { ... })
+	.catch((error) => { ... });
+
+api.account('bluzelle.....')
 	.then((info) => { ... })
 	.catch((error) => { ... });
 
@@ -162,9 +166,11 @@ Returns: Promise=>object
 }
 ```
 
+| Argument | Description    |
+| :------- | :------------- |
+| Address  | Address to use |
 
-
-### getBNT({bunt: boolean})
+### getBNT({ubnt: boolean, address: string})
 
 Retrieve the amount of BNT/UBNT in an account
 
@@ -173,12 +179,17 @@ Retrieve the amount of BNT/UBNT in an account
 api.getBNT()
     .then(bntAmt => .....);
 
-api.getBNT({ubnt: true})
+api.getBNT({ubnt: true, acount: 'bluzelle......'})
 	.then(ubntAmt => ....)
 
 // async/await syntax
 const bnt = api.getBnt();
 ```
+
+| Argument | Description                |
+| :------- | :------------------------- |
+| ubnt     | Display value in ubnt      |
+| Address  | The address of the account |
 
 Returns: Promise => number (amount of BNT rounded to 2 decimal places or UBNT)
 
