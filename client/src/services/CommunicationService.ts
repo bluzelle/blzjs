@@ -194,7 +194,7 @@ const callRequestorsWithData = (msgs: any[]) =>
             return msg.resolve ? msg.resolve(memo) || memo : memo
         }, res)
 
-const getFeeInfo = ({max_fee, gas_price = 10, max_gas = 200000}: GasInfo) => ({
+const getFeeInfo = ({max_fee, gas_price = 0.002, max_gas = 10000000}: GasInfo) => ({
     amount: [{
         denom: TOKEN_NAME,
         amount: (max_fee ? max_fee : max_gas * gas_price).toString()
