@@ -352,7 +352,7 @@ export class API {
     }
 
     taxInfo() {
-        return this.#query<any>('tax/info').then(res => res);
+        return this.#query<any>('tax/info');
     }
 
     async txCount(gasInfo: GasInfo): Promise<TxCountResult> {
