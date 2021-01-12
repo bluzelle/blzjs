@@ -55,6 +55,7 @@ export declare class API {
         value: string;
     }[], gasInfo: GasInfo): Promise<TxResult>;
     myKeys(): Promise<string[]>;
+    query<T>(queryString: string): Promise<T>;
     owner(key: string): Promise<string>;
     read(key: string, prove?: boolean): Promise<string>;
     rename(key: string, newKey: string, gasInfo: GasInfo): Promise<TxResult>;

@@ -186,6 +186,9 @@ class API {
             throw x;
         });
     }
+    query(queryString) {
+        return __classPrivateFieldGet(this, _query).call(this, queryString);
+    }
     owner(key) {
         return __classPrivateFieldGet(this, _query).call(this, `crud/owner/${this.uuid}/${encodeSafe(key)}`)
             .then(res => res.owner)
@@ -258,7 +261,7 @@ class API {
         return this.communicationService.sendMessage(message, gasInfo);
     }
     taxInfo() {
-        return __classPrivateFieldGet(this, _query).call(this, '/tax/info').then(res => res);
+        return __classPrivateFieldGet(this, _query).call(this, 'tax/info');
     }
     async txCount(gasInfo) {
         return this.communicationService.sendMessage({

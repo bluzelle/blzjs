@@ -262,6 +262,9 @@ export class API {
             });
     }
 
+    query<T>(queryString: string): Promise<T> {
+        return this.#query<T>(queryString);
+    }
 
     owner(key: string): Promise<string> {
         return this.#query<QueryOwnerResult>(`crud/owner/${this.uuid}/${encodeSafe(key)}`)
