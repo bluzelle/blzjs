@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "bluzelle": "^2.0.2",
+    "bluzelle": "^2.1.10",
     "monet": "^0.9.1",
     "ts-node": "^8.10.1"
   },
