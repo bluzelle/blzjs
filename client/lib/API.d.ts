@@ -1,10 +1,14 @@
 import { BluzelleConfig } from "./types/BluzelleConfig";
 import { GasInfo } from "./types/GasInfo";
 import { AccountResult } from "./types/cosmos/AccountResult";
-import { CommunicationService, Transaction } from "./services/CommunicationService";
+import { CommunicationService } from "./services/CommunicationService";
 import { MessageResponse } from "./types/MessageResponse";
 import { LeaseInfo } from "./types/LeaseInfo";
 import { TxCountResult, TxGetLeaseResult, TxGetNShortestLeasesResult, TxHasResult, TxKeysResult, TxReadResult, TxResult } from "./types/TxResult";
+interface ABCIResponse<T> {
+    height: number;
+    result: T;
+}
 export interface SearchOptions {
     page?: number;
     limit?: number;
@@ -22,14 +26,17 @@ export declare class API {
     config: BluzelleConfig;
     communicationService: CommunicationService;
     constructor(config: BluzelleConfig);
-    getCosmos: (() => Promise<any>) & import("lodash").MemoizedFunction;
-    withTransaction<T>(fn: () => any, transaction?: Transaction): T;
+    withTransaction<T>(fn: () => any): Promise<MessageResponse<T>>;
     setMaxMessagesPerTransaction(count: number): void;
     account(address?: string): Promise<AccountResult>;
     isExistingAccount(): Promise<boolean>;
     count(): Promise<number>;
-    mint(address: string, gasInfo: GasInfo): Promise<TxResult>;
     create(key: string, value: string, gasInfo: GasInfo, leaseInfo?: LeaseInfo): Promise<TxResult>;
+    createProposal(amount: number, title: string, description: string, gasInfo: GasInfo): Promise<{
+        id: any;
+    }>;
+    depositToProposal(id: string, amount: number, title: string, description: string, gasInfo: GasInfo): Promise<MessageResponse<unknown>>;
+    delegate(valoper: string, amount: number, gasInfo: GasInfo): Promise<MessageResponse<unknown>>;
     delete(key: string, gasInfo: GasInfo): Promise<TxResult>;
     deleteAll(gasInfo: GasInfo): Promise<TxResult>;
     getAddress(): string;
@@ -50,12 +57,14 @@ export declare class API {
         key: string;
         value: string;
     }[]>;
+    mint(address: string, gasInfo: GasInfo): Promise<TxResult>;
     multiUpdate(keyValues: {
         key: string;
         value: string;
     }[], gasInfo: GasInfo): Promise<TxResult>;
     myKeys(): Promise<string[]>;
     query<T>(queryString: string): Promise<T>;
+    abciQuery<T>(method: string, data?: unknown): Promise<ABCIResponse<T>>;
     owner(key: string): Promise<string>;
     read(key: string, prove?: boolean): Promise<string>;
     rename(key: string, newKey: string, gasInfo: GasInfo): Promise<TxResult>;
@@ -74,12 +83,15 @@ export declare class API {
     txKeys(gasInfo: GasInfo): Promise<TxKeysResult>;
     txKeyValues(gasInfo: GasInfo): Promise<any>;
     txRead(key: string, gasInfo: GasInfo): Promise<TxReadResult | undefined>;
+    undelegate(valoper: string, amount: number, gasInfo: GasInfo): Promise<MessageResponse<unknown>>;
     update(key: string, value: string, gasInfo: GasInfo, leaseInfo?: LeaseInfo): Promise<TxResult>;
     upsert(key: string, value: string, gasInfo: GasInfo, leaseInfo?: LeaseInfo): Promise<TxResult>;
     version(): Promise<string>;
+    withdrawRewards(valoper: string, gasInfo: GasInfo): Promise<number>;
     transferTokensTo(toAddress: string, amount: number, gasInfo: GasInfo, { ubnt, memo }?: {
         ubnt?: boolean;
         memo?: string;
     }): Promise<TxResult>;
 }
+export {};
 //# sourceMappingURL=API.d.ts.map

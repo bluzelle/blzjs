@@ -5,6 +5,7 @@ export {API} from './API';
 export {BluzelleConfig} from './types/BluzelleConfig'
 export {SearchOptions} from './API'
 export {mnemonicToAddress} from './API'
+export {GasInfo} from './types/GasInfo'
 
 export const bluzelle = (config: BluzelleConfig): API => new API(config);
 

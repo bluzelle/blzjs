@@ -2,29 +2,24 @@ import { GasInfo } from "../types/GasInfo";
 import { API } from "../API";
 import { MessageResponse } from "../types/MessageResponse";
 import { Message } from "../types/Message";
-interface MessageQueueItem<T, R> {
+interface MessageQueueItem<T> {
     message: Message<T>;
-    resolve?: (value: MessageResponse<R>) => void;
-    reject?: (reason: any) => void;
     gasInfo: GasInfo;
-    transaction?: Transaction;
 }
-export interface Transaction {
-    memo: string;
+export interface CommunicationService {
+    api: API;
+    seq: string;
+    account: string;
+    accountRequested?: Promise<unknown>;
+    transactionMessageQueue?: MessageQueueItem<any>[];
 }
-export declare class CommunicationService {
-    #private;
-    static create(api: API): CommunicationService;
-    private constructor();
-    setMaxMessagesPerTransaction(count: number): void;
-    startTransaction(transaction: Transaction): void;
-    endTransaction(): void;
-    withTransaction<T>(fn: () => T, transaction?: {
-        memo: string;
-    }): T;
-    sendMessage<T, R>(message: Message<T>, gasInfo: GasInfo): Promise<MessageResponse<R>>;
-    checkMessageQueueNeedsTransmit(): void;
-    transmitTransaction(messages: MessageQueueItem<any, any>[]): Promise<void>;
-}
+export declare const newCommunicationService: (api: API) => {
+    api: API;
+    seq: string;
+    account: string;
+};
+export declare const withTransaction: <T>(service: CommunicationService, fn: () => T) => Promise<MessageResponse<T>>;
+export declare const sendMessage: <T, R>(ctx: CommunicationService, message: Message<T>, gasInfo: GasInfo) => Promise<MessageResponse<R>>;
+export declare const getCosmos: ((api: API) => Promise<any>) & import("lodash").MemoizedFunction;
 export {};
 //# sourceMappingURL=CommunicationService.d.ts.map

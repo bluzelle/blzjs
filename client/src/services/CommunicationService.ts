@@ -1,19 +1,20 @@
 import {GasInfo} from "../types/GasInfo";
-import {None, Some} from "monet";
+import {Either, Left, None, Right, Some} from "monet";
 import {API} from "../API";
 import {MessageResponse} from "../types/MessageResponse";
 import {Message} from "../types/Message";
-import {takeWhile, without} from 'lodash'
+import {memoize, takeWhile, without} from 'lodash'
 import {passThrough} from "promise-passthrough";
+import delay from "delay";
+
+const cosmosjs = require('@cosmostation/cosmosjs');
+
 
 const TOKEN_NAME = 'ubnt';
 
-interface MessageQueueItem<T, R> {
+interface MessageQueueItem<T> {
     message: Message<T>
-    resolve?: (value: MessageResponse<R>) => void
-    reject?: (reason: any) => void
     gasInfo: GasInfo
-    transaction?: Transaction
 }
 
 interface FailedTransaction {
@@ -24,175 +25,192 @@ interface FailedTransaction {
     error: string
 }
 
-export interface Transaction {
-    memo: string
+
+const dummyMessageResponse = {
+    height: 0,
+    txhash: '',
+    gas_used: '',
+    gas_wanted: '',
+    data: []
 }
 
-export class CommunicationService {
-    #api: API
-    #messageQueue: MessageQueueItem<any, any>[] = [];
-    #maxMessagesPerTransaction = 1;
-    #checkTransmitQueueTail: Promise<any> = Promise.resolve();
-    #currentTransaction?: Transaction;
-    #transactionInFlight: boolean = false;
+export interface CommunicationService {
+    api: API
+    seq: string
+    account: string
+    accountRequested?: Promise<unknown>
+    transactionMessageQueue?: MessageQueueItem<any>[]
+}
 
+export const newCommunicationService = (api: API) => ({
+    api,
+    seq: '',
+    account: ''
+})
 
-    static create(api: API): CommunicationService {
-        return new CommunicationService(api);
+export const withTransaction = <T>(service: CommunicationService, fn: () => T): Promise<MessageResponse<T>> => {
+    if (service.transactionMessageQueue) {
+        throw new Error('withTransaction() can not be nested')
     }
-
-    private constructor(api: API) {
-        this.#api = api;
-    }
-
-    setMaxMessagesPerTransaction(count: number): void {
-        this.#maxMessagesPerTransaction = count;
-    }
-
-    startTransaction(transaction: Transaction): void {
-        this.#currentTransaction = transaction;
-    }
-
-    endTransaction(): void {
-        this.#currentTransaction = undefined;
-    }
-
-    withTransaction<T>(fn: () => T, transaction: { memo: string } = {memo: ''}): T {
-        if (this.#currentTransaction) {
-            throw new Error('withTransaction() can not be nested')
-        }
-        this.startTransaction(transaction);
-        const result = fn();
-        this.endTransaction();
-        return result;
-    }
-
-    sendMessage<T, R>(message: Message<T>, gasInfo: GasInfo): Promise<MessageResponse<R>> {
-        const p = new Promise<MessageResponse<R>>((resolve, reject) => {
-            this.#messageQueue.push({
-                message,
-                gasInfo,
-                resolve,
-                reject,
-                transaction: this.#currentTransaction
-            })
-        })
-        this.#messageQueue.length === 1 && !this.#transactionInFlight && (this.#checkTransmitQueueTail = this.#checkTransmitQueueTail.then(this.checkMessageQueueNeedsTransmit.bind(this)));
-        return p;
-    }
-
-    checkMessageQueueNeedsTransmit() {
-        Some(this.#messageQueue)
-            .flatMap(queue => queue.length ? Some<MessageQueueItem<any, any>[]>(this.#messageQueue) : None<any>())
-            .map(queue => [queue[0].transaction, queue])
-            .map(([transaction, queue]) => [
-                takeWhile(queue, (it: MessageQueueItem<any, any>, idx: number) =>
-                    it.transaction === transaction
-                    && (it.transaction === undefined ? idx < this.#maxMessagesPerTransaction : true)
-                ),
-                queue
-            ])
-            .map(([messages, queue]) => {
-                this.#messageQueue = without(queue, ...messages);
-                return messages
-            })
-            .map(messages => this.transmitTransaction(messages).then(this.checkMessageQueueNeedsTransmit.bind(this)))
-    }
+    service.transactionMessageQueue = [];
+    fn();
+    const result = sendMessages(service, service.transactionMessageQueue)
+    service.transactionMessageQueue = undefined;
+    return result;
+}
 
 
-    transmitTransaction(messages: MessageQueueItem<any, any>[]): Promise<void> {
-        this.#transactionInFlight = true;
-        let cosmos: any;
-        return this.#api.getCosmos()
-            .then(c => cosmos = c)
-            .then(() => cosmos.getAccounts(this.#api.address))
-            .then((data: any) =>
-                Some({
-                    msgs: messages.map(m => m.message),
-                    chain_id: cosmos.chainId,
-                    fee: getFeeInfo(combineGas(messages)),
-                    memo: messages[0].transaction?.memo || 'no memo',
-                    account_number: data.result.value.account_number,
-                    sequence: data.result.value.sequence
-                })
-                    .map(cosmos.newStdMsg.bind(cosmos))
-                    .map((stdSignMsg: any) => cosmos.sign(stdSignMsg, cosmos.getECPairPriv(this.#api.mnemonic), 'block'))
-                    .map(cosmos.broadcast.bind(cosmos))
-                    .map(passThrough(() => this.#transactionInFlight = false))
-                    .map((p: any) => p
-                        .then(convertDataFromHexToString)
-                        .then(convertDataToObject)
-                        .then((x: any) => ({...x, height: parseInt(x.height)}))
-                        .then(callRequestorsWithData(messages))
-                        .catch((e: any) => callRequestorsWithData(messages)({error: e}))
-                    )
-                    .join()
+export const sendMessage = <T, R>(ctx: CommunicationService, message: Message<T>, gasInfo: GasInfo): Promise<MessageResponse<R>> => {
+    return ctx.transactionMessageQueue ? Promise.resolve(ctx.transactionMessageQueue?.push({
+            message, gasInfo
+        }))
+            .then(() => (dummyMessageResponse))
+        : sendMessages(ctx, [{
+            message,
+            gasInfo
+        }])
+}
+
+
+const sendMessages = (service: CommunicationService, messages: MessageQueueItem<any>[]): Promise<MessageResponse<any>> => {
+    return new Promise((resolve, reject) => {
+        msgChain = msgChain
+            .then(() => {
+                    transmitTransaction(service, messages)
+                        .then(resolve)
+                        .catch(reject)
+                }
             )
-    }
+            // hacky way to make sure that connections arrive at server in order
+            .then(() => delay(200))
+    });
 }
+
+
+const transmitTransaction = (service: CommunicationService, messages: MessageQueueItem<any>[]): Promise<any> => {
+    let cosmos: any;
+    return getCosmos(service.api)
+        .then(c => cosmos = c)
+        .then(() => getSequence(service, cosmos, service.api.address))
+        .then((data: any) =>
+            Some({
+                msgs: messages.map(m => m.message),
+                chain_id: cosmos.chainId,
+                fee: getFeeInfo(combineGas(messages)),
+                memo: 'no memo',
+                account_number: data.account,
+                sequence: data.seq
+            })
+                .map(cosmos.newStdMsg.bind(cosmos))
+                .map((stdSignMsg: any) => cosmos.sign(stdSignMsg, cosmos.getECPairPriv(service.api.mnemonic), 'block'))
+                .map(cosmos.broadcast.bind(cosmos))
+                .map((p: any) => p
+                    .then(convertDataFromHexToString)
+                    .then(convertDataToObject)
+                    .then(checkErrors)
+                    .then((x: any) => ({...x, height: parseInt(x.height)}))
+                )
+                .join()
+        )
+
+}
+
+
+let msgChain = Promise.resolve()
+
+const getSequence = (() => {
+
+    interface State {
+        seq: string
+        account: string
+    }
+
+    return (service: CommunicationService, cosmos: any, address: string): Promise<State> =>
+        (service.accountRequested ? (
+            service.accountRequested = service.accountRequested
+                .then(() =>
+                    service.seq = (parseInt(service.seq) + 1).toString()
+                )
+        ) : (
+            service.accountRequested = cosmos.getAccounts(address)
+                .then((data: any) => {
+                    service.seq = data.result.value.sequence,
+                        service.account = data.result.value.account_number
+                })
+        ))
+            .then(() => ({
+                seq: service.seq,
+                account: service.account
+            }));
+
+
+})()
+
 
 const convertDataFromHexToString = (res: any) => ({
     ...res,
     data: res.data ? Buffer.from(res.data, 'hex').toString() : undefined
 })
-const convertDataToObject = (res: any) => ({
-    ...res,
-    data: res.data !== undefined ? JSON.parse(`[${res.data.split('}{').join('},{')}]`) : undefined
-})
 
-const callRequestorsWithData = (msgs: any[]) =>
-    (res: any) =>
-        msgs.reduce((memo: any, msg) => {
-            if (res.error) {
-                return msg.reject({
-                    txhash: res.txhash,
-                    height: res.height,
-                    failedMsg: undefined,
-                    failedMsgIdx: undefined,
-                    error: res.error
-                })
-            }
-            if (/signature verification failed/.test(res.raw_log)) {
-                return msg.reject({
-                    txhash: res.txhash,
-                    height: res.height,
-                    failedMsg: undefined,
-                    failedMsgIdx: undefined,
-                    error: 'Unknown error'
-                } as FailedTransaction)
-            }
-            if (/insufficient fee/.test(res.raw_log)) {
-                let [x, error] = res.raw_log.split(/[:;]/);
-                return msg.reject({
-                    txhash: res.txhash,
-                    height: res.height,
-                    failedMsg: undefined,
-                    failedMsgIdx: undefined,
-                    error: error.trim()
-                } as FailedTransaction)
-            }
-            if (/failed to execute message/.test(res.raw_log)) {
-                let [x, error, y, failedMsgIdx] = res.raw_log.split(':');
-                failedMsgIdx = parseInt(failedMsgIdx)
-                return msg.reject({
-                    txhash: res.txhash,
-                    height: res.height,
-                    failedMsg: msgs[failedMsgIdx].message,
-                    failedMsgIdx: parseInt(failedMsgIdx),
-                    error: error.trim()
-                } as FailedTransaction)
-            }
-            if (/^\[.*\]$/.test(res.raw_log) === false) {
-                return msg.reject({
-                    txhash: res.txhash,
-                    height: res.height,
-                    failedMsg: undefined,
-                    failedMsgIdx: undefined,
-                    error: res.raw_log
-                })
-            }
-            return msg.resolve ? msg.resolve(memo) || memo : memo
-        }, res)
+const eitherJsonParse = <T>(json: string): Either<Error, T> => {
+    try {
+        return Right(JSON.parse(json))
+    } catch (e) {
+        return Left(e)
+    }
+}
+
+const convertDataToObject = (res: any) =>
+    Right(res)
+        .flatMap(res => res.data === undefined ? Left(res) : Right(res))
+        .map(res => `[${res.data.split('}{').join('},{')}]`)
+        .flatMap(eitherJsonParse)
+        .map(data => ({...res, data}))
+        .catchMap(x => Right(res))
+        .join()
+
+const checkErrors = (res: any) => {
+    if (res.error) {
+        throw {
+            txhash: res.txhash,
+            height: res.height,
+            error: res.error
+        }
+    }
+    if (/signature verification failed/.test(res.raw_log)) {
+        throw {
+            txhash: res.txhash,
+            height: res.height,
+            error: 'signature verification failed'
+        } as FailedTransaction
+    }
+    if (/insufficient fee/.test(res.raw_log)) {
+        let [x, error] = res.raw_log.split(/[:;]/);
+        throw {
+            txhash: res.txhash,
+            height: res.height,
+            error: error.trim()
+        } as FailedTransaction
+    }
+    if (/failed to execute message/.test(res.raw_log)) {
+        const error = res.raw_log.split(';')[0];
+        throw {
+            txhash: res.txhash,
+            height: res.height,
+            error: error.trim()
+        } as FailedTransaction
+    }
+    if (/^\[.*\]$/.test(res.raw_log) === false) {
+        throw {
+            txhash: res.txhash,
+            height: res.height,
+            failedMsg: undefined,
+            failedMsgIdx: undefined,
+            error: res.raw_log
+        }
+    }
+    return res
+}
 
 const getFeeInfo = ({max_fee, gas_price = 0.002, max_gas = 10000000}: GasInfo) => ({
     amount: [{
@@ -202,8 +220,8 @@ const getFeeInfo = ({max_fee, gas_price = 0.002, max_gas = 10000000}: GasInfo) =
     gas: max_gas.toString()
 });
 
-const combineGas = (transactions: MessageQueueItem<any, any>[]): GasInfo =>
-    transactions.reduce((gasInfo: GasInfo, transaction: MessageQueueItem<any, any>) => {
+const combineGas = (transactions: MessageQueueItem<any>[]): GasInfo =>
+    transactions.reduce((gasInfo: GasInfo, transaction: MessageQueueItem<any>) => {
         return {
             max_gas: (gasInfo.max_gas || 0) + (transaction.gasInfo.max_gas || 200000),
             max_fee: (gasInfo.max_fee || 0) + (transaction.gasInfo.max_fee || 0),
@@ -211,4 +229,12 @@ const combineGas = (transactions: MessageQueueItem<any, any>[]): GasInfo =>
         } as GasInfo
     }, {});
 
+export const getCosmos = memoize((api: API): Promise<any> =>
+    fetch(`${api.url}/node_info`)
+        .then(x => x.json())
+        .then(x => x.node_info.network)
+        .then(chainId => cosmosjs.network(api.url, chainId))
+        .then(passThrough<any>(cosmos => cosmos.setPath("m/44\'/118\'/0\'/0/0")))
+        .then(passThrough<any>(cosmos => cosmos.bech32MainPrefix = 'bluzelle'))
+)
 

@@ -5,10 +5,9 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     }
     return privateMap.get(receiver);
 };
-var _query;
+var _abciQuery, _query;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.API = exports.mnemonicToAddress = void 0;
-const promise_passthrough_1 = require("promise-passthrough");
 global.fetch || (global.fetch = require('node-fetch'));
 const CommunicationService_1 = require("./services/CommunicationService");
 const lodash_1 = require("lodash");
@@ -26,16 +25,34 @@ exports.mnemonicToAddress = (mnemonic) => {
 class API {
     constructor(config) {
         this.chainId = '';
-        this.getCosmos = lodash_1.memoize(() => fetch(`${this.url}/node_info`)
-            .then(x => x.json())
-            .then(x => x.node_info.network)
-            .then(chainId => cosmosjs.network(this.url, chainId))
-            .then(promise_passthrough_1.passThrough(cosmos => cosmos.setPath("m/44\'/118\'/0\'/0/0")))
-            .then(promise_passthrough_1.passThrough(cosmos => cosmos.bech32MainPrefix = 'bluzelle')));
         this.generateBIP39Account = (entropy = '') => {
             Assert_1.assert(entropy.length === 0 || entropy.length === 64, 'Entropy must be 64 char hex');
             return entropy ? bip39_1.entropyToMnemonic(entropy) : bip39_1.generateMnemonic(256);
         };
+        _abciQuery.set(this, (path, data = {}) => Promise.resolve(JSON.stringify(data))
+            .then(Buffer.from)
+            .then(b => b.toString('hex'))
+            .then(data => ({
+            Path: path,
+            Data: data
+        }))
+            .then(JSON.stringify)
+            .then(body => fetch(`${this.url}/abci-query`, {
+            method: 'POST',
+            body
+        }))
+            .then(async (res) => {
+            let bodyText = await res.text();
+            bodyText = bodyText.replace('}{', ',');
+            const json = JSON.parse(bodyText);
+            if (json.error) {
+                throw {
+                    status: res.status,
+                    error: json.error
+                };
+            }
+            return json;
+        }));
         _query.set(this, (path) => fetch(`${this.url}/${path}`)
             .then((res) => {
             if (res.status !== 200) {
@@ -51,16 +68,16 @@ class API {
         this.address = this.mnemonic ? exports.mnemonicToAddress(this.mnemonic) : '';
         this.uuid = config.uuid;
         this.url = config.endpoint;
-        this.communicationService = CommunicationService_1.CommunicationService.create(this);
+        this.communicationService = CommunicationService_1.newCommunicationService(this);
     }
-    withTransaction(fn, transaction) {
-        return this.communicationService.withTransaction(fn, transaction);
+    withTransaction(fn) {
+        return CommunicationService_1.withTransaction(this.communicationService, fn);
     }
     setMaxMessagesPerTransaction(count) {
-        this.communicationService.setMaxMessagesPerTransaction(count);
+        // This is here for backward compatibility - delete later
     }
     account(address = this.address) {
-        return this.getCosmos()
+        return CommunicationService_1.getCosmos(this)
             .then(cosmos => cosmos.getAccounts(address))
             .then((x) => x.result.value);
     }
@@ -69,21 +86,9 @@ class API {
             .then(x => !!x.coins.length);
     }
     count() {
-        return __classPrivateFieldGet(this, _query).call(this, `crud/count/${this.uuid}`)
+        return __classPrivateFieldGet(this, _abciQuery).call(this, `/custom/crud/count/${this.uuid}`)
+            .then(x => x.result)
             .then((res) => parseInt(res.count || '0'));
-    }
-    async mint(address, gasInfo) {
-        Assert_1.assert(!!address, "address must be a string" /* ADDRESS_MUST_BE_A_STRING */);
-        Assert_1.assert(typeof address === 'string', "address must be a string" /* ADDRESS_MUST_BE_A_STRING */);
-        return this.communicationService.sendMessage({
-            type: "faucet/Mint",
-            value: {
-                Minter: address,
-                Sender: this.address,
-                Time: Date.now().toString()
-            }
-        }, gasInfo)
-            .then(standardTxResult);
     }
     async create(key, value, gasInfo, leaseInfo = {}) {
         const blocks = convertLease(leaseInfo);
@@ -92,7 +97,7 @@ class API {
         Assert_1.assert(typeof value === 'string', "Value must be a string" /* VALUE_MUST_BE_A_STRING */);
         Assert_1.assert(blocks >= 0, "Invalid lease time" /* INVALID_LEASE_TIME */);
         Assert_1.assert(!key.includes('/'), "Key cannot contain a slash" /* KEY_CANNOT_CONTAIN_SLASH */);
-        return this.communicationService.sendMessage({
+        return CommunicationService_1.sendMessage(this.communicationService, {
             type: "crud/create",
             value: {
                 Key: encodeSafe(key),
@@ -104,8 +109,58 @@ class API {
         }, gasInfo)
             .then(standardTxResult);
     }
+    createProposal(amount, title, description, gasInfo) {
+        return this.sendMessage({
+            "type": "cosmos-sdk/MsgSubmitProposal",
+            "value": {
+                "content": {
+                    "type": "cosmos-sdk/TextProposal",
+                    "value": {
+                        "title": title,
+                        "description": description
+                    }
+                },
+                "initial_deposit": [
+                    {
+                        "denom": "ubnt",
+                        "amount": `${amount}000000`
+                    }
+                ],
+                "proposer": this.address
+            }
+        }, gasInfo)
+            .then((x) => ({ id: x.logs[0].events[2].attributes[0].value }));
+    }
+    depositToProposal(id, amount, title, description, gasInfo) {
+        return this.sendMessage({
+            "type": "cosmos-sdk/MsgDeposit",
+            "value": {
+                "proposal_id": id,
+                "depositor": this.address,
+                "amount": [
+                    {
+                        "denom": "ubnt",
+                        "amount": `${amount}000000`
+                    }
+                ]
+            }
+        }, gasInfo);
+    }
+    delegate(valoper, amount, gasInfo) {
+        return this.sendMessage({
+            "type": "cosmos-sdk/MsgDelegate",
+            "value": {
+                "delegator_address": this.address,
+                "validator_address": valoper,
+                "amount": {
+                    "denom": "ubnt",
+                    "amount": `${amount}000000`
+                }
+            }
+        }, gasInfo);
+    }
     delete(key, gasInfo) {
-        return this.communicationService.sendMessage({
+        return CommunicationService_1.sendMessage(this.communicationService, {
             type: 'crud/delete',
             value: {
                 Key: key,
@@ -116,7 +171,7 @@ class API {
             .then(standardTxResult);
     }
     deleteAll(gasInfo) {
-        return this.communicationService.sendMessage({
+        return CommunicationService_1.sendMessage(this.communicationService, {
             type: 'crud/deleteall',
             value: {
                 UUID: this.uuid,
@@ -129,7 +184,8 @@ class API {
         return exports.mnemonicToAddress(this.mnemonic);
     }
     getLease(key) {
-        return __classPrivateFieldGet(this, _query).call(this, `crud/getlease/${this.uuid}/${encodeSafe(key)}`)
+        return __classPrivateFieldGet(this, _abciQuery).call(this, `/custom/crud/getlease/${this.uuid}/${encodeSafe(key)}`)
+            .then(x => x.result)
             .then(res => Math.round(res.lease * BLOCK_TIME_IN_SECONDS))
             .catch(res => {
             throw res.error === 'Not Found' ? `key "${key}" not found` : res.error;
@@ -137,7 +193,8 @@ class API {
     }
     async getNShortestLeases(count) {
         Assert_1.assert(count >= 0, "Invalid value specified" /* INVALID_VALUE_SPECIFIED */);
-        return __classPrivateFieldGet(this, _query).call(this, `crud/getnshortestleases/${this.uuid}/${count}`)
+        return __classPrivateFieldGet(this, _abciQuery).call(this, `/custom/crud/getnshortestleases/${this.uuid}/${count}`)
+            .then(x => x.result)
             .then(res => res.keyleases.map(({ key, lease }) => ({ key, lease: Math.round(parseInt(lease) * BLOCK_TIME_IN_SECONDS) })));
     }
     getTx(txhash) {
@@ -150,18 +207,33 @@ class API {
             .then(parseInt);
     }
     has(key) {
-        return __classPrivateFieldGet(this, _query).call(this, `crud/has/${this.uuid}/${key}`)
-            .then(res => res.has);
+        return __classPrivateFieldGet(this, _abciQuery).call(this, `/custom/crud/has/${this.uuid}/${key}`)
+            .then(x => x.result.has);
     }
     keys() {
-        return __classPrivateFieldGet(this, _query).call(this, `crud/keys/${this.uuid}`)
+        return __classPrivateFieldGet(this, _abciQuery).call(this, `/custom/crud/keys/${this.uuid}`)
+            .then(x => x.result)
             .then(res => res.keys)
             .then(keys => keys.map(decodeSafe));
     }
     keyValues() {
-        return __classPrivateFieldGet(this, _query).call(this, `crud/keyvalues/${this.uuid}`)
+        return __classPrivateFieldGet(this, _abciQuery).call(this, `/custom/crud/keyvalues/${this.uuid}`)
+            .then(x => x.result)
             .then(res => res.keyvalues)
             .then(keyvalues => keyvalues.map(({ key, value }) => ({ key, value: decodeSafe(value) })));
+    }
+    async mint(address, gasInfo) {
+        Assert_1.assert(!!address, "address must be a string" /* ADDRESS_MUST_BE_A_STRING */);
+        Assert_1.assert(typeof address === 'string', "address must be a string" /* ADDRESS_MUST_BE_A_STRING */);
+        return CommunicationService_1.sendMessage(this.communicationService, {
+            type: "faucet/Mint",
+            value: {
+                Minter: address,
+                Sender: this.address,
+                Time: Date.now().toString()
+            }
+        }, gasInfo)
+            .then(standardTxResult);
     }
     async multiUpdate(keyValues, gasInfo) {
         Assert_1.assert(Array.isArray(keyValues), 'keyValues must be an array');
@@ -169,7 +241,7 @@ class API {
             Assert_1.assert(typeof key === 'string', "All keys must be strings" /* ALL_KEYS_MUST_BE_STRINGS */);
             Assert_1.assert(typeof value === 'string', "All values must be strings" /* ALL_VALUES_MUST_BE_STRINGS */);
         });
-        return this.communicationService.sendMessage({
+        return CommunicationService_1.sendMessage(this.communicationService, {
             type: 'crud/multiupdate',
             value: {
                 KeyValues: keyValues,
@@ -180,7 +252,8 @@ class API {
             .then(standardTxResult);
     }
     myKeys() {
-        return __classPrivateFieldGet(this, _query).call(this, `crud/mykeys/${this.address}/${this.uuid}`)
+        return __classPrivateFieldGet(this, _abciQuery).call(this, `/custom/crud/mykeys/${this.address}/${this.uuid}`)
+            .then(x => x.result)
             .then(res => res.keys)
             .catch((x) => {
             throw x;
@@ -189,8 +262,12 @@ class API {
     query(queryString) {
         return __classPrivateFieldGet(this, _query).call(this, queryString);
     }
+    abciQuery(method, data = {}) {
+        return __classPrivateFieldGet(this, _abciQuery).call(this, method, data);
+    }
     owner(key) {
-        return __classPrivateFieldGet(this, _query).call(this, `crud/owner/${this.uuid}/${encodeSafe(key)}`)
+        return __classPrivateFieldGet(this, _abciQuery).call(this, `/custom/crud/owner/${this.uuid}/${encodeSafe(key)}`)
+            .then(x => x.result)
             .then(res => res.owner)
             .catch((x) => {
             if (x instanceof Error) {
@@ -200,7 +277,8 @@ class API {
         });
     }
     read(key, prove = false) {
-        return __classPrivateFieldGet(this, _query).call(this, `crud/${prove ? 'pread' : 'read'}/${this.uuid}/${encodeSafe(key)}`)
+        return __classPrivateFieldGet(this, _abciQuery).call(this, `/custom/crud/read/${this.uuid}/${encodeSafe(key)}`)
+            .then(x => x.result)
             .then(res => res.value)
             .then(decodeSafe)
             .catch((x) => {
@@ -213,7 +291,7 @@ class API {
     async rename(key, newKey, gasInfo) {
         Assert_1.assert(typeof key === 'string', "Key must be a string" /* KEY_MUST_BE_A_STRING */);
         Assert_1.assert(typeof newKey === 'string', "New key must be a string" /* NEW_KEY_MUST_BE_A_STRING */);
-        return this.communicationService.sendMessage({
+        return CommunicationService_1.sendMessage(this.communicationService, {
             type: 'crud/rename',
             value: {
                 Key: key,
@@ -228,7 +306,7 @@ class API {
         Assert_1.assert(typeof key === 'string', "Key must be a string" /* KEY_MUST_BE_A_STRING */);
         const blocks = convertLease(leaseInfo);
         Assert_1.assert(blocks >= 0, "Invalid lease time" /* INVALID_LEASE_TIME */);
-        return this.communicationService.sendMessage({
+        return CommunicationService_1.sendMessage(this.communicationService, {
             type: 'crud/renewlease',
             value: {
                 Key: key,
@@ -242,7 +320,7 @@ class API {
     async renewLeaseAll(gasInfo, leaseInfo = {}) {
         const blocks = convertLease(leaseInfo);
         Assert_1.assert(blocks >= 0, "Invalid lease time" /* INVALID_LEASE_TIME */);
-        return this.communicationService.sendMessage({
+        return CommunicationService_1.sendMessage(this.communicationService, {
             type: 'crud/renewleaseall',
             value: {
                 Lease: blocks.toString(),
@@ -253,18 +331,20 @@ class API {
             .then(standardTxResult);
     }
     search(searchString, options = { page: 1, limit: Number.MAX_SAFE_INTEGER, reverse: false }) {
-        return __classPrivateFieldGet(this, _query).call(this, `crud/search/${this.uuid}/${searchString}/${options.page || 1}/${options.limit || Number.MAX_SAFE_INTEGER}/${options.reverse ? 'desc' : 'asc'}`)
+        return __classPrivateFieldGet(this, _abciQuery).call(this, `/custom/crud/search/${this.uuid}/${searchString}/${options.page || 1}/${options.limit || Number.MAX_SAFE_INTEGER}/${options.reverse ? 'desc' : 'asc'}`)
+            .then(x => x.result)
             .then(res => res.keyvalues)
             .then(keyvalues => keyvalues.map(({ key, value }) => ({ key, value: decodeSafe(value) })));
     }
     sendMessage(message, gasInfo) {
-        return this.communicationService.sendMessage(message, gasInfo);
+        return CommunicationService_1.sendMessage(this.communicationService, message, gasInfo);
     }
     taxInfo() {
-        return __classPrivateFieldGet(this, _query).call(this, 'tax/info');
+        return __classPrivateFieldGet(this, _abciQuery).call(this, '/custom/tax/info')
+            .then(x => x.result);
     }
     async txCount(gasInfo) {
-        return this.communicationService.sendMessage({
+        return CommunicationService_1.sendMessage(this.communicationService, {
             type: 'crud/count',
             value: {
                 UUID: this.uuid,
@@ -275,7 +355,7 @@ class API {
             .then(({ res, data }) => ({ ...standardTxResult(res), count: parseInt((data === null || data === void 0 ? void 0 : data.count) || '0') }));
     }
     async txGetLease(key, gasInfo) {
-        return this.communicationService.sendMessage({
+        return CommunicationService_1.sendMessage(this.communicationService, {
             type: 'crud/getlease',
             value: {
                 Key: key,
@@ -300,7 +380,7 @@ class API {
     }
     async txHas(key, gasInfo) {
         Assert_1.assert(typeof key === 'string', "Key must be a string" /* KEY_MUST_BE_A_STRING */);
-        return this.communicationService.sendMessage({
+        return CommunicationService_1.sendMessage(this.communicationService, {
             type: 'crud/has',
             value: {
                 Key: key,
@@ -316,7 +396,7 @@ class API {
         }));
     }
     async txKeys(gasInfo) {
-        return this.communicationService.sendMessage({
+        return CommunicationService_1.sendMessage(this.communicationService, {
             type: 'crud/keys',
             value: {
                 UUID: this.uuid,
@@ -330,7 +410,7 @@ class API {
         }));
     }
     async txKeyValues(gasInfo) {
-        return this.communicationService.sendMessage({
+        return CommunicationService_1.sendMessage(this.communicationService, {
             type: 'crud/keyvalues',
             value: {
                 Owner: this.address,
@@ -349,7 +429,7 @@ class API {
         }));
     }
     txRead(key, gasInfo) {
-        return this.communicationService.sendMessage({
+        return CommunicationService_1.sendMessage(this.communicationService, {
             type: 'crud/read',
             value: {
                 Key: key,
@@ -363,6 +443,19 @@ class API {
             value: data === null || data === void 0 ? void 0 : data.value
         }));
     }
+    undelegate(valoper, amount, gasInfo) {
+        return this.sendMessage({
+            "type": "cosmos-sdk/MsgUndelegate",
+            "value": {
+                "delegator_address": this.address,
+                "validator_address": valoper,
+                "amount": {
+                    "denom": "ubnt",
+                    "amount": `${amount}000000`
+                }
+            }
+        }, gasInfo);
+    }
     async update(key, value, gasInfo, leaseInfo = {}) {
         const blocks = convertLease(leaseInfo);
         Assert_1.assert(!!key, "Key cannot be empty" /* KEY_CANNOT_BE_EMPTY */);
@@ -370,7 +463,7 @@ class API {
         Assert_1.assert(typeof value === 'string', "Value must be a string" /* VALUE_MUST_BE_A_STRING */);
         Assert_1.assert(blocks >= 0, "Invalid lease time" /* INVALID_LEASE_TIME */);
         Assert_1.assert(!key.includes('/'), "Key cannot contain a slash" /* KEY_CANNOT_CONTAIN_SLASH */);
-        return this.communicationService.sendMessage({
+        return CommunicationService_1.sendMessage(this.communicationService, {
             type: "crud/update",
             value: {
                 Key: encodeSafe(key),
@@ -389,7 +482,7 @@ class API {
         Assert_1.assert(typeof value === 'string', "Value must be a string" /* VALUE_MUST_BE_A_STRING */);
         Assert_1.assert(blocks >= 0, "Invalid lease time" /* INVALID_LEASE_TIME */);
         Assert_1.assert(!key.includes('/'), "Key cannot contain a slash" /* KEY_CANNOT_CONTAIN_SLASH */);
-        return this.communicationService.sendMessage({
+        return CommunicationService_1.sendMessage(this.communicationService, {
             type: "crud/upsert",
             value: {
                 Key: encodeSafe(key),
@@ -404,11 +497,23 @@ class API {
     version() {
         return __classPrivateFieldGet(this, _query).call(this, 'node_info').then(res => res.application_version.version);
     }
+    withdrawRewards(valoper, gasInfo) {
+        return this.sendMessage({
+            "type": "cosmos-sdk/MsgWithdrawDelegationReward",
+            "value": {
+                "delegator_address": this.address,
+                "validator_address": valoper
+            }
+        }, gasInfo)
+            .then((x) => x.logs[0].events[2].attributes[0].value)
+            .then(x => x.replace('ubnt', ''))
+            .then(parseInt);
+    }
     transferTokensTo(toAddress, amount, gasInfo, { ubnt, memo } = {
         ubnt: false,
         memo: 'transfer'
     }) {
-        return this.communicationService.sendMessage({
+        return CommunicationService_1.sendMessage(this.communicationService, {
             type: "cosmos-sdk/MsgSend",
             value: {
                 amount: [
@@ -425,7 +530,7 @@ class API {
     }
 }
 exports.API = API;
-_query = new WeakMap();
+_abciQuery = new WeakMap(), _query = new WeakMap();
 const decodeSafe = (str) => decodeURI(str)
     .replace(/%../g, x => monet_1.Some(x)
     .map(x => x.replace('%', ''))

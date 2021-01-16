@@ -73,7 +73,7 @@ All 'tx' functions now return an object that includes the txhash and block heigh
 
 ```javascript
 {
-    gas_price: 10,  // maximum price to pay for gas (integer, in ubnt)
+    gas_price: 0.002,  // maximum price to pay for gas (integer, in ubnt)
     max_gas: 20000, // maximum amount of gas to consume for this call (integer)
     max_fee: 20000  // maximum amount to charge for this call (integer, in ubnt)
 };
@@ -170,6 +170,8 @@ Returns: Promise=>object
 | :------- | :------------- |
 | Address  | Address to use |
 
+
+
 ### getBNT({ubnt: boolean, address: string})
 
 Retrieve the amount of BNT/UBNT in an account
@@ -192,6 +194,58 @@ const bnt = api.getBnt();
 | Address  | The address of the account |
 
 Returns: Promise => number (amount of BNT rounded to 2 decimal places or UBNT)
+
+
+
+### delegate(validator_address, amount, gas_info)
+
+Delegate specified amount of BNT to a validator
+
+```javascript
+// promise syntax
+api.delegate('bluzellevaloper1pq65tv4h3x8qr7kys6gj6u2ee5hh7g8nvyx9r4', 1500, {gas_price: 0.002})
+	.then((result) => { ... })
+	.catch(error => { ... });
+
+// async/await syntax
+await api.delegate('bluzellevaloper1pq65tv4h3x8qr7kys6gj6u2ee5hh7g8nvyx9r4', 1500, {gas_price: 0.002})
+```
+
+| Argument | Description                                  |
+| :------- | :------------------------------------------- |
+| address  | Address of validator to delegate to          |
+| amount   | Amount of BNT to delegate                    |
+| gas_info | Object containing gas parameters (see above) |
+
+Returns: Promise=>`{txhash: string, height: number}`
+
+**NOTE: validator address should be prefixed with "bluzellevaloper..."**
+
+
+
+### undelegate(validator_address, amount, gas_info)
+
+Undelegate specified amount of BNT to a validator
+
+```javascript
+// promise syntax
+api.undelegate('bluzellevaloper1pq65tv4h3x8qr7kys6gj6u2ee5hh7g8nvyx9r4', 1500, {gas_price: 0.002})
+	.then((result) => { ... })
+	.catch(error => { ... });
+
+// async/await syntax
+await api.undelegate('bluzellevaloper1pq65tv4h3x8qr7kys6gj6u2ee5hh7g8nvyx9r4', 1500, {gas_price: 0.002})
+```
+
+| Argument | Description                                  |
+| :------- | :------------------------------------------- |
+| address  | Address of validator to delegate to          |
+| amount   | Amount of BNT to undelegate                  |
+| gas_info | Object containing gas parameters (see above) |
+
+Returns: Promise=>`{txhash: string, height: number}`
+
+**NOTE: validator address should be prefixed with "bluzellevaloper..."**
 
 
 
@@ -242,12 +296,12 @@ Create a field in the database.
 
 ```javascript
 // promise syntax
-api.create('mykey', 'myValue', {gas_price: 10}, {days: 100})
+api.create('mykey', 'myValue', {gas_price: 0.002}, {days: 100})
 	.then((result) => { ... })
 	.catch(error => { ... });
 
 // async/await syntax
-await api.create('mykey', 'myValue', {gas_price: 10}, {days: 100});
+await api.create('mykey', 'myValue', {gas_price: 0.002}, {days: 100});
 ```
 
 | Argument | Description |
@@ -267,12 +321,12 @@ Delete a key from the database.
 
 ```javascript
 // promise syntax
-api.delete('mykey', {gas_price: 10})
+api.delete('mykey', {gas_price: 0.002})
 	.then(() => { ... })
 	.catch(error => { ... });
 
 // async/await syntax
-await bluzelle.delete('mykey', {gas_price: 10});
+await bluzelle.delete('mykey', {gas_price: 0.002});
 ```
 
 | Argument | Description                                  |
@@ -290,12 +344,12 @@ Remove all keys in the current database/uuid.
 
 ```javascript
 // promise syntax
-api.deleteAll({gas_price: 10})
+api.deleteAll({gas_price: 0.002})
 	.then(() => { ... })
 	.catch(error => { ... });
 
 // async/await syntax
-await api.deleteAll({gas_price: 10});
+await api.deleteAll({gas_price: 0.002});
 ```
 
 | Argument | Description                                  |
@@ -362,6 +416,7 @@ Returns: Promise=>object (containing key, lease (in seconds))
 ```
 [ { key: "mykey", lease: 1234 }, {...}, ...]
 ```
+
 
 
 ### has\(key\)
@@ -468,12 +523,12 @@ Update multiple fields in the database.
 
 ```javascript
 // promise syntax
-api.multiUpdate([{key: "key1", value: "value1"}, {key: "key2", value: "value2"}], {gas_price: 10})
+api.multiUpdate([{key: "key1", value: "value1"}, {key: "key2", value: "value2"}], {gas_price: 0.002})
 	.then(() => { ... })
 	.catch(error => { ... });
 
 // async/await syntax
-await api.multiUpdate([{key: "key1", value: "value1"}, {key: "key2", value: "value2"}, {gas_price: 10}');
+await api.multiUpdate([{key: "key1", value: "value1"}, {key: "key2", value: "value2"}, {gas_price: 0.002}');
 ```
 
 | Argument   | Description                                                  |
@@ -482,6 +537,8 @@ await api.multiUpdate([{key: "key1", value: "value1"}, {key: "key2", value: "val
 | gas_info   | Object containing gas parameters (see above)                 |
 
 Returns: Promise=> `{txhash: string, height: number}`
+
+
 
 ### owner\(key\)
 
@@ -502,6 +559,8 @@ const value = await api.owner('mykey');
 | key | The key to retrieve the owner for |
 
 Returns: Promise=>string (the owner address)
+
+
 
 ### read\(key, [prove]\)
 
@@ -526,18 +585,42 @@ Returns: Promise=>string (the value)
 
 
 
+### myKeys()
+
+Retrieve a list of keys belonging to user address
+
+```javascript
+// promise syntax
+api.myKeys()
+	.then(() => { ... })
+	.catch(error => { ... });
+
+// async/await syntax
+await api.myKeys();
+```
+
+| Argument | Description                                  |
+| :------- | :------------------------------------------- |
+| key      | The name of the key to rename                |
+| new_key  | The new name for the key                     |
+| gas_info | Object containing gas parameters (see above) |
+
+Returns: Promise=>`{txhash: string, height: number}`
+
+
+
 ### rename\(key, new_key, gas_info\)
 
 Change the name of an existing key.
 
 ```javascript
 // promise syntax
-api.rename("key", "newkey", {gas_price: 10})
+api.rename("key", "newkey", {gas_price: 0.002})
 	.then(() => { ... })
 	.catch(error => { ... });
 
 // async/await syntax
-await api.rename("key", "newkey", {gas_price: 10});
+await api.rename("key", "newkey", {gas_price: 0.002});
 ```
 
 | Argument | Description                                  |
@@ -556,12 +639,12 @@ Update the minimum time remaining on the lease for a key.
 
 ```javascript
 // promise syntax
-api.renewLease('mykey', {gas_price: 10}, {days: 100})
+api.renewLease('mykey', {gas_price: 0.002}, {days: 100})
 	.then(value => { ... })
 	.catch(error => { ... });
 
 // async/await syntax
-const value = await api.renewLease('mykey', {gas_price: 10}, {days: 100});
+const value = await api.renewLease('mykey', {gas_price: 0.002}, {days: 100});
 ```
 
 | Argument              | Description                                            |
@@ -580,12 +663,12 @@ Update the minimum time remaining on the lease for all keys.
 
 ```javascript
 // promise syntax
-api.renewLease('mykey', {gas_price: 10}, {days: 100})
+api.renewLease('mykey', {gas_price: 0.002}, {days: 100})
 .then(value => { ... })
 .catch(error => { ... });
 
 // async/await syntax
-const value = await api.renewLease('mykey', {gas_price: 10}, {days: 100});
+const value = await api.renewLease('mykey', {gas_price: 0.002}, {days: 100});
 ```
 
 | Argument              | Description                                            |
@@ -594,6 +677,8 @@ const value = await api.renewLease('mykey', {gas_price: 10}, {days: 100});
 | lease_info (optional) | Minimum time for key to remain in database (see above) |
 
 Returns: Promise=> `{txhash: string, height: number}`
+
+
 
 ### search(\)
 
@@ -636,7 +721,7 @@ Transfer tokens to another user
 | gas_info | Object containing the gas parameters (see above) |
 
 ```typescript
-transferTokensTo('bluzellexxxxx', 10, {gas_price: 10})
+transferTokensTo('bluzellexxxxx', 10, {gas_price: 0.002})
 ```
 
 
@@ -647,12 +732,12 @@ Retrieve the number of keys in the current database/uuid via a transaction.
 
 ```javascript
 // promise syntax
-api.txCount({gas_price: 10})
+api.txCount({gas_price: 0.002})
 	.then(number => { ... })
 	.catch(error => { ... });
 
 // async/await syntax
-const number = await api.txCount({gas_price: 10});
+const number = await api.txCount({gas_price: 0.002});
 ```
 
 | Argument | Description                                  |
@@ -669,12 +754,12 @@ Retrieve the minimum time remaining on the lease for a key, using a transaction.
 
 ```javascript
 // promise syntax
-api.txGetLease('mykey', {gas_price: 10})
+api.txGetLease('mykey', {gas_price: 0.002})
 	.then(value => { ... })
 	.catch(error => { ... });
 
 // async/await syntax
-const value = await api.txGetLease('mykey', {gas_price: 10});
+const value = await api.txGetLease('mykey', {gas_price: 0.002});
 ```
 
 | Argument | Description                                   |
@@ -688,16 +773,16 @@ Returns: Promise=> `{txhash: string, height: number, lease: number}`
 
 ### txHas\(key, gas_info\)
 
-Query to see if a key is in the database via a transaction (i.e. uses consensus).
+Check to see if a key is in the database via a transaction (i.e. uses consensus).
 
 ```javascript
 // promise syntax
-api.txHas('mykey', {gas_price: 10})
+api.txHas('mykey', {gas_price: 0.002})
 	.then(hasMyKey => { ... })
 	.catch(error => { ... });
 
 // async/await syntax
-const hasMyKey = await api.txHas('mykey', {gas_price: 10});
+const hasMyKey = await api.txHas('mykey', {gas_price: 0.002});
 ```
 
 | Argument | Description                                  |
@@ -715,12 +800,12 @@ Retrieve a list of all keys via a transaction (i.e. uses consensus).
 
 ```javascript
 // promise syntax
-api.txKeys({gas_price: 10})
+api.txKeys({gas_price: 0.002})
 	.then(keys => { ... })
 	.catch(error => { ... });
 
 // async/await syntax
-const keys = await api.txKeys({gas_price: 10});
+const keys = await api.txKeys({gas_price: 0.002});
 ```
 
 | Argument | Description                                  |
@@ -737,12 +822,12 @@ Returns all keys and values in the current database/uuid via a transaction.
 
 ```javascript
 // promise syntax
-api.txKeyValues({gas_price: 10})
+api.txKeyValues({gas_price: 0.002})
 	.then(kvs => { ... })
 	.catch(error => { ... });
 
 // async/await syntax
-const kvs = await api.txKeyValues({gas_price: 10});
+const kvs = await api.txKeyValues({gas_price: 0.002});
 ```
 
 | Argument | Description                                  |
@@ -759,12 +844,12 @@ Retrieve the value of a key with consensus.
 
 ```javascript
 // promise syntax
-api.txRead('mykey', {gas_price: 10})
+api.txRead('mykey', {gas_price: 0.002})
 	.then(obj => { ... })
 	.catch(error => { ... });
 
 // async/await syntax
-const value = await api.txRead('mykey', {gas_price: 10});
+const value = await api.txRead('mykey', {gas_price: 0.002});
 ```
 
 | Argument | Description |
@@ -782,12 +867,12 @@ Update a field in the database.
 
 ```javascript
 // promise syntax
-api.update('myKey', 'myValue', {gas_price: 10}, {days: 100})
+api.update('myKey', 'myValue', {gas_price: 0.002}, {days: 100})
 	.then(() => { ... })
 	.catch(error => { ... });
 
 // async/await syntax
-await api.update('myKey', 'myValue', {gas_price: 10}, {days: 100});
+await api.update('myKey', 'myValue', {gas_price: 0.002}, {days: 100});
 ```
 
 | Argument | Description |
@@ -807,12 +892,12 @@ Create or update a field in the database.
 
 ```javascript
 // promise syntax
-api.upsert('myKey', 'myValue', {gas_price: 10}, {days: 100})
+api.upsert('myKey', 'myValue', {gas_price: 0.002}, {days: 100})
 	.then(() => { ... })
 	.catch(error => { ... });
 
 // async/await syntax
-await api.upsert('myKey', 'myValue', {gas_price: 10}, {days: 100});
+await api.upsert('myKey', 'myValue', {gas_price: 0.002}, {days: 100});
 ```
 
 | Argument              | Description                                                  |
@@ -833,34 +918,15 @@ Execute commands inside of a transaction.
 ```typescript
 api.setMaxMessagesPerTransaction(10);
 api.withTransaction(() => {
-    api.create('foo', 'bar', {gas_price: 10});
-    api.create('foo2', 'bar', {gas_price: 10});
-    api.txRead('foo', {gas_price: 10}).then(printIt)
-})
+    api.create('foo', 'bar', {gas_price: 0.002});
+    api.create('foo2', 'bar', {gas_price: 0.002});
+    api.txRead('foo', {gas_price: 0.002}).then(printIt);
+}).then(doSomething)
 ```
 
 The above code will execute the two creates and the read in a single transaction.  If any of the commands fail, then they all will fail.  
 
-withTransaction() returns whatever the function inside of it returns, so if you need to return a promise for items inside of the transaction, simply wrap them in Promise.all
-
-```typescript
-api.setMaxMessagesPerTransaction(10);
-api.withTransaction(() => Promise.all([
-    	api.create('foo', 'bar', {gas_price: 10}),
-    	api.create('foo2', 'bar', {gas_price: 10}),
-    	api.txRead('foo', {gas_price: 10}).then(printIt)
-    ])
-}).then(doSomething)
-```
-
-**NOTE:  In order for withTransaction() to work, you must set the api.setMaxMessagesPerTransaction([number of transactions]) first.**
-
-
-
-
-
-
-
+withTransaction() returns whatever the transactions conducted inside the function returns. For the above example, it will return the results and transaction info of txRead, and the the transaction info of the two create().
 
 
 

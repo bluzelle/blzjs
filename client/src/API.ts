@@ -1,4 +1,4 @@
-import {passThrough} from "promise-passthrough";
+import {passThrough, passThroughAwait} from "promise-passthrough";
 
 global.fetch || (global.fetch = require('node-fetch'));
 
@@ -14,7 +14,7 @@ import {
     QueryKeyValuesResult, QueryOwnerResult,
     QueryReadResult
 } from "./types/QueryResult";
-import {CommunicationService, Transaction} from "./services/CommunicationService";
+import {newCommunicationService, getCosmos, sendMessage, withTransaction, CommunicationService} from "./services/CommunicationService";
 import {
     CountMessage,
     CreateMessage,
@@ -57,6 +57,11 @@ interface QueryError {
     error: string
 }
 
+interface ABCIResponse<T> {
+    height: number,
+    result: T
+}
+
 export interface SearchOptions {
     page?: number
     limit?: number
@@ -87,28 +92,19 @@ export class API {
         this.address = this.mnemonic ? mnemonicToAddress(this.mnemonic) : '';
         this.uuid = config.uuid;
         this.url = config.endpoint;
-        this.communicationService = CommunicationService.create(this);
+        this.communicationService = newCommunicationService(this);
     }
 
-    getCosmos = memoize(() =>
-        fetch(`${this.url}/node_info`)
-            .then(x => x.json())
-            .then(x => x.node_info.network)
-            .then(chainId => cosmosjs.network(this.url, chainId))
-            .then(passThrough<any>(cosmos => cosmos.setPath("m/44\'/118\'/0\'/0/0")))
-            .then(passThrough<any>(cosmos => cosmos.bech32MainPrefix = 'bluzelle'))
-    )
-
-    withTransaction<T>(fn: () => any, transaction?: Transaction): T {
-        return this.communicationService.withTransaction<T>(fn, transaction);
+    withTransaction<T>(fn: () => any): Promise<MessageResponse<T>> {
+        return withTransaction<T>(this.communicationService, fn);
     }
 
     setMaxMessagesPerTransaction(count: number) {
-        this.communicationService.setMaxMessagesPerTransaction(count);
+        // This is here for backward compatibility - delete later
     }
 
     account(address: string = this.address): Promise<AccountResult> {
-        return this.getCosmos()
+        return getCosmos(this)
             .then(cosmos => cosmos.getAccounts(address))
             .then((x: AccountsResult) => x.result.value);
     }
@@ -119,23 +115,9 @@ export class API {
     }
 
     count(): Promise<number> {
-        return this.#query<QueryCountResult>(`crud/count/${this.uuid}`)
+        return this.#abciQuery<QueryCountResult>(`/custom/crud/count/${this.uuid}`)
+            .then(x => x.result)
             .then((res: QueryCountResult) => parseInt(res.count || '0'));
-    }
-
-    async mint(address: string, gasInfo: GasInfo): Promise<TxResult> {
-        assert(!!address, ClientErrors.ADDRESS_MUST_BE_A_STRING);
-        assert(typeof address === 'string', ClientErrors.ADDRESS_MUST_BE_A_STRING);
-
-        return this.communicationService.sendMessage<MintMessage, void>({
-            type: "faucet/Mint",
-            value: {
-                Minter: address,
-                Sender: this.address,
-                Time: Date.now().toString()
-            }
-        }, gasInfo)
-            .then(standardTxResult);
     }
 
     async create(key: string, value: string, gasInfo: GasInfo, leaseInfo: LeaseInfo = {}): Promise<TxResult> {
@@ -147,7 +129,7 @@ export class API {
         assert(blocks >= 0, ClientErrors.INVALID_LEASE_TIME);
         assert(!key.includes('/'), ClientErrors.KEY_CANNOT_CONTAIN_SLASH)
 
-        return this.communicationService.sendMessage<CreateMessage, void>({
+        return sendMessage<CreateMessage, void>(this.communicationService, {
             type: "crud/create",
             value: {
                 Key: encodeSafe(key),
@@ -160,9 +142,65 @@ export class API {
             .then(standardTxResult)
     }
 
+    createProposal(amount: number, title: string, description: string, gasInfo: GasInfo) {
+        return this.sendMessage({
+                "type": "cosmos-sdk/MsgSubmitProposal",
+                "value": {
+                    "content": {
+                        "type": "cosmos-sdk/TextProposal",
+                        "value": {
+                            "title": title,
+                            "description": description
+                        }
+                    },
+                    "initial_deposit": [
+                        {
+                            "denom": "ubnt",
+                            "amount": `${amount}000000`
+                        }
+                    ],
+                    "proposer": this.address
+                }
+            }, gasInfo
+        )
+            .then((x: any) => ({id: x.logs[0].events[2].attributes[0].value}))
+    }
+
+    depositToProposal(id: string, amount: number, title: string, description: string, gasInfo: GasInfo) {
+        return this.sendMessage({
+                "type": "cosmos-sdk/MsgDeposit",
+                "value": {
+                    "proposal_id": id,
+                    "depositor": this.address,
+                    "amount": [
+                        {
+                            "denom": "ubnt",
+                            "amount": `${amount}000000`
+                        }
+                    ]
+                }
+            }, gasInfo
+        );
+    }
+
+
+    delegate(valoper: string, amount: number, gasInfo: GasInfo) {
+        return this.sendMessage({
+            "type": "cosmos-sdk/MsgDelegate",
+            "value": {
+                "delegator_address": this.address,
+                "validator_address": valoper,
+                "amount": {
+                    "denom": "ubnt",
+                    "amount": `${amount}000000`
+                }
+            }
+        }, gasInfo)
+    }
+
 
     delete(key: string, gasInfo: GasInfo): Promise<TxResult> {
-        return this.communicationService.sendMessage<DeleteMessage, void>({
+        return sendMessage<DeleteMessage, void>(this.communicationService, {
             type: 'crud/delete',
             value: {
                 Key: key,
@@ -174,7 +212,7 @@ export class API {
     }
 
     deleteAll(gasInfo: GasInfo): Promise<TxResult> {
-        return this.communicationService.sendMessage<DeleteAllMessage, void>({
+        return sendMessage<DeleteAllMessage, void>(this.communicationService, {
             type: 'crud/deleteall',
             value: {
                 UUID: this.uuid,
@@ -189,7 +227,8 @@ export class API {
     }
 
     getLease(key: string): Promise<number> {
-        return this.#query<QueryGetLeaseResult & { error: string }>(`crud/getlease/${this.uuid}/${encodeSafe(key)}`)
+        return this.#abciQuery<QueryGetLeaseResult & { error: string }>(`/custom/crud/getlease/${this.uuid}/${encodeSafe(key)}`)
+            .then(x => x.result)
             .then(res => Math.round(res.lease * BLOCK_TIME_IN_SECONDS))
             .catch(res => {
                 throw res.error === 'Not Found' ? `key "${key}" not found` : res.error
@@ -203,7 +242,8 @@ export class API {
 
     async getNShortestLeases(count: number) {
         assert(count >= 0, ClientErrors.INVALID_VALUE_SPECIFIED);
-        return this.#query<QueryGetNShortestLeasesResult>(`crud/getnshortestleases/${this.uuid}/${count}`)
+        return this.#abciQuery<QueryGetNShortestLeasesResult>(`/custom/crud/getnshortestleases/${this.uuid}/${count}`)
+            .then(x => x.result)
             .then(res => res.keyleases.map(({key, lease}) => ({key, lease: Math.round(parseInt(lease) * BLOCK_TIME_IN_SECONDS)})));
     }
 
@@ -211,7 +251,7 @@ export class API {
         return this.#query(`txs/${txhash}`)
     }
 
-    getBNT({ubnt, address}: { ubnt?: boolean, address?: string} = {ubnt: false, address: this.address}): Promise<number> {
+    getBNT({ubnt, address}: { ubnt?: boolean, address?: string } = {ubnt: false, address: this.address}): Promise<number> {
         return this.account(address)
             .then(a => a.coins[0]?.amount || '0')
             .then(a => ubnt ? a : a.slice(0, -6) || '0')
@@ -219,20 +259,37 @@ export class API {
     }
 
     has(key: string): Promise<boolean> {
-        return this.#query<QueryHasResult>(`crud/has/${this.uuid}/${key}`)
-            .then(res => res.has);
+        return this.#abciQuery<QueryHasResult>(`/custom/crud/has/${this.uuid}/${key}`)
+            .then(x => x.result.has)
     }
 
     keys(): Promise<string[]> {
-        return this.#query<QueryKeysResult>(`crud/keys/${this.uuid}`)
+        return this.#abciQuery<QueryKeysResult>(`/custom/crud/keys/${this.uuid}`)
+            .then(x => x.result)
             .then(res => res.keys)
             .then(keys => keys.map(decodeSafe));
     }
 
     keyValues(): Promise<{ key: string, value: string }[]> {
-        return this.#query<QueryKeyValuesResult>(`crud/keyvalues/${this.uuid}`)
+        return this.#abciQuery<QueryKeyValuesResult>(`/custom/crud/keyvalues/${this.uuid}`)
+            .then(x => x.result)
             .then(res => res.keyvalues)
             .then(keyvalues => keyvalues.map(({key, value}) => ({key, value: decodeSafe(value)})))
+    }
+
+    async mint(address: string, gasInfo: GasInfo): Promise<TxResult> {
+        assert(!!address, ClientErrors.ADDRESS_MUST_BE_A_STRING);
+        assert(typeof address === 'string', ClientErrors.ADDRESS_MUST_BE_A_STRING);
+
+        return sendMessage<MintMessage, void>(this.communicationService, {
+            type: "faucet/Mint",
+            value: {
+                Minter: address,
+                Sender: this.address,
+                Time: Date.now().toString()
+            }
+        }, gasInfo)
+            .then(standardTxResult);
     }
 
     async multiUpdate(keyValues: { key: string, value: string }[], gasInfo: GasInfo): Promise<TxResult> {
@@ -243,7 +300,7 @@ export class API {
             assert(typeof value === 'string', ClientErrors.ALL_VALUES_MUST_BE_STRINGS);
         });
 
-        return this.communicationService.sendMessage<MultiUpdateMessage, void>({
+        return sendMessage<MultiUpdateMessage, void>(this.communicationService, {
             type: 'crud/multiupdate',
             value: {
                 KeyValues: keyValues,
@@ -255,7 +312,8 @@ export class API {
     }
 
     myKeys(): Promise<string[]> {
-        return this.#query<QueryKeysResult>(`crud/mykeys/${this.address}/${this.uuid}`)
+        return this.#abciQuery<QueryKeysResult>(`/custom/crud/mykeys/${this.address}/${this.uuid}`)
+            .then(x => x.result)
             .then(res => res.keys)
             .catch((x) => {
                 throw x
@@ -266,8 +324,13 @@ export class API {
         return this.#query<T>(queryString);
     }
 
+    abciQuery<T>(method: string, data: unknown = {}): Promise<ABCIResponse<T>> {
+        return this.#abciQuery<T>(method, data);
+    }
+
     owner(key: string): Promise<string> {
-        return this.#query<QueryOwnerResult>(`crud/owner/${this.uuid}/${encodeSafe(key)}`)
+        return this.#abciQuery<QueryOwnerResult>(`/custom/crud/owner/${this.uuid}/${encodeSafe(key)}`)
+            .then(x => x.result)
             .then(res => res.owner)
             .catch((x) => {
                 if (x instanceof Error) {
@@ -279,7 +342,8 @@ export class API {
 
 
     read(key: string, prove: boolean = false): Promise<string> {
-        return this.#query<QueryReadResult>(`crud/${prove ? 'pread' : 'read'}/${this.uuid}/${encodeSafe(key)}`)
+        return this.#abciQuery<QueryReadResult>(`/custom/crud/read/${this.uuid}/${encodeSafe(key)}`)
+            .then(x => x.result)
             .then(res => res.value)
             .then(decodeSafe)
             .catch((x) => {
@@ -294,7 +358,7 @@ export class API {
         assert(typeof key === 'string', ClientErrors.KEY_MUST_BE_A_STRING);
         assert(typeof newKey === 'string', ClientErrors.NEW_KEY_MUST_BE_A_STRING);
 
-        return this.communicationService.sendMessage<RenameMessage, void>({
+        return sendMessage<RenameMessage, void>(this.communicationService, {
             type: 'crud/rename',
             value: {
                 Key: key,
@@ -315,7 +379,7 @@ export class API {
 
         assert(blocks >= 0, ClientErrors.INVALID_LEASE_TIME)
 
-        return this.communicationService.sendMessage<RenewLeaseMessage, void>({
+        return sendMessage<RenewLeaseMessage, void>(this.communicationService, {
             type: 'crud/renewlease',
             value: {
                 Key: key,
@@ -332,7 +396,7 @@ export class API {
         const blocks = convertLease(leaseInfo);
         assert(blocks >= 0, ClientErrors.INVALID_LEASE_TIME);
 
-        return this.communicationService.sendMessage<RenewLeaseAllMessage, void>({
+        return sendMessage<RenewLeaseAllMessage, void>(this.communicationService, {
             type: 'crud/renewleaseall',
             value: {
                 Lease: blocks.toString(),
@@ -344,22 +408,24 @@ export class API {
     }
 
     search(searchString: string, options: SearchOptions = {page: 1, limit: Number.MAX_SAFE_INTEGER, reverse: false}): Promise<{ key: string, value: string }[]> {
-        return this.#query<QueryKeyValuesResult>(`crud/search/${this.uuid}/${searchString}/${options.page || 1}/${options.limit || Number.MAX_SAFE_INTEGER}/${options.reverse ? 'desc' : 'asc'}`)
+        return this.#abciQuery<QueryKeyValuesResult>(`/custom/crud/search/${this.uuid}/${searchString}/${options.page || 1}/${options.limit || Number.MAX_SAFE_INTEGER}/${options.reverse ? 'desc' : 'asc'}`)
+            .then(x => x.result)
             .then(res => res.keyvalues)
             .then(keyvalues => keyvalues.map(({key, value}) => ({key, value: decodeSafe(value)})))
     }
 
 
     sendMessage(message: any, gasInfo: GasInfo) {
-        return this.communicationService.sendMessage(message, gasInfo);
+        return sendMessage(this.communicationService, message, gasInfo);
     }
 
     taxInfo() {
-        return this.#query<any>('tax/info');
+        return this.#abciQuery<any>('/custom/tax/info')
+            .then(x => x.result);
     }
 
     async txCount(gasInfo: GasInfo): Promise<TxCountResult> {
-        return this.communicationService.sendMessage<CountMessage, TxCountResponse>({
+        return sendMessage<CountMessage, TxCountResponse>(this.communicationService, {
             type: 'crud/count',
             value: {
                 UUID: this.uuid,
@@ -371,7 +437,7 @@ export class API {
     }
 
     async txGetLease(key: string, gasInfo: GasInfo): Promise<TxGetLeaseResult> {
-        return this.communicationService.sendMessage<GetLeaseMessage, TxGetLeaseResponse>({
+        return sendMessage<GetLeaseMessage, TxGetLeaseResponse>(this.communicationService, {
             type: 'crud/getlease',
             value: {
                 Key: key,
@@ -399,7 +465,7 @@ export class API {
     async txHas(key: string, gasInfo: GasInfo): Promise<TxHasResult> {
         assert(typeof key === 'string', ClientErrors.KEY_MUST_BE_A_STRING);
 
-        return this.communicationService.sendMessage<HasMessage, TxHasResponse>({
+        return sendMessage<HasMessage, TxHasResponse>(this.communicationService, {
             type: 'crud/has',
             value: {
                 Key: key,
@@ -417,7 +483,7 @@ export class API {
     }
 
     async txKeys(gasInfo: GasInfo): Promise<TxKeysResult> {
-        return this.communicationService.sendMessage<KeysMessage, TxKeysResponse>({
+        return sendMessage<KeysMessage, TxKeysResponse>(this.communicationService, {
             type: 'crud/keys',
             value: {
                 UUID: this.uuid,
@@ -432,7 +498,7 @@ export class API {
     }
 
     async txKeyValues(gasInfo: GasInfo): Promise<any> {
-        return this.communicationService.sendMessage<KeyValuesMessage, TxKeyValuesResponse>({
+        return sendMessage<KeyValuesMessage, TxKeyValuesResponse>(this.communicationService, {
             type: 'crud/keyvalues',
             value: {
                 Owner: this.address,
@@ -453,7 +519,7 @@ export class API {
 
 
     txRead(key: string, gasInfo: GasInfo): Promise<TxReadResult | undefined> {
-        return this.communicationService.sendMessage<ReadMessage, TxReadResponse>({
+        return sendMessage<ReadMessage, TxReadResponse>(this.communicationService, {
             type: 'crud/read',
             value: {
                 Key: key,
@@ -468,6 +534,20 @@ export class API {
             }))
     }
 
+    undelegate(valoper: string, amount: number, gasInfo: GasInfo) {
+        return this.sendMessage({
+            "type": "cosmos-sdk/MsgUndelegate",
+            "value": {
+                "delegator_address": this.address,
+                "validator_address": valoper,
+                "amount": {
+                    "denom": "ubnt",
+                    "amount": `${amount}000000`
+                }
+            }
+        }, gasInfo)
+    }
+
     async update(key: string, value: string, gasInfo: GasInfo, leaseInfo: LeaseInfo = {}): Promise<TxResult> {
 
         const blocks = convertLease(leaseInfo);
@@ -478,7 +558,7 @@ export class API {
         assert(blocks >= 0, ClientErrors.INVALID_LEASE_TIME);
         assert(!key.includes('/'), ClientErrors.KEY_CANNOT_CONTAIN_SLASH)
 
-        return this.communicationService.sendMessage<UpdateMessage, void>({
+        return sendMessage<UpdateMessage, void>(this.communicationService, {
             type: "crud/update",
             value: {
                 Key: encodeSafe(key),
@@ -501,7 +581,7 @@ export class API {
         assert(blocks >= 0, ClientErrors.INVALID_LEASE_TIME);
         assert(!key.includes('/'), ClientErrors.KEY_CANNOT_CONTAIN_SLASH)
 
-        return this.communicationService.sendMessage<UpsertMessage, void>({
+        return sendMessage<UpsertMessage, void>(this.communicationService, {
             type: "crud/upsert",
             value: {
                 Key: encodeSafe(key),
@@ -519,11 +599,26 @@ export class API {
         return this.#query<any>('node_info').then(res => res.application_version.version);
     }
 
+    withdrawRewards(valoper: string, gasInfo: GasInfo) {
+        return this.sendMessage({
+                "type": "cosmos-sdk/MsgWithdrawDelegationReward",
+                "value": {
+                    "delegator_address": this.address,
+                    "validator_address": valoper
+                }
+            },
+            gasInfo
+        )
+            .then((x: any) => x.logs[0].events[2].attributes[0].value)
+            .then(x => x.replace('ubnt', ''))
+            .then(parseInt)
+    }
+
     transferTokensTo(toAddress: string, amount: number, gasInfo: GasInfo, {ubnt, memo}: { ubnt?: boolean, memo?: string } = {
         ubnt: false,
         memo: 'transfer'
     }): Promise<TxResult> {
-        return this.communicationService.sendMessage<TransferTokensMessage, void>({
+        return sendMessage<TransferTokensMessage, void>(this.communicationService, {
             type: "cosmos-sdk/MsgSend",
             value: {
                 amount: [
@@ -538,6 +633,34 @@ export class API {
         }, gasInfo)
             .then(standardTxResult)
     }
+
+    #abciQuery = <T>(path: string, data: unknown = {}): Promise<ABCIResponse<T>> =>
+        Promise.resolve(JSON.stringify(data))
+            .then(Buffer.from)
+            .then(b => b.toString('hex'))
+            .then(data => ({
+                Path: path,
+                Data: data
+            }))
+            .then(JSON.stringify)
+            .then(body => fetch(`${this.url}/abci-query`, {
+                method: 'POST',
+                body
+            }))
+            .then(async res => {
+                let bodyText = await res.text();
+                bodyText = bodyText.replace('}{', ',');
+                const json = JSON.parse(bodyText);
+                if(json.error) {
+                    throw {
+                        status: res.status,
+                        error: json.error
+                    }
+                }
+                return json
+            })
+
+
 
     #query = <T>(path: string): Promise<T> =>
         fetch(`${this.url}/${path}`)
