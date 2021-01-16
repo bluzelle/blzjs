@@ -12,12 +12,18 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     }
     return privateMap.get(receiver);
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 var _api, _messageQueue, _maxMessagesPerTransaction, _checkTransmitQueueTail, _currentTransaction, _transactionInFlight;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CommunicationService = void 0;
+exports.jsonRPC = exports.CommunicationService = void 0;
 const monet_1 = require("monet");
 const lodash_1 = require("lodash");
 const promise_passthrough_1 = require("promise-passthrough");
+const base_64_1 = __importDefault(require("base-64"));
+const sort_json_1 = __importDefault(require("sort-json"));
+const amino_js_1 = require("@tendermint/amino-js");
 const TOKEN_NAME = 'ubnt';
 class CommunicationService {
     constructor(api) {
@@ -83,7 +89,8 @@ class CommunicationService {
         let cosmos;
         return __classPrivateFieldGet(this, _api).getCosmos()
             .then(c => cosmos = c)
-            .then(() => cosmos.getAccounts(__classPrivateFieldGet(this, _api).address))
+            .then(() => ({ Address: __classPrivateFieldGet(this, _api).address }))
+            .then((data) => __classPrivateFieldGet(this, _api).account(__classPrivateFieldGet(this, _api).address))
             .then((data) => {
             var _a;
             return monet_1.Some({
@@ -91,12 +98,12 @@ class CommunicationService {
                 chain_id: cosmos.chainId,
                 fee: getFeeInfo(combineGas(messages)),
                 memo: ((_a = messages[0].transaction) === null || _a === void 0 ? void 0 : _a.memo) || 'no memo',
-                account_number: data.result.value.account_number,
-                sequence: data.result.value.sequence
+                account_number: data.account_number,
+                sequence: data.sequence
             })
                 .map(cosmos.newStdMsg.bind(cosmos))
                 .map((stdSignMsg) => cosmos.sign(stdSignMsg, cosmos.getECPairPriv(__classPrivateFieldGet(this, _api).mnemonic), 'block'))
-                .map(cosmos.broadcast.bind(cosmos))
+                .map(broadcastTx(__classPrivateFieldGet(this, _api).url))
                 .map(promise_passthrough_1.passThrough(() => __classPrivateFieldSet(this, _transactionInFlight, false)))
                 .map((p) => p
                 .then(convertDataFromHexToString)
@@ -110,6 +117,18 @@ class CommunicationService {
 }
 exports.CommunicationService = CommunicationService;
 _api = new WeakMap(), _messageQueue = new WeakMap(), _maxMessagesPerTransaction = new WeakMap(), _checkTransmitQueueTail = new WeakMap(), _currentTransaction = new WeakMap(), _transactionInFlight = new WeakMap();
+const broadcastTx = (url) => (signedTx) => {
+    return Promise.resolve(signedTx.tx)
+        .then(tx => ({ 'type': 'auth/StdTx', value: tx }))
+        .then(amino_js_1.marshalTx)
+        .then(x => x)
+        .then(Buffer.from)
+        .then(hex => hex.toString('base64'))
+        .then(x => x)
+        .then(tx => ({ tx }))
+        .then(params => exports.jsonRPC(url, 'broadcast_tx_commit', params))
+        .then(x => x);
+};
 const convertDataFromHexToString = (res) => ({
     ...res,
     data: res.data ? Buffer.from(res.data, 'hex').toString() : undefined
@@ -183,4 +202,30 @@ const combineGas = (transactions) => transactions.reduce((gasInfo, transaction) 
         gas_price: Math.max(gasInfo.gas_price || 0, transaction.gasInfo.gas_price || 0)
     };
 }, {});
+exports.jsonRPC = (url, method, params) => {
+    return fetch(url, {
+        method: 'POST',
+        mode: 'cors',
+        cache: 'no-cache',
+        credentials: 'same-origin',
+        headers: {
+            'Content-Type': 'text/json'
+        },
+        redirect: 'follow',
+        referrerPolicy: 'no-referrer',
+        body: sort_json_1.default(JSON.stringify({
+            jsonrpc: "2.0",
+            id: 0,
+            method: method,
+            params
+        }))
+    })
+        .then(x => x.json())
+        .then(promise_passthrough_1.passThrough(x => {
+        if (x.error || !x.result) {
+            throw x.error;
+        }
+    }))
+        .then(x => JSON.parse(base_64_1.default.decode(x.result.response.value)));
+};
 //# sourceMappingURL=CommunicationService.js.map

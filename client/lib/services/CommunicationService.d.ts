@@ -26,5 +26,6 @@ export declare class CommunicationService {
     checkMessageQueueNeedsTransmit(): void;
     transmitTransaction(messages: MessageQueueItem<any, any>[]): Promise<void>;
 }
+export declare const jsonRPC: <T>(url: string, method: string, params: any) => Promise<T>;
 export {};
 //# sourceMappingURL=CommunicationService.d.ts.map

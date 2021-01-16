@@ -5,12 +5,17 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     }
     return privateMap.get(receiver);
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 var _query;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.API = exports.mnemonicToAddress = void 0;
 const promise_passthrough_1 = require("promise-passthrough");
-global.fetch || (global.fetch = require('node-fetch'));
+const to_hex_1 = __importDefault(require("to-hex"));
 const CommunicationService_1 = require("./services/CommunicationService");
+global.fetch || (global.fetch = require('node-fetch'));
+const CommunicationService_2 = require("./services/CommunicationService");
 const lodash_1 = require("lodash");
 const Assert_1 = require("./Assert");
 const monet_1 = require("monet");
@@ -26,9 +31,9 @@ exports.mnemonicToAddress = (mnemonic) => {
 class API {
     constructor(config) {
         this.chainId = '';
-        this.getCosmos = lodash_1.memoize(() => fetch(`${this.url}/node_info`)
+        this.getCosmos = lodash_1.memoize(() => fetch(`${this.url}/status`)
             .then(x => x.json())
-            .then(x => x.node_info.network)
+            .then(x => x.result.node_info.network)
             .then(chainId => cosmosjs.network(this.url, chainId))
             .then(promise_passthrough_1.passThrough(cosmos => cosmos.setPath("m/44\'/118\'/0\'/0/0")))
             .then(promise_passthrough_1.passThrough(cosmos => cosmos.bech32MainPrefix = 'bluzelle')));
@@ -36,7 +41,7 @@ class API {
             Assert_1.assert(entropy.length === 0 || entropy.length === 64, 'Entropy must be 64 char hex');
             return entropy ? bip39_1.entropyToMnemonic(entropy) : bip39_1.generateMnemonic(256);
         };
-        _query.set(this, (path) => fetch(`${this.url}/${path}`)
+        _query.set(this, (path) => fetch(`${this.url}/abci_query?path="${path}"`)
             .then((res) => {
             if (res.status !== 200) {
                 throw {
@@ -51,7 +56,7 @@ class API {
         this.address = this.mnemonic ? exports.mnemonicToAddress(this.mnemonic) : '';
         this.uuid = config.uuid;
         this.url = config.endpoint;
-        this.communicationService = CommunicationService_1.CommunicationService.create(this);
+        this.communicationService = CommunicationService_2.CommunicationService.create(this);
     }
     withTransaction(fn, transaction) {
         return this.communicationService.withTransaction(fn, transaction);
@@ -60,9 +65,14 @@ class API {
         this.communicationService.setMaxMessagesPerTransaction(count);
     }
     account(address = this.address) {
-        return this.getCosmos()
-            .then(cosmos => cosmos.getAccounts(address))
-            .then((x) => x.result.value);
+        return Promise.resolve({
+            path: '/custom/acc/account',
+            data: to_hex_1.default(JSON.stringify({ Address: this.address })),
+            height: "0",
+            prove: false
+        })
+            .then(params => CommunicationService_1.jsonRPC(this.url, 'abci_query', params))
+            .then(x => x.value);
     }
     isExistingAccount() {
         return this.account()

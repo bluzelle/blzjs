@@ -5,6 +5,9 @@ import {MessageResponse} from "../types/MessageResponse";
 import {Message} from "../types/Message";
 import {takeWhile, without} from 'lodash'
 import {passThrough} from "promise-passthrough";
+import base64 from 'base-64'
+import sortJSON from "sort-json";
+import {marshalTx} from "@tendermint/amino-js";
 
 const TOKEN_NAME = 'ubnt';
 
@@ -105,19 +108,22 @@ export class CommunicationService {
         let cosmos: any;
         return this.#api.getCosmos()
             .then(c => cosmos = c)
-            .then(() => cosmos.getAccounts(this.#api.address))
+            .then(() => ({Address: this.#api.address}))
+            .then((data) =>
+                this.#api.account(this.#api.address)
+            )
             .then((data: any) =>
                 Some({
                     msgs: messages.map(m => m.message),
                     chain_id: cosmos.chainId,
                     fee: getFeeInfo(combineGas(messages)),
                     memo: messages[0].transaction?.memo || 'no memo',
-                    account_number: data.result.value.account_number,
-                    sequence: data.result.value.sequence
+                    account_number: data.account_number,
+                    sequence: data.sequence
                 })
                     .map(cosmos.newStdMsg.bind(cosmos))
                     .map((stdSignMsg: any) => cosmos.sign(stdSignMsg, cosmos.getECPairPriv(this.#api.mnemonic), 'block'))
-                    .map(cosmos.broadcast.bind(cosmos))
+                    .map(broadcastTx(this.#api.url))
                     .map(passThrough(() => this.#transactionInFlight = false))
                     .map((p: any) => p
                         .then(convertDataFromHexToString)
@@ -129,6 +135,19 @@ export class CommunicationService {
                     .join()
             )
     }
+}
+
+const broadcastTx = (url: string) => (signedTx: any): Promise<any> => {
+    return Promise.resolve(signedTx.tx)
+        .then(tx => ({'type':  'auth/StdTx',value: tx}))
+        .then(marshalTx)
+        .then(x => x)
+        .then(Buffer.from)
+        .then(hex => hex.toString('base64'))
+        .then(x => x)
+        .then(tx => ({tx}))
+        .then(params => jsonRPC(url, 'broadcast_tx_commit', params))
+        .then(x => x)
 }
 
 const convertDataFromHexToString = (res: any) => ({
@@ -212,3 +231,30 @@ const combineGas = (transactions: MessageQueueItem<any, any>[]): GasInfo =>
     }, {});
 
 
+export const jsonRPC = <T>(url: string, method: string, params: any): Promise<T> => {
+    return fetch(url, {
+        method: 'POST',
+        mode: 'cors',
+        cache: 'no-cache',
+        credentials: 'same-origin', // include, *same-origin, omit
+        headers: {
+            'Content-Type': 'text/json'
+        },
+        redirect: 'follow',
+        referrerPolicy: 'no-referrer',
+        body: sortJSON(JSON.stringify({
+            jsonrpc: "2.0",
+            id: 0,
+            method: method,
+            params
+        }))
+    })
+        .then(x => x.json())
+        .then(passThrough(x => {
+            if(x.error || !x.result) {
+                throw x.error
+            }
+        }))
+        .then(x => JSON.parse(base64.decode(x.result.response.value)))
+
+}

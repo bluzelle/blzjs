@@ -1,4 +1,6 @@
 import {passThrough} from "promise-passthrough";
+import toHex from 'to-hex'
+import {jsonRPC} from "./services/CommunicationService";
 
 global.fetch || (global.fetch = require('node-fetch'));
 
@@ -91,9 +93,9 @@ export class API {
     }
 
     getCosmos = memoize(() =>
-        fetch(`${this.url}/node_info`)
+        fetch(`${this.url}/status`)
             .then(x => x.json())
-            .then(x => x.node_info.network)
+            .then(x => x.result.node_info.network)
             .then(chainId => cosmosjs.network(this.url, chainId))
             .then(passThrough<any>(cosmos => cosmos.setPath("m/44\'/118\'/0\'/0/0")))
             .then(passThrough<any>(cosmos => cosmos.bech32MainPrefix = 'bluzelle'))
@@ -107,10 +109,18 @@ export class API {
         this.communicationService.setMaxMessagesPerTransaction(count);
     }
 
+
     account(address: string = this.address): Promise<AccountResult> {
-        return this.getCosmos()
-            .then(cosmos => cosmos.getAccounts(address))
-            .then((x: AccountsResult) => x.result.value);
+
+
+        return Promise.resolve({
+            path: '/custom/acc/account',
+            data: toHex(JSON.stringify({Address: this.address})),
+            height: "0",
+            prove: false
+        })
+            .then(params => jsonRPC<any>(this.url, 'abci_query', params))
+            .then(x => x.value)
     }
 
     isExistingAccount(): Promise<boolean> {
@@ -211,7 +221,7 @@ export class API {
         return this.#query(`txs/${txhash}`)
     }
 
-    getBNT({ubnt, address}: { ubnt?: boolean, address?: string} = {ubnt: false, address: this.address}): Promise<number> {
+    getBNT({ubnt, address}: { ubnt?: boolean, address?: string } = {ubnt: false, address: this.address}): Promise<number> {
         return this.account(address)
             .then(a => a.coins[0]?.amount || '0')
             .then(a => ubnt ? a : a.slice(0, -6) || '0')
@@ -540,7 +550,7 @@ export class API {
     }
 
     #query = <T>(path: string): Promise<T> =>
-        fetch(`${this.url}/${path}`)
+        fetch(`${this.url}/abci_query?path="${path}"`)
             .then((res: any) => {
                 if (res.status !== 200) {
                     throw {
