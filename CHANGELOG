@@ -1,3 +1,13 @@
+v3.0.1
+------------
+Reset account info (sequence and account) on invalid signature error
+
+v3.0.0
+------------
+Refactor to increment sequence number on client side
+Simplify code
+
+
 v2.1.9
 ------------
 Added address option to account() and getBNT()
