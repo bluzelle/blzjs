@@ -108,6 +108,10 @@ const transmitTransaction = (service: CommunicationService, messages: MessageQue
                     .then(convertDataFromHexToString)
                     .then(convertDataToObject)
                     .then(checkErrors)
+                    .catch((e: FailedTransaction) => {
+                        /signature verification failed/.test(e.error) && (service.accountRequested = undefined)
+                        throw e
+                    })
                     .then((x: any) => ({...x, height: parseInt(x.height)}))
                 )
                 .join()

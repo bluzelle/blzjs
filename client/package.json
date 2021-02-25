@@ -10,7 +10,9 @@
     "lodash": "^4.17.20",
     "monet": "^0.9.1",
     "node-fetch": "^2.6.1",
-    "promise-passthrough": "^1.0.5"
+    "promise-passthrough": "^1.0.5",
+    "ts-node": "^9.1.1",
+    "tsc": "^1.20150623.0"
   },
   "devDependencies": {
     "parcel-bundler": "^1.12.4",
