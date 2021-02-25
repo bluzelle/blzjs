@@ -25,7 +25,7 @@
     "build-js-debug": "NODE_ENV=development parcel build src/bluzelle-js.ts --no-cache public-url='./' --out-dir 'lib' --no-minify",
     "publish-npm": "yarn build && yarn publish"
   },
-  "version": "3.0.0",
+  "version": "3.0.1",
   "browserslist": [
     "last 3 Chrome versions"
   ]
