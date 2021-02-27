@@ -8,7 +8,6 @@ const monet_1 = require("monet");
 const lodash_1 = require("lodash");
 const promise_passthrough_1 = require("promise-passthrough");
 const delay_1 = __importDefault(require("delay"));
-const fp_1 = require("lodash/fp");
 const cosmosjs = require('@cosmostation/cosmosjs');
 const TOKEN_NAME = 'ubnt';
 const dummyMessageResponse = {
@@ -85,22 +84,6 @@ const transmitTransaction = (service, messages) => {
     })
         .then((x) => ({ ...x, height: parseInt(x.height) })))
         .join());
-};
-const fixupMsgs = (stdSignMsg) => {
-    return monet_1.Some(stdSignMsg)
-        .map(fp_1.cloneDeep)
-        .map(stdSignMsg => {
-        stdSignMsg.json.msgs.forEach((msg, idx) => {
-            Object.keys(msg.value).forEach(key => {
-                stdSignMsg.json.msgs[idx].value[key] = stdSignMsg.json.msgs[idx].value[key]
-                    .replace(/&/g, '\\u0026')
-                    .replace(/</g, '\\u003c')
-                    .replace(/>/g, '\\u003e');
-            });
-        });
-        return stdSignMsg;
-    })
-        .join();
 };
 let msgChain = Promise.resolve();
 const getSequence = (() => {
