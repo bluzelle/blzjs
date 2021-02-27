@@ -12,16 +12,16 @@ global.fetch || (global.fetch = require('node-fetch'));
 const CommunicationService_1 = require("./services/CommunicationService");
 const lodash_1 = require("lodash");
 const Assert_1 = require("./Assert");
-const monet_1 = require("monet");
 const bip39_1 = require("bip39");
 const cosmosjs = require('@cosmostation/cosmosjs');
 const BLOCK_TIME_IN_SECONDS = 5.5;
-exports.mnemonicToAddress = (mnemonic) => {
+const mnemonicToAddress = (mnemonic) => {
     const c = cosmosjs.network('http://fake.com', 'fake_chain_id');
     c.setPath("m/44'/118'/0'/0/0");
     c.bech32MainPrefix = "bluzelle";
     return c.getAddress(mnemonic);
 };
+exports.mnemonicToAddress = mnemonicToAddress;
 class API {
     constructor(config) {
         this.chainId = '';
@@ -100,8 +100,8 @@ class API {
         return CommunicationService_1.sendMessage(this.communicationService, {
             type: "crud/create",
             value: {
-                Key: encodeSafe(key),
-                Value: encodeSafe(value),
+                Key: key,
+                Value: value,
                 UUID: this.uuid,
                 Owner: this.address,
                 Lease: blocks.toString(),
@@ -184,7 +184,7 @@ class API {
         return exports.mnemonicToAddress(this.mnemonic);
     }
     getLease(key) {
-        return __classPrivateFieldGet(this, _abciQuery).call(this, `/custom/crud/getlease/${this.uuid}/${encodeSafe(key)}`)
+        return __classPrivateFieldGet(this, _abciQuery).call(this, `/custom/crud/getlease/${this.uuid}/${key}`)
             .then(x => x.result)
             .then(res => Math.round(res.lease * BLOCK_TIME_IN_SECONDS))
             .catch(res => {
@@ -213,14 +213,13 @@ class API {
     keys() {
         return __classPrivateFieldGet(this, _abciQuery).call(this, `/custom/crud/keys/${this.uuid}`)
             .then(x => x.result)
-            .then(res => res.keys)
-            .then(keys => keys.map(decodeSafe));
+            .then(res => res.keys);
     }
     keyValues() {
         return __classPrivateFieldGet(this, _abciQuery).call(this, `/custom/crud/keyvalues/${this.uuid}`)
             .then(x => x.result)
             .then(res => res.keyvalues)
-            .then(keyvalues => keyvalues.map(({ key, value }) => ({ key, value: decodeSafe(value) })));
+            .then(keyvalues => keyvalues.map(({ key, value }) => ({ key, value: value })));
     }
     async mint(address, gasInfo) {
         Assert_1.assert(!!address, "address must be a string" /* ADDRESS_MUST_BE_A_STRING */);
@@ -266,7 +265,7 @@ class API {
         return __classPrivateFieldGet(this, _abciQuery).call(this, method, data);
     }
     owner(key) {
-        return __classPrivateFieldGet(this, _abciQuery).call(this, `/custom/crud/owner/${this.uuid}/${encodeSafe(key)}`)
+        return __classPrivateFieldGet(this, _abciQuery).call(this, `/custom/crud/owner/${this.uuid}/${key}`)
             .then(x => x.result)
             .then(res => res.owner)
             .catch((x) => {
@@ -277,10 +276,9 @@ class API {
         });
     }
     read(key, prove = false) {
-        return __classPrivateFieldGet(this, _abciQuery).call(this, `/custom/crud/read/${this.uuid}/${encodeSafe(key)}`)
+        return __classPrivateFieldGet(this, _abciQuery).call(this, `/custom/crud/read/${this.uuid}/${key}`)
             .then(x => x.result)
             .then(res => res.value)
-            .then(decodeSafe)
             .catch((x) => {
             if (x instanceof Error) {
                 throw x;
@@ -334,7 +332,7 @@ class API {
         return __classPrivateFieldGet(this, _abciQuery).call(this, `/custom/crud/search/${this.uuid}/${searchString}/${options.page || 1}/${options.limit || Number.MAX_SAFE_INTEGER}/${options.reverse ? 'desc' : 'asc'}`)
             .then(x => x.result)
             .then(res => res.keyvalues)
-            .then(keyvalues => keyvalues.map(({ key, value }) => ({ key, value: decodeSafe(value) })));
+            .then(keyvalues => keyvalues.map(({ key, value }) => ({ key, value: value })));
     }
     sendMessage(message, gasInfo) {
         return CommunicationService_1.sendMessage(this.communicationService, message, gasInfo);
@@ -425,7 +423,7 @@ class API {
             .then(({ height, txhash, keyvalues }) => ({
             height,
             txhash,
-            keyvalues: keyvalues === null || keyvalues === void 0 ? void 0 : keyvalues.map(({ key, value }) => ({ key, value: decodeSafe(value) }))
+            keyvalues: keyvalues === null || keyvalues === void 0 ? void 0 : keyvalues.map(({ key, value }) => ({ key, value: value }))
         }));
     }
     txRead(key, gasInfo) {
@@ -466,8 +464,8 @@ class API {
         return CommunicationService_1.sendMessage(this.communicationService, {
             type: "crud/update",
             value: {
-                Key: encodeSafe(key),
-                Value: encodeSafe(value),
+                Key: key,
+                Value: value,
                 UUID: this.uuid,
                 Owner: this.address,
                 Lease: blocks.toString()
@@ -485,8 +483,8 @@ class API {
         return CommunicationService_1.sendMessage(this.communicationService, {
             type: "crud/upsert",
             value: {
-                Key: encodeSafe(key),
-                Value: encodeSafe(value),
+                Key: key,
+                Value: value,
                 UUID: this.uuid,
                 Owner: this.address,
                 Lease: blocks.toString()
@@ -531,17 +529,6 @@ class API {
 }
 exports.API = API;
 _abciQuery = new WeakMap(), _query = new WeakMap();
-const decodeSafe = (str) => decodeURI(str)
-    .replace(/%../g, x => monet_1.Some(x)
-    .map(x => x.replace('%', ''))
-    .map(x => parseInt(x, 16))
-    .map(String.fromCharCode)
-    .join());
-const encodeSafe = (str) => monet_1.Some(str)
-    .map(str => str.replace(/([%])/g, ch => `%${ch.charCodeAt(0).toString(16)}`))
-    .map(encodeURI)
-    .map(str => str.replace(/([\#\?\&])/g, ch => `%${ch.charCodeAt(0).toString(16)}`))
-    .join();
 const MINUTE = 60;
 const HOUR = MINUTE * 60;
 const DAY = HOUR * 24;

@@ -132,8 +132,8 @@ export class API {
         return sendMessage<CreateMessage, void>(this.communicationService, {
             type: "crud/create",
             value: {
-                Key: encodeSafe(key),
-                Value: encodeSafe(value),
+                Key: key,
+                Value: value,
                 UUID: this.uuid,
                 Owner: this.address,
                 Lease: blocks.toString(),
@@ -227,7 +227,7 @@ export class API {
     }
 
     getLease(key: string): Promise<number> {
-        return this.#abciQuery<QueryGetLeaseResult & { error: string }>(`/custom/crud/getlease/${this.uuid}/${encodeSafe(key)}`)
+        return this.#abciQuery<QueryGetLeaseResult & { error: string }>(`/custom/crud/getlease/${this.uuid}/${key}`)
             .then(x => x.result)
             .then(res => Math.round(res.lease * BLOCK_TIME_IN_SECONDS))
             .catch(res => {
@@ -267,14 +267,13 @@ export class API {
         return this.#abciQuery<QueryKeysResult>(`/custom/crud/keys/${this.uuid}`)
             .then(x => x.result)
             .then(res => res.keys)
-            .then(keys => keys.map(decodeSafe));
     }
 
     keyValues(): Promise<{ key: string, value: string }[]> {
         return this.#abciQuery<QueryKeyValuesResult>(`/custom/crud/keyvalues/${this.uuid}`)
             .then(x => x.result)
             .then(res => res.keyvalues)
-            .then(keyvalues => keyvalues.map(({key, value}) => ({key, value: decodeSafe(value)})))
+            .then(keyvalues => keyvalues.map(({key, value}) => ({key, value: value})))
     }
 
     async mint(address: string, gasInfo: GasInfo): Promise<TxResult> {
@@ -329,7 +328,7 @@ export class API {
     }
 
     owner(key: string): Promise<string> {
-        return this.#abciQuery<QueryOwnerResult>(`/custom/crud/owner/${this.uuid}/${encodeSafe(key)}`)
+        return this.#abciQuery<QueryOwnerResult>(`/custom/crud/owner/${this.uuid}/${key}`)
             .then(x => x.result)
             .then(res => res.owner)
             .catch((x) => {
@@ -342,10 +341,9 @@ export class API {
 
 
     read(key: string, prove: boolean = false): Promise<string> {
-        return this.#abciQuery<QueryReadResult>(`/custom/crud/read/${this.uuid}/${encodeSafe(key)}`)
+        return this.#abciQuery<QueryReadResult>(`/custom/crud/read/${this.uuid}/${key}`)
             .then(x => x.result)
             .then(res => res.value)
-            .then(decodeSafe)
             .catch((x) => {
                 if (x instanceof Error) {
                     throw x;
@@ -411,7 +409,7 @@ export class API {
         return this.#abciQuery<QueryKeyValuesResult>(`/custom/crud/search/${this.uuid}/${searchString}/${options.page || 1}/${options.limit || Number.MAX_SAFE_INTEGER}/${options.reverse ? 'desc' : 'asc'}`)
             .then(x => x.result)
             .then(res => res.keyvalues)
-            .then(keyvalues => keyvalues.map(({key, value}) => ({key, value: decodeSafe(value)})))
+            .then(keyvalues => keyvalues.map(({key, value}) => ({key, value: value})))
     }
 
 
@@ -513,7 +511,7 @@ export class API {
             .then(({height, txhash, keyvalues}) => ({
                 height,
                 txhash,
-                keyvalues: keyvalues?.map(({key, value}) => ({key, value: decodeSafe(value)}))
+                keyvalues: keyvalues?.map(({key, value}) => ({key, value: value}))
             }))
     }
 
@@ -561,8 +559,8 @@ export class API {
         return sendMessage<UpdateMessage, void>(this.communicationService, {
             type: "crud/update",
             value: {
-                Key: encodeSafe(key),
-                Value: encodeSafe(value),
+                Key: key,
+                Value: value,
                 UUID: this.uuid,
                 Owner: this.address,
                 Lease: blocks.toString()
@@ -584,8 +582,8 @@ export class API {
         return sendMessage<UpsertMessage, void>(this.communicationService, {
             type: "crud/upsert",
             value: {
-                Key: encodeSafe(key),
-                Value: encodeSafe(value),
+                Key: key,
+                Value: value,
                 UUID: this.uuid,
                 Owner: this.address,
                 Lease: blocks.toString()
@@ -676,21 +674,6 @@ export class API {
 }
 
 
-const decodeSafe = (str: string): string =>
-    decodeURI(str)
-        .replace(/%../g, x => Some(x)
-            .map(x => x.replace('%', ''))
-            .map(x => parseInt(x, 16))
-            .map(String.fromCharCode)
-            .join()
-        )
-
-
-const encodeSafe = (str: string): string => Some(str)
-    .map(str => str.replace(/([%])/g, ch => `%${ch.charCodeAt(0).toString(16)}`))
-    .map(encodeURI)
-    .map(str => str.replace(/([\#\?\&])/g, ch => `%${ch.charCodeAt(0).toString(16)}`))
-    .join();
 
 
 const MINUTE = 60

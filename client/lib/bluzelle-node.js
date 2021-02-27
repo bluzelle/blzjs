@@ -6,5 +6,6 @@ var API_2 = require("./API");
 Object.defineProperty(exports, "API", { enumerable: true, get: function () { return API_2.API; } });
 var API_3 = require("./API");
 Object.defineProperty(exports, "mnemonicToAddress", { enumerable: true, get: function () { return API_3.mnemonicToAddress; } });
-exports.bluzelle = (config) => new API_1.API(config);
+const bluzelle = (config) => new API_1.API(config);
+exports.bluzelle = bluzelle;
 //# sourceMappingURL=bluzelle-node.js.map

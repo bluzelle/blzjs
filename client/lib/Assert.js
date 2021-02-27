@@ -1,9 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.assert = void 0;
-exports.assert = (test, message) => {
+const assert = (test, message) => {
     if (!test) {
         throw new Error(message);
     }
 };
+exports.assert = assert;
 //# sourceMappingURL=Assert.js.map
