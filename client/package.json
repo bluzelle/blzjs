@@ -2,6 +2,7 @@
   "name": "bluzelle",
   "main": "lib/bluzelle-node.js",
   "dependencies": {
+    "@cosmostation/cosmosjs": "file:./deps/@cosmostation/cosmosjs",
     "@types/lodash": "^4.14.161",
     "@types/node": "^14.11.2",
     "bip39": "^3.0.2",
@@ -11,8 +12,7 @@
     "node-fetch": "^2.6.1",
     "promise-passthrough": "^1.0.5",
     "ts-node": "^9.1.1",
-    "tsc": "^1.20150623.0",
-    "@cosmostation/cosmosjs": "file:./deps/@cosmostation/cosmosjs"
+    "tsc": "^1.20150623.0"
   },
   "devDependencies": {
     "parcel-bundler": "^1.12.4",
@@ -25,7 +25,7 @@
     "build-js-debug": "NODE_ENV=development parcel build src/bluzelle-js.ts --no-cache public-url='./' --out-dir 'lib' --no-minify",
     "publish-npm": "yarn build && yarn publish"
   },
-  "version": "3.0.1",
+  "version": "3.0.2",
   "browserslist": [
     "last 3 Chrome versions"
   ]
