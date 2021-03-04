@@ -1,4 +1,3 @@
-import {passThrough, passThroughAwait} from "promise-passthrough";
 
 global.fetch || (global.fetch = require('node-fetch'));
 
@@ -33,7 +32,7 @@ import {
 } from "./types/MessageResponse";
 import {LeaseInfo} from "./types/LeaseInfo";
 import {ClientErrors} from "./ClientErrors";
-import {pullAt, memoize} from 'lodash'
+import {pullAt} from 'lodash'
 import {
     TxCountResult,
     TxGetLeaseResult,
@@ -43,7 +42,6 @@ import {
     TxResult
 } from "./types/TxResult";
 import {assert} from "./Assert";
-import {Some} from "monet";
 import {entropyToMnemonic, generateMnemonic} from "bip39";
 
 
