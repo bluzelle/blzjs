@@ -8,7 +8,7 @@ const monet_1 = require("monet");
 const lodash_1 = require("lodash");
 const promise_passthrough_1 = require("promise-passthrough");
 const delay_1 = __importDefault(require("delay"));
-const cosmosjs = require('../../deps/@cosmostation/cosmosjs');
+const cosmosjs = require('cosmosjs');
 const TOKEN_NAME = 'ubnt';
 const dummyMessageResponse = {
     height: 0,

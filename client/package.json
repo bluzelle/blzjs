@@ -2,7 +2,7 @@
   "name": "bluzelle",
   "main": "lib/bluzelle-node.js",
   "dependencies": {
-    "@cosmostation/cosmosjs": "file:deps/@cosmostation/cosmosjs",
+    "cosmosjs": "cosmostation/cosmosjs",
     "@types/bip39": "^2.4.2",
     "@types/lodash": "^4.14.161",
     "@types/node": "^14.11.2",

@@ -13,7 +13,7 @@ const CommunicationService_1 = require("./services/CommunicationService");
 const lodash_1 = require("lodash");
 const Assert_1 = require("./Assert");
 const bip39_1 = require("bip39");
-const cosmosjs = require('@cosmostation/cosmosjs');
+const cosmosjs = require('cosmosjs');
 const BLOCK_TIME_IN_SECONDS = 5.5;
 const mnemonicToAddress = (mnemonic) => {
     const c = cosmosjs.network('http://fake.com', 'fake_chain_id');

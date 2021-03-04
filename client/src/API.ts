@@ -45,7 +45,7 @@ import {assert} from "./Assert";
 import {entropyToMnemonic, generateMnemonic} from "bip39";
 
 
-const cosmosjs = require('@cosmostation/cosmosjs');
+const cosmosjs = require('cosmosjs');
 
 
 const BLOCK_TIME_IN_SECONDS = 5.5;
