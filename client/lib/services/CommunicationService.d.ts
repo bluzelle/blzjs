@@ -11,14 +11,21 @@ export interface CommunicationService {
     seq: string;
     account: string;
     accountRequested?: Promise<unknown>;
-    transactionMessageQueue?: MessageQueueItem<any>[];
+    transactionMessageQueue?: TransactionMessageQueue;
+}
+interface TransactionMessageQueue {
+    memo: string;
+    items: MessageQueueItem<unknown>[];
+}
+export interface WithTransactionsOptions {
+    memo: string;
 }
 export declare const newCommunicationService: (api: API) => {
     api: API;
     seq: string;
     account: string;
 };
-export declare const withTransaction: <T>(service: CommunicationService, fn: () => T) => Promise<MessageResponse<T>>;
+export declare const withTransaction: <T>(service: CommunicationService, fn: () => T, { memo }: WithTransactionsOptions) => Promise<MessageResponse<T>>;
 export declare const sendMessage: <T, R>(ctx: CommunicationService, message: Message<T>, gasInfo: GasInfo) => Promise<MessageResponse<R>>;
 export declare const getCosmos: ((api: API) => Promise<any>) & import("lodash").MemoizedFunction;
 export {};

@@ -70,8 +70,8 @@ class API {
         this.url = config.endpoint;
         this.communicationService = CommunicationService_1.newCommunicationService(this);
     }
-    withTransaction(fn) {
-        return CommunicationService_1.withTransaction(this.communicationService, fn);
+    withTransaction(fn, { memo } = { memo: '' }) {
+        return CommunicationService_1.withTransaction(this.communicationService, fn, { memo });
     }
     setMaxMessagesPerTransaction(count) {
         // This is here for backward compatibility - delete later
@@ -195,12 +195,18 @@ class API {
         Assert_1.assert(count >= 0, "Invalid value specified" /* INVALID_VALUE_SPECIFIED */);
         return __classPrivateFieldGet(this, _abciQuery).call(this, `/custom/crud/getnshortestleases/${this.uuid}/${count}`)
             .then(x => x.result)
-            .then(res => res.keyleases.map(({ key, lease }) => ({ key, lease: Math.round(parseInt(lease) * BLOCK_TIME_IN_SECONDS) })));
+            .then(res => res.keyleases.map(({ key, lease }) => ({
+            key,
+            lease: Math.round(parseInt(lease) * BLOCK_TIME_IN_SECONDS)
+        })));
     }
     getTx(txhash) {
         return __classPrivateFieldGet(this, _query).call(this, `txs/${txhash}`);
     }
-    getBNT({ ubnt, address } = { ubnt: false, address: this.address }) {
+    getBNT({ ubnt, address } = {
+        ubnt: false,
+        address: this.address
+    }) {
         return this.account(address)
             .then(a => { var _a; return ((_a = a.coins[0]) === null || _a === void 0 ? void 0 : _a.amount) || '0'; })
             .then(a => ubnt ? a : a.slice(0, -6) || '0')
@@ -328,7 +334,11 @@ class API {
         }, gasInfo)
             .then(standardTxResult);
     }
-    search(searchString, options = { page: 1, limit: Number.MAX_SAFE_INTEGER, reverse: false }) {
+    search(searchString, options = {
+        page: 1,
+        limit: Number.MAX_SAFE_INTEGER,
+        reverse: false
+    }) {
         return __classPrivateFieldGet(this, _abciQuery).call(this, `/custom/crud/search/${this.uuid}/${searchString}/${options.page || 1}/${options.limit || Number.MAX_SAFE_INTEGER}/${options.reverse ? 'desc' : 'asc'}`)
             .then(x => x.result)
             .then(res => res.keyvalues)

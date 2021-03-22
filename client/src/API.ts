@@ -1,4 +1,3 @@
-
 global.fetch || (global.fetch = require('node-fetch'));
 
 
@@ -13,7 +12,14 @@ import {
     QueryKeyValuesResult, QueryOwnerResult,
     QueryReadResult
 } from "./types/QueryResult";
-import {newCommunicationService, getCosmos, sendMessage, withTransaction, CommunicationService} from "./services/CommunicationService";
+import {
+    newCommunicationService,
+    getCosmos,
+    sendMessage,
+    withTransaction,
+    CommunicationService,
+    WithTransactionsOptions
+} from "./services/CommunicationService";
 import {
     CountMessage,
     CreateMessage,
@@ -66,6 +72,46 @@ export interface SearchOptions {
     reverse?: boolean
 }
 
+interface TransactionResponse {
+    height: string
+    txhash: string,
+    raw_log: string
+    logs: unknown[],
+    gas_wanted: string,
+    gas_used: string,
+    tx: {
+        type: string,
+        value: {
+            msg: [
+                {
+                    type: string,
+                    value: unknown
+                }
+            ],
+            fee: {
+                amount: [
+                    {
+                        denom: string,
+                        amount: string
+                    }
+                ],
+                gas: string
+            },
+            signatures: [
+                {
+                    pub_key: {
+                        type: string,
+                        value: string
+                    },
+                    signature: string
+                }
+            ],
+            memo: string
+        }
+    },
+    timestamp: string
+}
+
 export const mnemonicToAddress = (mnemonic: string): string => {
     const c = cosmosjs.network('http://fake.com', 'fake_chain_id');
     c.setPath("m/44'/118'/0'/0/0");
@@ -93,8 +139,8 @@ export class API {
         this.communicationService = newCommunicationService(this);
     }
 
-    withTransaction<T>(fn: () => any): Promise<MessageResponse<T>> {
-        return withTransaction<T>(this.communicationService, fn);
+    withTransaction<T>(fn: () => any, {memo}: WithTransactionsOptions = {memo: ''}): Promise<MessageResponse<T>> {
+        return withTransaction<T>(this.communicationService, fn, {memo});
     }
 
     setMaxMessagesPerTransaction(count: number) {
@@ -242,14 +288,20 @@ export class API {
         assert(count >= 0, ClientErrors.INVALID_VALUE_SPECIFIED);
         return this.#abciQuery<QueryGetNShortestLeasesResult>(`/custom/crud/getnshortestleases/${this.uuid}/${count}`)
             .then(x => x.result)
-            .then(res => res.keyleases.map(({key, lease}) => ({key, lease: Math.round(parseInt(lease) * BLOCK_TIME_IN_SECONDS)})));
+            .then(res => res.keyleases.map(({key, lease}) => ({
+                key,
+                lease: Math.round(parseInt(lease) * BLOCK_TIME_IN_SECONDS)
+            })));
     }
 
-    getTx(txhash: string) {
-        return this.#query(`txs/${txhash}`)
+    getTx(txhash: string): Promise<TransactionResponse> {
+        return this.#query<TransactionResponse>(`txs/${txhash}`)
     }
 
-    getBNT({ubnt, address}: { ubnt?: boolean, address?: string } = {ubnt: false, address: this.address}): Promise<number> {
+    getBNT({ubnt, address}: { ubnt?: boolean, address?: string } = {
+        ubnt: false,
+        address: this.address
+    }): Promise<number> {
         return this.account(address)
             .then(a => a.coins[0]?.amount || '0')
             .then(a => ubnt ? a : a.slice(0, -6) || '0')
@@ -403,7 +455,11 @@ export class API {
             .then(standardTxResult)
     }
 
-    search(searchString: string, options: SearchOptions = {page: 1, limit: Number.MAX_SAFE_INTEGER, reverse: false}): Promise<{ key: string, value: string }[]> {
+    search(searchString: string, options: SearchOptions = {
+        page: 1,
+        limit: Number.MAX_SAFE_INTEGER,
+        reverse: false
+    }): Promise<{ key: string, value: string }[]> {
         return this.#abciQuery<QueryKeyValuesResult>(`/custom/crud/search/${this.uuid}/${searchString}/${options.page || 1}/${options.limit || Number.MAX_SAFE_INTEGER}/${options.reverse ? 'desc' : 'asc'}`)
             .then(x => x.result)
             .then(res => res.keyvalues)
@@ -610,7 +666,10 @@ export class API {
             .then(parseInt)
     }
 
-    transferTokensTo(toAddress: string, amount: number, gasInfo: GasInfo, {ubnt, memo}: { ubnt?: boolean, memo?: string } = {
+    transferTokensTo(toAddress: string, amount: number, gasInfo: GasInfo, {
+        ubnt,
+        memo
+    }: { ubnt?: boolean, memo?: string } = {
         ubnt: false,
         memo: 'transfer'
     }): Promise<TxResult> {
@@ -647,7 +706,7 @@ export class API {
                 let bodyText = await res.text();
                 bodyText = bodyText.replace('}{', ',');
                 const json = JSON.parse(bodyText);
-                if(json.error) {
+                if (json.error) {
                     throw {
                         status: res.status,
                         error: json.error
@@ -655,7 +714,6 @@ export class API {
                 }
                 return json
             })
-
 
 
     #query = <T>(path: string): Promise<T> =>
@@ -670,8 +728,6 @@ export class API {
                 return res.json().then((obj: any) => obj.result ?? obj)
             })
 }
-
-
 
 
 const MINUTE = 60

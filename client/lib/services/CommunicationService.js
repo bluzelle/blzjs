@@ -17,17 +17,21 @@ const dummyMessageResponse = {
     gas_wanted: '',
     data: []
 };
+const newTransactionMessageQueue = (items, memo) => ({
+    memo,
+    items
+});
 const newCommunicationService = (api) => ({
     api,
     seq: '',
     account: ''
 });
 exports.newCommunicationService = newCommunicationService;
-const withTransaction = (service, fn) => {
+const withTransaction = (service, fn, { memo }) => {
     if (service.transactionMessageQueue) {
         throw new Error('withTransaction() can not be nested');
     }
-    service.transactionMessageQueue = [];
+    service.transactionMessageQueue = newTransactionMessageQueue([], memo);
     fn();
     const result = sendMessages(service, service.transactionMessageQueue);
     service.transactionMessageQueue = undefined;
@@ -36,21 +40,21 @@ const withTransaction = (service, fn) => {
 exports.withTransaction = withTransaction;
 const sendMessage = (ctx, message, gasInfo) => {
     var _a;
-    return ctx.transactionMessageQueue ? Promise.resolve((_a = ctx.transactionMessageQueue) === null || _a === void 0 ? void 0 : _a.push({
+    return ctx.transactionMessageQueue ? Promise.resolve((_a = ctx.transactionMessageQueue) === null || _a === void 0 ? void 0 : _a.items.push({
         message, gasInfo
     }))
         .then(() => (dummyMessageResponse))
-        : sendMessages(ctx, [{
+        : sendMessages(ctx, newTransactionMessageQueue([{
                 message,
                 gasInfo
-            }]);
+            }], ''));
 };
 exports.sendMessage = sendMessage;
-const sendMessages = (service, messages) => {
+const sendMessages = (service, queue) => {
     return new Promise((resolve, reject) => {
         msgChain = msgChain
             .then(() => {
-            transmitTransaction(service, messages)
+            transmitTransaction(service, queue.items, { memo: queue.memo })
                 .then(resolve)
                 .catch(reject);
         })
@@ -58,7 +62,7 @@ const sendMessages = (service, messages) => {
             .then(() => delay_1.default(200));
     });
 };
-const transmitTransaction = (service, messages) => {
+const transmitTransaction = (service, messages, { memo }) => {
     let cosmos;
     return exports.getCosmos(service.api)
         .then(c => cosmos = c)
@@ -67,7 +71,7 @@ const transmitTransaction = (service, messages) => {
         msgs: messages.map(m => m.message),
         chain_id: cosmos.chainId,
         fee: getFeeInfo(combineGas(messages)),
-        memo: 'no memo',
+        memo: memo,
         account_number: data.account,
         sequence: data.seq
     })

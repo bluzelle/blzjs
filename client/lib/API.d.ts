@@ -1,7 +1,7 @@
 import { BluzelleConfig } from "./types/BluzelleConfig";
 import { GasInfo } from "./types/GasInfo";
 import { AccountResult } from "./types/cosmos/AccountResult";
-import { CommunicationService } from "./services/CommunicationService";
+import { CommunicationService, WithTransactionsOptions } from "./services/CommunicationService";
 import { MessageResponse } from "./types/MessageResponse";
 import { LeaseInfo } from "./types/LeaseInfo";
 import { TxCountResult, TxGetLeaseResult, TxGetNShortestLeasesResult, TxHasResult, TxKeysResult, TxReadResult, TxResult } from "./types/TxResult";
@@ -13,6 +13,45 @@ export interface SearchOptions {
     page?: number;
     limit?: number;
     reverse?: boolean;
+}
+interface TransactionResponse {
+    height: string;
+    txhash: string;
+    raw_log: string;
+    logs: unknown[];
+    gas_wanted: string;
+    gas_used: string;
+    tx: {
+        type: string;
+        value: {
+            msg: [
+                {
+                    type: string;
+                    value: unknown;
+                }
+            ];
+            fee: {
+                amount: [
+                    {
+                        denom: string;
+                        amount: string;
+                    }
+                ];
+                gas: string;
+            };
+            signatures: [
+                {
+                    pub_key: {
+                        type: string;
+                        value: string;
+                    };
+                    signature: string;
+                }
+            ];
+            memo: string;
+        };
+    };
+    timestamp: string;
 }
 export declare const mnemonicToAddress: (mnemonic: string) => string;
 export declare class API {
@@ -26,7 +65,7 @@ export declare class API {
     config: BluzelleConfig;
     communicationService: CommunicationService;
     constructor(config: BluzelleConfig);
-    withTransaction<T>(fn: () => any): Promise<MessageResponse<T>>;
+    withTransaction<T>(fn: () => any, { memo }?: WithTransactionsOptions): Promise<MessageResponse<T>>;
     setMaxMessagesPerTransaction(count: number): void;
     account(address?: string): Promise<AccountResult>;
     isExistingAccount(): Promise<boolean>;
@@ -46,7 +85,7 @@ export declare class API {
         key: string;
         lease: number;
     }[]>;
-    getTx(txhash: string): Promise<unknown>;
+    getTx(txhash: string): Promise<TransactionResponse>;
     getBNT({ ubnt, address }?: {
         ubnt?: boolean;
         address?: string;

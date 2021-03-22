@@ -39,8 +39,25 @@ export interface CommunicationService {
     seq: string
     account: string
     accountRequested?: Promise<unknown>
-    transactionMessageQueue?: MessageQueueItem<any>[]
+    transactionMessageQueue?: TransactionMessageQueue
 }
+
+interface TransactionMessageQueue {
+    memo: string
+    items: MessageQueueItem<unknown>[]
+}
+
+export interface WithTransactionsOptions {
+    memo: string
+}
+
+
+
+const newTransactionMessageQueue = (items: MessageQueueItem<unknown>[], memo: string): TransactionMessageQueue  => ({
+    memo,
+    items
+})
+
 
 export const newCommunicationService = (api: API) => ({
     api,
@@ -48,11 +65,11 @@ export const newCommunicationService = (api: API) => ({
     account: ''
 })
 
-export const withTransaction = <T>(service: CommunicationService, fn: () => T): Promise<MessageResponse<T>> => {
+export const withTransaction = <T>(service: CommunicationService, fn: () => T, {memo}: WithTransactionsOptions): Promise<MessageResponse<T>> => {
     if (service.transactionMessageQueue) {
         throw new Error('withTransaction() can not be nested')
     }
-    service.transactionMessageQueue = [];
+    service.transactionMessageQueue = newTransactionMessageQueue([], memo);
     fn();
     const result = sendMessages(service, service.transactionMessageQueue)
     service.transactionMessageQueue = undefined;
@@ -61,22 +78,22 @@ export const withTransaction = <T>(service: CommunicationService, fn: () => T): 
 
 
 export const sendMessage = <T, R>(ctx: CommunicationService, message: Message<T>, gasInfo: GasInfo): Promise<MessageResponse<R>> => {
-    return ctx.transactionMessageQueue ? Promise.resolve(ctx.transactionMessageQueue?.push({
+    return ctx.transactionMessageQueue ? Promise.resolve(ctx.transactionMessageQueue?.items.push({
             message, gasInfo
         }))
             .then(() => (dummyMessageResponse))
-        : sendMessages(ctx, [{
+        : sendMessages(ctx, newTransactionMessageQueue([{
             message,
             gasInfo
-        }])
+        }], ''))
 }
 
 
-const sendMessages = (service: CommunicationService, messages: MessageQueueItem<any>[]): Promise<MessageResponse<any>> => {
+const sendMessages = (service: CommunicationService, queue: TransactionMessageQueue): Promise<MessageResponse<any>> => {
     return new Promise((resolve, reject) => {
         msgChain = msgChain
             .then(() => {
-                    transmitTransaction(service, messages)
+                    transmitTransaction(service, queue.items, {memo: queue.memo})
                         .then(resolve)
                         .catch(reject)
                 }
@@ -87,7 +104,7 @@ const sendMessages = (service: CommunicationService, messages: MessageQueueItem<
 }
 
 
-const transmitTransaction = (service: CommunicationService, messages: MessageQueueItem<any>[]): Promise<any> => {
+const transmitTransaction = (service: CommunicationService, messages: MessageQueueItem<any>[], {memo}: {memo: string}): Promise<any> => {
     let cosmos: any;
     return getCosmos(service.api)
         .then(c => cosmos = c)
@@ -97,7 +114,7 @@ const transmitTransaction = (service: CommunicationService, messages: MessageQue
                 msgs: messages.map(m => m.message),
                 chain_id: cosmos.chainId,
                 fee: getFeeInfo(combineGas(messages)),
-                memo: 'no memo',
+                memo: memo,
                 account_number: data.account,
                 sequence: data.seq
             })
