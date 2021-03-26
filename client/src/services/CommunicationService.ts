@@ -52,8 +52,7 @@ export interface WithTransactionsOptions {
 }
 
 
-
-const newTransactionMessageQueue = (items: MessageQueueItem<unknown>[], memo: string): TransactionMessageQueue  => ({
+const newTransactionMessageQueue = (items: MessageQueueItem<unknown>[], memo: string): TransactionMessageQueue => ({
     memo,
     items
 })
@@ -89,22 +88,30 @@ export const sendMessage = <T, R>(ctx: CommunicationService, message: Message<T>
 }
 
 
-const sendMessages = (service: CommunicationService, queue: TransactionMessageQueue): Promise<MessageResponse<any>> => {
-    return new Promise((resolve, reject) => {
+const sendMessages = (service: CommunicationService, queue: TransactionMessageQueue, retrans: boolean = false): Promise<MessageResponse<any>> =>
+    new Promise((resolve, reject) => {
         msgChain = msgChain
             .then(() => {
-                    transmitTransaction(service, queue.items, {memo: queue.memo})
-                        .then(resolve)
-                        .catch(reject)
+                transmitTransaction(service, queue.items, {memo: queue.memo})
+                    .then(resolve)
+                    .catch(e =>
+                        Some(retrans)
+                            .filter(retrans => retrans === false)
+                            .filter(() => /signature verification failed/.test(e.error))
+                            .map(() => service.seq = '')
+                            .map(() => service.account = '')
+                            .map(() => sendMessages(service, queue, true))
+                            .map(p => p.then(resolve).catch(reject))
+                            .cata(() => reject(e), () => {})
+                    );
                 }
             )
             // hacky way to make sure that connections arrive at server in order
             .then(() => delay(200))
     });
-}
 
 
-const transmitTransaction = (service: CommunicationService, messages: MessageQueueItem<any>[], {memo}: {memo: string}): Promise<any> => {
+const transmitTransaction = (service: CommunicationService, messages: MessageQueueItem<any>[], {memo}: { memo: string }): Promise<any> => {
     let cosmos: any;
     return getCosmos(service.api)
         .then(c => cosmos = c)
@@ -136,6 +143,10 @@ const transmitTransaction = (service: CommunicationService, messages: MessageQue
 
 }
 
+const retryCounter = (() => {
+    let count = 0;
+    return () => count++;
+})();
 
 let msgChain = Promise.resolve()
 
@@ -163,8 +174,6 @@ const getSequence = (() => {
                 seq: service.seq,
                 account: service.account
             }));
-
-
 })()
 
 

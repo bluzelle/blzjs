@@ -50,18 +50,23 @@ const sendMessage = (ctx, message, gasInfo) => {
             }], ''));
 };
 exports.sendMessage = sendMessage;
-const sendMessages = (service, queue) => {
-    return new Promise((resolve, reject) => {
-        msgChain = msgChain
-            .then(() => {
-            transmitTransaction(service, queue.items, { memo: queue.memo })
-                .then(resolve)
-                .catch(reject);
-        })
-            // hacky way to make sure that connections arrive at server in order
-            .then(() => delay_1.default(200));
-    });
-};
+const sendMessages = (service, queue, retrans = false) => new Promise((resolve, reject) => {
+    msgChain = msgChain
+        .then(() => {
+        transmitTransaction(service, queue.items, { memo: queue.memo })
+            .then(resolve)
+            .catch(e => monet_1.Some(retrans)
+            .filter(retrans => retrans === false)
+            .filter(() => /signature verification failed/.test(e.error))
+            .map(() => service.seq = '')
+            .map(() => service.account = '')
+            .map(() => sendMessages(service, queue, true))
+            .map(p => p.then(resolve).catch(reject))
+            .cata(() => reject(e), () => { }));
+    })
+        // hacky way to make sure that connections arrive at server in order
+        .then(() => delay_1.default(200));
+});
 const transmitTransaction = (service, messages, { memo }) => {
     let cosmos;
     return exports.getCosmos(service.api)
@@ -89,6 +94,10 @@ const transmitTransaction = (service, messages, { memo }) => {
         .then((x) => ({ ...x, height: parseInt(x.height) })))
         .join());
 };
+const retryCounter = (() => {
+    let count = 0;
+    return () => count++;
+})();
 let msgChain = Promise.resolve();
 const getSequence = (() => {
     return (service, cosmos, address) => (service.accountRequested ? (service.accountRequested = service.accountRequested
