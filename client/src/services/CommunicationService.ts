@@ -7,7 +7,7 @@ import {memoize, takeWhile, without} from 'lodash'
 import {passThrough} from "promise-passthrough";
 import delay from "delay";
 
-const cosmosjs = require('cosmosjs');
+const cosmosjs = require('@cosmostation/cosmosjs');
 
 
 const TOKEN_NAME = 'ubnt';
