@@ -118,7 +118,8 @@ const transmitTransaction = (service: CommunicationService, messages: MessageQue
     let cosmos: any;
     return getClient(service.api)
         .then(c => cosmos = c)
-        .then(() => getSequence(service, cosmos, service.api.address))
+        .then(client => getChainId(client).then(chainId => service.api.chainId = chainId))
+        .then(() => getSequence(service, cosmos))
         .then((data: any) =>
             Some({
                 msgs: messages.map(m => m.message),
@@ -148,31 +149,30 @@ const transmitTransaction = (service: CommunicationService, messages: MessageQue
 
 let msgChain = Promise.resolve()
 
-const getSequence = (() => {
 
-    interface State {
-        seq: string
-        account: string
-    }
 
-    return (service: CommunicationService, cosmos: any, address: string): Promise<State> =>
+interface State {
+    seq: string
+    account: string
+}
+
+const getSequence = (service: CommunicationService, cosmos: SigningStargateClient): Promise<State> =>
         (service.accountRequested ? (
             service.accountRequested = service.accountRequested
                 .then(() =>
                     service.seq = (parseInt(service.seq) + 1).toString()
                 )
         ) : (
-            service.accountRequested = cosmos.getAccounts(address)
+            service.accountRequested = cosmos.getAccount(service.api.address)
                 .then((data: any) => {
-                    service.seq = data.result.value.sequence,
-                        service.account = data.result.value.account_number
+                    service.seq = data.sequence
+                    service.account = data.accountNumber
                 })
         ))
             .then(() => ({
                 seq: service.seq,
                 account: service.account
             }));
-})()
 
 
 const convertDataFromHexToString = (res: any) => ({
