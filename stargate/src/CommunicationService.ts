@@ -6,18 +6,16 @@ const myRegistry = new Registry([
     ...defaultRegistryTypes,
         ["/bluzelle.curium.crud.MsgCreateCrudValue", MsgCreateCrudValue]
 ] as Iterable<[string, GeneratedType]>);
-const mnemonic =
-    "visit sleep poem rigid coin hour balcony bone rare ring excess document empty extra sibling decide goddess tourist kidney segment true crane subway cousin";
 
 // Inside an async function...
-const getSigner = () => DirectSecp256k1HdWallet.fromMnemonic(
+const getSigner = (mnemonic: string) => DirectSecp256k1HdWallet.fromMnemonic(
     mnemonic,
     undefined,
     "bluzelle",
 );
 
-export const getClient = () =>
-    getSigner()
+export const getClient = (mnemonic: string) =>
+    getSigner(mnemonic)
         .then(signer => SigningStargateClient.connectWithSigner(
             "http://localhost:26657",
             signer,

@@ -28,7 +28,7 @@ const fee = {
 
 
 
-getClient()
+getClient("visit sleep poem rigid coin hour balcony bone rare ring excess document empty extra sibling decide goddess tourist kidney segment true crane subway cousin")
     .then((client:SigningStargateClient) => client.signAndBroadcast(myAddress, [message], fee))
     .then(console.log)
 
