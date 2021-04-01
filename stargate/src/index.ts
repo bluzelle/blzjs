@@ -1,13 +1,40 @@
 import {MsgCreateCrudValue} from "./codec/crud/tx";
-import {SigningStargateClient} from "@cosmjs/stargate";
 import Long from 'long'
 import {TxRaw} from "@cosmjs/stargate/build/codec/cosmos/tx/v1beta1/tx";
 import {memoize} from 'lodash'
-import {getClient} from "./CommunicationService";
+import {DirectSecp256k1HdWallet, GeneratedType, Registry} from "@cosmjs/proto-signing";
+import { defaultRegistryTypes, SigningStargateClient } from "@cosmjs/stargate";
 
 const myAddress = "bluzelle1uvxd0kvd5nztaadrjsae3kc3cea6z3mtcpgxrl";
 
-let seq = 28
+let seq = 32;
+
+
+const myRegistry = new Registry([
+    ...defaultRegistryTypes,
+    ["/bluzelle.curium.crud.MsgCreateCrudValue", MsgCreateCrudValue]
+] as Iterable<[string, GeneratedType]>);
+
+// Inside an async function...
+const getSigner = (mnemonic: string) => DirectSecp256k1HdWallet.fromMnemonic(
+    mnemonic,
+    undefined,
+    "bluzelle",
+);
+
+
+export const getClient = memoize((mnemonic: string) =>
+    getSigner(mnemonic)
+        .then(signer => SigningStargateClient.connectWithSigner(
+            "http://localhost:26657",
+            signer,
+            {
+                registry: myRegistry,
+            }
+        )));
+
+
+
 
 
 const create = (key: string, value: string) /*Promise<BroadcastTxResponse>*/ => {
