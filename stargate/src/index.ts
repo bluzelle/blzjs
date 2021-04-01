@@ -15,7 +15,7 @@ const bz = bluzelle({
     uuid: ''
 });
 
-bz.create('foo', 'bar', {gas_price: 0.002})
+bz.create('foo3', 'bar', {gas_price: 0.002})
     .then(x => console.log(x))
     .catch(e => console.log(e));
 

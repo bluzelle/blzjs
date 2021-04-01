@@ -201,41 +201,41 @@ const convertDataToObject = (res: any) =>
 const checkErrors = (res: any) => {
     if (res.error) {
         throw {
-            txhash: res.txhash,
+            txhash: res.transactionHash,
             height: res.height,
             error: res.error
         }
     }
-    if (/signature verification failed/.test(res.raw_log)) {
+    if (/signature verification failed/.test(res.rawLog)) {
         throw {
-            txhash: res.txhash,
+            txhash: res.transactionHash,
             height: res.height,
             error: 'signature verification failed'
         } as FailedTransaction
     }
-    if (/insufficient fee/.test(res.raw_log)) {
-        let [x, error] = res.raw_log.split(/[:;]/);
+    if (/insufficient fee/.test(res.rawLog)) {
+        let [x, error] = res.rawLog.split(/[:;]/);
         throw {
-            txhash: res.txhash,
+            txhash: res.transactionHash,
             height: res.height,
             error: error.trim()
         } as FailedTransaction
     }
-    if (/failed to execute message/.test(res.raw_log)) {
-        const error = res.raw_log.split(';')[0];
+    if (/failed to execute message/.test(res.rawLog)) {
+        const error = res.rawLog.split(':')[2];
         throw {
-            txhash: res.txhash,
+            txhash: res.transactionHash,
             height: res.height,
             error: error.trim()
         } as FailedTransaction
     }
-    if (/^\[.*\]$/.test(res.raw_log) === false) {
+    if (/^\[.*\]$/.test(res.rawLog) === false) {
         throw {
-            txhash: res.txhash,
+            txhash: res.transactionHash,
             height: res.height,
             failedMsg: undefined,
             failedMsgIdx: undefined,
-            error: res.raw_log
+            error: res.rawLog
         }
     }
     return res
