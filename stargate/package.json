@@ -5,8 +5,8 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
-    "@cosmjs/proto-signing": "^0.24.1",
-    "@cosmjs/stargate": "^0.24.1",
+    "@cosmjs/proto-signing": "0.25.0-alpha.1",
+    "@cosmjs/stargate": "0.25.0-alpha.1",
     "@cosmjs/tendermint-rpc": "^0.24.1",
     "@cosmostation/cosmosjs": "^0.9.5",
     "@types/bip39": "^3.0.0",

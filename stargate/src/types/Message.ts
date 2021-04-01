@@ -1,5 +1,8 @@
+import Long from "long";
+
 export interface Message<T> {
-    type: string
+    type?: string
+    typeUrl?: string
     value: T
 }
 
@@ -15,11 +18,11 @@ export interface MintMessage {
 }
 
 export interface CreateMessage {
-    Key: string
-    Value: string
-    Owner: string
-    Lease: string
-    UUID: string
+    key: string
+    value: string
+    creator: string
+    lease: Long
+    uuid: string
 }
 
 export interface GetLeaseMessage {

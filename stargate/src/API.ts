@@ -49,6 +49,7 @@ import {
 } from "./types/TxResult";
 import {assert} from "./Assert";
 import {entropyToMnemonic, generateMnemonic} from "bip39";
+import Long from 'long'
 
 
 const cosmosjs = require('@cosmostation/cosmosjs');
@@ -174,13 +175,13 @@ export class API {
         assert(!key.includes('/'), ClientErrors.KEY_CANNOT_CONTAIN_SLASH)
 
         return sendMessage<CreateMessage, void>(this.communicationService, {
-            type: "crud/create",
+            typeUrl:  "/bluzelle.curium.crud.MsgCreateCrudValue",
             value: {
-                Key: key,
-                Value: value,
-                UUID: this.uuid,
-                Owner: this.address,
-                Lease: blocks.toString(),
+                key: key,
+                value: value,
+                uuid: this.uuid,
+                creator: this.address,
+                lease: new Long(0),
             }
         }, gasInfo)
             .then(standardTxResult)

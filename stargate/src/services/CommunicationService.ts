@@ -6,9 +6,10 @@ import {Message} from "../types/Message";
 import {memoize} from 'lodash'
 import {passThrough} from "promise-passthrough";
 import delay from "delay";
-import {DirectSecp256k1HdWallet, GeneratedType, Registry} from "@cosmjs/proto-signing";
+import {DirectSecp256k1HdWallet, EncodeObject, GeneratedType, Registry} from "@cosmjs/proto-signing";
 import {defaultRegistryTypes, SigningStargateClient} from "@cosmjs/stargate";
 import {MsgCreateCrudValue} from "../codec/crud/tx";
+import {TxRaw} from "@cosmjs/proto-signing/build/codec/cosmos/tx/v1beta1/tx";
 
 const cosmosjs = require('@cosmostation/cosmosjs');
 
@@ -39,8 +40,8 @@ const dummyMessageResponse = {
 
 export interface CommunicationService {
     api: API
-    seq: string
-    account: string
+    seq: number
+    account: number
     accountRequested?: Promise<unknown>
     transactionMessageQueue?: TransactionMessageQueue
 }
@@ -63,8 +64,8 @@ const newTransactionMessageQueue = (items: MessageQueueItem<unknown>[], memo: st
 
 export const newCommunicationService = (api: API) => ({
     api,
-    seq: '',
-    account: ''
+    seq: 0,
+    account: 0
 })
 
 export const withTransaction = <T>(service: CommunicationService, fn: () => T, {memo}: WithTransactionsOptions): Promise<MessageResponse<T>> => {
@@ -101,8 +102,8 @@ const sendMessages = (service: CommunicationService, queue: TransactionMessageQu
                             Some(retrans)
                                 .filter(retrans => retrans === false)
                                 .filter(() => /signature verification failed/.test(e.error))
-                                .map(() => service.seq = '')
-                                .map(() => service.account = '')
+                                .map(() => service.seq = 0)
+                                .map(() => service.account = 0)
                                 .map(() => sendMessages(service, queue, true))
                                 .map(p => p.then(resolve).catch(reject))
                                 .cata(() => reject(e), () => {})
@@ -115,34 +116,34 @@ const sendMessages = (service: CommunicationService, queue: TransactionMessageQu
 
 
 const transmitTransaction = (service: CommunicationService, messages: MessageQueueItem<any>[], {memo}: { memo: string }): Promise<any> => {
-    let cosmos: any;
+    let cosmos: SigningStargateClient;
     return getClient(service.api)
         .then(c => cosmos = c)
         .then(client => getChainId(client).then(chainId => service.api.chainId = chainId))
         .then(() => getSequence(service, cosmos))
-        .then((data: any) =>
-            Some({
-                msgs: messages.map(m => m.message),
-                chain_id: cosmos.chainId,
-                fee: getFeeInfo(combineGas(messages)),
-                memo: memo,
-                account_number: data.account,
-                sequence: data.seq
-            })
-                .map(cosmos.newStdMsg.bind(cosmos))
-                .map((stdSignMsg: any) => cosmos.sign(stdSignMsg, cosmos.getECPairPriv(service.api.mnemonic), 'block'))
-                .map(cosmos.broadcast.bind(cosmos))
-                .map((p: any) => p
-                    .then(convertDataFromHexToString)
-                    .then(convertDataToObject)
+        .then((account) => cosmos.sign(service.api.address, messages.map(x => x.message) as EncodeObject[],getFeeInfo(combineGas(messages)) , 'memo', {
+            accountNumber: account.account,
+            chainId: service.api.chainId,
+            sequence: account.seq
+        })
+            .then((txRaw: TxRaw) => Uint8Array.from(TxRaw.encode(txRaw).finish()))
+            .then((signedTx: Uint8Array) => cosmos.broadcastTx(signedTx))
+            .then(x => x)
+
+                // .map(cosmos.newStdMsg.bind(cosmos))
+                // .map((stdSignMsg: any) => cosmos.sign(stdSignMsg, cosmos.getECPairPriv(service.api.mnemonic), 'block'))
+                // .map(cosmos.broadcast.bind(cosmos))
+//                .map((p: any) => p
+//                     .then(convertDataFromHexToString)
+//                     .then(convertDataToObject)
                     .then(checkErrors)
                     .catch((e: FailedTransaction) => {
                         /signature verification failed/.test(e.error) && (service.accountRequested = undefined)
                         throw e
                     })
-                    .then((x: any) => ({...x, height: parseInt(x.height)}))
-                )
-                .join()
+                    .then((x: any) => ({...x, height: x.height}))
+                // )
+                // .join()
         )
 
 }
@@ -152,15 +153,15 @@ let msgChain = Promise.resolve()
 
 
 interface State {
-    seq: string
-    account: string
+    seq: number
+    account: number
 }
 
 const getSequence = (service: CommunicationService, cosmos: SigningStargateClient): Promise<State> =>
         (service.accountRequested ? (
             service.accountRequested = service.accountRequested
                 .then(() =>
-                    service.seq = (parseInt(service.seq) + 1).toString()
+                    service.seq = service.seq + 1
                 )
         ) : (
             service.accountRequested = cosmos.getAccount(service.api.address)

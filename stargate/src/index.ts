@@ -16,7 +16,9 @@ const bz = bluzelle({
 });
 
 bz.create('foo', 'bar', {gas_price: 0.002})
-    .then(x => x);
+    .then(x => console.log(x))
+    .catch(e => console.log(e));
+
 
 
 // let seq = 32;
