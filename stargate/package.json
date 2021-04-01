@@ -1,0 +1,16 @@
+{
+  "name": "bluzelle",
+  "version": "4.0.0",
+  "description": "JS client for BluzelleDB",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "@cosmjs/proto-signing": "^0.24.1",
+    "@cosmjs/stargate": "^0.24.1",
+    "@cosmjs/tendermint-rpc": "^0.24.1",
+    "@types/node": "^14.14.37",
+    "ts-node": "^9.1.1",
+    "ts-proto": "^1.76.0",
+    "typescript": "^4.2.3"
+  }
+}
