@@ -1,6 +1,7 @@
 import {DirectSecp256k1HdWallet, GeneratedType, Registry} from "@cosmjs/proto-signing";
 import { defaultRegistryTypes, SigningStargateClient } from "@cosmjs/stargate";
 import {MsgCreateCrudValue} from './codec/crud/tx'
+import {memoize} from 'lodash'
 
 const myRegistry = new Registry([
     ...defaultRegistryTypes,
@@ -15,7 +16,7 @@ const getSigner = (mnemonic: string) => DirectSecp256k1HdWallet.fromMnemonic(
 );
 
 
-export const getClient = (mnemonic: string) =>
+export const getClient = memoize((mnemonic: string) =>
     getSigner(mnemonic)
         .then(signer => SigningStargateClient.connectWithSigner(
             "http://localhost:26657",
@@ -23,6 +24,6 @@ export const getClient = (mnemonic: string) =>
             {
                 registry: myRegistry,
             }
-        ));
+        )));
 
 
