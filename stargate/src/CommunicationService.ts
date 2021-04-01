@@ -14,6 +14,7 @@ const getSigner = (mnemonic: string) => DirectSecp256k1HdWallet.fromMnemonic(
     "bluzelle",
 );
 
+
 export const getClient = (mnemonic: string) =>
     getSigner(mnemonic)
         .then(signer => SigningStargateClient.connectWithSigner(
@@ -21,7 +22,7 @@ export const getClient = (mnemonic: string) =>
             signer,
             {
                 registry: myRegistry,
-            },
+            }
         ));
 
 
