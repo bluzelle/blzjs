@@ -3,9 +3,12 @@ import {Either, Left, None, Right, Some} from "monet";
 import {API} from "../API";
 import {MessageResponse} from "../types/MessageResponse";
 import {Message} from "../types/Message";
-import {memoize, takeWhile, without} from 'lodash'
+import {memoize} from 'lodash'
 import {passThrough} from "promise-passthrough";
 import delay from "delay";
+import {DirectSecp256k1HdWallet, GeneratedType, Registry} from "@cosmjs/proto-signing";
+import {defaultRegistryTypes, SigningStargateClient} from "@cosmjs/stargate";
+import {MsgCreateCrudValue} from "../codec/crud/tx";
 
 const cosmosjs = require('@cosmostation/cosmosjs');
 
@@ -113,7 +116,7 @@ const sendMessages = (service: CommunicationService, queue: TransactionMessageQu
 
 const transmitTransaction = (service: CommunicationService, messages: MessageQueueItem<any>[], {memo}: { memo: string }): Promise<any> => {
     let cosmos: any;
-    return getCosmos(service.api)
+    return getClient(service.api)
         .then(c => cosmos = c)
         .then(() => getSequence(service, cosmos, service.api.address))
         .then((data: any) =>
@@ -142,11 +145,6 @@ const transmitTransaction = (service: CommunicationService, messages: MessageQue
         )
 
 }
-
-const retryCounter = (() => {
-    let count = 0;
-    return () => count++;
-})();
 
 let msgChain = Promise.resolve()
 
@@ -267,4 +265,30 @@ export const getCosmos = memoize((api: API): Promise<any> =>
         .then(passThrough<any>(cosmos => cosmos.setPath("m/44\'/118\'/0\'/0/0")))
         .then(passThrough<any>(cosmos => cosmos.bech32MainPrefix = 'bluzelle'))
 )
+
+const myRegistry = new Registry([
+    ...defaultRegistryTypes,
+    ["/bluzelle.curium.crud.MsgCreateCrudValue", MsgCreateCrudValue]
+] as Iterable<[string, GeneratedType]>);
+
+// Inside an async function...
+const getSigner = (mnemonic: string) => DirectSecp256k1HdWallet.fromMnemonic(
+    mnemonic,
+    undefined,
+    "bluzelle",
+);
+
+
+export const getClient = memoize((api: API) =>
+    getSigner(api.mnemonic)
+        .then(signer => SigningStargateClient.connectWithSigner(
+            api.url,
+            signer,
+            {
+                registry: myRegistry,
+            }
+        )));
+
+const getChainId = memoize<(client: SigningStargateClient) =>Promise<string>>((client) => client.getChainId())
+
 
