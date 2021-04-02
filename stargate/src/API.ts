@@ -145,8 +145,8 @@ export class API {
                     key: key,
                     value: value,
                     uuid: this.uuid,
-                    creator: this.address,
-                    lease: new Long(0),
+                    creator: address,
+                    lease: new Long(blocks),
                 }
             }, gasInfo) )
             .then(standardTxResult)

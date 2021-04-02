@@ -2,7 +2,7 @@
   "name": "bluzelle",
   "version": "4.0.0",
   "description": "JS client for BluzelleDB",
-  "main": "index.js",
+  "main": "lib/bluzelle-node.js",
   "license": "MIT",
   "dependencies": {
     "@cosmjs/proto-signing": "0.25.0-alpha.2",
@@ -16,6 +16,7 @@
     "typescript": "^4.2.3"
   },
   "scripts": {
-    "compile-proto": "./compile-proto.sh"
+    "compile-proto": "./compile-proto.sh",
+    "build": "tsc"
   }
 }
