@@ -137,6 +137,7 @@ export class API {
         assert(typeof value === 'string', ClientErrors.VALUE_MUST_BE_A_STRING);
         assert(blocks >= 0, ClientErrors.INVALID_LEASE_TIME);
         assert(!key.includes('/'), ClientErrors.KEY_CANNOT_CONTAIN_SLASH)
+
         return mnemonicToAddress(this.mnemonic)
             .then(address => sendMessage<CreateMessage, void>(this.communicationService, {
                 typeUrl:  "/bluzelle.curium.crud.MsgCreateCrudValue",
@@ -209,14 +210,15 @@ export class API {
 
 
     delete(key: string, gasInfo: GasInfo): Promise<TxResult> {
-        return sendMessage<DeleteMessage, void>(this.communicationService, {
-            type: 'crud/delete',
-            value: {
-                Key: key,
-                UUID: this.uuid,
-                Owner: this.address
-            }
-        }, gasInfo)
+        return mnemonicToAddress(this.mnemonic)
+            .then(address => sendMessage<DeleteMessage, void>(this.communicationService, {
+                typeUrl:  "/bluzelle.curium.crud.MsgDeleteCrudValue",
+                value: {
+                    key: key,
+                    uuid: this.uuid,
+                    creator: address,
+                }
+            }, gasInfo) )
             .then(standardTxResult)
     }
 

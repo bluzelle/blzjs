@@ -110,9 +110,9 @@ export interface RenewLeaseAllMessage {
 }
 
 export interface DeleteMessage {
-    Key: string
-    Owner: string
-    UUID: string
+    key: string
+    creator: string
+    uuid: string
 }
 
 export interface DeleteAllMessage {

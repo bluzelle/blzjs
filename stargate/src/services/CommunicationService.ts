@@ -7,7 +7,7 @@ import {memoize} from 'lodash'
 import delay from "delay";
 import {DirectSecp256k1HdWallet, EncodeObject, GeneratedType, Registry} from "@cosmjs/proto-signing";
 import {BroadcastTxResponse, defaultRegistryTypes, SigningStargateClient} from "@cosmjs/stargate";
-import {MsgCreateCrudValue, MsgUpsertCrudValue} from "../codec/crud/tx";
+import {MsgCreateCrudValue, MsgDeleteCrudValue, MsgUpsertCrudValue} from "../codec/crud/tx";
 import {TxRaw} from "@cosmjs/proto-signing/build/codec/cosmos/tx/v1beta1/tx";
 
 const TOKEN_NAME = 'ubnt';
@@ -230,7 +230,8 @@ const combineGas = (transactions: MessageQueueItem<any>[]): GasInfo =>
 const myRegistry = new Registry([
     ...defaultRegistryTypes,
     ["/bluzelle.curium.crud.MsgCreateCrudValue", MsgCreateCrudValue],
-    ['/bluzelle.curium.crud.MsgUpsertCrudValue', MsgUpsertCrudValue]
+    ['/bluzelle.curium.crud.MsgUpsertCrudValue', MsgUpsertCrudValue],
+    ["/bluzelle.curium.crud.MsgDeleteCrudValue", MsgDeleteCrudValue]
 ] as Iterable<[string, GeneratedType]>);
 
 // Inside an async function...
