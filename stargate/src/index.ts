@@ -16,6 +16,9 @@ bz.create('foo3', 'bar', {gas_price: 0.002})
     .then(x => console.log(x))
     .catch(e => console.log(e));
 
+bz.read('foo3')
+    .then(x => console.log('READ:', x));
+
 
 
 // const myRegistry = new Registry([

@@ -395,16 +395,10 @@ export class API {
     }
 
 
-    read(key: string, prove: boolean = false): Promise<string> {
-        return this.#abciQuery<QueryReadResult>(`/custom/crud/read/${this.uuid}/${key}`)
-            .then(x => x.result)
-            .then(res => res.value)
-            .catch((x) => {
-                if (x instanceof Error) {
-                    throw x;
-                }
-                throw(new Error(x.error === 'Not Found' ? `key "${key}" not found` : x.error))
-            });
+    read(key: string, prove: boolean = false): Promise<string | undefined> {
+        return getRpcClient(this.url)
+            .then(client => client.CrudValue({uuid: this.uuid, key: key}))
+            .then(x => x.CrudValue?.value)
     }
 
     async rename(key: string, newKey: string, gasInfo: GasInfo): Promise<TxResult> {
@@ -741,9 +735,6 @@ const getRpcClient = (url: string): Promise<QueryClientImpl> => {
         .then(rpcClient => new QueryClientImpl(rpcClient))
 }
 
-getRpcClient('http://localhost:26657')
-    .then(client => client.CrudValueAll({}))
-    .then(x => x);
 
 
 
