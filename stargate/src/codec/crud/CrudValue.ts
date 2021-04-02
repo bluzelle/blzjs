@@ -16,8 +16,8 @@ const baseCrudValue: object = {
   creator: "",
   key: "",
   value: "",
-  lease: Long.UZERO,
-  height: Long.UZERO,
+  lease: Long.ZERO,
+  height: Long.ZERO,
 };
 
 export const CrudValue = {
@@ -35,10 +35,10 @@ export const CrudValue = {
       writer.uint32(34).string(message.value);
     }
     if (!message.lease.isZero()) {
-      writer.uint32(40).uint64(message.lease);
+      writer.uint32(40).int64(message.lease);
     }
     if (!message.height.isZero()) {
-      writer.uint32(48).uint64(message.height);
+      writer.uint32(48).int64(message.height);
     }
     return writer;
   },
@@ -60,10 +60,10 @@ export const CrudValue = {
           message.value = reader.string();
           break;
         case 5:
-          message.lease = reader.uint64() as Long;
+          message.lease = reader.int64() as Long;
           break;
         case 6:
-          message.height = reader.uint64() as Long;
+          message.height = reader.int64() as Long;
           break;
         default:
           reader.skipType(tag & 7);
@@ -93,12 +93,12 @@ export const CrudValue = {
     if (object.lease !== undefined && object.lease !== null) {
       message.lease = Long.fromString(object.lease);
     } else {
-      message.lease = Long.UZERO;
+      message.lease = Long.ZERO;
     }
     if (object.height !== undefined && object.height !== null) {
       message.height = Long.fromString(object.height);
     } else {
-      message.height = Long.UZERO;
+      message.height = Long.ZERO;
     }
     return message;
   },
@@ -109,9 +109,9 @@ export const CrudValue = {
     message.key !== undefined && (obj.key = message.key);
     message.value !== undefined && (obj.value = message.value);
     message.lease !== undefined &&
-      (obj.lease = (message.lease || Long.UZERO).toString());
+      (obj.lease = (message.lease || Long.ZERO).toString());
     message.height !== undefined &&
-      (obj.height = (message.height || Long.UZERO).toString());
+      (obj.height = (message.height || Long.ZERO).toString());
     return obj;
   },
 
@@ -135,12 +135,12 @@ export const CrudValue = {
     if (object.lease !== undefined && object.lease !== null) {
       message.lease = object.lease as Long;
     } else {
-      message.lease = Long.UZERO;
+      message.lease = Long.ZERO;
     }
     if (object.height !== undefined && object.height !== null) {
       message.height = object.height as Long;
     } else {
-      message.height = Long.UZERO;
+      message.height = Long.ZERO;
     }
     return message;
   },

@@ -1,8 +1,6 @@
 export interface MessageResponse<T> {
     height: number
     txhash: string
-    gas_used: string
-    gas_wanted: string
     data: T[]
 }
 

@@ -507,8 +507,6 @@ export class API {
         return {
             txhash: 'xxx',
             height: 1,
-            gasWanted: 0,
-            gasUsed: 0,
             leases: []
         }
     }
@@ -759,6 +757,4 @@ const findMine = <T>(res: { data: T[] }, condition: (x: T) => boolean): { res: a
 const standardTxResult = (res: MessageResponse<void>): TxResult => ({
     txhash: res.txhash,
     height: res.height,
-    gasWanted: parseInt(res.gas_wanted),
-    gasUsed: parseInt(res.gas_used)
 })

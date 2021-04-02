@@ -7,7 +7,7 @@ import {memoize} from 'lodash'
 import {passThrough} from "promise-passthrough";
 import delay from "delay";
 import {DirectSecp256k1HdWallet, EncodeObject, GeneratedType, Registry} from "@cosmjs/proto-signing";
-import {BroadcastTxFailure, BroadcastTxResponse, defaultRegistryTypes, SigningStargateClient} from "@cosmjs/stargate";
+import {BroadcastTxResponse, defaultRegistryTypes, SigningStargateClient} from "@cosmjs/stargate";
 import {MsgCreateCrudValue} from "../codec/crud/tx";
 import {TxRaw} from "@cosmjs/proto-signing/build/codec/cosmos/tx/v1beta1/tx";
 
@@ -134,7 +134,8 @@ const transmitTransaction = (service: CommunicationService, messages: MessageQue
                     /signature verification failed/.test(e.error) && (service.accountRequested = undefined)
                     throw e
                 })
-                .then((x: any) => ({...x, height: x.height}))
+                .then((x: any) => ({...x, txhash:x.transactionHash }))
+            .then(x => x)
         )
 
 }
@@ -195,15 +196,6 @@ const checkErrors = (res: BroadcastTxResponse): BroadcastTxResponse => {
                 height: res.height,
                 error: error.trim()
             } as FailedTransaction
-        }
-        if (/^\[.*\]$/.test(res.rawLog) === false) {
-            throw {
-                txhash: res.transactionHash,
-                height: res.height,
-                failedMsg: undefined,
-                failedMsgIdx: undefined,
-                error: res.rawLog
-            }
         }
     }
     return res

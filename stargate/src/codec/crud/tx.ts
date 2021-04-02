@@ -5,13 +5,22 @@ import _m0 from "protobufjs/minimal";
 export const protobufPackage = "bluzelle.curium.crud";
 
 /** this line is used by starport scaffolding # proto/tx/message */
+export interface MsgUpsertCrudValue {
+  creator: string;
+  uuid: string;
+  key: string;
+  value: string;
+  lease: Long;
+}
+
+export interface MsgUpsertCrudValueResponse {}
+
 export interface MsgCreateCrudValue {
   creator: string;
   uuid: string;
   key: string;
   value: string;
   lease: Long;
-  height: Long;
 }
 
 export interface MsgCreateCrudValueResponse {}
@@ -22,7 +31,6 @@ export interface MsgUpdateCrudValue {
   key: string;
   value: string;
   lease: Long;
-  height: Long;
 }
 
 export interface MsgUpdateCrudValueResponse {}
@@ -35,13 +43,197 @@ export interface MsgDeleteCrudValue {
 
 export interface MsgDeleteCrudValueResponse {}
 
+const baseMsgUpsertCrudValue: object = {
+  creator: "",
+  uuid: "",
+  key: "",
+  value: "",
+  lease: Long.ZERO,
+};
+
+export const MsgUpsertCrudValue = {
+  encode(
+    message: MsgUpsertCrudValue,
+    writer: _m0.Writer = _m0.Writer.create()
+  ): _m0.Writer {
+    if (message.creator !== "") {
+      writer.uint32(10).string(message.creator);
+    }
+    if (message.uuid !== "") {
+      writer.uint32(18).string(message.uuid);
+    }
+    if (message.key !== "") {
+      writer.uint32(26).string(message.key);
+    }
+    if (message.value !== "") {
+      writer.uint32(34).string(message.value);
+    }
+    if (!message.lease.isZero()) {
+      writer.uint32(40).int64(message.lease);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): MsgUpsertCrudValue {
+    const reader = input instanceof Uint8Array ? new _m0.Reader(input) : input;
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = { ...baseMsgUpsertCrudValue } as MsgUpsertCrudValue;
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          message.creator = reader.string();
+          break;
+        case 2:
+          message.uuid = reader.string();
+          break;
+        case 3:
+          message.key = reader.string();
+          break;
+        case 4:
+          message.value = reader.string();
+          break;
+        case 5:
+          message.lease = reader.int64() as Long;
+          break;
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(object: any): MsgUpsertCrudValue {
+    const message = { ...baseMsgUpsertCrudValue } as MsgUpsertCrudValue;
+    if (object.creator !== undefined && object.creator !== null) {
+      message.creator = String(object.creator);
+    } else {
+      message.creator = "";
+    }
+    if (object.uuid !== undefined && object.uuid !== null) {
+      message.uuid = String(object.uuid);
+    } else {
+      message.uuid = "";
+    }
+    if (object.key !== undefined && object.key !== null) {
+      message.key = String(object.key);
+    } else {
+      message.key = "";
+    }
+    if (object.value !== undefined && object.value !== null) {
+      message.value = String(object.value);
+    } else {
+      message.value = "";
+    }
+    if (object.lease !== undefined && object.lease !== null) {
+      message.lease = Long.fromString(object.lease);
+    } else {
+      message.lease = Long.ZERO;
+    }
+    return message;
+  },
+
+  toJSON(message: MsgUpsertCrudValue): unknown {
+    const obj: any = {};
+    message.creator !== undefined && (obj.creator = message.creator);
+    message.uuid !== undefined && (obj.uuid = message.uuid);
+    message.key !== undefined && (obj.key = message.key);
+    message.value !== undefined && (obj.value = message.value);
+    message.lease !== undefined &&
+      (obj.lease = (message.lease || Long.ZERO).toString());
+    return obj;
+  },
+
+  fromPartial(object: DeepPartial<MsgUpsertCrudValue>): MsgUpsertCrudValue {
+    const message = { ...baseMsgUpsertCrudValue } as MsgUpsertCrudValue;
+    if (object.creator !== undefined && object.creator !== null) {
+      message.creator = object.creator;
+    } else {
+      message.creator = "";
+    }
+    if (object.uuid !== undefined && object.uuid !== null) {
+      message.uuid = object.uuid;
+    } else {
+      message.uuid = "";
+    }
+    if (object.key !== undefined && object.key !== null) {
+      message.key = object.key;
+    } else {
+      message.key = "";
+    }
+    if (object.value !== undefined && object.value !== null) {
+      message.value = object.value;
+    } else {
+      message.value = "";
+    }
+    if (object.lease !== undefined && object.lease !== null) {
+      message.lease = object.lease as Long;
+    } else {
+      message.lease = Long.ZERO;
+    }
+    return message;
+  },
+};
+
+const baseMsgUpsertCrudValueResponse: object = {};
+
+export const MsgUpsertCrudValueResponse = {
+  encode(
+    _: MsgUpsertCrudValueResponse,
+    writer: _m0.Writer = _m0.Writer.create()
+  ): _m0.Writer {
+    return writer;
+  },
+
+  decode(
+    input: _m0.Reader | Uint8Array,
+    length?: number
+  ): MsgUpsertCrudValueResponse {
+    const reader = input instanceof Uint8Array ? new _m0.Reader(input) : input;
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = {
+      ...baseMsgUpsertCrudValueResponse,
+    } as MsgUpsertCrudValueResponse;
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(_: any): MsgUpsertCrudValueResponse {
+    const message = {
+      ...baseMsgUpsertCrudValueResponse,
+    } as MsgUpsertCrudValueResponse;
+    return message;
+  },
+
+  toJSON(_: MsgUpsertCrudValueResponse): unknown {
+    const obj: any = {};
+    return obj;
+  },
+
+  fromPartial(
+    _: DeepPartial<MsgUpsertCrudValueResponse>
+  ): MsgUpsertCrudValueResponse {
+    const message = {
+      ...baseMsgUpsertCrudValueResponse,
+    } as MsgUpsertCrudValueResponse;
+    return message;
+  },
+};
+
 const baseMsgCreateCrudValue: object = {
   creator: "",
   uuid: "",
   key: "",
   value: "",
-  lease: Long.UZERO,
-  height: Long.UZERO,
+  lease: Long.ZERO,
 };
 
 export const MsgCreateCrudValue = {
@@ -62,10 +254,7 @@ export const MsgCreateCrudValue = {
       writer.uint32(34).string(message.value);
     }
     if (!message.lease.isZero()) {
-      writer.uint32(40).uint64(message.lease);
-    }
-    if (!message.height.isZero()) {
-      writer.uint32(48).uint64(message.height);
+      writer.uint32(40).int64(message.lease);
     }
     return writer;
   },
@@ -90,10 +279,7 @@ export const MsgCreateCrudValue = {
           message.value = reader.string();
           break;
         case 5:
-          message.lease = reader.uint64() as Long;
-          break;
-        case 6:
-          message.height = reader.uint64() as Long;
+          message.lease = reader.int64() as Long;
           break;
         default:
           reader.skipType(tag & 7);
@@ -128,12 +314,7 @@ export const MsgCreateCrudValue = {
     if (object.lease !== undefined && object.lease !== null) {
       message.lease = Long.fromString(object.lease);
     } else {
-      message.lease = Long.UZERO;
-    }
-    if (object.height !== undefined && object.height !== null) {
-      message.height = Long.fromString(object.height);
-    } else {
-      message.height = Long.UZERO;
+      message.lease = Long.ZERO;
     }
     return message;
   },
@@ -145,9 +326,7 @@ export const MsgCreateCrudValue = {
     message.key !== undefined && (obj.key = message.key);
     message.value !== undefined && (obj.value = message.value);
     message.lease !== undefined &&
-      (obj.lease = (message.lease || Long.UZERO).toString());
-    message.height !== undefined &&
-      (obj.height = (message.height || Long.UZERO).toString());
+      (obj.lease = (message.lease || Long.ZERO).toString());
     return obj;
   },
 
@@ -176,12 +355,7 @@ export const MsgCreateCrudValue = {
     if (object.lease !== undefined && object.lease !== null) {
       message.lease = object.lease as Long;
     } else {
-      message.lease = Long.UZERO;
-    }
-    if (object.height !== undefined && object.height !== null) {
-      message.height = object.height as Long;
-    } else {
-      message.height = Long.UZERO;
+      message.lease = Long.ZERO;
     }
     return message;
   },
@@ -244,8 +418,7 @@ const baseMsgUpdateCrudValue: object = {
   uuid: "",
   key: "",
   value: "",
-  lease: Long.UZERO,
-  height: Long.UZERO,
+  lease: Long.ZERO,
 };
 
 export const MsgUpdateCrudValue = {
@@ -266,10 +439,7 @@ export const MsgUpdateCrudValue = {
       writer.uint32(34).string(message.value);
     }
     if (!message.lease.isZero()) {
-      writer.uint32(40).uint64(message.lease);
-    }
-    if (!message.height.isZero()) {
-      writer.uint32(48).uint64(message.height);
+      writer.uint32(40).int64(message.lease);
     }
     return writer;
   },
@@ -294,10 +464,7 @@ export const MsgUpdateCrudValue = {
           message.value = reader.string();
           break;
         case 5:
-          message.lease = reader.uint64() as Long;
-          break;
-        case 6:
-          message.height = reader.uint64() as Long;
+          message.lease = reader.int64() as Long;
           break;
         default:
           reader.skipType(tag & 7);
@@ -332,12 +499,7 @@ export const MsgUpdateCrudValue = {
     if (object.lease !== undefined && object.lease !== null) {
       message.lease = Long.fromString(object.lease);
     } else {
-      message.lease = Long.UZERO;
-    }
-    if (object.height !== undefined && object.height !== null) {
-      message.height = Long.fromString(object.height);
-    } else {
-      message.height = Long.UZERO;
+      message.lease = Long.ZERO;
     }
     return message;
   },
@@ -349,9 +511,7 @@ export const MsgUpdateCrudValue = {
     message.key !== undefined && (obj.key = message.key);
     message.value !== undefined && (obj.value = message.value);
     message.lease !== undefined &&
-      (obj.lease = (message.lease || Long.UZERO).toString());
-    message.height !== undefined &&
-      (obj.height = (message.height || Long.UZERO).toString());
+      (obj.lease = (message.lease || Long.ZERO).toString());
     return obj;
   },
 
@@ -380,12 +540,7 @@ export const MsgUpdateCrudValue = {
     if (object.lease !== undefined && object.lease !== null) {
       message.lease = object.lease as Long;
     } else {
-      message.lease = Long.UZERO;
-    }
-    if (object.height !== undefined && object.height !== null) {
-      message.height = object.height as Long;
-    } else {
-      message.height = Long.UZERO;
+      message.lease = Long.ZERO;
     }
     return message;
   },
@@ -590,6 +745,9 @@ export const MsgDeleteCrudValueResponse = {
 /** Msg defines the Msg service. */
 export interface Msg {
   /** this line is used by starport scaffolding # proto/tx/rpc */
+  UpsertCrudValue(
+    request: MsgUpsertCrudValue
+  ): Promise<MsgUpsertCrudValueResponse>;
   CreateCrudValue(
     request: MsgCreateCrudValue
   ): Promise<MsgCreateCrudValueResponse>;
@@ -606,6 +764,20 @@ export class MsgClientImpl implements Msg {
   constructor(rpc: Rpc) {
     this.rpc = rpc;
   }
+  UpsertCrudValue(
+    request: MsgUpsertCrudValue
+  ): Promise<MsgUpsertCrudValueResponse> {
+    const data = MsgUpsertCrudValue.encode(request).finish();
+    const promise = this.rpc.request(
+      "bluzelle.curium.crud.Msg",
+      "UpsertCrudValue",
+      data
+    );
+    return promise.then((data) =>
+      MsgUpsertCrudValueResponse.decode(new _m0.Reader(data))
+    );
+  }
+
   CreateCrudValue(
     request: MsgCreateCrudValue
   ): Promise<MsgCreateCrudValueResponse> {

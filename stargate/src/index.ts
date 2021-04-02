@@ -4,15 +4,13 @@ import {DirectSecp256k1HdWallet, GeneratedType, Registry} from "@cosmjs/proto-si
 import { defaultRegistryTypes, SigningStargateClient } from "@cosmjs/stargate";
 import {bluzelle} from "./bluzelle-node";
 
-const myAddress = "bluzelle1uvxd0kvd5nztaadrjsae3kc3cea6z3mtcpgxrl";
-
 const bz = bluzelle({
     mnemonic: "visit sleep poem rigid coin hour balcony bone rare ring excess document empty extra sibling decide goddess tourist kidney segment true crane subway cousin",
     endpoint: 'http://localhost:26657',
     uuid: ''
 });
 
-bz.create('foo3', 'bar', {gas_price: 0.002})
+bz.create('foo91', 'bar', {gas_price: 0.002})
     .then(x => console.log(x))
     .catch(e => console.log(e));
 

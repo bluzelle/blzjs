@@ -8,6 +8,6 @@ message CrudValue {
   string creator = 1;
   string key = 3;
   string value = 4; 
-  uint64 lease = 5;
-  uint64 height = 6;
+  int64 lease = 5;
+  int64 height = 6;
 }
