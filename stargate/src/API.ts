@@ -1,3 +1,5 @@
+import {Tendermint34Client} from "@cosmjs/tendermint-rpc";
+
 global.fetch || (global.fetch = require('node-fetch'));
 
 
@@ -18,7 +20,7 @@ import {
     sendMessage,
     withTransaction,
     CommunicationService,
-    WithTransactionsOptions
+    WithTransactionsOptions, getClient
 } from "./services/CommunicationService";
 import {
     CountMessage,
@@ -38,7 +40,7 @@ import {
 } from "./types/MessageResponse";
 import {LeaseInfo} from "./types/LeaseInfo";
 import {ClientErrors} from "./ClientErrors";
-import {pullAt} from 'lodash'
+import {pullAt, memoize} from 'lodash'
 import {
     TxCountResult,
     TxGetLeaseResult,
@@ -50,6 +52,8 @@ import {
 import {assert} from "./Assert";
 import {entropyToMnemonic, generateMnemonic} from "bip39";
 import Long from 'long'
+import {QueryClientImpl} from "./codec/crud/query";
+import {createProtobufRpcClient, QueryClient} from "@cosmjs/stargate";
 
 
 const cosmosjs = require('@cosmostation/cosmosjs');
@@ -729,6 +733,19 @@ export class API {
                 return res.json().then((obj: any) => obj.result ?? obj)
             })
 }
+
+const getRpcClient = (url: string): Promise<QueryClientImpl> => {
+    return Tendermint34Client.connect(url)
+        .then(tendermintClient => new QueryClient(tendermintClient))
+        .then(createProtobufRpcClient)
+        .then(rpcClient => new QueryClientImpl(rpcClient))
+}
+
+getRpcClient('http://localhost:26657')
+    .then(client => client.CrudValueAll({}))
+    .then(x => x);
+
+
 
 
 const MINUTE = 60

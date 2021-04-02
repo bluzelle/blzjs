@@ -1,13 +1,10 @@
 import {MsgCreateCrudValue} from "./codec/crud/tx";
-import Long from 'long'
-import {TxRaw} from "@cosmjs/stargate/build/codec/cosmos/tx/v1beta1/tx";
 import {memoize} from 'lodash'
 import {DirectSecp256k1HdWallet, GeneratedType, Registry} from "@cosmjs/proto-signing";
 import { defaultRegistryTypes, SigningStargateClient } from "@cosmjs/stargate";
-import {getClient} from "./services/CommunicationService";
 import {bluzelle} from "./bluzelle-node";
 
-//const myAddress = "bluzelle1uvxd0kvd5nztaadrjsae3kc3cea6z3mtcpgxrl";
+const myAddress = "bluzelle1uvxd0kvd5nztaadrjsae3kc3cea6z3mtcpgxrl";
 
 const bz = bluzelle({
     mnemonic: "visit sleep poem rigid coin hour balcony bone rare ring excess document empty extra sibling decide goddess tourist kidney segment true crane subway cousin",
@@ -21,9 +18,6 @@ bz.create('foo3', 'bar', {gas_price: 0.002})
 
 
 
-// let seq = 32;
-//
-//
 // const myRegistry = new Registry([
 //     ...defaultRegistryTypes,
 //     ["/bluzelle.curium.crud.MsgCreateCrudValue", MsgCreateCrudValue]
@@ -73,10 +67,10 @@ bz.create('foo3', 'bar', {gas_price: 0.002})
 //         gas: "1000000",
 //     };
 //
-
+//
 //    const getChainId = memoize<(client: SigningStargateClient) =>Promise<string>>((client) => client.getChainId())
-
-
+//
+//
 
 
 //     return getClient("visit sleep poem rigid coin hour balcony bone rare ring excess document empty extra sibling decide goddess tourist kidney segment true crane subway cousin")

@@ -7,7 +7,7 @@ import {memoize} from 'lodash'
 import {passThrough} from "promise-passthrough";
 import delay from "delay";
 import {DirectSecp256k1HdWallet, EncodeObject, GeneratedType, Registry} from "@cosmjs/proto-signing";
-import {defaultRegistryTypes, SigningStargateClient} from "@cosmjs/stargate";
+import {BroadcastTxFailure, BroadcastTxResponse, defaultRegistryTypes, SigningStargateClient} from "@cosmjs/stargate";
 import {MsgCreateCrudValue} from "../codec/crud/tx";
 import {TxRaw} from "@cosmjs/proto-signing/build/codec/cosmos/tx/v1beta1/tx";
 
@@ -129,7 +129,6 @@ const transmitTransaction = (service: CommunicationService, messages: MessageQue
             })
                 .then((txRaw: TxRaw) => Uint8Array.from(TxRaw.encode(txRaw).finish()))
                 .then((signedTx: Uint8Array) => cosmos.broadcastTx(signedTx))
-                .then(x => x)
                 .then(checkErrors)
                 .catch((e: FailedTransaction) => {
                     /signature verification failed/.test(e.error) && (service.accountRequested = undefined)
@@ -172,47 +171,43 @@ const convertDataFromHexToString = (res: any) => ({
     data: res.data ? Buffer.from(res.data, 'hex').toString() : undefined
 })
 
-const checkErrors = (res: any) => {
-    if (res.error) {
-        throw {
-            txhash: res.transactionHash,
-            height: res.height,
-            error: res.error
+const checkErrors = (res: BroadcastTxResponse): BroadcastTxResponse => {
+    if(res.rawLog) {
+        if (/signature verification failed/.test(res.rawLog)) {
+            throw {
+                txhash: res.transactionHash,
+                height: res.height,
+                error: 'signature verification failed'
+            } as FailedTransaction
         }
-    }
-    if (/signature verification failed/.test(res.rawLog)) {
-        throw {
-            txhash: res.transactionHash,
-            height: res.height,
-            error: 'signature verification failed'
-        } as FailedTransaction
-    }
-    if (/insufficient fee/.test(res.rawLog)) {
-        let [x, error] = res.rawLog.split(/[:;]/);
-        throw {
-            txhash: res.transactionHash,
-            height: res.height,
-            error: error.trim()
-        } as FailedTransaction
-    }
-    if (/failed to execute message/.test(res.rawLog)) {
-        const error = res.rawLog.split(':')[2];
-        throw {
-            txhash: res.transactionHash,
-            height: res.height,
-            error: error.trim()
-        } as FailedTransaction
-    }
-    if (/^\[.*\]$/.test(res.rawLog) === false) {
-        throw {
-            txhash: res.transactionHash,
-            height: res.height,
-            failedMsg: undefined,
-            failedMsgIdx: undefined,
-            error: res.rawLog
+        if (/insufficient fee/.test(res.rawLog)) {
+            let [x, error] = res.rawLog.split(/[:;]/);
+            throw {
+                txhash: res.transactionHash,
+                height: res.height,
+                error: error.trim()
+            } as FailedTransaction
+        }
+        if (/failed to execute message/.test(res.rawLog)) {
+            const error = res.rawLog.split(':')[2];
+            throw {
+                txhash: res.transactionHash,
+                height: res.height,
+                error: error.trim()
+            } as FailedTransaction
+        }
+        if (/^\[.*\]$/.test(res.rawLog) === false) {
+            throw {
+                txhash: res.transactionHash,
+                height: res.height,
+                failedMsg: undefined,
+                failedMsgIdx: undefined,
+                error: res.rawLog
+            }
         }
     }
     return res
+
 }
 
 const getFeeInfo = ({max_fee, gas_price = 0.002, max_gas = 10000000}: GasInfo) => ({

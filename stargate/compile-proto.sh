@@ -4,4 +4,5 @@ protoc \
   --proto_path="./proto" \
   --ts_proto_opt="esModuleInterop=true,forceLong=long,useOptionals=true" \
   "./proto/crud/CrudValue.proto" \
-  "./proto/crud/tx.proto"
+  "./proto/crud/tx.proto" \
+  "./proto/crud/query.proto"
