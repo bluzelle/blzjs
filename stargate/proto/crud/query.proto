@@ -2,7 +2,7 @@ syntax = "proto3";
 package bluzelle.curium.crud;
 
 import "google/api/annotations.proto";
-//import "cosmos/base/query/v1beta1/pagination.proto";
+import "cosmos/base/query/v1beta1/pagination.proto";
 // this line is used by starport scaffolding # 1
 import "crud/CrudValue.proto";
 
@@ -31,10 +31,10 @@ message QueryGetCrudValueResponse {
 }
 
 message QueryAllCrudValueRequest {
-//	cosmos.base.query.v1beta1.PageRequest pagination = 1;
+	cosmos.base.query.v1beta1.PageRequest pagination = 1;
 }
 
 message QueryAllCrudValueResponse {
 	repeated CrudValue CrudValue = 1;
-//	cosmos.base.query.v1beta1.PageResponse pagination = 2;
+	cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }

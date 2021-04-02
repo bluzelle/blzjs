@@ -1,62 +1,28 @@
 import {Tendermint34Client} from "@cosmjs/tendermint-rpc";
-
-global.fetch || (global.fetch = require('node-fetch'));
-
-
 import {BluzelleConfig} from "./types/BluzelleConfig";
 import {GasInfo} from "./types/GasInfo";
 import {AccountResult} from "./types/cosmos/AccountResult";
 import {AccountsResult} from "./types/cosmos/AccountsResult";
-import {
-    QueryCountResult, QueryGetLeaseResult, QueryGetNShortestLeasesResult,
-    QueryHasResult,
-    QueryKeysResult,
-    QueryKeyValuesResult, QueryOwnerResult,
-    QueryReadResult
-} from "./types/QueryResult";
-import {
-    newCommunicationService,
-    getCosmos,
-    sendMessage,
-    withTransaction,
-    CommunicationService,
-    WithTransactionsOptions, getClient
-} from "./services/CommunicationService";
-import {
-    CountMessage,
-    CreateMessage,
-    DeleteAllMessage,
-    DeleteMessage, GetLeaseMessage, HasMessage, KeysMessage, KeyValuesMessage, MintMessage, MultiUpdateMessage,
-    ReadMessage, RenameMessage, RenewLeaseAllMessage,
-    RenewLeaseMessage, TransferTokensMessage, UpdateMessage, UpsertMessage
-} from "./types/Message";
-import {
-    MessageResponse,
-    TxCountResponse,
-    TxGetLeaseResponse,
-    TxHasResponse,
-    TxKeysResponse, TxKeyValuesResponse,
-    TxReadResponse
-} from "./types/MessageResponse";
+import {QueryCountResult, QueryGetLeaseResult, QueryGetNShortestLeasesResult, QueryHasResult, QueryKeysResult, QueryKeyValuesResult, QueryOwnerResult} from "./types/QueryResult";
+import {CommunicationService, mnemonicToAddress, newCommunicationService, sendMessage, withTransaction, WithTransactionsOptions} from "./services/CommunicationService";
+import {CountMessage, CreateMessage, DeleteAllMessage, DeleteMessage, GetLeaseMessage, HasMessage, KeysMessage, KeyValuesMessage, MintMessage, MultiUpdateMessage, ReadMessage, RenameMessage, RenewLeaseAllMessage, RenewLeaseMessage, TransferTokensMessage, UpdateMessage} from "./types/Message";
+import {MessageResponse, TxCountResponse, TxGetLeaseResponse, TxHasResponse, TxKeysResponse, TxKeyValuesResponse, TxReadResponse} from "./types/MessageResponse";
 import {LeaseInfo} from "./types/LeaseInfo";
 import {ClientErrors} from "./ClientErrors";
-import {pullAt, memoize} from 'lodash'
-import {
-    TxCountResult,
-    TxGetLeaseResult,
-    TxGetNShortestLeasesResult,
-    TxHasResult, TxKeysResult,
-    TxReadResult,
-    TxResult
-} from "./types/TxResult";
+import {pullAt} from 'lodash'
+import {TxCountResult, TxGetLeaseResult, TxGetNShortestLeasesResult, TxHasResult, TxKeysResult, TxReadResult, TxResult} from "./types/TxResult";
 import {assert} from "./Assert";
 import {entropyToMnemonic, generateMnemonic} from "bip39";
 import Long from 'long'
 import {QueryClientImpl} from "./codec/crud/query";
 import {createProtobufRpcClient, QueryClient} from "@cosmjs/stargate";
+export {mnemonicToAddress} from './services/CommunicationService'
+
+// TEMP STUB
+const getCosmos = (x: API): Promise<any> => Promise.resolve()
 
 
-const cosmosjs = require('@cosmostation/cosmosjs');
+global.fetch || (global.fetch = require('node-fetch'));
 
 
 const BLOCK_TIME_IN_SECONDS = 5.5;
@@ -117,16 +83,11 @@ interface TransactionResponse {
     timestamp: string
 }
 
-export const mnemonicToAddress = (mnemonic: string): string => {
-    const c = cosmosjs.network('http://fake.com', 'fake_chain_id');
-    c.setPath("m/44'/118'/0'/0/0");
-    c.bech32MainPrefix = "bluzelle"
-    return c.getAddress(mnemonic);
-}
+
 
 export class API {
     cosmos: any;
-    address: string;
+    address: string = '';
     mnemonic: string;
     chainId: string = '';
     uuid: string;
@@ -138,7 +99,6 @@ export class API {
     constructor(config: BluzelleConfig) {
         this.config = config;
         this.mnemonic = config.mnemonic;
-        this.address = this.mnemonic ? mnemonicToAddress(this.mnemonic) : '';
         this.uuid = config.uuid;
         this.url = config.endpoint;
         this.communicationService = newCommunicationService(this);
@@ -177,17 +137,17 @@ export class API {
         assert(typeof value === 'string', ClientErrors.VALUE_MUST_BE_A_STRING);
         assert(blocks >= 0, ClientErrors.INVALID_LEASE_TIME);
         assert(!key.includes('/'), ClientErrors.KEY_CANNOT_CONTAIN_SLASH)
-
-        return sendMessage<CreateMessage, void>(this.communicationService, {
-            typeUrl:  "/bluzelle.curium.crud.MsgCreateCrudValue",
-            value: {
-                key: key,
-                value: value,
-                uuid: this.uuid,
-                creator: this.address,
-                lease: new Long(0),
-            }
-        }, gasInfo)
+        return mnemonicToAddress(this.mnemonic)
+            .then(address => sendMessage<CreateMessage, void>(this.communicationService, {
+                typeUrl:  "/bluzelle.curium.crud.MsgCreateCrudValue",
+                value: {
+                    key: key,
+                    value: value,
+                    uuid: this.uuid,
+                    creator: this.address,
+                    lease: new Long(0),
+                }
+            }, gasInfo) )
             .then(standardTxResult)
     }
 
@@ -271,7 +231,7 @@ export class API {
             .then(standardTxResult)
     }
 
-    getAddress() {
+    getAddress(): Promise<string> {
         return mnemonicToAddress(this.mnemonic);
     }
 
@@ -630,17 +590,19 @@ export class API {
         assert(blocks >= 0, ClientErrors.INVALID_LEASE_TIME);
         assert(!key.includes('/'), ClientErrors.KEY_CANNOT_CONTAIN_SLASH)
 
-        return sendMessage<UpsertMessage, void>(this.communicationService, {
-            type: "crud/upsert",
-            value: {
-                Key: key,
-                Value: value,
-                UUID: this.uuid,
-                Owner: this.address,
-                Lease: blocks.toString()
-            }
-        }, gasInfo)
-            .then(standardTxResult)
+        return this.getAddress()
+            .then(address =>
+                sendMessage<CreateMessage, void>(this.communicationService, {
+                typeUrl:  "/bluzelle.curium.crud.MsgUpsertCrudValue",
+                value: {
+                    key: key,
+                    value: value,
+                    uuid: this.uuid,
+                    creator: address,
+                    lease: new Long(0),
+                }
+            }, gasInfo)
+                .then(standardTxResult))
     }
 
 

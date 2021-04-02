@@ -1,20 +1,16 @@
-import {MsgCreateCrudValue} from "./codec/crud/tx";
-import {memoize} from 'lodash'
-import {DirectSecp256k1HdWallet, GeneratedType, Registry} from "@cosmjs/proto-signing";
-import { defaultRegistryTypes, SigningStargateClient } from "@cosmjs/stargate";
 import {bluzelle} from "./bluzelle-node";
 
 const bz = bluzelle({
-    mnemonic: "visit sleep poem rigid coin hour balcony bone rare ring excess document empty extra sibling decide goddess tourist kidney segment true crane subway cousin",
+    mnemonic: "thrive estate hub derive sadness reject valve warfare boring soon lady ethics trigger taxi tag daring apple consider topic scout apart grace fit feed",
     endpoint: 'http://localhost:26657',
-    uuid: ''
+    uuid: 'my-uuid'
 });
 
-bz.create('foo91', 'bar', {gas_price: 0.002})
+bz.upsert('foo1', 'barooojj', {gas_price: 0.002})
     .then(x => console.log(x))
     .catch(e => console.log(e));
 
-bz.read('foo3')
+bz.read('foo1')
     .then(x => console.log('READ:', x));
 
 

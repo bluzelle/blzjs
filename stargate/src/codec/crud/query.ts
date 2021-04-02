@@ -1,6 +1,10 @@
 /* eslint-disable */
 import Long from "long";
 import { CrudValue } from "../crud/CrudValue";
+import {
+  PageRequest,
+  PageResponse,
+} from "../cosmos/base/query/v1beta1/pagination";
 import _m0 from "protobufjs/minimal";
 
 export const protobufPackage = "bluzelle.curium.crud";
@@ -15,12 +19,13 @@ export interface QueryGetCrudValueResponse {
   CrudValue?: CrudValue;
 }
 
-/** cosmos.base.query.v1beta1.PageRequest pagination = 1; */
-export interface QueryAllCrudValueRequest {}
+export interface QueryAllCrudValueRequest {
+  pagination?: PageRequest;
+}
 
 export interface QueryAllCrudValueResponse {
-  /** cosmos.base.query.v1beta1.PageResponse pagination = 2; */
   CrudValue: CrudValue[];
+  pagination?: PageResponse;
 }
 
 const baseQueryGetCrudValueRequest: object = { uuid: "", key: "" };
@@ -185,9 +190,12 @@ const baseQueryAllCrudValueRequest: object = {};
 
 export const QueryAllCrudValueRequest = {
   encode(
-    _: QueryAllCrudValueRequest,
+    message: QueryAllCrudValueRequest,
     writer: _m0.Writer = _m0.Writer.create()
   ): _m0.Writer {
+    if (message.pagination !== undefined) {
+      PageRequest.encode(message.pagination, writer.uint32(10).fork()).ldelim();
+    }
     return writer;
   },
 
@@ -203,6 +211,9 @@ export const QueryAllCrudValueRequest = {
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
+        case 1:
+          message.pagination = PageRequest.decode(reader, reader.uint32());
+          break;
         default:
           reader.skipType(tag & 7);
           break;
@@ -211,24 +222,38 @@ export const QueryAllCrudValueRequest = {
     return message;
   },
 
-  fromJSON(_: any): QueryAllCrudValueRequest {
+  fromJSON(object: any): QueryAllCrudValueRequest {
     const message = {
       ...baseQueryAllCrudValueRequest,
     } as QueryAllCrudValueRequest;
+    if (object.pagination !== undefined && object.pagination !== null) {
+      message.pagination = PageRequest.fromJSON(object.pagination);
+    } else {
+      message.pagination = undefined;
+    }
     return message;
   },
 
-  toJSON(_: QueryAllCrudValueRequest): unknown {
+  toJSON(message: QueryAllCrudValueRequest): unknown {
     const obj: any = {};
+    message.pagination !== undefined &&
+      (obj.pagination = message.pagination
+        ? PageRequest.toJSON(message.pagination)
+        : undefined);
     return obj;
   },
 
   fromPartial(
-    _: DeepPartial<QueryAllCrudValueRequest>
+    object: DeepPartial<QueryAllCrudValueRequest>
   ): QueryAllCrudValueRequest {
     const message = {
       ...baseQueryAllCrudValueRequest,
     } as QueryAllCrudValueRequest;
+    if (object.pagination !== undefined && object.pagination !== null) {
+      message.pagination = PageRequest.fromPartial(object.pagination);
+    } else {
+      message.pagination = undefined;
+    }
     return message;
   },
 };
@@ -242,6 +267,12 @@ export const QueryAllCrudValueResponse = {
   ): _m0.Writer {
     for (const v of message.CrudValue) {
       CrudValue.encode(v!, writer.uint32(10).fork()).ldelim();
+    }
+    if (message.pagination !== undefined) {
+      PageResponse.encode(
+        message.pagination,
+        writer.uint32(18).fork()
+      ).ldelim();
     }
     return writer;
   },
@@ -262,6 +293,9 @@ export const QueryAllCrudValueResponse = {
         case 1:
           message.CrudValue.push(CrudValue.decode(reader, reader.uint32()));
           break;
+        case 2:
+          message.pagination = PageResponse.decode(reader, reader.uint32());
+          break;
         default:
           reader.skipType(tag & 7);
           break;
@@ -280,6 +314,11 @@ export const QueryAllCrudValueResponse = {
         message.CrudValue.push(CrudValue.fromJSON(e));
       }
     }
+    if (object.pagination !== undefined && object.pagination !== null) {
+      message.pagination = PageResponse.fromJSON(object.pagination);
+    } else {
+      message.pagination = undefined;
+    }
     return message;
   },
 
@@ -292,6 +331,10 @@ export const QueryAllCrudValueResponse = {
     } else {
       obj.CrudValue = [];
     }
+    message.pagination !== undefined &&
+      (obj.pagination = message.pagination
+        ? PageResponse.toJSON(message.pagination)
+        : undefined);
     return obj;
   },
 
@@ -306,6 +349,11 @@ export const QueryAllCrudValueResponse = {
       for (const e of object.CrudValue) {
         message.CrudValue.push(CrudValue.fromPartial(e));
       }
+    }
+    if (object.pagination !== undefined && object.pagination !== null) {
+      message.pagination = PageResponse.fromPartial(object.pagination);
+    } else {
+      message.pagination = undefined;
     }
     return message;
   },

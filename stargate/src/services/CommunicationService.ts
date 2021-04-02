@@ -4,15 +4,11 @@ import {API} from "../API";
 import {MessageResponse} from "../types/MessageResponse";
 import {Message} from "../types/Message";
 import {memoize} from 'lodash'
-import {passThrough} from "promise-passthrough";
 import delay from "delay";
 import {DirectSecp256k1HdWallet, EncodeObject, GeneratedType, Registry} from "@cosmjs/proto-signing";
 import {BroadcastTxResponse, defaultRegistryTypes, SigningStargateClient} from "@cosmjs/stargate";
-import {MsgCreateCrudValue} from "../codec/crud/tx";
+import {MsgCreateCrudValue, MsgUpsertCrudValue} from "../codec/crud/tx";
 import {TxRaw} from "@cosmjs/proto-signing/build/codec/cosmos/tx/v1beta1/tx";
-
-const cosmosjs = require('@cosmostation/cosmosjs');
-
 
 const TOKEN_NAME = 'ubnt';
 
@@ -54,6 +50,12 @@ interface TransactionMessageQueue {
 export interface WithTransactionsOptions {
     memo: string
 }
+
+
+export const mnemonicToAddress = (mnemonic: string): Promise<string> =>
+    DirectSecp256k1HdWallet.fromMnemonic(mnemonic, undefined, 'bluzelle')
+        .then(wallet => wallet.getAccounts())
+        .then(x => x[0].address)
 
 
 const newTransactionMessageQueue = (items: MessageQueueItem<unknown>[], memo: string): TransactionMessageQueue => ({
@@ -122,11 +124,14 @@ const transmitTransaction = (service: CommunicationService, messages: MessageQue
         .then(c => cosmos = c)
         .then(client => getChainId(client).then(chainId => service.api.chainId = chainId))
         .then(() => getSequence(service, cosmos))
-        .then((account) => cosmos.sign(service.api.address, messages.map(x => x.message) as EncodeObject[], getFeeInfo(combineGas(messages)), 'memo', {
-                accountNumber: account.account,
-                chainId: service.api.chainId,
-                sequence: account.seq
-            })
+        .then((account) =>
+            mnemonicToAddress(service.api.mnemonic)
+                .then(address => cosmos.sign(address, messages.map(x => x.message) as EncodeObject[], getFeeInfo(combineGas(messages)), 'memo', {
+                        accountNumber: account.account,
+                        chainId: service.api.chainId,
+                        sequence: account.seq
+                    })
+                )
                 .then((txRaw: TxRaw) => Uint8Array.from(TxRaw.encode(txRaw).finish()))
                 .then((signedTx: Uint8Array) => cosmos.broadcastTx(signedTx))
                 .then(checkErrors)
@@ -134,8 +139,8 @@ const transmitTransaction = (service: CommunicationService, messages: MessageQue
                     /signature verification failed/.test(e.error) && (service.accountRequested = undefined)
                     throw e
                 })
-                .then((x: any) => ({...x, txhash:x.transactionHash }))
-            .then(x => x)
+                .then((x: any) => ({...x, txhash: x.transactionHash}))
+                .then(x => x)
         )
 
 }
@@ -155,11 +160,14 @@ const getSequence = (service: CommunicationService, cosmos: SigningStargateClien
                 service.seq = service.seq + 1
             )
     ) : (
-        service.accountRequested = cosmos.getAccount(service.api.address)
-            .then((data: any) => {
-                service.seq = data.sequence
-                service.account = data.accountNumber
-            })
+        service.api.getAddress()
+            .then(address =>
+                service.accountRequested = cosmos.getAccount(address)
+                .then((data: any) => {
+                    service.seq = data.sequence
+                    service.account = data.accountNumber
+                }))
+
     ))
         .then(() => ({
             seq: service.seq,
@@ -173,7 +181,7 @@ const convertDataFromHexToString = (res: any) => ({
 })
 
 const checkErrors = (res: BroadcastTxResponse): BroadcastTxResponse => {
-    if(res.rawLog) {
+    if (res.rawLog) {
         if (/signature verification failed/.test(res.rawLog)) {
             throw {
                 txhash: res.transactionHash,
@@ -219,18 +227,10 @@ const combineGas = (transactions: MessageQueueItem<any>[]): GasInfo =>
         } as GasInfo
     }, {});
 
-export const getCosmos = memoize((api: API): Promise<any> =>
-    fetch(`${api.url}/node_info`)
-        .then(x => x.json())
-        .then(x => x.node_info.network)
-        .then(chainId => cosmosjs.network(api.url, chainId))
-        .then(passThrough<any>(cosmos => cosmos.setPath("m/44\'/118\'/0\'/0/0")))
-        .then(passThrough<any>(cosmos => cosmos.bech32MainPrefix = 'bluzelle'))
-)
-
 const myRegistry = new Registry([
     ...defaultRegistryTypes,
-    ["/bluzelle.curium.crud.MsgCreateCrudValue", MsgCreateCrudValue]
+    ["/bluzelle.curium.crud.MsgCreateCrudValue", MsgCreateCrudValue],
+    ['/bluzelle.curium.crud.MsgUpsertCrudValue', MsgUpsertCrudValue]
 ] as Iterable<[string, GeneratedType]>);
 
 // Inside an async function...

@@ -6,6 +6,7 @@ export const protobufPackage = "bluzelle.curium.crud";
 
 export interface CrudValue {
   creator: string;
+  uuid: string;
   key: string;
   value: string;
   lease: Long;
@@ -14,6 +15,7 @@ export interface CrudValue {
 
 const baseCrudValue: object = {
   creator: "",
+  uuid: "",
   key: "",
   value: "",
   lease: Long.ZERO,
@@ -27,6 +29,9 @@ export const CrudValue = {
   ): _m0.Writer {
     if (message.creator !== "") {
       writer.uint32(10).string(message.creator);
+    }
+    if (message.uuid !== "") {
+      writer.uint32(18).string(message.uuid);
     }
     if (message.key !== "") {
       writer.uint32(26).string(message.key);
@@ -52,6 +57,9 @@ export const CrudValue = {
       switch (tag >>> 3) {
         case 1:
           message.creator = reader.string();
+          break;
+        case 2:
+          message.uuid = reader.string();
           break;
         case 3:
           message.key = reader.string();
@@ -80,6 +88,11 @@ export const CrudValue = {
     } else {
       message.creator = "";
     }
+    if (object.uuid !== undefined && object.uuid !== null) {
+      message.uuid = String(object.uuid);
+    } else {
+      message.uuid = "";
+    }
     if (object.key !== undefined && object.key !== null) {
       message.key = String(object.key);
     } else {
@@ -106,6 +119,7 @@ export const CrudValue = {
   toJSON(message: CrudValue): unknown {
     const obj: any = {};
     message.creator !== undefined && (obj.creator = message.creator);
+    message.uuid !== undefined && (obj.uuid = message.uuid);
     message.key !== undefined && (obj.key = message.key);
     message.value !== undefined && (obj.value = message.value);
     message.lease !== undefined &&
@@ -121,6 +135,11 @@ export const CrudValue = {
       message.creator = object.creator;
     } else {
       message.creator = "";
+    }
+    if (object.uuid !== undefined && object.uuid !== null) {
+      message.uuid = object.uuid;
+    } else {
+      message.uuid = "";
     }
     if (object.key !== undefined && object.key !== null) {
       message.key = object.key;
