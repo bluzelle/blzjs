@@ -146,11 +146,14 @@ exports.QueryGetCrudValueResponse = {
         return message;
     },
 };
-const baseQueryAllCrudValueRequest = {};
+const baseQueryAllCrudValueRequest = { uuid: "" };
 exports.QueryAllCrudValueRequest = {
     encode(message, writer = minimal_1.default.Writer.create()) {
+        if (message.uuid !== "") {
+            writer.uint32(10).string(message.uuid);
+        }
         if (message.pagination !== undefined) {
-            pagination_1.PageRequest.encode(message.pagination, writer.uint32(10).fork()).ldelim();
+            pagination_1.PageRequest.encode(message.pagination, writer.uint32(18).fork()).ldelim();
         }
         return writer;
     },
@@ -164,6 +167,9 @@ exports.QueryAllCrudValueRequest = {
             const tag = reader.uint32();
             switch (tag >>> 3) {
                 case 1:
+                    message.uuid = reader.string();
+                    break;
+                case 2:
                     message.pagination = pagination_1.PageRequest.decode(reader, reader.uint32());
                     break;
                 default:
@@ -177,6 +183,12 @@ exports.QueryAllCrudValueRequest = {
         const message = {
             ...baseQueryAllCrudValueRequest,
         };
+        if (object.uuid !== undefined && object.uuid !== null) {
+            message.uuid = String(object.uuid);
+        }
+        else {
+            message.uuid = "";
+        }
         if (object.pagination !== undefined && object.pagination !== null) {
             message.pagination = pagination_1.PageRequest.fromJSON(object.pagination);
         }
@@ -187,6 +199,7 @@ exports.QueryAllCrudValueRequest = {
     },
     toJSON(message) {
         const obj = {};
+        message.uuid !== undefined && (obj.uuid = message.uuid);
         message.pagination !== undefined &&
             (obj.pagination = message.pagination
                 ? pagination_1.PageRequest.toJSON(message.pagination)
@@ -197,6 +210,12 @@ exports.QueryAllCrudValueRequest = {
         const message = {
             ...baseQueryAllCrudValueRequest,
         };
+        if (object.uuid !== undefined && object.uuid !== null) {
+            message.uuid = object.uuid;
+        }
+        else {
+            message.uuid = "";
+        }
         if (object.pagination !== undefined && object.pagination !== null) {
             message.pagination = pagination_1.PageRequest.fromPartial(object.pagination);
         }

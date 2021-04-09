@@ -16,6 +16,7 @@ import {entropyToMnemonic, generateMnemonic} from "bip39";
 import Long from 'long'
 import {QueryClientImpl} from "./codec/crud/query";
 import {createProtobufRpcClient, QueryClient} from "@cosmjs/stargate";
+import {passThrough} from "promise-passthrough";
 export {mnemonicToAddress} from './services/CommunicationService'
 
 // TEMP STUB
@@ -281,9 +282,10 @@ export class API {
     }
 
     keys(): Promise<string[]> {
-        return this.#abciQuery<QueryKeysResult>(`/custom/crud/keys/${this.uuid}`)
-            .then(x => x.result)
-            .then(res => res.keys)
+        return getRpcClient(this.url)
+            .then(client => client.CrudValueAll({uuid: this.uuid}))
+            .then(x => x.CrudValue)
+            .then(values => values.map((v: any) => v.key))
     }
 
     keyValues(): Promise<{ key: string, value: string }[]> {
@@ -357,10 +359,11 @@ export class API {
     }
 
 
-    read(key: string, prove: boolean = false): Promise<string | undefined> {
+    read(key: string, prove: boolean = false): Promise<string> {
         return getRpcClient(this.url)
             .then(client => client.CrudValue({uuid: this.uuid, key: key}))
             .then(x => x.CrudValue?.value)
+            .then(x => new TextDecoder().decode(x))
     }
 
     async rename(key: string, newKey: string, gasInfo: GasInfo): Promise<TxResult> {

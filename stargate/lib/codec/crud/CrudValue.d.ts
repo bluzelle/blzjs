@@ -5,9 +5,10 @@ export interface CrudValue {
     creator: string;
     uuid: string;
     key: string;
-    value: string;
+    value: Uint8Array;
     lease: Long;
     height: Long;
+    metadata: Uint8Array;
 }
 export declare const CrudValue: {
     encode(message: CrudValue, writer?: _m0.Writer): _m0.Writer;

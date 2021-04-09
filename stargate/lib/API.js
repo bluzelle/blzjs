@@ -222,9 +222,10 @@ class API {
             .then(x => x.result.has);
     }
     keys() {
-        return __classPrivateFieldGet(this, _abciQuery).call(this, `/custom/crud/keys/${this.uuid}`)
-            .then(x => x.result)
-            .then(res => res.keys);
+        return getRpcClient(this.url)
+            .then(client => client.CrudValueAll({ uuid: this.uuid }))
+            .then(x => x.CrudValue)
+            .then(values => values.map((v) => v.key));
     }
     keyValues() {
         return __classPrivateFieldGet(this, _abciQuery).call(this, `/custom/crud/keyvalues/${this.uuid}`)
@@ -289,7 +290,8 @@ class API {
     read(key, prove = false) {
         return getRpcClient(this.url)
             .then(client => client.CrudValue({ uuid: this.uuid, key: key }))
-            .then(x => { var _a; return (_a = x.CrudValue) === null || _a === void 0 ? void 0 : _a.value; });
+            .then(x => { var _a; return (_a = x.CrudValue) === null || _a === void 0 ? void 0 : _a.value; })
+            .then(x => new TextDecoder().decode(x));
     }
     async rename(key, newKey, gasInfo) {
         Assert_1.assert(typeof key === 'string', "Key must be a string" /* KEY_MUST_BE_A_STRING */);

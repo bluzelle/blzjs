@@ -12,6 +12,7 @@ export interface QueryGetCrudValueResponse {
     CrudValue?: CrudValue;
 }
 export interface QueryAllCrudValueRequest {
+    uuid: string;
     pagination?: PageRequest;
 }
 export interface QueryAllCrudValueResponse {

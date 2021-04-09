@@ -143,11 +143,6 @@ const transmitTransaction = (service: CommunicationService, messages: MessageQue
 
 }
 
-const retryCounter = (() => {
-    let count = 0;
-    return () => count++;
-})();
-
 let msgChain = Promise.resolve()
 
 const getSequence = (() => {

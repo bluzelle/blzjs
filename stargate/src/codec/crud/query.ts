@@ -20,6 +20,7 @@ export interface QueryGetCrudValueResponse {
 }
 
 export interface QueryAllCrudValueRequest {
+  uuid: string;
   pagination?: PageRequest;
 }
 
@@ -186,15 +187,18 @@ export const QueryGetCrudValueResponse = {
   },
 };
 
-const baseQueryAllCrudValueRequest: object = {};
+const baseQueryAllCrudValueRequest: object = { uuid: "" };
 
 export const QueryAllCrudValueRequest = {
   encode(
     message: QueryAllCrudValueRequest,
     writer: _m0.Writer = _m0.Writer.create()
   ): _m0.Writer {
+    if (message.uuid !== "") {
+      writer.uint32(10).string(message.uuid);
+    }
     if (message.pagination !== undefined) {
-      PageRequest.encode(message.pagination, writer.uint32(10).fork()).ldelim();
+      PageRequest.encode(message.pagination, writer.uint32(18).fork()).ldelim();
     }
     return writer;
   },
@@ -212,6 +216,9 @@ export const QueryAllCrudValueRequest = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          message.uuid = reader.string();
+          break;
+        case 2:
           message.pagination = PageRequest.decode(reader, reader.uint32());
           break;
         default:
@@ -226,6 +233,11 @@ export const QueryAllCrudValueRequest = {
     const message = {
       ...baseQueryAllCrudValueRequest,
     } as QueryAllCrudValueRequest;
+    if (object.uuid !== undefined && object.uuid !== null) {
+      message.uuid = String(object.uuid);
+    } else {
+      message.uuid = "";
+    }
     if (object.pagination !== undefined && object.pagination !== null) {
       message.pagination = PageRequest.fromJSON(object.pagination);
     } else {
@@ -236,6 +248,7 @@ export const QueryAllCrudValueRequest = {
 
   toJSON(message: QueryAllCrudValueRequest): unknown {
     const obj: any = {};
+    message.uuid !== undefined && (obj.uuid = message.uuid);
     message.pagination !== undefined &&
       (obj.pagination = message.pagination
         ? PageRequest.toJSON(message.pagination)
@@ -249,6 +262,11 @@ export const QueryAllCrudValueRequest = {
     const message = {
       ...baseQueryAllCrudValueRequest,
     } as QueryAllCrudValueRequest;
+    if (object.uuid !== undefined && object.uuid !== null) {
+      message.uuid = object.uuid;
+    } else {
+      message.uuid = "";
+    }
     if (object.pagination !== undefined && object.pagination !== null) {
       message.pagination = PageRequest.fromPartial(object.pagination);
     } else {

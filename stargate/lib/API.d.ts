@@ -105,7 +105,7 @@ export declare class API {
     query<T>(queryString: string): Promise<T>;
     abciQuery<T>(method: string, data?: unknown): Promise<ABCIResponse<T>>;
     owner(key: string): Promise<string>;
-    read(key: string, prove?: boolean): Promise<string | undefined>;
+    read(key: string, prove?: boolean): Promise<string>;
     rename(key: string, newKey: string, gasInfo: GasInfo): Promise<TxResult>;
     renewLease(key: string, gasInfo: GasInfo, leaseInfo: LeaseInfo): Promise<TxResult>;
     renewLeaseAll(gasInfo: GasInfo, leaseInfo?: LeaseInfo): Promise<TxResult>;

@@ -12,7 +12,6 @@ const baseMsgUpsertCrudValue = {
     creator: "",
     uuid: "",
     key: "",
-    value: "",
     lease: long_1.default.ZERO,
 };
 exports.MsgUpsertCrudValue = {
@@ -26,11 +25,14 @@ exports.MsgUpsertCrudValue = {
         if (message.key !== "") {
             writer.uint32(26).string(message.key);
         }
-        if (message.value !== "") {
-            writer.uint32(34).string(message.value);
+        if (message.value.length !== 0) {
+            writer.uint32(34).bytes(message.value);
         }
         if (!message.lease.isZero()) {
             writer.uint32(40).int64(message.lease);
+        }
+        if (message.metadata.length !== 0) {
+            writer.uint32(50).bytes(message.metadata);
         }
         return writer;
     },
@@ -51,10 +53,13 @@ exports.MsgUpsertCrudValue = {
                     message.key = reader.string();
                     break;
                 case 4:
-                    message.value = reader.string();
+                    message.value = reader.bytes();
                     break;
                 case 5:
                     message.lease = reader.int64();
+                    break;
+                case 6:
+                    message.metadata = reader.bytes();
                     break;
                 default:
                     reader.skipType(tag & 7);
@@ -84,16 +89,16 @@ exports.MsgUpsertCrudValue = {
             message.key = "";
         }
         if (object.value !== undefined && object.value !== null) {
-            message.value = String(object.value);
-        }
-        else {
-            message.value = "";
+            message.value = bytesFromBase64(object.value);
         }
         if (object.lease !== undefined && object.lease !== null) {
             message.lease = long_1.default.fromString(object.lease);
         }
         else {
             message.lease = long_1.default.ZERO;
+        }
+        if (object.metadata !== undefined && object.metadata !== null) {
+            message.metadata = bytesFromBase64(object.metadata);
         }
         return message;
     },
@@ -102,9 +107,12 @@ exports.MsgUpsertCrudValue = {
         message.creator !== undefined && (obj.creator = message.creator);
         message.uuid !== undefined && (obj.uuid = message.uuid);
         message.key !== undefined && (obj.key = message.key);
-        message.value !== undefined && (obj.value = message.value);
+        message.value !== undefined &&
+            (obj.value = base64FromBytes(message.value !== undefined ? message.value : new Uint8Array()));
         message.lease !== undefined &&
             (obj.lease = (message.lease || long_1.default.ZERO).toString());
+        message.metadata !== undefined &&
+            (obj.metadata = base64FromBytes(message.metadata !== undefined ? message.metadata : new Uint8Array()));
         return obj;
     },
     fromPartial(object) {
@@ -131,13 +139,19 @@ exports.MsgUpsertCrudValue = {
             message.value = object.value;
         }
         else {
-            message.value = "";
+            message.value = new Uint8Array();
         }
         if (object.lease !== undefined && object.lease !== null) {
             message.lease = object.lease;
         }
         else {
             message.lease = long_1.default.ZERO;
+        }
+        if (object.metadata !== undefined && object.metadata !== null) {
+            message.metadata = object.metadata;
+        }
+        else {
+            message.metadata = new Uint8Array();
         }
         return message;
     },
@@ -184,7 +198,6 @@ const baseMsgCreateCrudValue = {
     creator: "",
     uuid: "",
     key: "",
-    value: "",
     lease: long_1.default.ZERO,
 };
 exports.MsgCreateCrudValue = {
@@ -198,11 +211,14 @@ exports.MsgCreateCrudValue = {
         if (message.key !== "") {
             writer.uint32(26).string(message.key);
         }
-        if (message.value !== "") {
-            writer.uint32(34).string(message.value);
+        if (message.value.length !== 0) {
+            writer.uint32(34).bytes(message.value);
         }
         if (!message.lease.isZero()) {
             writer.uint32(40).int64(message.lease);
+        }
+        if (message.metadata.length !== 0) {
+            writer.uint32(50).bytes(message.metadata);
         }
         return writer;
     },
@@ -223,10 +239,13 @@ exports.MsgCreateCrudValue = {
                     message.key = reader.string();
                     break;
                 case 4:
-                    message.value = reader.string();
+                    message.value = reader.bytes();
                     break;
                 case 5:
                     message.lease = reader.int64();
+                    break;
+                case 6:
+                    message.metadata = reader.bytes();
                     break;
                 default:
                     reader.skipType(tag & 7);
@@ -256,16 +275,16 @@ exports.MsgCreateCrudValue = {
             message.key = "";
         }
         if (object.value !== undefined && object.value !== null) {
-            message.value = String(object.value);
-        }
-        else {
-            message.value = "";
+            message.value = bytesFromBase64(object.value);
         }
         if (object.lease !== undefined && object.lease !== null) {
             message.lease = long_1.default.fromString(object.lease);
         }
         else {
             message.lease = long_1.default.ZERO;
+        }
+        if (object.metadata !== undefined && object.metadata !== null) {
+            message.metadata = bytesFromBase64(object.metadata);
         }
         return message;
     },
@@ -274,9 +293,12 @@ exports.MsgCreateCrudValue = {
         message.creator !== undefined && (obj.creator = message.creator);
         message.uuid !== undefined && (obj.uuid = message.uuid);
         message.key !== undefined && (obj.key = message.key);
-        message.value !== undefined && (obj.value = message.value);
+        message.value !== undefined &&
+            (obj.value = base64FromBytes(message.value !== undefined ? message.value : new Uint8Array()));
         message.lease !== undefined &&
             (obj.lease = (message.lease || long_1.default.ZERO).toString());
+        message.metadata !== undefined &&
+            (obj.metadata = base64FromBytes(message.metadata !== undefined ? message.metadata : new Uint8Array()));
         return obj;
     },
     fromPartial(object) {
@@ -303,13 +325,19 @@ exports.MsgCreateCrudValue = {
             message.value = object.value;
         }
         else {
-            message.value = "";
+            message.value = new Uint8Array();
         }
         if (object.lease !== undefined && object.lease !== null) {
             message.lease = object.lease;
         }
         else {
             message.lease = long_1.default.ZERO;
+        }
+        if (object.metadata !== undefined && object.metadata !== null) {
+            message.metadata = object.metadata;
+        }
+        else {
+            message.metadata = new Uint8Array();
         }
         return message;
     },
@@ -356,7 +384,6 @@ const baseMsgUpdateCrudValue = {
     creator: "",
     uuid: "",
     key: "",
-    value: "",
     lease: long_1.default.ZERO,
 };
 exports.MsgUpdateCrudValue = {
@@ -370,11 +397,14 @@ exports.MsgUpdateCrudValue = {
         if (message.key !== "") {
             writer.uint32(26).string(message.key);
         }
-        if (message.value !== "") {
-            writer.uint32(34).string(message.value);
+        if (message.value.length !== 0) {
+            writer.uint32(34).bytes(message.value);
         }
         if (!message.lease.isZero()) {
             writer.uint32(40).int64(message.lease);
+        }
+        if (message.metadata.length !== 0) {
+            writer.uint32(50).bytes(message.metadata);
         }
         return writer;
     },
@@ -395,10 +425,13 @@ exports.MsgUpdateCrudValue = {
                     message.key = reader.string();
                     break;
                 case 4:
-                    message.value = reader.string();
+                    message.value = reader.bytes();
                     break;
                 case 5:
                     message.lease = reader.int64();
+                    break;
+                case 6:
+                    message.metadata = reader.bytes();
                     break;
                 default:
                     reader.skipType(tag & 7);
@@ -428,16 +461,16 @@ exports.MsgUpdateCrudValue = {
             message.key = "";
         }
         if (object.value !== undefined && object.value !== null) {
-            message.value = String(object.value);
-        }
-        else {
-            message.value = "";
+            message.value = bytesFromBase64(object.value);
         }
         if (object.lease !== undefined && object.lease !== null) {
             message.lease = long_1.default.fromString(object.lease);
         }
         else {
             message.lease = long_1.default.ZERO;
+        }
+        if (object.metadata !== undefined && object.metadata !== null) {
+            message.metadata = bytesFromBase64(object.metadata);
         }
         return message;
     },
@@ -446,9 +479,12 @@ exports.MsgUpdateCrudValue = {
         message.creator !== undefined && (obj.creator = message.creator);
         message.uuid !== undefined && (obj.uuid = message.uuid);
         message.key !== undefined && (obj.key = message.key);
-        message.value !== undefined && (obj.value = message.value);
+        message.value !== undefined &&
+            (obj.value = base64FromBytes(message.value !== undefined ? message.value : new Uint8Array()));
         message.lease !== undefined &&
             (obj.lease = (message.lease || long_1.default.ZERO).toString());
+        message.metadata !== undefined &&
+            (obj.metadata = base64FromBytes(message.metadata !== undefined ? message.metadata : new Uint8Array()));
         return obj;
     },
     fromPartial(object) {
@@ -475,13 +511,19 @@ exports.MsgUpdateCrudValue = {
             message.value = object.value;
         }
         else {
-            message.value = "";
+            message.value = new Uint8Array();
         }
         if (object.lease !== undefined && object.lease !== null) {
             message.lease = object.lease;
         }
         else {
             message.lease = long_1.default.ZERO;
+        }
+        if (object.metadata !== undefined && object.metadata !== null) {
+            message.metadata = object.metadata;
+        }
+        else {
+            message.metadata = new Uint8Array();
         }
         return message;
     },
@@ -677,6 +719,36 @@ class MsgClientImpl {
     }
 }
 exports.MsgClientImpl = MsgClientImpl;
+var globalThis = (() => {
+    if (typeof globalThis !== "undefined")
+        return globalThis;
+    if (typeof self !== "undefined")
+        return self;
+    if (typeof window !== "undefined")
+        return window;
+    if (typeof global !== "undefined")
+        return global;
+    throw "Unable to locate global object";
+})();
+const atob = globalThis.atob ||
+    ((b64) => globalThis.Buffer.from(b64, "base64").toString("binary"));
+function bytesFromBase64(b64) {
+    const bin = atob(b64);
+    const arr = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; ++i) {
+        arr[i] = bin.charCodeAt(i);
+    }
+    return arr;
+}
+const btoa = globalThis.btoa ||
+    ((bin) => globalThis.Buffer.from(bin, "binary").toString("base64"));
+function base64FromBytes(arr) {
+    const bin = [];
+    for (let i = 0; i < arr.byteLength; ++i) {
+        bin.push(String.fromCharCode(arr[i]));
+    }
+    return btoa(bin.join(""));
+}
 if (minimal_1.default.util.Long !== long_1.default) {
     minimal_1.default.util.Long = long_1.default;
     minimal_1.default.configure();

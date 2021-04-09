@@ -6,8 +6,9 @@ export interface MsgUpsertCrudValue {
     creator: string;
     uuid: string;
     key: string;
-    value: string;
+    value: Uint8Array;
     lease: Long;
+    metadata: Uint8Array;
 }
 export interface MsgUpsertCrudValueResponse {
 }
@@ -15,8 +16,9 @@ export interface MsgCreateCrudValue {
     creator: string;
     uuid: string;
     key: string;
-    value: string;
+    value: Uint8Array;
     lease: Long;
+    metadata: Uint8Array;
 }
 export interface MsgCreateCrudValueResponse {
 }
@@ -24,8 +26,9 @@ export interface MsgUpdateCrudValue {
     creator: string;
     uuid: string;
     key: string;
-    value: string;
+    value: Uint8Array;
     lease: Long;
+    metadata: Uint8Array;
 }
 export interface MsgUpdateCrudValueResponse {
 }
