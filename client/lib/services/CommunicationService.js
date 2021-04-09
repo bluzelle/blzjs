@@ -8,7 +8,7 @@ const monet_1 = require("monet");
 const lodash_1 = require("lodash");
 const promise_passthrough_1 = require("promise-passthrough");
 const delay_1 = __importDefault(require("delay"));
-const cosmosjs = require('cosmosjs');
+const cosmosjs = require('@cosmostation/cosmosjs');
 const TOKEN_NAME = 'ubnt';
 const dummyMessageResponse = {
     height: 0,
@@ -94,10 +94,6 @@ const transmitTransaction = (service, messages, { memo }) => {
         .then((x) => ({ ...x, height: parseInt(x.height) })))
         .join());
 };
-const retryCounter = (() => {
-    let count = 0;
-    return () => count++;
-})();
 let msgChain = Promise.resolve();
 const getSequence = (() => {
     return (service, cosmos, address) => (service.accountRequested ? (service.accountRequested = service.accountRequested

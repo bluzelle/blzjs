@@ -4,6 +4,8 @@ curl https://raw.githubusercontent.com/googleapis/googleapis/master/google/api/h
 mkdir -p proto/cosmos/base/query/v1beta1
 curl https://raw.githubusercontent.com/cosmos/cosmos-sdk/master/proto/cosmos/base/query/v1beta1/pagination.proto > proto/cosmos/base/query/v1beta1/pagination.proto
 
+rm -rf src/codec
+mkdir -p src/codec
 protoc \
   --plugin="./node_modules/.bin/protoc-gen-ts_proto" \
   --ts_proto_out="./src/codec" \

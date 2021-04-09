@@ -12,6 +12,7 @@
     "monet": "^0.9.1",
     "node-fetch": "^2.6.1",
     "promise-passthrough": "^1.0.5",
+    "testing": "bluzelle/curium-test#aven_relayer",
     "ts-node": "^9.1.1"
   },
   "devDependencies": {

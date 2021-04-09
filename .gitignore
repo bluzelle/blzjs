@@ -1,7 +1,6 @@
 node_modules
 yarn-error.log
 .DS_Store
-.idea/
 lib/*
 test-daemon/daemon-build
 .nyc_output/
@@ -9,3 +8,7 @@ samples/blz-config.js
 .next
 .cache
 dist
+.env
+*/lib/test
+client/.cache
+

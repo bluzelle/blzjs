@@ -5,7 +5,7 @@ import _m0 from "protobufjs/minimal";
 export const protobufPackage = "bluzelle.curium.crud";
 
 /** this line is used by starport scaffolding # proto/tx/message */
-export interface MsgUpsertCrudValue {
+export interface MsgUpsert {
   creator: string;
   uuid: string;
   key: string;
@@ -14,9 +14,9 @@ export interface MsgUpsertCrudValue {
   metadata: Uint8Array;
 }
 
-export interface MsgUpsertCrudValueResponse {}
+export interface MsgUpsertResponse {}
 
-export interface MsgCreateCrudValue {
+export interface MsgCreate {
   creator: string;
   uuid: string;
   key: string;
@@ -25,9 +25,9 @@ export interface MsgCreateCrudValue {
   metadata: Uint8Array;
 }
 
-export interface MsgCreateCrudValueResponse {}
+export interface MsgCreateResponse {}
 
-export interface MsgUpdateCrudValue {
+export interface MsgUpdate {
   creator: string;
   uuid: string;
   key: string;
@@ -36,26 +36,26 @@ export interface MsgUpdateCrudValue {
   metadata: Uint8Array;
 }
 
-export interface MsgUpdateCrudValueResponse {}
+export interface MsgUpdateResponse {}
 
-export interface MsgDeleteCrudValue {
+export interface MsgDelete {
   creator: string;
   uuid: string;
   key: string;
 }
 
-export interface MsgDeleteCrudValueResponse {}
+export interface MsgDeleteResponse {}
 
-const baseMsgUpsertCrudValue: object = {
+const baseMsgUpsert: object = {
   creator: "",
   uuid: "",
   key: "",
   lease: Long.ZERO,
 };
 
-export const MsgUpsertCrudValue = {
+export const MsgUpsert = {
   encode(
-    message: MsgUpsertCrudValue,
+    message: MsgUpsert,
     writer: _m0.Writer = _m0.Writer.create()
   ): _m0.Writer {
     if (message.creator !== "") {
@@ -79,10 +79,10 @@ export const MsgUpsertCrudValue = {
     return writer;
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): MsgUpsertCrudValue {
+  decode(input: _m0.Reader | Uint8Array, length?: number): MsgUpsert {
     const reader = input instanceof Uint8Array ? new _m0.Reader(input) : input;
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = { ...baseMsgUpsertCrudValue } as MsgUpsertCrudValue;
+    const message = { ...baseMsgUpsert } as MsgUpsert;
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -112,8 +112,8 @@ export const MsgUpsertCrudValue = {
     return message;
   },
 
-  fromJSON(object: any): MsgUpsertCrudValue {
-    const message = { ...baseMsgUpsertCrudValue } as MsgUpsertCrudValue;
+  fromJSON(object: any): MsgUpsert {
+    const message = { ...baseMsgUpsert } as MsgUpsert;
     if (object.creator !== undefined && object.creator !== null) {
       message.creator = String(object.creator);
     } else {
@@ -143,7 +143,7 @@ export const MsgUpsertCrudValue = {
     return message;
   },
 
-  toJSON(message: MsgUpsertCrudValue): unknown {
+  toJSON(message: MsgUpsert): unknown {
     const obj: any = {};
     message.creator !== undefined && (obj.creator = message.creator);
     message.uuid !== undefined && (obj.uuid = message.uuid);
@@ -161,8 +161,8 @@ export const MsgUpsertCrudValue = {
     return obj;
   },
 
-  fromPartial(object: DeepPartial<MsgUpsertCrudValue>): MsgUpsertCrudValue {
-    const message = { ...baseMsgUpsertCrudValue } as MsgUpsertCrudValue;
+  fromPartial(object: DeepPartial<MsgUpsert>): MsgUpsert {
+    const message = { ...baseMsgUpsert } as MsgUpsert;
     if (object.creator !== undefined && object.creator !== null) {
       message.creator = object.creator;
     } else {
@@ -197,25 +197,20 @@ export const MsgUpsertCrudValue = {
   },
 };
 
-const baseMsgUpsertCrudValueResponse: object = {};
+const baseMsgUpsertResponse: object = {};
 
-export const MsgUpsertCrudValueResponse = {
+export const MsgUpsertResponse = {
   encode(
-    _: MsgUpsertCrudValueResponse,
+    _: MsgUpsertResponse,
     writer: _m0.Writer = _m0.Writer.create()
   ): _m0.Writer {
     return writer;
   },
 
-  decode(
-    input: _m0.Reader | Uint8Array,
-    length?: number
-  ): MsgUpsertCrudValueResponse {
+  decode(input: _m0.Reader | Uint8Array, length?: number): MsgUpsertResponse {
     const reader = input instanceof Uint8Array ? new _m0.Reader(input) : input;
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = {
-      ...baseMsgUpsertCrudValueResponse,
-    } as MsgUpsertCrudValueResponse;
+    const message = { ...baseMsgUpsertResponse } as MsgUpsertResponse;
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -227,38 +222,32 @@ export const MsgUpsertCrudValueResponse = {
     return message;
   },
 
-  fromJSON(_: any): MsgUpsertCrudValueResponse {
-    const message = {
-      ...baseMsgUpsertCrudValueResponse,
-    } as MsgUpsertCrudValueResponse;
+  fromJSON(_: any): MsgUpsertResponse {
+    const message = { ...baseMsgUpsertResponse } as MsgUpsertResponse;
     return message;
   },
 
-  toJSON(_: MsgUpsertCrudValueResponse): unknown {
+  toJSON(_: MsgUpsertResponse): unknown {
     const obj: any = {};
     return obj;
   },
 
-  fromPartial(
-    _: DeepPartial<MsgUpsertCrudValueResponse>
-  ): MsgUpsertCrudValueResponse {
-    const message = {
-      ...baseMsgUpsertCrudValueResponse,
-    } as MsgUpsertCrudValueResponse;
+  fromPartial(_: DeepPartial<MsgUpsertResponse>): MsgUpsertResponse {
+    const message = { ...baseMsgUpsertResponse } as MsgUpsertResponse;
     return message;
   },
 };
 
-const baseMsgCreateCrudValue: object = {
+const baseMsgCreate: object = {
   creator: "",
   uuid: "",
   key: "",
   lease: Long.ZERO,
 };
 
-export const MsgCreateCrudValue = {
+export const MsgCreate = {
   encode(
-    message: MsgCreateCrudValue,
+    message: MsgCreate,
     writer: _m0.Writer = _m0.Writer.create()
   ): _m0.Writer {
     if (message.creator !== "") {
@@ -282,10 +271,10 @@ export const MsgCreateCrudValue = {
     return writer;
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): MsgCreateCrudValue {
+  decode(input: _m0.Reader | Uint8Array, length?: number): MsgCreate {
     const reader = input instanceof Uint8Array ? new _m0.Reader(input) : input;
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = { ...baseMsgCreateCrudValue } as MsgCreateCrudValue;
+    const message = { ...baseMsgCreate } as MsgCreate;
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -315,8 +304,8 @@ export const MsgCreateCrudValue = {
     return message;
   },
 
-  fromJSON(object: any): MsgCreateCrudValue {
-    const message = { ...baseMsgCreateCrudValue } as MsgCreateCrudValue;
+  fromJSON(object: any): MsgCreate {
+    const message = { ...baseMsgCreate } as MsgCreate;
     if (object.creator !== undefined && object.creator !== null) {
       message.creator = String(object.creator);
     } else {
@@ -346,7 +335,7 @@ export const MsgCreateCrudValue = {
     return message;
   },
 
-  toJSON(message: MsgCreateCrudValue): unknown {
+  toJSON(message: MsgCreate): unknown {
     const obj: any = {};
     message.creator !== undefined && (obj.creator = message.creator);
     message.uuid !== undefined && (obj.uuid = message.uuid);
@@ -364,8 +353,8 @@ export const MsgCreateCrudValue = {
     return obj;
   },
 
-  fromPartial(object: DeepPartial<MsgCreateCrudValue>): MsgCreateCrudValue {
-    const message = { ...baseMsgCreateCrudValue } as MsgCreateCrudValue;
+  fromPartial(object: DeepPartial<MsgCreate>): MsgCreate {
+    const message = { ...baseMsgCreate } as MsgCreate;
     if (object.creator !== undefined && object.creator !== null) {
       message.creator = object.creator;
     } else {
@@ -400,25 +389,20 @@ export const MsgCreateCrudValue = {
   },
 };
 
-const baseMsgCreateCrudValueResponse: object = {};
+const baseMsgCreateResponse: object = {};
 
-export const MsgCreateCrudValueResponse = {
+export const MsgCreateResponse = {
   encode(
-    _: MsgCreateCrudValueResponse,
+    _: MsgCreateResponse,
     writer: _m0.Writer = _m0.Writer.create()
   ): _m0.Writer {
     return writer;
   },
 
-  decode(
-    input: _m0.Reader | Uint8Array,
-    length?: number
-  ): MsgCreateCrudValueResponse {
+  decode(input: _m0.Reader | Uint8Array, length?: number): MsgCreateResponse {
     const reader = input instanceof Uint8Array ? new _m0.Reader(input) : input;
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = {
-      ...baseMsgCreateCrudValueResponse,
-    } as MsgCreateCrudValueResponse;
+    const message = { ...baseMsgCreateResponse } as MsgCreateResponse;
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -430,38 +414,32 @@ export const MsgCreateCrudValueResponse = {
     return message;
   },
 
-  fromJSON(_: any): MsgCreateCrudValueResponse {
-    const message = {
-      ...baseMsgCreateCrudValueResponse,
-    } as MsgCreateCrudValueResponse;
+  fromJSON(_: any): MsgCreateResponse {
+    const message = { ...baseMsgCreateResponse } as MsgCreateResponse;
     return message;
   },
 
-  toJSON(_: MsgCreateCrudValueResponse): unknown {
+  toJSON(_: MsgCreateResponse): unknown {
     const obj: any = {};
     return obj;
   },
 
-  fromPartial(
-    _: DeepPartial<MsgCreateCrudValueResponse>
-  ): MsgCreateCrudValueResponse {
-    const message = {
-      ...baseMsgCreateCrudValueResponse,
-    } as MsgCreateCrudValueResponse;
+  fromPartial(_: DeepPartial<MsgCreateResponse>): MsgCreateResponse {
+    const message = { ...baseMsgCreateResponse } as MsgCreateResponse;
     return message;
   },
 };
 
-const baseMsgUpdateCrudValue: object = {
+const baseMsgUpdate: object = {
   creator: "",
   uuid: "",
   key: "",
   lease: Long.ZERO,
 };
 
-export const MsgUpdateCrudValue = {
+export const MsgUpdate = {
   encode(
-    message: MsgUpdateCrudValue,
+    message: MsgUpdate,
     writer: _m0.Writer = _m0.Writer.create()
   ): _m0.Writer {
     if (message.creator !== "") {
@@ -485,10 +463,10 @@ export const MsgUpdateCrudValue = {
     return writer;
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): MsgUpdateCrudValue {
+  decode(input: _m0.Reader | Uint8Array, length?: number): MsgUpdate {
     const reader = input instanceof Uint8Array ? new _m0.Reader(input) : input;
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = { ...baseMsgUpdateCrudValue } as MsgUpdateCrudValue;
+    const message = { ...baseMsgUpdate } as MsgUpdate;
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -518,8 +496,8 @@ export const MsgUpdateCrudValue = {
     return message;
   },
 
-  fromJSON(object: any): MsgUpdateCrudValue {
-    const message = { ...baseMsgUpdateCrudValue } as MsgUpdateCrudValue;
+  fromJSON(object: any): MsgUpdate {
+    const message = { ...baseMsgUpdate } as MsgUpdate;
     if (object.creator !== undefined && object.creator !== null) {
       message.creator = String(object.creator);
     } else {
@@ -549,7 +527,7 @@ export const MsgUpdateCrudValue = {
     return message;
   },
 
-  toJSON(message: MsgUpdateCrudValue): unknown {
+  toJSON(message: MsgUpdate): unknown {
     const obj: any = {};
     message.creator !== undefined && (obj.creator = message.creator);
     message.uuid !== undefined && (obj.uuid = message.uuid);
@@ -567,8 +545,8 @@ export const MsgUpdateCrudValue = {
     return obj;
   },
 
-  fromPartial(object: DeepPartial<MsgUpdateCrudValue>): MsgUpdateCrudValue {
-    const message = { ...baseMsgUpdateCrudValue } as MsgUpdateCrudValue;
+  fromPartial(object: DeepPartial<MsgUpdate>): MsgUpdate {
+    const message = { ...baseMsgUpdate } as MsgUpdate;
     if (object.creator !== undefined && object.creator !== null) {
       message.creator = object.creator;
     } else {
@@ -603,25 +581,20 @@ export const MsgUpdateCrudValue = {
   },
 };
 
-const baseMsgUpdateCrudValueResponse: object = {};
+const baseMsgUpdateResponse: object = {};
 
-export const MsgUpdateCrudValueResponse = {
+export const MsgUpdateResponse = {
   encode(
-    _: MsgUpdateCrudValueResponse,
+    _: MsgUpdateResponse,
     writer: _m0.Writer = _m0.Writer.create()
   ): _m0.Writer {
     return writer;
   },
 
-  decode(
-    input: _m0.Reader | Uint8Array,
-    length?: number
-  ): MsgUpdateCrudValueResponse {
+  decode(input: _m0.Reader | Uint8Array, length?: number): MsgUpdateResponse {
     const reader = input instanceof Uint8Array ? new _m0.Reader(input) : input;
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = {
-      ...baseMsgUpdateCrudValueResponse,
-    } as MsgUpdateCrudValueResponse;
+    const message = { ...baseMsgUpdateResponse } as MsgUpdateResponse;
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -633,33 +606,27 @@ export const MsgUpdateCrudValueResponse = {
     return message;
   },
 
-  fromJSON(_: any): MsgUpdateCrudValueResponse {
-    const message = {
-      ...baseMsgUpdateCrudValueResponse,
-    } as MsgUpdateCrudValueResponse;
+  fromJSON(_: any): MsgUpdateResponse {
+    const message = { ...baseMsgUpdateResponse } as MsgUpdateResponse;
     return message;
   },
 
-  toJSON(_: MsgUpdateCrudValueResponse): unknown {
+  toJSON(_: MsgUpdateResponse): unknown {
     const obj: any = {};
     return obj;
   },
 
-  fromPartial(
-    _: DeepPartial<MsgUpdateCrudValueResponse>
-  ): MsgUpdateCrudValueResponse {
-    const message = {
-      ...baseMsgUpdateCrudValueResponse,
-    } as MsgUpdateCrudValueResponse;
+  fromPartial(_: DeepPartial<MsgUpdateResponse>): MsgUpdateResponse {
+    const message = { ...baseMsgUpdateResponse } as MsgUpdateResponse;
     return message;
   },
 };
 
-const baseMsgDeleteCrudValue: object = { creator: "", uuid: "", key: "" };
+const baseMsgDelete: object = { creator: "", uuid: "", key: "" };
 
-export const MsgDeleteCrudValue = {
+export const MsgDelete = {
   encode(
-    message: MsgDeleteCrudValue,
+    message: MsgDelete,
     writer: _m0.Writer = _m0.Writer.create()
   ): _m0.Writer {
     if (message.creator !== "") {
@@ -674,10 +641,10 @@ export const MsgDeleteCrudValue = {
     return writer;
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): MsgDeleteCrudValue {
+  decode(input: _m0.Reader | Uint8Array, length?: number): MsgDelete {
     const reader = input instanceof Uint8Array ? new _m0.Reader(input) : input;
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = { ...baseMsgDeleteCrudValue } as MsgDeleteCrudValue;
+    const message = { ...baseMsgDelete } as MsgDelete;
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -698,8 +665,8 @@ export const MsgDeleteCrudValue = {
     return message;
   },
 
-  fromJSON(object: any): MsgDeleteCrudValue {
-    const message = { ...baseMsgDeleteCrudValue } as MsgDeleteCrudValue;
+  fromJSON(object: any): MsgDelete {
+    const message = { ...baseMsgDelete } as MsgDelete;
     if (object.creator !== undefined && object.creator !== null) {
       message.creator = String(object.creator);
     } else {
@@ -718,7 +685,7 @@ export const MsgDeleteCrudValue = {
     return message;
   },
 
-  toJSON(message: MsgDeleteCrudValue): unknown {
+  toJSON(message: MsgDelete): unknown {
     const obj: any = {};
     message.creator !== undefined && (obj.creator = message.creator);
     message.uuid !== undefined && (obj.uuid = message.uuid);
@@ -726,8 +693,8 @@ export const MsgDeleteCrudValue = {
     return obj;
   },
 
-  fromPartial(object: DeepPartial<MsgDeleteCrudValue>): MsgDeleteCrudValue {
-    const message = { ...baseMsgDeleteCrudValue } as MsgDeleteCrudValue;
+  fromPartial(object: DeepPartial<MsgDelete>): MsgDelete {
+    const message = { ...baseMsgDelete } as MsgDelete;
     if (object.creator !== undefined && object.creator !== null) {
       message.creator = object.creator;
     } else {
@@ -747,25 +714,20 @@ export const MsgDeleteCrudValue = {
   },
 };
 
-const baseMsgDeleteCrudValueResponse: object = {};
+const baseMsgDeleteResponse: object = {};
 
-export const MsgDeleteCrudValueResponse = {
+export const MsgDeleteResponse = {
   encode(
-    _: MsgDeleteCrudValueResponse,
+    _: MsgDeleteResponse,
     writer: _m0.Writer = _m0.Writer.create()
   ): _m0.Writer {
     return writer;
   },
 
-  decode(
-    input: _m0.Reader | Uint8Array,
-    length?: number
-  ): MsgDeleteCrudValueResponse {
+  decode(input: _m0.Reader | Uint8Array, length?: number): MsgDeleteResponse {
     const reader = input instanceof Uint8Array ? new _m0.Reader(input) : input;
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = {
-      ...baseMsgDeleteCrudValueResponse,
-    } as MsgDeleteCrudValueResponse;
+    const message = { ...baseMsgDeleteResponse } as MsgDeleteResponse;
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -777,24 +739,18 @@ export const MsgDeleteCrudValueResponse = {
     return message;
   },
 
-  fromJSON(_: any): MsgDeleteCrudValueResponse {
-    const message = {
-      ...baseMsgDeleteCrudValueResponse,
-    } as MsgDeleteCrudValueResponse;
+  fromJSON(_: any): MsgDeleteResponse {
+    const message = { ...baseMsgDeleteResponse } as MsgDeleteResponse;
     return message;
   },
 
-  toJSON(_: MsgDeleteCrudValueResponse): unknown {
+  toJSON(_: MsgDeleteResponse): unknown {
     const obj: any = {};
     return obj;
   },
 
-  fromPartial(
-    _: DeepPartial<MsgDeleteCrudValueResponse>
-  ): MsgDeleteCrudValueResponse {
-    const message = {
-      ...baseMsgDeleteCrudValueResponse,
-    } as MsgDeleteCrudValueResponse;
+  fromPartial(_: DeepPartial<MsgDeleteResponse>): MsgDeleteResponse {
+    const message = { ...baseMsgDeleteResponse } as MsgDeleteResponse;
     return message;
   },
 };
@@ -802,18 +758,10 @@ export const MsgDeleteCrudValueResponse = {
 /** Msg defines the Msg service. */
 export interface Msg {
   /** this line is used by starport scaffolding # proto/tx/rpc */
-  UpsertCrudValue(
-    request: MsgUpsertCrudValue
-  ): Promise<MsgUpsertCrudValueResponse>;
-  CreateCrudValue(
-    request: MsgCreateCrudValue
-  ): Promise<MsgCreateCrudValueResponse>;
-  UpdateCrudValue(
-    request: MsgUpdateCrudValue
-  ): Promise<MsgUpdateCrudValueResponse>;
-  DeleteCrudValue(
-    request: MsgDeleteCrudValue
-  ): Promise<MsgDeleteCrudValueResponse>;
+  Upsert(request: MsgUpsert): Promise<MsgUpsertResponse>;
+  Create(request: MsgCreate): Promise<MsgCreateResponse>;
+  Update(request: MsgUpdate): Promise<MsgUpdateResponse>;
+  Delete(request: MsgDelete): Promise<MsgDeleteResponse>;
 }
 
 export class MsgClientImpl implements Msg {
@@ -821,59 +769,51 @@ export class MsgClientImpl implements Msg {
   constructor(rpc: Rpc) {
     this.rpc = rpc;
   }
-  UpsertCrudValue(
-    request: MsgUpsertCrudValue
-  ): Promise<MsgUpsertCrudValueResponse> {
-    const data = MsgUpsertCrudValue.encode(request).finish();
+  Upsert(request: MsgUpsert): Promise<MsgUpsertResponse> {
+    const data = MsgUpsert.encode(request).finish();
     const promise = this.rpc.request(
       "bluzelle.curium.crud.Msg",
-      "UpsertCrudValue",
+      "Upsert",
       data
     );
     return promise.then((data) =>
-      MsgUpsertCrudValueResponse.decode(new _m0.Reader(data))
+      MsgUpsertResponse.decode(new _m0.Reader(data))
     );
   }
 
-  CreateCrudValue(
-    request: MsgCreateCrudValue
-  ): Promise<MsgCreateCrudValueResponse> {
-    const data = MsgCreateCrudValue.encode(request).finish();
+  Create(request: MsgCreate): Promise<MsgCreateResponse> {
+    const data = MsgCreate.encode(request).finish();
     const promise = this.rpc.request(
       "bluzelle.curium.crud.Msg",
-      "CreateCrudValue",
+      "Create",
       data
     );
     return promise.then((data) =>
-      MsgCreateCrudValueResponse.decode(new _m0.Reader(data))
+      MsgCreateResponse.decode(new _m0.Reader(data))
     );
   }
 
-  UpdateCrudValue(
-    request: MsgUpdateCrudValue
-  ): Promise<MsgUpdateCrudValueResponse> {
-    const data = MsgUpdateCrudValue.encode(request).finish();
+  Update(request: MsgUpdate): Promise<MsgUpdateResponse> {
+    const data = MsgUpdate.encode(request).finish();
     const promise = this.rpc.request(
       "bluzelle.curium.crud.Msg",
-      "UpdateCrudValue",
+      "Update",
       data
     );
     return promise.then((data) =>
-      MsgUpdateCrudValueResponse.decode(new _m0.Reader(data))
+      MsgUpdateResponse.decode(new _m0.Reader(data))
     );
   }
 
-  DeleteCrudValue(
-    request: MsgDeleteCrudValue
-  ): Promise<MsgDeleteCrudValueResponse> {
-    const data = MsgDeleteCrudValue.encode(request).finish();
+  Delete(request: MsgDelete): Promise<MsgDeleteResponse> {
+    const data = MsgDelete.encode(request).finish();
     const promise = this.rpc.request(
       "bluzelle.curium.crud.Msg",
-      "DeleteCrudValue",
+      "Delete",
       data
     );
     return promise.then((data) =>
-      MsgDeleteCrudValueResponse.decode(new _m0.Reader(data))
+      MsgDeleteResponse.decode(new _m0.Reader(data))
     );
   }
 }

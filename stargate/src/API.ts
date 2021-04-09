@@ -17,6 +17,8 @@ import Long from 'long'
 import {QueryClientImpl} from "./codec/crud/query";
 import {createProtobufRpcClient, QueryClient} from "@cosmjs/stargate";
 import {passThrough} from "promise-passthrough";
+import {MsgCreate, MsgDelete, MsgUpsert} from "./codec/crud/tx";
+import {addMessageType} from "./services/Registry";
 export {mnemonicToAddress} from './services/CommunicationService'
 
 // TEMP STUB
@@ -85,6 +87,10 @@ interface TransactionResponse {
 }
 
 
+addMessageType("/bluzelle.curium.crud.MsgCreate", MsgCreate)
+addMessageType('/bluzelle.curium.crud.MsgUpsert', MsgUpsert)
+addMessageType("/bluzelle.curium.crud.MsgDelete", MsgDelete)
+
 
 export class API {
     cosmos: any;
@@ -103,6 +109,7 @@ export class API {
         this.uuid = config.uuid;
         this.url = config.endpoint;
         this.communicationService = newCommunicationService(this);
+
     }
 
     withTransaction<T>(fn: () => any, {memo}: WithTransactionsOptions = {memo: ''}): Promise<MessageResponse<T>> {
@@ -130,21 +137,22 @@ export class API {
             .then((res: QueryCountResult) => parseInt(res.count || '0'));
     }
 
+
     async create(key: string, value: string, gasInfo: GasInfo, leaseInfo: LeaseInfo = {}): Promise<TxResult> {
         const blocks = convertLease(leaseInfo);
 
         assert(!!key, ClientErrors.KEY_CANNOT_BE_EMPTY);
         assert(typeof key === 'string', ClientErrors.KEY_MUST_BE_A_STRING);
         assert(typeof value === 'string', ClientErrors.VALUE_MUST_BE_A_STRING);
-        assert(blocks >= 0, ClientErrors.INVALID_LEASE_TIME);
-        assert(!key.includes('/'), ClientErrors.KEY_CANNOT_CONTAIN_SLASH)
+        //assert(blocks >= 0, ClientErrors.INVALID_LEASE_TIME);
+
 
         return mnemonicToAddress(this.mnemonic)
             .then(address => sendMessage<CreateMessage, void>(this.communicationService, {
-                typeUrl:  "/bluzelle.curium.crud.MsgCreateCrudValue",
+                typeUrl:  "/bluzelle.curium.crud.MsgCreate",
                 value: {
                     key: key,
-                    value: value,
+                    value: new TextEncoder().encode(value),
                     uuid: this.uuid,
                     creator: address,
                     lease: new Long(blocks),
@@ -213,7 +221,7 @@ export class API {
     delete(key: string, gasInfo: GasInfo): Promise<TxResult> {
         return mnemonicToAddress(this.mnemonic)
             .then(address => sendMessage<DeleteMessage, void>(this.communicationService, {
-                typeUrl:  "/bluzelle.curium.crud.MsgDeleteCrudValue",
+                typeUrl:  "/bluzelle.curium.crud.MsgDelete",
                 value: {
                     key: key,
                     uuid: this.uuid,
@@ -357,7 +365,6 @@ export class API {
                 throw(new Error(x.error === 'Not Found' ? `key "${key}" not found` : x.error))
             });
     }
-
 
     read(key: string, prove: boolean = false): Promise<string> {
         return getRpcClient(this.url)
@@ -598,10 +605,10 @@ export class API {
         return this.getAddress()
             .then(address =>
                 sendMessage<CreateMessage, void>(this.communicationService, {
-                typeUrl:  "/bluzelle.curium.crud.MsgUpsertCrudValue",
+                typeUrl:  "/bluzelle.curium.crud.MsgUpsert",
                 value: {
                     key: key,
-                    value: value,
+                    value: new TextEncoder().encode(value),
                     uuid: this.uuid,
                     creator: address,
                     lease: new Long(0),

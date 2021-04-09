@@ -19,7 +19,7 @@ export interface MintMessage {
 
 export interface CreateMessage {
     key: string
-    value: string
+    value: Uint8Array
     creator: string
     lease: Long
     uuid: string

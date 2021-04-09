@@ -1,3 +1,4 @@
+/// <reference types="lodash" />
 import { GasInfo } from "../types/GasInfo";
 import { API } from "../API";
 import { MessageResponse } from "../types/MessageResponse";

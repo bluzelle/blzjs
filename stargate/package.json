@@ -12,9 +12,11 @@
     "@types/lodash": "^4.14.168",
     "@types/node": "^14.14.37",
     "delay": "^5.0.0",
+    "dotenv": "^8.2.0",
     "monet": "^0.9.2",
     "node-fetch": "^2.6.1",
     "promise-passthrough": "^1.0.5",
+    "testing": "bluzelle/curium-test#devel",
     "ts-node": "^9.1.1",
     "ts-proto": "^1.76.0",
     "typescript": "^4.2.3"

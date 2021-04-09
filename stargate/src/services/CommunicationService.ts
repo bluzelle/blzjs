@@ -5,10 +5,10 @@ import {MessageResponse} from "../types/MessageResponse";
 import {Message} from "../types/Message";
 import {memoize} from 'lodash'
 import delay from "delay";
-import {DirectSecp256k1HdWallet, EncodeObject, GeneratedType, Registry} from "@cosmjs/proto-signing";
-import {BroadcastTxResponse, defaultRegistryTypes, SigningStargateClient} from "@cosmjs/stargate";
-import {MsgCreateCrudValue, MsgDeleteCrudValue, MsgUpsertCrudValue} from "../codec/crud/tx";
+import {DirectSecp256k1HdWallet, EncodeObject} from "@cosmjs/proto-signing";
+import {BroadcastTxFailure, BroadcastTxResponse, SigningStargateClient} from "@cosmjs/stargate";
 import {TxRaw} from "@cosmjs/proto-signing/build/codec/cosmos/tx/v1beta1/tx";
+import {myRegistry} from "./Registry";
 
 const TOKEN_NAME = 'ubnt';
 
@@ -134,7 +134,8 @@ const transmitTransaction = (service: CommunicationService, messages: MessageQue
                 )
                 .then((txRaw: TxRaw) => Uint8Array.from(TxRaw.encode(txRaw).finish()))
                 .then((signedTx: Uint8Array) => cosmos.broadcastTx(signedTx))
-                .then(checkErrors)
+                .then(res => checkErrors(res as BroadcastTxFailure))
+                .then( x => x)
                 .catch((e: FailedTransaction) => {
                     /signature verification failed/.test(e.error) && (service.accountRequested = undefined)
                     throw e
@@ -180,31 +181,9 @@ const convertDataFromHexToString = (res: any) => ({
     data: res.data ? Buffer.from(res.data, 'hex').toString() : undefined
 })
 
-const checkErrors = (res: BroadcastTxResponse): BroadcastTxResponse => {
-    if (res.rawLog) {
-        if (/signature verification failed/.test(res.rawLog)) {
-            throw {
-                txhash: res.transactionHash,
-                height: res.height,
-                error: 'signature verification failed'
-            } as FailedTransaction
-        }
-        if (/insufficient fee/.test(res.rawLog)) {
-            let [x, error] = res.rawLog.split(/[:;]/);
-            throw {
-                txhash: res.transactionHash,
-                height: res.height,
-                error: error.trim()
-            } as FailedTransaction
-        }
-        if (/failed to execute message/.test(res.rawLog)) {
-            const error = res.rawLog.split(':')[2];
-            throw {
-                txhash: res.transactionHash,
-                height: res.height,
-                error: error.trim()
-            } as FailedTransaction
-        }
+const checkErrors = (res: BroadcastTxFailure): BroadcastTxResponse => {
+    if (res.code > 0) {
+        throw res.rawLog
     }
     return res
 
@@ -227,12 +206,6 @@ const combineGas = (transactions: MessageQueueItem<any>[]): GasInfo =>
         } as GasInfo
     }, {});
 
-const myRegistry = new Registry([
-    ...defaultRegistryTypes,
-    ["/bluzelle.curium.crud.MsgCreateCrudValue", MsgCreateCrudValue],
-    ['/bluzelle.curium.crud.MsgUpsertCrudValue', MsgUpsertCrudValue],
-    ["/bluzelle.curium.crud.MsgDeleteCrudValue", MsgDeleteCrudValue]
-] as Iterable<[string, GeneratedType]>);
 
 // Inside an async function...
 const getSigner = (mnemonic: string) => DirectSecp256k1HdWallet.fromMnemonic(
