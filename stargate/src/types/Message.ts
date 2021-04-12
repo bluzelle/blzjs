@@ -17,13 +17,6 @@ export interface MintMessage {
     Time: string
 }
 
-export interface CreateMessage {
-    key: string
-    value: Uint8Array
-    creator: string
-    lease: Long
-    uuid: string
-}
 
 export interface GetLeaseMessage {
     Key: string
@@ -109,11 +102,6 @@ export interface RenewLeaseAllMessage {
     UUID: string
 }
 
-export interface DeleteMessage {
-    key: string
-    creator: string
-    uuid: string
-}
 
 export interface DeleteAllMessage {
     Owner: string

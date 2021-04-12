@@ -5,7 +5,7 @@ import {AccountResult} from "./types/cosmos/AccountResult";
 import {AccountsResult} from "./types/cosmos/AccountsResult";
 import {QueryCountResult, QueryGetLeaseResult, QueryGetNShortestLeasesResult, QueryHasResult, QueryKeysResult, QueryKeyValuesResult, QueryOwnerResult} from "./types/QueryResult";
 import {CommunicationService, mnemonicToAddress, newCommunicationService, sendMessage, withTransaction, WithTransactionsOptions} from "./services/CommunicationService";
-import {CountMessage, CreateMessage, DeleteAllMessage, DeleteMessage, GetLeaseMessage, HasMessage, KeysMessage, KeyValuesMessage, MintMessage, MultiUpdateMessage, ReadMessage, RenameMessage, RenewLeaseAllMessage, RenewLeaseMessage, TransferTokensMessage, UpdateMessage} from "./types/Message";
+import {CountMessage, DeleteAllMessage, GetLeaseMessage, HasMessage, KeysMessage, KeyValuesMessage, MintMessage, MultiUpdateMessage, ReadMessage, RenameMessage, RenewLeaseAllMessage, RenewLeaseMessage, TransferTokensMessage, UpdateMessage} from "./types/Message";
 import {MessageResponse, TxCountResponse, TxGetLeaseResponse, TxHasResponse, TxKeysResponse, TxKeyValuesResponse, TxReadResponse} from "./types/MessageResponse";
 import {LeaseInfo} from "./types/LeaseInfo";
 import {ClientErrors} from "./ClientErrors";
@@ -148,7 +148,7 @@ export class API {
 
 
         return mnemonicToAddress(this.mnemonic)
-            .then(address => sendMessage<CreateMessage, void>(this.communicationService, {
+            .then(address => sendMessage<MsgCreate, void>(this.communicationService, {
                 typeUrl:  "/bluzelle.curium.crud.MsgCreate",
                 value: {
                     key: key,
@@ -156,6 +156,7 @@ export class API {
                     uuid: this.uuid,
                     creator: address,
                     lease: new Long(blocks),
+                    metadata: new Uint8Array()
                 }
             }, gasInfo) )
             .then(standardTxResult)
@@ -220,7 +221,7 @@ export class API {
 
     delete(key: string, gasInfo: GasInfo): Promise<TxResult> {
         return mnemonicToAddress(this.mnemonic)
-            .then(address => sendMessage<DeleteMessage, void>(this.communicationService, {
+            .then(address => sendMessage<MsgDelete, void>(this.communicationService, {
                 typeUrl:  "/bluzelle.curium.crud.MsgDelete",
                 value: {
                     key: key,
@@ -604,7 +605,7 @@ export class API {
 
         return this.getAddress()
             .then(address =>
-                sendMessage<CreateMessage, void>(this.communicationService, {
+                sendMessage<MsgCreate, void>(this.communicationService, {
                 typeUrl:  "/bluzelle.curium.crud.MsgUpsert",
                 value: {
                     key: key,
@@ -612,6 +613,7 @@ export class API {
                     uuid: this.uuid,
                     creator: address,
                     lease: new Long(0),
+                    metadata: new Uint8Array()
                 }
             }, gasInfo)
                 .then(standardTxResult))
