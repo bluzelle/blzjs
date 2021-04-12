@@ -5,7 +5,7 @@ import {AccountResult} from "./types/cosmos/AccountResult";
 import {AccountsResult} from "./types/cosmos/AccountsResult";
 import {QueryCountResult, QueryGetLeaseResult, QueryGetNShortestLeasesResult, QueryHasResult, QueryKeysResult, QueryKeyValuesResult, QueryOwnerResult} from "./types/QueryResult";
 import {CommunicationService, mnemonicToAddress, newCommunicationService, sendMessage, withTransaction, WithTransactionsOptions} from "./services/CommunicationService";
-import {CountMessage, DeleteAllMessage, GetLeaseMessage, HasMessage, KeysMessage, KeyValuesMessage, MintMessage, MultiUpdateMessage, ReadMessage, RenameMessage, RenewLeaseAllMessage, RenewLeaseMessage, TransferTokensMessage, UpdateMessage} from "./types/Message";
+import {CountMessage, DeleteAllMessage, GetLeaseMessage, HasMessage, KeysMessage, KeyValuesMessage, Message, MintMessage, MultiUpdateMessage, ReadMessage, RenameMessage, RenewLeaseAllMessage, RenewLeaseMessage, TransferTokensMessage, UpdateMessage} from "./types/Message";
 import {MessageResponse, TxCountResponse, TxGetLeaseResponse, TxHasResponse, TxKeysResponse, TxKeyValuesResponse, TxReadResponse} from "./types/MessageResponse";
 import {LeaseInfo} from "./types/LeaseInfo";
 import {ClientErrors} from "./ClientErrors";
@@ -439,7 +439,7 @@ export class API {
     }
 
 
-    sendMessage(message: any, gasInfo: GasInfo) {
+    sendMessage<T>(message: Message<T>, gasInfo: GasInfo) {
         return sendMessage(this.communicationService, message, gasInfo);
     }
 
