@@ -1,6 +1,6 @@
 {
   "name": "@bluzelle/db-js",
-  "version": "4.0.3",
+  "version": "4.0.4",
   "description": "JS client for BluzelleDB",
   "main": "lib/bluzelle-node.js",
   "license": "MIT",
