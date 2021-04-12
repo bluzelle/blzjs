@@ -113,6 +113,7 @@ class API {
                 uuid: this.uuid,
                 creator: address,
                 lease: new long_1.default(blocks),
+                metadata: new Uint8Array()
             }
         }, gasInfo))
             .then(standardTxResult);
@@ -502,6 +503,7 @@ class API {
                 uuid: this.uuid,
                 creator: address,
                 lease: new long_1.default(0),
+                metadata: new Uint8Array()
             }
         }, gasInfo)
             .then(standardTxResult));

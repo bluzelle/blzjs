@@ -2,6 +2,7 @@ import { BluzelleConfig } from "./types/BluzelleConfig";
 import { GasInfo } from "./types/GasInfo";
 import { AccountResult } from "./types/cosmos/AccountResult";
 import { CommunicationService, WithTransactionsOptions } from "./services/CommunicationService";
+import { Message } from "./types/Message";
 import { MessageResponse } from "./types/MessageResponse";
 import { LeaseInfo } from "./types/LeaseInfo";
 import { TxCountResult, TxGetLeaseResult, TxGetNShortestLeasesResult, TxHasResult, TxKeysResult, TxReadResult, TxResult } from "./types/TxResult";
@@ -113,7 +114,7 @@ export declare class API {
         key: string;
         value: string;
     }[]>;
-    sendMessage(message: any, gasInfo: GasInfo): Promise<MessageResponse<unknown>>;
+    sendMessage<T>(message: Message<T>, gasInfo: GasInfo): Promise<MessageResponse<unknown>>;
     taxInfo(): Promise<any>;
     txCount(gasInfo: GasInfo): Promise<TxCountResult>;
     txGetLease(key: string, gasInfo: GasInfo): Promise<TxGetLeaseResult>;

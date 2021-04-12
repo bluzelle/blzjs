@@ -1,4 +1,3 @@
-import Long from "long";
 export interface Message<T> {
     type?: string;
     typeUrl?: string;
@@ -12,13 +11,6 @@ export interface MintMessage {
     Minter: string;
     Sender: string;
     Time: string;
-}
-export interface CreateMessage {
-    key: string;
-    value: Uint8Array;
-    creator: string;
-    lease: Long;
-    uuid: string;
 }
 export interface GetLeaseMessage {
     Key: string;
@@ -91,11 +83,6 @@ export interface RenewLeaseAllMessage {
     Lease: string;
     Owner: string;
     UUID: string;
-}
-export interface DeleteMessage {
-    key: string;
-    creator: string;
-    uuid: string;
 }
 export interface DeleteAllMessage {
     Owner: string;
