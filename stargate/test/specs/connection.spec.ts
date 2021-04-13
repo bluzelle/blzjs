@@ -15,6 +15,17 @@ describe('connections tests', function () {
 
     });
 
+    it('should throw an error if incorrect mnemonic is entered', () => {
+        const bz2 = bluzelle({
+            mnemonic: 'steel vast chimney city hurt planet trend bread onion high school dream rookie lemon breeze rich praise hero position favorite panel pizza assume enroll',
+            endpoint: bz.url,
+            uuid: bz.uuid
+        });
+
+        return expect(bz2.create('key', 'value', defaultGasParams())).to.be.rejectedWith(/Invalid account/);
+
+    });
+
     it.skip('should allow for a large number of simultaneous connections', async function () {
         const CLIENT_COUNT = 5;
         const COUNT_KEYS = 5;

@@ -554,7 +554,7 @@ const getRpcClient = (url) => {
 const MINUTE = 60;
 const HOUR = MINUTE * 60;
 const DAY = HOUR * 24;
-const convertLease = ({ seconds = 0, minutes = 0, hours = 0, days = 0 }) => Math.round((seconds + (minutes * MINUTE) + (hours * HOUR) + (days * DAY)) / BLOCK_TIME_IN_SECONDS);
+const convertLease = ({ seconds = 0, minutes = 0, hours = 0, days = 0 }) => Math.round((seconds + (minutes * MINUTE) + (hours * HOUR) + (days * DAY)) / BLOCK_TIME_IN_SECONDS) || (DAY * 10) / BLOCK_TIME_IN_SECONDS;
 const findMine = (res, condition) => {
     for (let i = 0; i < res.data.length; i++) {
         if (condition(res.data[i])) {

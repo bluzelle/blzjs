@@ -165,6 +165,9 @@ const getSequence = (service: CommunicationService, cosmos: SigningStargateClien
             .then(address =>
                 service.accountRequested = cosmos.getAccount(address)
                 .then((data: any) => {
+                    if (!data) {
+                        throw 'Invalid account: check your mnemonic'
+                    }
                     service.seq = data.sequence
                     service.account = data.accountNumber
                 }))

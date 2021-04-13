@@ -1,6 +1,6 @@
 FROM python:3
 
-WORKDIR /usr/src/app
+WORKDIR /usr/lib/app
 
 RUN git clone https://github.com/bluzelle/blzpy.git
 

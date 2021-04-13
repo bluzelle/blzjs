@@ -10,6 +10,7 @@ import {browserProxy} from "./browserProxy";
 import {pythonProxy} from "./pythonProxy";
 import {rubyProxy} from "./rubyProxy";
 import {goProxy} from "./goProxy";
+import {localChain} from "../../config"
 export const DEFAULT_TIMEOUT = 800000;
 import axios from 'axios'
 import delay from "delay";
@@ -18,25 +19,23 @@ import {phpProxy} from "./phpProxy";
 import {remoteProxy} from "./remoteProxy";
 import {cSharpProxy} from "./cSharpProxy";
 import {extend} from 'lodash'
-import {GasInfo} from '../../../src/types/GasInfo'
+import {GasInfo} from '../../../lib/types/GasInfo'
 import {Some} from "monet";
 
 // Allow self signed certificates
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
-require('dotenv').config()
+
 
 export type APIAndSwarm = API & {swarm?: Swarm};
 
 const useLocalClient = (): API | undefined => {
 
-    if (process.env.MNEMONIC && process.env.ENDPOINT) {
-        return bluzelle({
-            mnemonic: process.env.MNEMONIC || '',
-            endpoint: process.env.ENDPOINT || '',
-            uuid: Date.now().toString()
-        })
-    }
+    return bluzelle({
+        mnemonic: localChain.mnemonic,
+        endpoint: localChain.endpoint,
+        uuid: Date.now().toString()
+    })
 }
 
 
