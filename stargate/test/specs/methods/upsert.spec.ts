@@ -67,10 +67,18 @@ describe('upsert()', function () {
 
 
         await bz.upsert('myKey', data, defaultGasParams())
-            .catch(() => bz.create('aven', 'dauz', defaultGasParams()));
-
-        expect(await bz.read('aven')).to.equal('dauz')
+            .catch(() => bz.create('aven', 'dauz', defaultGasParams()))
+            .then(async () => expect(await bz.read('aven')).to.equal('dauz'));
     });
+
+    it('should throw an error if key is empty', () => {
+        return expect(bz.upsert('', 'value', defaultGasParams())).to.be.rejectedWith('Key cannot be empty')
+    })
+
+    it('should allow / in the key', () => {
+        return bz.upsert('/', 'dauz', defaultGasParams())
+            .then(() => expect(bz.read('/')).to.equal('dauz'))
+    })
 
 });
 

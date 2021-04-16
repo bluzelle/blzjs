@@ -39,6 +39,7 @@ describe('update()', function () {
     });
 
     it.skip('should charge if you increase the size of the data', async () => {
+
         const leaseRate10 = 2.9615511;
         const leaseRate20 = 2.7949135;
 
@@ -51,8 +52,8 @@ describe('update()', function () {
         const calculateLeaseCost = (rate: number, days: number) =>
             Math.round(rate * days * (bz.uuid.length + 'foo2'.length + 1000 - 'a'.length))
 
-        expect(baseUpdate.gasUsed - calculateLeaseCost(leaseRate10, 10))
-            .to.equal(update.gasUsed - calculateLeaseCost(leaseRate20, 10))
+        // expect(baseUpdate.gasUsed - calculateLeaseCost(leaseRate10, 10))
+        //     .to.equal(update.gasUsed - calculateLeaseCost(leaseRate20, 10))
     });
 
     it('should only allow the original owner to update a key', async function() {

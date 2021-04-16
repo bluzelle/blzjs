@@ -37,7 +37,7 @@ describe('delete()', function () {
 
     it('should throw an error if a key does not exist', async () => {
         expect(
-            await bz.delete('noKey', defaultGasParams()).catch(e => e.error)
+            await bz.delete('noKey', defaultGasParams()).catch(e => e)
         ).to.match(/Key does not exist/);
     });
 

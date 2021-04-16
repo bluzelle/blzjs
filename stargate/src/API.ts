@@ -141,11 +141,8 @@ export class API {
     async create(key: string, value: string, gasInfo: GasInfo, leaseInfo: LeaseInfo = {}): Promise<TxResult> {
         const blocks = convertLease(leaseInfo);
 
-        assert(!!key, ClientErrors.KEY_CANNOT_BE_EMPTY);
-        assert(typeof key === 'string', ClientErrors.KEY_MUST_BE_A_STRING);
-        assert(typeof value === 'string', ClientErrors.VALUE_MUST_BE_A_STRING);
-        //assert(blocks >= 0, ClientErrors.INVALID_LEASE_TIME);
-
+        //assert(typeof key === 'string', ClientErrors.KEY_MUST_BE_A_STRING);
+        //assert(typeof value === 'string', ClientErrors.VALUE_MUST_BE_A_STRING);
 
         return mnemonicToAddress(this.mnemonic)
             .then(address => sendMessage<MsgCreate, void>(this.communicationService, {
@@ -155,10 +152,10 @@ export class API {
                     value: new TextEncoder().encode(value),
                     uuid: this.uuid,
                     creator: address,
-                    lease: new Long(blocks),
+                    lease: Long.fromInt(blocks),
                     metadata: new Uint8Array()
                 }
-            }, gasInfo) )
+            }, gasInfo))
             .then(standardTxResult)
     }
 
@@ -229,6 +226,7 @@ export class API {
                     creator: address,
                 }
             }, gasInfo) )
+            .then(x => x)
             .then(standardTxResult)
     }
 
@@ -574,11 +572,11 @@ export class API {
 
         const blocks = convertLease(leaseInfo);
 
-        assert(!!key, ClientErrors.KEY_CANNOT_BE_EMPTY);
-        assert(typeof key === 'string', ClientErrors.KEY_MUST_BE_A_STRING);
-        assert(typeof value === 'string', ClientErrors.VALUE_MUST_BE_A_STRING);
-        assert(blocks >= 0, ClientErrors.INVALID_LEASE_TIME);
-        assert(!key.includes('/'), ClientErrors.KEY_CANNOT_CONTAIN_SLASH)
+        //assert(!!key, ClientErrors.KEY_CANNOT_BE_EMPTY);
+        //assert(typeof key === 'string', ClientErrors.KEY_MUST_BE_A_STRING);
+        // assert(typeof value === 'string', ClientErrors.VALUE_MUST_BE_A_STRING);
+        // assert(blocks >= 0, ClientErrors.INVALID_LEASE_TIME);
+        // assert(!key.includes('/'), ClientErrors.KEY_CANNOT_CONTAIN_SLASH)
 
         return sendMessage<UpdateMessage, void>(this.communicationService, {
             type: "crud/update",
@@ -597,11 +595,10 @@ export class API {
 
         const blocks = convertLease(leaseInfo);
 
-        assert(!!key, ClientErrors.KEY_CANNOT_BE_EMPTY);
-        assert(typeof key === 'string', ClientErrors.KEY_MUST_BE_A_STRING);
-        assert(typeof value === 'string', ClientErrors.VALUE_MUST_BE_A_STRING);
-        assert(blocks >= 0, ClientErrors.INVALID_LEASE_TIME);
-        assert(!key.includes('/'), ClientErrors.KEY_CANNOT_CONTAIN_SLASH)
+
+        //assert(typeof key === 'string', ClientErrors.KEY_MUST_BE_A_STRING);
+        //assert(typeof value === 'string', ClientErrors.VALUE_MUST_BE_A_STRING);
+
 
         return this.getAddress()
             .then(address =>
@@ -612,7 +609,7 @@ export class API {
                     value: new TextEncoder().encode(value),
                     uuid: this.uuid,
                     creator: address,
-                    lease: new Long(0),
+                    lease: Long.fromInt(blocks),
                     metadata: new Uint8Array()
                 }
             }, gasInfo)
@@ -717,7 +714,7 @@ const MINUTE = 60
 const HOUR = MINUTE * 60
 const DAY = HOUR * 24
 const convertLease = ({seconds = 0, minutes = 0, hours = 0, days = 0}: LeaseInfo): number =>
-    Math.round((seconds + (minutes * MINUTE) + (hours * HOUR) + (days * DAY)) / BLOCK_TIME_IN_SECONDS) || (DAY * 10) / BLOCK_TIME_IN_SECONDS
+    Math.round((seconds + (minutes * MINUTE) + (hours * HOUR) + (days * DAY)) / BLOCK_TIME_IN_SECONDS) || Math.round((DAY * 10) / BLOCK_TIME_IN_SECONDS)
 
 const findMine = <T>(res: { data: T[] }, condition: (x: T) => boolean): { res: any, data: T | undefined } => {
     for (let i: number = 0; i < res.data.length; i++) {

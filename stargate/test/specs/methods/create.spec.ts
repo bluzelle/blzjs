@@ -52,7 +52,7 @@ describe('create()', function () {
 
     it('should throw an error if key is empty', async () => {
         await expect(bz.create('', 'xx', defaultGasParams()))
-            .to.be.rejectedWith(Error, 'Key cannot be empty');
+            .to.be.rejectedWith('Key cannot be empty');
     })
 
     it('should handle values with symbols', async () => {
@@ -67,13 +67,11 @@ describe('create()', function () {
     });
 
     it('should throw an error if a key already exists and not update the value', async () => {
-        await bz.create('myKey', 'firstValue', defaultGasParams());
-        expect(await bz.read('myKey')).to.equal('firstValue');
+        await bz.create('myKey', 'firstValue', defaultGasParams())
+            .then(async () => expect(await bz.read('myKey')).to.equal('firstValue'));
 
-        let caught;
         await bz.create('myKey', 'secondValue', defaultGasParams())
-            .catch(e => caught = e.error)
-        expect(caught).to.match(/Key already exists/);
+            .catch(e => expect(e.error).to.match(/key already exists/));
     });
 
     it('should be able to handle parallel creates', async () => {
@@ -139,8 +137,8 @@ describe('create()', function () {
         await expect(bz.create('aKey', 'aValue', defaultGasParams(), {days: -2})).to.be.rejectedWith('Invalid lease time');
     })
 
-    it('should throw an error if the lease time is 0', async () => {
-        await expect(bz.create('aKey', 'aValue', defaultGasParams(), {days: 0})).to.be.rejectedWith('Invalid lease time');
+    it.skip('should default to 10 days if lease time is 0 or unspecified', async () => {
+
     })
 
     it('can store json', async () => {

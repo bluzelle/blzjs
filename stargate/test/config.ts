@@ -4,6 +4,6 @@ interface Config {
 }
 
 export const localChain: Config = {
-    mnemonic: "exhibit slender license split loyal glove setup beauty ticket dizzy pistol human wonder small need door entry logic pact claim crack brown escape law",
+    mnemonic: "loan arrow prison cloud rain diamond parrot culture marriage forget win brief kingdom response try image auto rather rare tone chef can shallow bus",
     endpoint: "http://localhost:26657"
 }
