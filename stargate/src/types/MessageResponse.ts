@@ -26,8 +26,4 @@ export interface TxKeyValuesResponse {
     keyvalues: {key: string, value: string}[]
 }
 
-export interface TxReadResponse {
-    value: string
-    key: string
-}
 

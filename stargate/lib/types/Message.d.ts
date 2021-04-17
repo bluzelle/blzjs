@@ -62,11 +62,6 @@ export interface MultiUpdateMessage {
     Owner: string;
     UUID: string;
 }
-export interface ReadMessage {
-    Key: string;
-    Owner: string;
-    UUID: string;
-}
 export interface RenewLeaseMessage {
     Key: string;
     Lease: string;

@@ -23,8 +23,4 @@ export interface TxKeyValuesResponse {
         value: string;
     }[];
 }
-export interface TxReadResponse {
-    value: string;
-    key: string;
-}
 //# sourceMappingURL=MessageResponse.d.ts.map

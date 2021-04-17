@@ -30,6 +30,7 @@ const BLOCK_TIME_IN_SECONDS = 5.5;
 Registry_1.addMessageType("/bluzelle.curium.crud.MsgCreate", tx_1.MsgCreate);
 Registry_1.addMessageType('/bluzelle.curium.crud.MsgUpsert', tx_1.MsgUpsert);
 Registry_1.addMessageType("/bluzelle.curium.crud.MsgDelete", tx_1.MsgDelete);
+Registry_1.addMessageType("/bluzelle.curium.crud.MsgRead", tx_1.MsgRead);
 class API {
     constructor(config) {
         this.address = '';
@@ -100,10 +101,8 @@ class API {
     }
     async create(key, value, gasInfo, leaseInfo = {}) {
         const blocks = convertLease(leaseInfo);
-        Assert_1.assert(!!key, "Key cannot be empty" /* KEY_CANNOT_BE_EMPTY */);
-        Assert_1.assert(typeof key === 'string', "Key must be a string" /* KEY_MUST_BE_A_STRING */);
-        Assert_1.assert(typeof value === 'string', "Value must be a string" /* VALUE_MUST_BE_A_STRING */);
-        //assert(blocks >= 0, ClientErrors.INVALID_LEASE_TIME);
+        //assert(typeof key === 'string', ClientErrors.KEY_MUST_BE_A_STRING);
+        //assert(typeof value === 'string', ClientErrors.VALUE_MUST_BE_A_STRING);
         return CommunicationService_1.mnemonicToAddress(this.mnemonic)
             .then(address => CommunicationService_1.sendMessage(this.communicationService, {
             typeUrl: "/bluzelle.curium.crud.MsgCreate",
@@ -112,7 +111,7 @@ class API {
                 value: new TextEncoder().encode(value),
                 uuid: this.uuid,
                 creator: address,
-                lease: new long_1.default(blocks),
+                lease: long_1.default.fromInt(blocks),
                 metadata: new Uint8Array()
             }
         }, gasInfo))
@@ -178,6 +177,7 @@ class API {
                 creator: address,
             }
         }, gasInfo))
+            .then(x => x)
             .then(standardTxResult);
     }
     deleteAll(gasInfo) {
@@ -441,19 +441,22 @@ class API {
         }));
     }
     txRead(key, gasInfo) {
-        return CommunicationService_1.sendMessage(this.communicationService, {
-            type: 'crud/read',
+        return CommunicationService_1.mnemonicToAddress(this.mnemonic)
+            .then(address => CommunicationService_1.sendMessage(this.communicationService, {
+            typeUrl: "/bluzelle.curium.crud.MsgRead",
             value: {
-                Key: key,
-                UUID: this.uuid,
-                Owner: this.address
+                key,
+                uuid: this.uuid,
+                creator: address
             }
-        }, gasInfo)
-            .then(res => findMine(res, it => it.value !== undefined && it.key === key))
+        }, gasInfo))
+            .then(res => findMine(res, it => it != undefined && (it === null || it === void 0 ? void 0 : it.key) == key))
+            .then(x => x)
             .then(({ res, data }) => ({
             ...standardTxResult(res),
-            value: data === null || data === void 0 ? void 0 : data.value
-        }));
+            value: new TextDecoder().decode(data === null || data === void 0 ? void 0 : data.value)
+        }))
+            .then(x => x);
     }
     undelegate(valoper, amount, gasInfo) {
         return this.sendMessage({
@@ -470,11 +473,11 @@ class API {
     }
     async update(key, value, gasInfo, leaseInfo = {}) {
         const blocks = convertLease(leaseInfo);
-        Assert_1.assert(!!key, "Key cannot be empty" /* KEY_CANNOT_BE_EMPTY */);
-        Assert_1.assert(typeof key === 'string', "Key must be a string" /* KEY_MUST_BE_A_STRING */);
-        Assert_1.assert(typeof value === 'string', "Value must be a string" /* VALUE_MUST_BE_A_STRING */);
-        Assert_1.assert(blocks >= 0, "Invalid lease time" /* INVALID_LEASE_TIME */);
-        Assert_1.assert(!key.includes('/'), "Key cannot contain a slash" /* KEY_CANNOT_CONTAIN_SLASH */);
+        //assert(!!key, ClientErrors.KEY_CANNOT_BE_EMPTY);
+        //assert(typeof key === 'string', ClientErrors.KEY_MUST_BE_A_STRING);
+        // assert(typeof value === 'string', ClientErrors.VALUE_MUST_BE_A_STRING);
+        // assert(blocks >= 0, ClientErrors.INVALID_LEASE_TIME);
+        // assert(!key.includes('/'), ClientErrors.KEY_CANNOT_CONTAIN_SLASH)
         return CommunicationService_1.sendMessage(this.communicationService, {
             type: "crud/update",
             value: {
@@ -489,11 +492,8 @@ class API {
     }
     async upsert(key, value, gasInfo, leaseInfo = {}) {
         const blocks = convertLease(leaseInfo);
-        Assert_1.assert(!!key, "Key cannot be empty" /* KEY_CANNOT_BE_EMPTY */);
-        Assert_1.assert(typeof key === 'string', "Key must be a string" /* KEY_MUST_BE_A_STRING */);
-        Assert_1.assert(typeof value === 'string', "Value must be a string" /* VALUE_MUST_BE_A_STRING */);
-        Assert_1.assert(blocks >= 0, "Invalid lease time" /* INVALID_LEASE_TIME */);
-        Assert_1.assert(!key.includes('/'), "Key cannot contain a slash" /* KEY_CANNOT_CONTAIN_SLASH */);
+        //assert(typeof key === 'string', ClientErrors.KEY_MUST_BE_A_STRING);
+        //assert(typeof value === 'string', ClientErrors.VALUE_MUST_BE_A_STRING);
         return this.getAddress()
             .then(address => CommunicationService_1.sendMessage(this.communicationService, {
             typeUrl: "/bluzelle.curium.crud.MsgUpsert",
@@ -502,7 +502,7 @@ class API {
                 value: new TextEncoder().encode(value),
                 uuid: this.uuid,
                 creator: address,
-                lease: new long_1.default(0),
+                lease: long_1.default.fromInt(blocks),
                 metadata: new Uint8Array()
             }
         }, gasInfo)
@@ -554,7 +554,7 @@ const getRpcClient = (url) => {
 const MINUTE = 60;
 const HOUR = MINUTE * 60;
 const DAY = HOUR * 24;
-const convertLease = ({ seconds = 0, minutes = 0, hours = 0, days = 0 }) => Math.round((seconds + (minutes * MINUTE) + (hours * HOUR) + (days * DAY)) / BLOCK_TIME_IN_SECONDS) || (DAY * 10) / BLOCK_TIME_IN_SECONDS;
+const convertLease = ({ seconds = 0, minutes = 0, hours = 0, days = 0 }) => Math.round((seconds + (minutes * MINUTE) + (hours * HOUR) + (days * DAY)) / BLOCK_TIME_IN_SECONDS) || Math.round((DAY * 10) / BLOCK_TIME_IN_SECONDS);
 const findMine = (res, condition) => {
     for (let i = 0; i < res.data.length; i++) {
         if (condition(res.data[i])) {

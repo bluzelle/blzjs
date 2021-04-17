@@ -52,6 +52,16 @@ describe('transactions', function () {
             } catch (e) {
             }
             await expect(bz.read('foo')).to.be.rejectedWith(/key not found/);
+        });
+
+        it('should preserve message and message response order', async () => {
+            await bz.create('first', 'transaction', defaultGasParams());
+            await bz.withTransaction(() => {
+                    bz.create('foo', 'bar', defaultGasParams());
+                    bz.txRead('first', defaultGasParams());
+                })
+                .then(x => x)
+
         })
 
         it('should throw an error if withTransaction() is nested', async () => {
@@ -79,13 +89,12 @@ describe('transactions', function () {
 
         it('should attach memo to transaction', () =>
             bz.withTransaction(() =>
-                bz.create('aven', 'dauz', defaultGasParams())
-            , {memo: 'foo'})
+                    bz.create('aven', 'dauz', defaultGasParams())
+                , {memo: 'foo'})
                 .then(response => response.txhash)
                 .then(hash => bz.getTx(hash))
                 .then(transaction => transaction.tx.value.memo)
                 .then(memo => expect(memo).to.equal('foo'))
-
         );
 
         it('')

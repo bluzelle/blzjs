@@ -2,6 +2,15 @@ import Long from "long";
 import _m0 from "protobufjs/minimal";
 export declare const protobufPackage = "bluzelle.curium.crud";
 /** this line is used by starport scaffolding # proto/tx/message */
+export interface MsgRead {
+    creator: string;
+    uuid: string;
+    key: string;
+}
+export interface MsgReadResponse {
+    value: Uint8Array;
+    key: string;
+}
 export interface MsgUpsert {
     creator: string;
     uuid: string;
@@ -39,6 +48,20 @@ export interface MsgDelete {
 }
 export interface MsgDeleteResponse {
 }
+export declare const MsgRead: {
+    encode(message: MsgRead, writer?: _m0.Writer): _m0.Writer;
+    decode(input: _m0.Reader | Uint8Array, length?: number | undefined): MsgRead;
+    fromJSON(object: any): MsgRead;
+    toJSON(message: MsgRead): unknown;
+    fromPartial(object: DeepPartial<MsgRead>): MsgRead;
+};
+export declare const MsgReadResponse: {
+    encode(message: MsgReadResponse, writer?: _m0.Writer): _m0.Writer;
+    decode(input: _m0.Reader | Uint8Array, length?: number | undefined): MsgReadResponse;
+    fromJSON(object: any): MsgReadResponse;
+    toJSON(message: MsgReadResponse): unknown;
+    fromPartial(object: DeepPartial<MsgReadResponse>): MsgReadResponse;
+};
 export declare const MsgUpsert: {
     encode(message: MsgUpsert, writer?: _m0.Writer): _m0.Writer;
     decode(input: _m0.Reader | Uint8Array, length?: number | undefined): MsgUpsert;
@@ -98,6 +121,7 @@ export declare const MsgDeleteResponse: {
 /** Msg defines the Msg service. */
 export interface Msg {
     /** this line is used by starport scaffolding # proto/tx/rpc */
+    Read(request: MsgRead): Promise<MsgReadResponse>;
     Upsert(request: MsgUpsert): Promise<MsgUpsertResponse>;
     Create(request: MsgCreate): Promise<MsgCreateResponse>;
     Update(request: MsgUpdate): Promise<MsgUpdateResponse>;
@@ -106,6 +130,7 @@ export interface Msg {
 export declare class MsgClientImpl implements Msg {
     private readonly rpc;
     constructor(rpc: Rpc);
+    Read(request: MsgRead): Promise<MsgReadResponse>;
     Upsert(request: MsgUpsert): Promise<MsgUpsertResponse>;
     Create(request: MsgCreate): Promise<MsgCreateResponse>;
     Update(request: MsgUpdate): Promise<MsgUpdateResponse>;

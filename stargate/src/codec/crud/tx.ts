@@ -5,6 +5,17 @@ import _m0 from "protobufjs/minimal";
 export const protobufPackage = "bluzelle.curium.crud";
 
 /** this line is used by starport scaffolding # proto/tx/message */
+export interface MsgRead {
+  creator: string;
+  uuid: string;
+  key: string;
+}
+
+export interface MsgReadResponse {
+  value: Uint8Array;
+  key: string;
+}
+
 export interface MsgUpsert {
   creator: string;
   uuid: string;
@@ -45,6 +56,174 @@ export interface MsgDelete {
 }
 
 export interface MsgDeleteResponse {}
+
+const baseMsgRead: object = { creator: "", uuid: "", key: "" };
+
+export const MsgRead = {
+  encode(
+    message: MsgRead,
+    writer: _m0.Writer = _m0.Writer.create()
+  ): _m0.Writer {
+    if (message.creator !== "") {
+      writer.uint32(10).string(message.creator);
+    }
+    if (message.uuid !== "") {
+      writer.uint32(18).string(message.uuid);
+    }
+    if (message.key !== "") {
+      writer.uint32(26).string(message.key);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): MsgRead {
+    const reader = input instanceof Uint8Array ? new _m0.Reader(input) : input;
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = { ...baseMsgRead } as MsgRead;
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          message.creator = reader.string();
+          break;
+        case 2:
+          message.uuid = reader.string();
+          break;
+        case 3:
+          message.key = reader.string();
+          break;
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(object: any): MsgRead {
+    const message = { ...baseMsgRead } as MsgRead;
+    if (object.creator !== undefined && object.creator !== null) {
+      message.creator = String(object.creator);
+    } else {
+      message.creator = "";
+    }
+    if (object.uuid !== undefined && object.uuid !== null) {
+      message.uuid = String(object.uuid);
+    } else {
+      message.uuid = "";
+    }
+    if (object.key !== undefined && object.key !== null) {
+      message.key = String(object.key);
+    } else {
+      message.key = "";
+    }
+    return message;
+  },
+
+  toJSON(message: MsgRead): unknown {
+    const obj: any = {};
+    message.creator !== undefined && (obj.creator = message.creator);
+    message.uuid !== undefined && (obj.uuid = message.uuid);
+    message.key !== undefined && (obj.key = message.key);
+    return obj;
+  },
+
+  fromPartial(object: DeepPartial<MsgRead>): MsgRead {
+    const message = { ...baseMsgRead } as MsgRead;
+    if (object.creator !== undefined && object.creator !== null) {
+      message.creator = object.creator;
+    } else {
+      message.creator = "";
+    }
+    if (object.uuid !== undefined && object.uuid !== null) {
+      message.uuid = object.uuid;
+    } else {
+      message.uuid = "";
+    }
+    if (object.key !== undefined && object.key !== null) {
+      message.key = object.key;
+    } else {
+      message.key = "";
+    }
+    return message;
+  },
+};
+
+const baseMsgReadResponse: object = { key: "" };
+
+export const MsgReadResponse = {
+  encode(
+    message: MsgReadResponse,
+    writer: _m0.Writer = _m0.Writer.create()
+  ): _m0.Writer {
+    if (message.value.length !== 0) {
+      writer.uint32(10).bytes(message.value);
+    }
+    if (message.key !== "") {
+      writer.uint32(18).string(message.key);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): MsgReadResponse {
+    const reader = input instanceof Uint8Array ? new _m0.Reader(input) : input;
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = { ...baseMsgReadResponse } as MsgReadResponse;
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          message.value = reader.bytes();
+          break;
+        case 2:
+          message.key = reader.string();
+          break;
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(object: any): MsgReadResponse {
+    const message = { ...baseMsgReadResponse } as MsgReadResponse;
+    if (object.value !== undefined && object.value !== null) {
+      message.value = bytesFromBase64(object.value);
+    }
+    if (object.key !== undefined && object.key !== null) {
+      message.key = String(object.key);
+    } else {
+      message.key = "";
+    }
+    return message;
+  },
+
+  toJSON(message: MsgReadResponse): unknown {
+    const obj: any = {};
+    message.value !== undefined &&
+      (obj.value = base64FromBytes(
+        message.value !== undefined ? message.value : new Uint8Array()
+      ));
+    message.key !== undefined && (obj.key = message.key);
+    return obj;
+  },
+
+  fromPartial(object: DeepPartial<MsgReadResponse>): MsgReadResponse {
+    const message = { ...baseMsgReadResponse } as MsgReadResponse;
+    if (object.value !== undefined && object.value !== null) {
+      message.value = object.value;
+    } else {
+      message.value = new Uint8Array();
+    }
+    if (object.key !== undefined && object.key !== null) {
+      message.key = object.key;
+    } else {
+      message.key = "";
+    }
+    return message;
+  },
+};
 
 const baseMsgUpsert: object = {
   creator: "",
@@ -758,6 +937,7 @@ export const MsgDeleteResponse = {
 /** Msg defines the Msg service. */
 export interface Msg {
   /** this line is used by starport scaffolding # proto/tx/rpc */
+  Read(request: MsgRead): Promise<MsgReadResponse>;
   Upsert(request: MsgUpsert): Promise<MsgUpsertResponse>;
   Create(request: MsgCreate): Promise<MsgCreateResponse>;
   Update(request: MsgUpdate): Promise<MsgUpdateResponse>;
@@ -769,6 +949,12 @@ export class MsgClientImpl implements Msg {
   constructor(rpc: Rpc) {
     this.rpc = rpc;
   }
+  Read(request: MsgRead): Promise<MsgReadResponse> {
+    const data = MsgRead.encode(request).finish();
+    const promise = this.rpc.request("bluzelle.curium.crud.Msg", "Read", data);
+    return promise.then((data) => MsgReadResponse.decode(new _m0.Reader(data)));
+  }
+
   Upsert(request: MsgUpsert): Promise<MsgUpsertResponse> {
     const data = MsgUpsert.encode(request).finish();
     const promise = this.rpc.request(

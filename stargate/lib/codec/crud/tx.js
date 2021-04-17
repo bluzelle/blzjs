@@ -3,11 +3,168 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MsgClientImpl = exports.MsgDeleteResponse = exports.MsgDelete = exports.MsgUpdateResponse = exports.MsgUpdate = exports.MsgCreateResponse = exports.MsgCreate = exports.MsgUpsertResponse = exports.MsgUpsert = exports.protobufPackage = void 0;
+exports.MsgClientImpl = exports.MsgDeleteResponse = exports.MsgDelete = exports.MsgUpdateResponse = exports.MsgUpdate = exports.MsgCreateResponse = exports.MsgCreate = exports.MsgUpsertResponse = exports.MsgUpsert = exports.MsgReadResponse = exports.MsgRead = exports.protobufPackage = void 0;
 /* eslint-disable */
 const long_1 = __importDefault(require("long"));
 const minimal_1 = __importDefault(require("protobufjs/minimal"));
 exports.protobufPackage = "bluzelle.curium.crud";
+const baseMsgRead = { creator: "", uuid: "", key: "" };
+exports.MsgRead = {
+    encode(message, writer = minimal_1.default.Writer.create()) {
+        if (message.creator !== "") {
+            writer.uint32(10).string(message.creator);
+        }
+        if (message.uuid !== "") {
+            writer.uint32(18).string(message.uuid);
+        }
+        if (message.key !== "") {
+            writer.uint32(26).string(message.key);
+        }
+        return writer;
+    },
+    decode(input, length) {
+        const reader = input instanceof Uint8Array ? new minimal_1.default.Reader(input) : input;
+        let end = length === undefined ? reader.len : reader.pos + length;
+        const message = { ...baseMsgRead };
+        while (reader.pos < end) {
+            const tag = reader.uint32();
+            switch (tag >>> 3) {
+                case 1:
+                    message.creator = reader.string();
+                    break;
+                case 2:
+                    message.uuid = reader.string();
+                    break;
+                case 3:
+                    message.key = reader.string();
+                    break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+            }
+        }
+        return message;
+    },
+    fromJSON(object) {
+        const message = { ...baseMsgRead };
+        if (object.creator !== undefined && object.creator !== null) {
+            message.creator = String(object.creator);
+        }
+        else {
+            message.creator = "";
+        }
+        if (object.uuid !== undefined && object.uuid !== null) {
+            message.uuid = String(object.uuid);
+        }
+        else {
+            message.uuid = "";
+        }
+        if (object.key !== undefined && object.key !== null) {
+            message.key = String(object.key);
+        }
+        else {
+            message.key = "";
+        }
+        return message;
+    },
+    toJSON(message) {
+        const obj = {};
+        message.creator !== undefined && (obj.creator = message.creator);
+        message.uuid !== undefined && (obj.uuid = message.uuid);
+        message.key !== undefined && (obj.key = message.key);
+        return obj;
+    },
+    fromPartial(object) {
+        const message = { ...baseMsgRead };
+        if (object.creator !== undefined && object.creator !== null) {
+            message.creator = object.creator;
+        }
+        else {
+            message.creator = "";
+        }
+        if (object.uuid !== undefined && object.uuid !== null) {
+            message.uuid = object.uuid;
+        }
+        else {
+            message.uuid = "";
+        }
+        if (object.key !== undefined && object.key !== null) {
+            message.key = object.key;
+        }
+        else {
+            message.key = "";
+        }
+        return message;
+    },
+};
+const baseMsgReadResponse = { key: "" };
+exports.MsgReadResponse = {
+    encode(message, writer = minimal_1.default.Writer.create()) {
+        if (message.value.length !== 0) {
+            writer.uint32(10).bytes(message.value);
+        }
+        if (message.key !== "") {
+            writer.uint32(18).string(message.key);
+        }
+        return writer;
+    },
+    decode(input, length) {
+        const reader = input instanceof Uint8Array ? new minimal_1.default.Reader(input) : input;
+        let end = length === undefined ? reader.len : reader.pos + length;
+        const message = { ...baseMsgReadResponse };
+        while (reader.pos < end) {
+            const tag = reader.uint32();
+            switch (tag >>> 3) {
+                case 1:
+                    message.value = reader.bytes();
+                    break;
+                case 2:
+                    message.key = reader.string();
+                    break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+            }
+        }
+        return message;
+    },
+    fromJSON(object) {
+        const message = { ...baseMsgReadResponse };
+        if (object.value !== undefined && object.value !== null) {
+            message.value = bytesFromBase64(object.value);
+        }
+        if (object.key !== undefined && object.key !== null) {
+            message.key = String(object.key);
+        }
+        else {
+            message.key = "";
+        }
+        return message;
+    },
+    toJSON(message) {
+        const obj = {};
+        message.value !== undefined &&
+            (obj.value = base64FromBytes(message.value !== undefined ? message.value : new Uint8Array()));
+        message.key !== undefined && (obj.key = message.key);
+        return obj;
+    },
+    fromPartial(object) {
+        const message = { ...baseMsgReadResponse };
+        if (object.value !== undefined && object.value !== null) {
+            message.value = object.value;
+        }
+        else {
+            message.value = new Uint8Array();
+        }
+        if (object.key !== undefined && object.key !== null) {
+            message.key = object.key;
+        }
+        else {
+            message.key = "";
+        }
+        return message;
+    },
+};
 const baseMsgUpsert = {
     creator: "",
     uuid: "",
@@ -672,6 +829,11 @@ exports.MsgDeleteResponse = {
 class MsgClientImpl {
     constructor(rpc) {
         this.rpc = rpc;
+    }
+    Read(request) {
+        const data = exports.MsgRead.encode(request).finish();
+        const promise = this.rpc.request("bluzelle.curium.crud.Msg", "Read", data);
+        return promise.then((data) => exports.MsgReadResponse.decode(new minimal_1.default.Reader(data)));
     }
     Upsert(request) {
         const data = exports.MsgUpsert.encode(request).finish();

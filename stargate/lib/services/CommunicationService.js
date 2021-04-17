@@ -102,7 +102,7 @@ const getSequence = (service, cosmos) => (service.accountRequested ? (service.ac
     .then(() => service.seq = service.seq + 1)) : (service.api.getAddress()
     .then(address => service.accountRequested = cosmos.getAccount(address)
     .then((data) => {
-    if (!data.result.value) {
+    if (!data) {
         throw 'Invalid account: check your mnemonic';
     }
     service.seq = data.sequence;

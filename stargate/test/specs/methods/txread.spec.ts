@@ -30,12 +30,12 @@ describe('txRead()', function () {
 
 
     it('should retrieve a value from the store', async () => {
-        bz.create('myKey', 'myvalue', defaultGasParams());
-        expect(await bz.txRead('myKey', defaultGasParams()).then(x => x?.value)).to.equal('myvalue');
+        await bz.create('myKey', 'myvalue', defaultGasParams());
+        await expect(await bz.txRead('myKey', defaultGasParams()).then(x => x?.value)).to.equal('myvalue');
     });
 
     it('should throw an error if key does not exist', async () => {
-        expect(await bz.txRead('noKey', defaultGasParams()).catch(e => e.error)).to.match(/Key does not exist/);
+        expect(await bz.txRead('noKey', defaultGasParams()).catch(e => e)).to.match(/Key does not exist/);
     });
 
     it('should handle parallel reads', async () => {
@@ -44,6 +44,11 @@ describe('txRead()', function () {
             await Promise.all(keys.map(key => bz.txRead(key, defaultGasParams()).then(x => x?.value)))
         ).to.deep.equal(values);
     });
+
+    it('should read response in JSON', async () => {
+        await bz.create('myKey', 'myvalue', defaultGasParams());
+        await bz.txReadTemp('myKey', defaultGasParams());
+    })
 });
 
 

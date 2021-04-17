@@ -3,22 +3,68 @@ import {BluzelleConfig} from "./types/BluzelleConfig";
 import {GasInfo} from "./types/GasInfo";
 import {AccountResult} from "./types/cosmos/AccountResult";
 import {AccountsResult} from "./types/cosmos/AccountsResult";
-import {QueryCountResult, QueryGetLeaseResult, QueryGetNShortestLeasesResult, QueryHasResult, QueryKeysResult, QueryKeyValuesResult, QueryOwnerResult} from "./types/QueryResult";
-import {CommunicationService, mnemonicToAddress, newCommunicationService, sendMessage, withTransaction, WithTransactionsOptions} from "./services/CommunicationService";
-import {CountMessage, DeleteAllMessage, GetLeaseMessage, HasMessage, KeysMessage, KeyValuesMessage, Message, MintMessage, MultiUpdateMessage, ReadMessage, RenameMessage, RenewLeaseAllMessage, RenewLeaseMessage, TransferTokensMessage, UpdateMessage} from "./types/Message";
-import {MessageResponse, TxCountResponse, TxGetLeaseResponse, TxHasResponse, TxKeysResponse, TxKeyValuesResponse, TxReadResponse} from "./types/MessageResponse";
+import {
+    QueryCountResult,
+    QueryGetLeaseResult,
+    QueryGetNShortestLeasesResult,
+    QueryHasResult,
+    QueryKeysResult,
+    QueryKeyValuesResult,
+    QueryOwnerResult
+} from "./types/QueryResult";
+import {
+    CommunicationService,
+    mnemonicToAddress,
+    newCommunicationService,
+    sendMessage,
+    withTransaction,
+    WithTransactionsOptions
+} from "./services/CommunicationService";
+import {
+    CountMessage,
+    DeleteAllMessage,
+    GetLeaseMessage,
+    HasMessage,
+    KeysMessage,
+    KeyValuesMessage,
+    Message,
+    MintMessage,
+    MultiUpdateMessage,
+    RenameMessage,
+    RenewLeaseAllMessage,
+    RenewLeaseMessage,
+    TransferTokensMessage,
+    UpdateMessage
+} from "./types/Message";
+import {
+    MessageResponse,
+    TxCountResponse,
+    TxGetLeaseResponse,
+    TxHasResponse,
+    TxKeysResponse,
+    TxKeyValuesResponse
+} from "./types/MessageResponse";
 import {LeaseInfo} from "./types/LeaseInfo";
 import {ClientErrors} from "./ClientErrors";
 import {pullAt} from 'lodash'
-import {TxCountResult, TxGetLeaseResult, TxGetNShortestLeasesResult, TxHasResult, TxKeysResult, TxReadResult, TxResult} from "./types/TxResult";
+import {
+    TxCountResult,
+    TxGetLeaseResult,
+    TxGetNShortestLeasesResult,
+    TxHasResult,
+    TxKeysResult,
+    TxReadResult,
+    TxResult
+} from "./types/TxResult";
 import {assert} from "./Assert";
 import {entropyToMnemonic, generateMnemonic} from "bip39";
 import Long from 'long'
 import {QueryClientImpl} from "./codec/crud/query";
 import {createProtobufRpcClient, QueryClient} from "@cosmjs/stargate";
 import {passThrough} from "promise-passthrough";
-import {MsgCreate, MsgDelete, MsgUpsert} from "./codec/crud/tx";
+import {MsgCreate, MsgDelete, MsgRead, MsgReadResponse, MsgUpsert} from "./codec/crud/tx";
 import {addMessageType} from "./services/Registry";
+
 export {mnemonicToAddress} from './services/CommunicationService'
 
 // TEMP STUB
@@ -90,7 +136,7 @@ interface TransactionResponse {
 addMessageType("/bluzelle.curium.crud.MsgCreate", MsgCreate)
 addMessageType('/bluzelle.curium.crud.MsgUpsert', MsgUpsert)
 addMessageType("/bluzelle.curium.crud.MsgDelete", MsgDelete)
-
+addMessageType("/bluzelle.curium.crud.MsgRead", MsgRead)
 
 export class API {
     cosmos: any;
@@ -146,7 +192,7 @@ export class API {
 
         return mnemonicToAddress(this.mnemonic)
             .then(address => sendMessage<MsgCreate, void>(this.communicationService, {
-                typeUrl:  "/bluzelle.curium.crud.MsgCreate",
+                typeUrl: "/bluzelle.curium.crud.MsgCreate",
                 value: {
                     key: key,
                     value: new TextEncoder().encode(value),
@@ -156,6 +202,7 @@ export class API {
                     metadata: new Uint8Array()
                 }
             }, gasInfo))
+            .then(x => x)
             .then(standardTxResult)
     }
 
@@ -219,13 +266,13 @@ export class API {
     delete(key: string, gasInfo: GasInfo): Promise<TxResult> {
         return mnemonicToAddress(this.mnemonic)
             .then(address => sendMessage<MsgDelete, void>(this.communicationService, {
-                typeUrl:  "/bluzelle.curium.crud.MsgDelete",
+                typeUrl: "/bluzelle.curium.crud.MsgDelete",
                 value: {
                     key: key,
                     uuid: this.uuid,
                     creator: address,
                 }
-            }, gasInfo) )
+            }, gasInfo))
             .then(x => x)
             .then(standardTxResult)
     }
@@ -539,19 +586,38 @@ export class API {
 
 
     txRead(key: string, gasInfo: GasInfo): Promise<TxReadResult | undefined> {
-        return sendMessage<ReadMessage, TxReadResponse>(this.communicationService, {
-            type: 'crud/read',
-            value: {
-                Key: key,
-                UUID: this.uuid,
-                Owner: this.address
-            }
-        }, gasInfo)
-            .then(res => findMine<TxReadResponse>(res, it => it.value !== undefined && it.key === key))
+        return mnemonicToAddress(this.mnemonic)
+            .then(address => sendMessage<MsgRead, MsgReadResponse>(this.communicationService, {
+                typeUrl: "/bluzelle.curium.crud.MsgRead",
+                value: {
+                    key,
+                    uuid: this.uuid,
+                    creator: address
+                }
+            }, gasInfo))
+            .then(x => x)
+            .then(res => findMine<MsgReadResponse>(res, it => it != undefined && it?.key == key))
             .then(({res, data}) => ({
                 ...standardTxResult(res),
-                value: data?.value
+                value: new TextDecoder().decode(data?.value)
             }))
+    }
+
+
+    txReadTemp(key: string, gasInfo: GasInfo): Promise<string> {
+        return mnemonicToAddress(this.mnemonic)
+            .then(address => sendMessage<MsgRead, { msgType: string, data: Uint8Array} >(this.communicationService, {
+                typeUrl: "/bluzelle.curium.crud.MsgRead",
+                value: {
+                    key,
+                    uuid: this.uuid,
+                    creator: address
+                }
+            }, gasInfo))
+            .then(res => res.data[0].data)
+            .then(bytes => new TextDecoder().decode(bytes))
+            .then(response => JSON.parse(response))
+
     }
 
     undelegate(valoper: string, amount: number, gasInfo: GasInfo) {
@@ -603,17 +669,17 @@ export class API {
         return this.getAddress()
             .then(address =>
                 sendMessage<MsgCreate, void>(this.communicationService, {
-                typeUrl:  "/bluzelle.curium.crud.MsgUpsert",
-                value: {
-                    key: key,
-                    value: new TextEncoder().encode(value),
-                    uuid: this.uuid,
-                    creator: address,
-                    lease: Long.fromInt(blocks),
-                    metadata: new Uint8Array()
-                }
-            }, gasInfo)
-                .then(standardTxResult))
+                    typeUrl: "/bluzelle.curium.crud.MsgUpsert",
+                    value: {
+                        key: key,
+                        value: new TextEncoder().encode(value),
+                        uuid: this.uuid,
+                        creator: address,
+                        lease: Long.fromInt(blocks),
+                        metadata: new Uint8Array()
+                    }
+                }, gasInfo)
+                    .then(standardTxResult))
     }
 
 
@@ -705,9 +771,6 @@ const getRpcClient = (url: string): Promise<QueryClientImpl> => {
         .then(createProtobufRpcClient)
         .then(rpcClient => new QueryClientImpl(rpcClient))
 }
-
-
-
 
 
 const MINUTE = 60
