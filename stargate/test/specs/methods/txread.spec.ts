@@ -2,6 +2,7 @@ import {expect} from 'chai'
 import {API} from '../../../src/API';
 import {createKeys, DEFAULT_TIMEOUT, defaultGasParams, sentryWithClient} from "../../helpers/client-helpers/client-helpers";
 import {useChaiAsPromised} from "testing/lib/globalHelpers";
+import {getTxRpcClient, mnemonicToAddress} from "../../../src/temp";
 
 describe('txRead()', function () {
     this.timeout(DEFAULT_TIMEOUT);
@@ -48,6 +49,18 @@ describe('txRead()', function () {
     it('should read response in JSON', async () => {
         await bz.create('myKey', 'myvalue', defaultGasParams());
         await bz.txReadTemp('myKey', defaultGasParams());
+    });
+
+    it('should use tx rpc client to read', () => {
+        return getTxRpcClient()
+            .then(async (txClient) => txClient.Read({
+                creator: await mnemonicToAddress(bz.mnemonic),
+                uuid: "temp",
+                key: "aven"
+            }))
+            .then(x => console.log(x))
+            .catch(e => console.log(e))
+
     })
 });
 

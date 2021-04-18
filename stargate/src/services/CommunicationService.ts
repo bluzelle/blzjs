@@ -135,7 +135,6 @@ const transmitTransaction = (service: CommunicationService, messages: MessageQue
                 .then((txRaw: TxRaw) => Uint8Array.from(TxRaw.encode(txRaw).finish()))
                 .then((signedTx: Uint8Array) => cosmos.broadcastTx(signedTx))
                 .then(res => checkErrors(res as BroadcastTxFailure))
-                .then( x => x)
                 .catch((e: FailedTransaction) => {
                     /signature verification failed/.test(e.error) && (service.accountRequested = undefined)
                     throw e

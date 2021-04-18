@@ -604,9 +604,9 @@ export class API {
     }
 
 
-    txReadTemp(key: string, gasInfo: GasInfo): Promise<string> {
+    txReadTemp(key: string, gasInfo: GasInfo): Promise<Uint8Array> {
         return mnemonicToAddress(this.mnemonic)
-            .then(address => sendMessage<MsgRead, { msgType: string, data: Uint8Array} >(this.communicationService, {
+            .then(address => sendMessage<MsgRead, {msgType: string, data: Uint8Array} >(this.communicationService, {
                 typeUrl: "/bluzelle.curium.crud.MsgRead",
                 value: {
                     key,
@@ -615,8 +615,6 @@ export class API {
                 }
             }, gasInfo))
             .then(res => res.data[0].data)
-            .then(bytes => new TextDecoder().decode(bytes))
-            .then(response => JSON.parse(response))
 
     }
 
