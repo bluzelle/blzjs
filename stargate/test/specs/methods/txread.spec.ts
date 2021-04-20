@@ -3,6 +3,9 @@ import {API} from '../../../src/API';
 import {createKeys, DEFAULT_TIMEOUT, defaultGasParams, sentryWithClient} from "../../helpers/client-helpers/client-helpers";
 import {useChaiAsPromised} from "testing/lib/globalHelpers";
 import {getTxRpcClient, mnemonicToAddress} from "../../../src/temp";
+import Long from "long";
+import {passThroughAwait} from "promise-passthrough";
+import {MsgClientImpl} from "../../../lib/codec/crud/tx";
 
 describe('txRead()', function () {
     this.timeout(DEFAULT_TIMEOUT);
@@ -53,15 +56,22 @@ describe('txRead()', function () {
 
     it('should use tx rpc client to read', () => {
         return getTxRpcClient()
+            .then(passThroughAwait(async (client) => client.Create({
+                key: "aven",
+                value: new TextEncoder().encode("dauz"),
+                uuid: bz.uuid,
+                creator: await mnemonicToAddress(bz.mnemonic),
+                lease: Long.fromInt(3000),
+                metadata: new Uint8Array()
+            })))
             .then(async (txClient) => txClient.Read({
                 creator: await mnemonicToAddress(bz.mnemonic),
-                uuid: "temp",
+                uuid: bz.uuid,
                 key: "aven"
             }))
             .then(x => console.log(x))
             .catch(e => console.log(e))
-
-    })
+    });
 });
 
 

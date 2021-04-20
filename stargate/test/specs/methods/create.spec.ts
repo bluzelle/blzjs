@@ -167,7 +167,7 @@ describe('create()', function () {
     );
 
     it('should use tx rpc client to create', () => {
-        return getTxRpcClient(bz.url)
+        return getTxRpcClient()
             .then(async (txClient) => txClient.Create({
                 key: "aven",
                 value: new TextEncoder().encode("dauz"),
