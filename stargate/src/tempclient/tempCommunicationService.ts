@@ -1,6 +1,5 @@
 import {GasInfo} from "../types/GasInfo";
 import {Some} from "monet";
-//import {API} from "../API";
 import {MessageResponse} from "../types/MessageResponse";
 import {Message} from "../types/Message";
 import {memoize} from 'lodash'
@@ -35,7 +34,6 @@ const dummyMessageResponse = {
 }
 
 export interface CommunicationService {
-//    api: API
     mnemonic: string
     url: string
     seq: number
