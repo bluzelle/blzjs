@@ -7,7 +7,7 @@ import delay from "delay";
 import {DirectSecp256k1HdWallet, EncodeObject} from "@cosmjs/proto-signing";
 import {BroadcastTxFailure, BroadcastTxResponse, SigningStargateClient} from "@cosmjs/stargate";
 import {TxRaw} from "@cosmjs/proto-signing/build/codec/cosmos/tx/v1beta1/tx";
-import {myRegistry} from "./TempRegistry";
+import {myRegistry} from "./Registry";
 
 const TOKEN_NAME = 'ubnt';
 

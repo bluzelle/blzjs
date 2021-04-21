@@ -3,9 +3,9 @@ import {Tendermint34Client} from "@cosmjs/tendermint-rpc";
 import {createProtobufRpcClient, ProtobufRpcClient, QueryClient} from "@cosmjs/stargate";
 import {MsgClientImpl} from "../codec/crud/tx";
 import Long from "long";
-import {newCommunicationService, sendMessage, withTransaction, CommunicationService} from "./tempCommunicationService"
+import {newCommunicationService, sendMessage, withTransaction, CommunicationService} from "./CommunicationService"
 import * as MsgTypes from "../codec/crud/tx";
-import {addMessageType} from "./TempRegistry";
+import {addMessageType} from "./Registry";
 import {DirectSecp256k1HdWallet} from "@cosmjs/proto-signing";
 import {memoize} from 'lodash'
 
