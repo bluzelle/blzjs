@@ -3,12 +3,11 @@ import {Tendermint34Client} from "@cosmjs/tendermint-rpc";
 import {createProtobufRpcClient, ProtobufRpcClient, QueryClient} from "@cosmjs/stargate";
 import {MsgClientImpl} from "../codec/crud/tx";
 import Long from "long";
-import {newCommunicationService, sendMessage} from "./tempCommunicationService"
+import {newCommunicationService, sendMessage, withTransaction, CommunicationService} from "./tempCommunicationService"
 import * as MsgTypes from "../codec/crud/tx";
 import {addMessageType} from "./TempRegistry";
 import {DirectSecp256k1HdWallet} from "@cosmjs/proto-signing";
 import {memoize} from 'lodash'
-import {passThroughAwait} from "promise-passthrough";
 
 interface SDKOptions {
     mnemonic?: string,
@@ -17,17 +16,21 @@ interface SDKOptions {
     maxGas: number
 }
 
-const sdk = (options: SDKOptions) =>
-    Promise.all([
-            queryRpc(options),
-            txRpc(options),
-            mnemonicToAddress(options.mnemonic || '')
-        ])
+const sdk = (options: SDKOptions) => {
+    const cs = newCommunicationService(options.url, options.mnemonic || '')
+
+    return Promise.all([
+        queryRpc(options),
+        txRpc(options, cs),
+        mnemonicToAddress(options.mnemonic || '')
+    ])
         .then(([queryRpc, txRpc, address]) => ({
             q: new QueryClientImpl(queryRpc),
             tx: new MsgClientImpl(txRpc),
-            address
+            address,
+            withTransaction: (fn: () => unknown, options: { memo: string }) => withTransaction(cs, fn, options)
         }))
+}
 
 
 const queryRpc = (options: SDKOptions): Promise<ProtobufRpcClient> =>
@@ -40,22 +43,17 @@ type Receipt = {
     data: Uint8Array
 }
 
-const txRpc = (options: SDKOptions): Promise<ProtobufRpcClient> =>
-    Promise.resolve({
+const txRpc = (options: SDKOptions, communicationService: CommunicationService): Promise<ProtobufRpcClient> => {
+    return Promise.resolve({
         request: (service, method, data): Promise<Uint8Array> => {
             addMessageType(`/${service}${method}`, (MsgTypes as any)[`Msg${method}`]);
-            return sendMessage<any, Receipt>(newCommunicationService(options.url, options.mnemonic || ''), {
+            return sendMessage<any, Receipt>(communicationService, {
                 typeUrl: `/${service}${method}`,
                 value: (MsgTypes as any)[`Msg${method}`].decode(data)
             }, {gas_price: options.gasPrice, max_gas: options.maxGas})
-                .then(x => x)
-                .then(messageResponse =>  messageResponse.data[0])
-                .then(receipt => receipt.data || new Uint8Array())
+                .then(messageResponse => messageResponse?.data?.[0]?.data ?? new Uint8Array())
         }
     } as ProtobufRpcClient);
-
-const processMessages = () => {
-
 }
 
 const mnemonicToAddress = memoize<(mnemonic: string) => Promise<string>>((mnemonic: string): Promise<string> =>
@@ -69,6 +67,25 @@ sdk({
     gasPrice: 0.002,
     maxGas: 100000
 })
+    .then(client =>
+        client.withTransaction(() => {
+            client.tx.Create({
+                    creator: client.address,
+                    uuid: 'uuid',
+                    key: 'nick2',
+                    value: new TextEncoder().encode('HELLO'),
+                    lease: Long.fromInt(3000),
+                    metadata: new Uint8Array()
+                })
+            client.tx.Read({
+                creator: client.address,
+                uuid: 'uuid',
+                key: 'nick2',
+            })
+
+        }, {memo: ''})
+            .then(x => x)
+    )
     // .then(passThroughAwait((client) => client.tx.Create({
     //     creator: client.address,
     //     uuid: 'uuid',
@@ -85,11 +102,11 @@ sdk({
     //     lease: Long.fromInt(3000),
     //     metadata: new Uint8Array()
     // }))
-    .then(client => client.tx.Read({
-        creator: client.address,
-        uuid: 'uuid',
-        key: 'nick',
-    }))
+    // .then(client => client.tx.Read({
+    //     creator: client.address,
+    //     uuid: 'uuid',
+    //     key: 'nick',
+    // }))
     .then(x => x)
     // .then(sdkClient => sdkClient.q.CrudValue({
     //     key: "value",
