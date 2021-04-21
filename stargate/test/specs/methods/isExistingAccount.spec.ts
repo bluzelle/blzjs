@@ -1,6 +1,6 @@
 import {DEFAULT_TIMEOUT, sentryWithClient} from "../../helpers/client-helpers/client-helpers";
-import {API} from '../../../src/API'
-import {bluzelle} from '../../../src/bluzelle-node'
+import {API} from '../../../src/legacyAdapter/API'
+import {bluzelle} from '../../../src/legacyAdapter/bluzelle-node'
 import {expect} from 'chai'
 
 describe('isExistingAccount()', function()  {

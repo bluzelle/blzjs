@@ -1,6 +1,6 @@
 import {DEFAULT_TIMEOUT, defaultGasParams, sentryWithClient} from "../../helpers/client-helpers/client-helpers";
-import {bluzelle, mnemonicToAddress} from '../../../src/bluzelle-node'
-import {API} from '../../../src/API'
+import {bluzelle, mnemonicToAddress} from '../../../src/legacyAdapter/bluzelle-node'
+import {API} from '../../../src/legacyAdapter/API'
 import {expect} from 'chai'
 
 describe('getBNT()', function() {

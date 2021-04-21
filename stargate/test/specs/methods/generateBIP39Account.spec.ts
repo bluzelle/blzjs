@@ -1,7 +1,7 @@
-import {API} from '../../../src/API'
+import {API} from '../../../src/legacyAdapter/API'
 import {DEFAULT_TIMEOUT, defaultGasParams, sentryWithClient} from "../../helpers/client-helpers/client-helpers";
 import {expect} from 'chai'
-import {bluzelle} from '../../../src/bluzelle-node'
+import {bluzelle} from '../../../src/legacyAdapter/bluzelle-node'
 
 describe('generateBIP39Account()', function()  {
     this.timeout(DEFAULT_TIMEOUT);

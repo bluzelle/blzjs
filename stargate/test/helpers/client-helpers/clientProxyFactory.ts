@@ -1,4 +1,4 @@
-import {API} from "../../../src/API";
+import {API} from "../../../src/legacyAdapter/API";
 
 export const clientProxyFactory = (obj: any, execFn: (method: string, args: any[]) => Promise<any>) =>
     new Proxy(obj, {

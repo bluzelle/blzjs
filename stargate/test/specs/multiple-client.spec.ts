@@ -1,5 +1,5 @@
-import {bluzelle} from '../../src/bluzelle-node'
-import {API} from '../../src/API'
+import {bluzelle} from '../../src/legacyAdapter/bluzelle-node'
+import {API} from '../../src/legacyAdapter/API'
 import {Some} from "monet";
 import {pad, times, uniqueId} from 'lodash'
 import {DEFAULT_TIMEOUT, sentryWithClient, defaultGasParams} from "../helpers/client-helpers/client-helpers";

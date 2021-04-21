@@ -1,7 +1,7 @@
 import {sentryWithClient} from "../../helpers/client-helpers/client-helpers";
 import {expect} from "chai";
 import {DEFAULT_TIMEOUT} from "testing/lib/helpers/testHelpers";
-import {API} from '../../../src/API'
+import {API} from '../../../src/legacyAdapter/API'
 
 describe('setMaxMessagesPerTransaction()', function()  {
 

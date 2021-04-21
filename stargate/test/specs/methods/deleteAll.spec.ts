@@ -1,5 +1,5 @@
 import {expect} from 'chai'
-import {API} from '../../../src/API';
+import {API} from '../../../src/legacyAdapter/API';
 import {
     createKeys,
     DEFAULT_TIMEOUT,

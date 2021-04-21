@@ -1,9 +1,9 @@
 import {expect} from 'chai'
-import {API} from '../../../src/API';
+import {API} from '../../../src/legacyAdapter/API';
 import {defaultGasParams, sentryWithClient} from "../../helpers/client-helpers/client-helpers";
 import {useChaiAsPromised} from "testing/lib/globalHelpers";
 import {DEFAULT_TIMEOUT} from "testing/lib/helpers/testHelpers";
-import {bluzelle} from '../../../src/bluzelle-node'
+import {bluzelle} from '../../../src/legacyAdapter/bluzelle-node'
 import fs from "fs";
 
 describe('upsert()', function () {

@@ -1,5 +1,5 @@
 import {expect} from 'chai'
-import {API} from '../../../src/API';
+import {API} from '../../../src/legacyAdapter/API';
 import {DEFAULT_TIMEOUT, defaultGasParams, sentryWithClient} from "../../helpers/client-helpers/client-helpers";
 
 describe('read()', function () {

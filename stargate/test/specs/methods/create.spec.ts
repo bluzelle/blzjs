@@ -1,6 +1,6 @@
 import {expect} from 'chai'
-import {API} from "../../../src/API";
-import {bluzelle} from "../../../src/bluzelle-node"
+import {API} from "../../../src/legacyAdapter/API";
+import {bluzelle} from "../../../src/legacyAdapter/bluzelle-node"
 import {createKeys, DEFAULT_TIMEOUT, defaultGasParams, sentryWithClient} from "../../helpers/client-helpers/client-helpers";
 import {useChaiAsPromised} from "testing/lib/globalHelpers";
 import {getPrintableChars} from "testing/lib/helpers/testHelpers";

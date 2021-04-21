@@ -2,7 +2,7 @@ import {DEFAULT_TIMEOUT} from "testing/lib/helpers/testHelpers";
 import {useChaiAsPromised} from "testing/lib/globalHelpers";
 import {APIAndSwarm, defaultGasParams, getBluzelleClient, sentryWithClient} from "../helpers/client-helpers/client-helpers";
 import {times} from 'lodash'
-import {bluzelle} from '../../src/bluzelle-node'
+import {bluzelle} from '../../src/legacyAdapter/bluzelle-node'
 import {expect} from 'chai'
 
 describe('connections tests', function () {

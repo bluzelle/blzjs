@@ -1,4 +1,4 @@
-import {API} from "../../../src/API";
+import {API} from "../../../src/legacyAdapter/API";
 import {clientProxyFactory} from "./clientProxyFactory";
 import axios from 'axios';
 import {getBluzelleClient, serializeRequests, defaultGasParams} from "./client-helpers";

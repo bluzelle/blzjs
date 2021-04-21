@@ -1,6 +1,6 @@
 import {createKeys, DEFAULT_TIMEOUT, defaultGasParams, sentryWithClient} from "../../helpers/client-helpers/client-helpers";
 import {expect} from "chai";
-import {API} from '../../../src/API';
+import {API} from '../../../src/legacyAdapter/API';
 
 describe('count()', function () {
     this.timeout(DEFAULT_TIMEOUT);

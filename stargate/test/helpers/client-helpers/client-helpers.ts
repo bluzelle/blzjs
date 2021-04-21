@@ -1,9 +1,9 @@
 import {Daemon, DaemonAuth} from "curium-control/daemon-manager/lib/Daemon";
 import {Swarm} from "curium-control/daemon-manager/lib/Swarm";
-import {bluzelle} from "../../../src/bluzelle-node";
-import {bluzelle as bluzelleJS} from '../../../src/bluzelle-js';
-import {BluzelleConfig} from "../../../src/types/BluzelleConfig";
-import {API} from "../../../src/API";
+import {bluzelle} from "../../../src/legacyAdapter/bluzelle-node";
+import {bluzelle as bluzelleJS} from '../../../src/legacyAdapter/bluzelle-js';
+import {BluzelleConfig} from "../../../src/legacyAdapter/types/BluzelleConfig";
+import {API} from "../../../src/legacyAdapter/API";
 import {range} from 'lodash'
 import {getSwarm, SINGLE_SENTRY_SWARM} from "testing/lib/helpers/swarmHelpers";
 import {browserProxy} from "./browserProxy";
@@ -11,6 +11,7 @@ import {pythonProxy} from "./pythonProxy";
 import {rubyProxy} from "./rubyProxy";
 import {goProxy} from "./goProxy";
 import {localChain} from "../../config"
+
 export const DEFAULT_TIMEOUT = 800000;
 import axios from 'axios'
 import delay from "delay";
@@ -26,14 +27,15 @@ import {Some} from "monet";
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 
-
-export type APIAndSwarm = API & {swarm?: Swarm};
+export type APIAndSwarm = API & { swarm?: Swarm };
 
 const useLocalClient = (): API | undefined => {
 
     return bluzelle({
         mnemonic: localChain.mnemonic,
-        endpoint: localChain.endpoint,
+        url: localChain.endpoint,
+        gasPrice: 0.002,
+        maxGas: 300000,
         uuid: Date.now().toString()
     })
 }
@@ -45,32 +47,45 @@ export const sentryWithClient = async (extra: Partial<BluzelleConfig> = {}): Pro
         return Promise.resolve(useLocalClient()) as Promise<APIAndSwarm>
     }
 
-    if(getServerToUse() === 'testnet') {
-        const config: BluzelleConfig  = {
+    if (getServerToUse() === 'testnet') {
+        const config: BluzelleConfig = {
+
             mnemonic: "auction resemble there doll room uncle since gloom unfold service ghost beach cargo loyal govern orient book shrug heavy kit coil truly describe narrow",
-            endpoint: "http://client.sentry.testnet.public.bluzelle.com:1317",
+            url: "http://client.sentry.testnet.public.bluzelle.com:1317",
+            gasPrice: 0.002,
+            maxGas: 300000,
             uuid: Date.now().toString()
+
         }
         return bluzelle(config)
     }
 
-    if(getBluzelleClient() === 'remote') {
-        const config: BluzelleConfig  = {
+    if (getBluzelleClient() === 'remote') {
+        const config: BluzelleConfig = {
+
             mnemonic: "auction resemble there doll room uncle since gloom unfold service ghost beach cargo loyal govern orient book shrug heavy kit coil truly describe narrow",
-            endpoint: "http://client.sentry.testnet.public.bluzelle.com:1317",
+            url: "http://client.sentry.testnet.public.bluzelle.com:1317",
+            gasPrice: 0.002,
+            maxGas: 300000,
             uuid: Date.now().toString()
+
         }
-        return await remoteProxy(bluzelle(config))
-    } else {
-        const swarm: Swarm = await getSwarm([SINGLE_SENTRY_SWARM]);
-        return extend(await getClient(swarm.getSentries()[0], swarm.getValidators()[0], extra), {swarm: swarm});
+        return bluzelle(config)
     }
-};
+    return await remoteProxy(bluzelle(config))
+}
+else
+{
+    const swarm: Swarm = await getSwarm([SINGLE_SENTRY_SWARM]);
+    return extend(await getClient(swarm.getSentries()[0], swarm.getValidators()[0], extra), {swarm: swarm});
+}
+}
+;
 
 export const getClient = async (sentry: Daemon, validator: Daemon, extra: Partial<BluzelleConfig> = {}): Promise<API> => {
     const auth: DaemonAuth = await validator.getAuth();
 
-    const endpoint = ['ruby', 'python', 'go', 'java', 'php', 'c-sharp'].includes(getBluzelleClient() as string) ? `http://${await sentry.getIPAddress()}:1317` :  `https://localhost:${sentry.getAdhocPort()}`;
+    const endpoint = ['ruby', 'python', 'go', 'java', 'php', 'c-sharp'].includes(getBluzelleClient() as string) ? `http://${await sentry.getIPAddress()}:1317` : `https://localhost:${sentry.getAdhocPort()}`;
 
     const vuserBz = bluzelle({
         mnemonic: auth.mnemonic,
@@ -110,7 +125,7 @@ export const getBluzelleClient = (): string | undefined =>
 export const getServerToUse = (): string | undefined =>
     process.argv.find(it => it.includes('--server'))?.replace('--server=', '')
 
-export const createKeys = async (bz: API, count: number): Promise<{keys: string[], values: string[]}> => {
+export const createKeys = async (bz: API, count: number): Promise<{ keys: string[], values: string[] }> => {
     const keys = range(0, count).map(n => `key-${n}`);
     const values = range(0, count).map(n => `value-${n}`);
     await bz.withTransaction(() => keys.map((key, idx) => bz.create(key, values[idx], defaultGasParams())));
@@ -127,7 +142,7 @@ export const waitForProxyUp = (port: number) => {
                     resolve();
                 })
                 .catch((e) => {
-                    if(e.code) {
+                    if (e.code) {
                         console.log('Waiting for proxy up', port);
                         delay(500).then(loop);
                     } else {
@@ -145,7 +160,7 @@ export const serializeRequests = (() => {
 
     return (fn: () => Promise<any>): Promise<any> => {
         return new Promise((resolve, reject) => {
-            queue = queue.then( () => fn().then(resolve).catch(reject));
+            queue = queue.then(() => fn().then(resolve).catch(reject));
         })
     }
 })()

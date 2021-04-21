@@ -1,7 +1,7 @@
-import {GasInfo} from "../types/GasInfo";
+import {GasInfo} from "./legacyAdapter/types/GasInfo";
 import {Some} from "monet";
-import {MessageResponse} from "../types/MessageResponse";
-import {Message} from "../types/Message";
+import {MessageResponse} from "./legacyAdapter/types/MessageResponse";
+import {Message} from "./legacyAdapter/types/Message";
 import {memoize} from 'lodash'
 import delay from "delay";
 import {DirectSecp256k1HdWallet, EncodeObject} from "@cosmjs/proto-signing";

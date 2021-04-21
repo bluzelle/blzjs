@@ -1,5 +1,5 @@
-import {API} from "../../../src/API";
-import {BluzelleConfig} from "../../../src/types/BluzelleConfig";
+import {API} from "../../../src/legacyAdapter/API";
+import {BluzelleConfig} from "../../../src/legacyAdapter/types/BluzelleConfig";
 import puppeteer from "puppeteer";
 import fs from "fs";
 import {resolve} from "path";

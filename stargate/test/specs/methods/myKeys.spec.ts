@@ -1,6 +1,6 @@
 import {DEFAULT_TIMEOUT, defaultGasParams, sentryWithClient} from "../../helpers/client-helpers/client-helpers";
-import {bluzelle} from '../../../src/bluzelle-node'
-import {API} from '../../../src/API'
+import {bluzelle} from '../../../src/legacyAdapter/bluzelle-node'
+import {API} from '../../../src/legacyAdapter/API'
 import {expect} from 'chai'
 import delay from "delay";
 

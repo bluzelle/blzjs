@@ -5,7 +5,7 @@ import {range} from 'lodash'
 import {Swarm} from "curium-control/daemon-manager/lib/Swarm";
 import {SwarmConfig} from 'curium-control/daemon-manager/lib/SwarmConfig'
 import {passThroughAwait} from "promise-passthrough";
-import {bluzelle} from '../../../src/bluzelle-node'
+import {bluzelle} from '../../../src/legacyAdapter/bluzelle-node'
 
 describe('high-load-test', function () {
     this.timeout(DEFAULT_TIMEOUT);

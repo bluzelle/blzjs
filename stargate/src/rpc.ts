@@ -1,22 +1,29 @@
-import {QueryClientImpl} from "../codec/crud/query";
+import {QueryClientImpl} from "./codec/crud/query";
 import {Tendermint34Client} from "@cosmjs/tendermint-rpc";
 import {createProtobufRpcClient, ProtobufRpcClient, QueryClient} from "@cosmjs/stargate";
-import {MsgClientImpl} from "../codec/crud/tx";
+import {MsgClientImpl} from "./codec/crud/tx";
 import Long from "long";
 import {newCommunicationService, sendMessage, withTransaction, CommunicationService} from "./CommunicationService"
-import * as MsgTypes from "../codec/crud/tx";
+import * as MsgTypes from "./codec/crud/tx";
 import {addMessageType} from "./Registry";
 import {DirectSecp256k1HdWallet} from "@cosmjs/proto-signing";
 import {memoize} from 'lodash'
 
-interface SDKOptions {
+export interface SDKOptions {
     mnemonic?: string,
     url: string,
     gasPrice: number,
     maxGas: number
 }
 
-const sdk = (options: SDKOptions) => {
+export interface SDK {
+    q: QueryClientImpl,
+    tx: MsgClientImpl,
+    address: string,
+    withTransaction: (fn: () => unknown, options: {memo: string}) => unknown
+}
+
+export const sdk = (options: SDKOptions): Promise<SDK> => {
     const cs = newCommunicationService(options.url, options.mnemonic || '')
 
     return Promise.all([
@@ -84,7 +91,6 @@ sdk({
             })
 
         }, {memo: ''})
-            .then(x => x)
     )
     // .then(passThroughAwait((client) => client.tx.Create({
     //     creator: client.address,

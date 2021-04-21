@@ -1,7 +1,7 @@
 import {defaultGasParams, sentryWithClient} from "../../helpers/client-helpers/client-helpers";
 import {expect} from 'chai'
 import {DEFAULT_TIMEOUT} from "testing/lib/helpers/testHelpers";
-import {mnemonicToAddress, bluzelle} from '../../../src/bluzelle-node'
+import {mnemonicToAddress, bluzelle} from '../../../src/legacyAdapter/bluzelle-node'
 
 describe('mint()', function () {
     this.timeout(DEFAULT_TIMEOUT);

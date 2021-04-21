@@ -1,6 +1,6 @@
 import {DEFAULT_TIMEOUT} from "testing/lib/helpers/testHelpers";
 import {sentryWithClient} from "../../helpers/client-helpers/client-helpers";
-import {API} from '../../../src/API'
+import {API} from '../../../src/legacyAdapter/API'
 import {expect} from 'chai'
 
 describe('abciQuery()', function () {

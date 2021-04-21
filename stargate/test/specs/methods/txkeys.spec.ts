@@ -1,7 +1,7 @@
 import {createKeys, DEFAULT_TIMEOUT, defaultGasParams, sentryWithClient} from "../../helpers/client-helpers/client-helpers";
-import {API} from '../../../src/API';
+import {API} from '../../../src/legacyAdapter/API';
 import {expect} from 'chai'
-import {bluzelle} from '../../../src/bluzelle-node'
+import {bluzelle} from '../../../src/legacyAdapter/bluzelle-node'
 
 describe('txKeys()', function () {
     this.timeout(DEFAULT_TIMEOUT);

@@ -1,5 +1,5 @@
   import {expect} from 'chai'
-  import {mnemonicToAddress} from '../../../src/bluzelle-node'
+  import {mnemonicToAddress} from '../../../src/legacyAdapter/bluzelle-node'
 
 describe('mnemonicToAddress()', () => {
     it('should convert a mnemonic to a bech32 address', async () => {
