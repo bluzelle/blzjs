@@ -139,9 +139,10 @@ const combineGas = (transactions) => transactions.reduce((gasInfo, transaction) 
 }, {});
 // Inside an async function...
 const getSigner = (mnemonic) => proto_signing_1.DirectSecp256k1HdWallet.fromMnemonic(mnemonic, undefined, "bluzelle");
-exports.getClient = lodash_1.memoize((service) => getSigner(service.mnemonic)
+const getClient = (service) => getSigner(service.mnemonic)
     .then(signer => stargate_1.SigningStargateClient.connectWithSigner(service.url, signer, {
-    registry: Registry_1.myRegistry,
-})));
+    registry: Registry_1.getRegistry(),
+}));
+exports.getClient = getClient;
 const getChainId = lodash_1.memoize((client) => client.getChainId());
 //# sourceMappingURL=CommunicationService.js.map

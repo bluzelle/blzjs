@@ -7,7 +7,7 @@ import delay from "delay";
 import {DirectSecp256k1HdWallet, EncodeObject} from "@cosmjs/proto-signing";
 import {BroadcastTxFailure, BroadcastTxResponse, SigningStargateClient} from "@cosmjs/stargate";
 import {TxRaw} from "@cosmjs/proto-signing/build/codec/cosmos/tx/v1beta1/tx";
-import {myRegistry} from "./Registry";
+import {getRegistry, myRegistry} from "./Registry";
 
 const TOKEN_NAME = 'ubnt';
 
@@ -217,15 +217,15 @@ const getSigner = (mnemonic: string) => DirectSecp256k1HdWallet.fromMnemonic(
 );
 
 
-export const getClient = memoize((service) =>
+export const getClient = (service: any) =>
     getSigner(service.mnemonic)
         .then(signer => SigningStargateClient.connectWithSigner(
             service.url,
             signer,
             {
-                registry: myRegistry,
+                registry: getRegistry(),
             }
-        )));
+        ));
 
 const getChainId = memoize<(client: SigningStargateClient) => Promise<string>>((client) => client.getChainId())
 

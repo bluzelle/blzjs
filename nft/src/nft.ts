@@ -83,7 +83,7 @@ interface Ctx {
 
 setTimeout(() => storeNft('meta', new TextEncoder().encode("test data")));
 
-const storeNft = (meta: unknown, data: Uint8Array): Promise<Long> =>
+const storeNft = (meta: unknown, data: Uint8Array): Promise<number> =>
     getClient()
         .then(client => ({client} as Ctx))
         .then(passThroughAwait(ctx => mnemonicToAddress(mnemonic).then(address => ctx.address = address)))
@@ -93,6 +93,7 @@ const storeNft = (meta: unknown, data: Uint8Array): Promise<Long> =>
         }).then(x => {ctx.id = x.id})))
         .then(passThroughAwait(ctx => sendChunks(ctx, data)))
         .then(ctx => ctx.id)
+        .then(x => x.toInt())
         .then(x => x)
 
 

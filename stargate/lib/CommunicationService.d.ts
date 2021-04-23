@@ -1,4 +1,3 @@
-/// <reference types="lodash" />
 import { GasInfo } from "./legacyAdapter/types/GasInfo";
 import { MessageResponse } from "./legacyAdapter/types/MessageResponse";
 import { Message } from "./legacyAdapter/types/Message";
@@ -31,6 +30,6 @@ export declare const newCommunicationService: (url: string, mnemonic: string) =>
 };
 export declare const withTransaction: <T>(service: CommunicationService, fn: () => T, { memo }: WithTransactionsOptions) => Promise<MessageResponse<T>>;
 export declare const sendMessage: <T, R>(ctx: CommunicationService, message: Message<T>, gasInfo: GasInfo) => Promise<MessageResponse<R>>;
-export declare const getClient: ((service: any) => Promise<SigningStargateClient>) & import("lodash").MemoizedFunction;
+export declare const getClient: (service: any) => Promise<SigningStargateClient>;
 export {};
 //# sourceMappingURL=CommunicationService.d.ts.map
