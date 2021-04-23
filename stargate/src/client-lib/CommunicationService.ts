@@ -1,7 +1,7 @@
-import {GasInfo} from "./legacyAdapter/types/GasInfo";
+import {GasInfo} from "../legacyAdapter/types/GasInfo";
 import {Some} from "monet";
-import {MessageResponse} from "./legacyAdapter/types/MessageResponse";
-import {Message} from "./legacyAdapter/types/Message";
+import {MessageResponse} from "../legacyAdapter/types/MessageResponse";
+import {Message} from "../legacyAdapter/types/Message";
 import {memoize} from 'lodash'
 import delay from "delay";
 import {DirectSecp256k1HdWallet, EncodeObject} from "@cosmjs/proto-signing";
@@ -217,7 +217,7 @@ const getSigner = (mnemonic: string) => DirectSecp256k1HdWallet.fromMnemonic(
 );
 
 
-export const getClient = memoize((service) =>
+export const getClient = (service: CommunicationService) =>
     getSigner(service.mnemonic)
         .then(signer => SigningStargateClient.connectWithSigner(
             service.url,
@@ -225,7 +225,7 @@ export const getClient = memoize((service) =>
             {
                 registry: myRegistry,
             }
-        )));
+        ));
 
 const getChainId = memoize<(client: SigningStargateClient) => Promise<string>>((client) => client.getChainId())
 

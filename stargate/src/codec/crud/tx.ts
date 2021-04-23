@@ -36,7 +36,10 @@ export interface MsgCreate {
   metadata: Uint8Array;
 }
 
-export interface MsgCreateResponse {}
+export interface MsgCreateResponse {
+  txHash: string;
+  txHeight: Long;
+}
 
 export interface MsgUpdate {
   creator: string;
@@ -568,13 +571,19 @@ export const MsgCreate = {
   },
 };
 
-const baseMsgCreateResponse: object = {};
+const baseMsgCreateResponse: object = { txHash: "", txHeight: Long.ZERO };
 
 export const MsgCreateResponse = {
   encode(
-    _: MsgCreateResponse,
+    message: MsgCreateResponse,
     writer: _m0.Writer = _m0.Writer.create()
   ): _m0.Writer {
+    if (message.txHash !== "") {
+      writer.uint32(10).string(message.txHash);
+    }
+    if (!message.txHeight.isZero()) {
+      writer.uint32(16).int64(message.txHeight);
+    }
     return writer;
   },
 
@@ -585,6 +594,12 @@ export const MsgCreateResponse = {
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
+        case 1:
+          message.txHash = reader.string();
+          break;
+        case 2:
+          message.txHeight = reader.int64() as Long;
+          break;
         default:
           reader.skipType(tag & 7);
           break;
@@ -593,18 +608,41 @@ export const MsgCreateResponse = {
     return message;
   },
 
-  fromJSON(_: any): MsgCreateResponse {
+  fromJSON(object: any): MsgCreateResponse {
     const message = { ...baseMsgCreateResponse } as MsgCreateResponse;
+    if (object.txHash !== undefined && object.txHash !== null) {
+      message.txHash = String(object.txHash);
+    } else {
+      message.txHash = "";
+    }
+    if (object.txHeight !== undefined && object.txHeight !== null) {
+      message.txHeight = Long.fromString(object.txHeight);
+    } else {
+      message.txHeight = Long.ZERO;
+    }
     return message;
   },
 
-  toJSON(_: MsgCreateResponse): unknown {
+  toJSON(message: MsgCreateResponse): unknown {
     const obj: any = {};
+    message.txHash !== undefined && (obj.txHash = message.txHash);
+    message.txHeight !== undefined &&
+      (obj.txHeight = (message.txHeight || Long.ZERO).toString());
     return obj;
   },
 
-  fromPartial(_: DeepPartial<MsgCreateResponse>): MsgCreateResponse {
+  fromPartial(object: DeepPartial<MsgCreateResponse>): MsgCreateResponse {
     const message = { ...baseMsgCreateResponse } as MsgCreateResponse;
+    if (object.txHash !== undefined && object.txHash !== null) {
+      message.txHash = object.txHash;
+    } else {
+      message.txHash = "";
+    }
+    if (object.txHeight !== undefined && object.txHeight !== null) {
+      message.txHeight = object.txHeight as Long;
+    } else {
+      message.txHeight = Long.ZERO;
+    }
     return message;
   },
 };

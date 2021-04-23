@@ -49,6 +49,8 @@ message MsgCreate {
 }
 
 message MsgCreateResponse {
+  string txHash = 1;
+  int64 txHeight = 2;
 }
 
 message MsgUpdate {

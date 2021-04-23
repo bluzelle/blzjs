@@ -2,8 +2,7 @@ import {Daemon, DaemonAuth} from "curium-control/daemon-manager/lib/Daemon";
 import {Swarm} from "curium-control/daemon-manager/lib/Swarm";
 import {bluzelle} from "../../../src/legacyAdapter/bluzelle-node";
 import {bluzelle as bluzelleJS} from '../../../src/legacyAdapter/bluzelle-js';
-import {BluzelleConfig} from "../../../src/legacyAdapter/types/BluzelleConfig";
-import {API} from "../../../src/legacyAdapter/API";
+import {API, APIOptions} from "../../../src/legacyAdapter/API";
 import {range} from 'lodash'
 import {getSwarm, SINGLE_SENTRY_SWARM} from "testing/lib/helpers/swarmHelpers";
 import {browserProxy} from "./browserProxy";
@@ -11,7 +10,7 @@ import {pythonProxy} from "./pythonProxy";
 import {rubyProxy} from "./rubyProxy";
 import {goProxy} from "./goProxy";
 import {localChain} from "../../config"
-
+import {mnemonicToAddress, SDK} from "../../../src/client-lib/rpc"
 export const DEFAULT_TIMEOUT = 800000;
 import axios from 'axios'
 import delay from "delay";
@@ -30,7 +29,6 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 export type APIAndSwarm = API & { swarm?: Swarm };
 
 const useLocalClient = (): API | undefined => {
-
     return bluzelle({
         mnemonic: localChain.mnemonic,
         url: localChain.endpoint,
@@ -41,14 +39,14 @@ const useLocalClient = (): API | undefined => {
 }
 
 
-export const sentryWithClient = async (extra: Partial<BluzelleConfig> = {}): Promise<APIAndSwarm> => {
+export const sentryWithClient = async (extra: Partial<APIOptions> = {}, sdk: boolean = false): Promise<APIAndSwarm> => {
 
     if (useLocalClient()) {
         return Promise.resolve(useLocalClient()) as Promise<APIAndSwarm>
     }
 
     if (getServerToUse() === 'testnet') {
-        const config: BluzelleConfig = {
+        const config: APIOptions = {
 
             mnemonic: "auction resemble there doll room uncle since gloom unfold service ghost beach cargo loyal govern orient book shrug heavy kit coil truly describe narrow",
             url: "http://client.sentry.testnet.public.bluzelle.com:1317",
@@ -61,7 +59,7 @@ export const sentryWithClient = async (extra: Partial<BluzelleConfig> = {}): Pro
     }
 
     if (getBluzelleClient() === 'remote') {
-        const config: BluzelleConfig = {
+        const config: APIOptions = {
 
             mnemonic: "auction resemble there doll room uncle since gloom unfold service ghost beach cargo loyal govern orient book shrug heavy kit coil truly describe narrow",
             url: "http://client.sentry.testnet.public.bluzelle.com:1317",
@@ -70,39 +68,40 @@ export const sentryWithClient = async (extra: Partial<BluzelleConfig> = {}): Pro
             uuid: Date.now().toString()
 
         }
-        return bluzelle(config)
+        return await remoteProxy(bluzelle(config))
+    } else {
+        const swarm: Swarm = await getSwarm([SINGLE_SENTRY_SWARM]);
+        return extend(await getClient(swarm.getSentries()[0], swarm.getValidators()[0], extra), {swarm: swarm});
     }
-    return await remoteProxy(bluzelle(config))
-}
-else
-{
-    const swarm: Swarm = await getSwarm([SINGLE_SENTRY_SWARM]);
-    return extend(await getClient(swarm.getSentries()[0], swarm.getValidators()[0], extra), {swarm: swarm});
-}
-}
-;
 
-export const getClient = async (sentry: Daemon, validator: Daemon, extra: Partial<BluzelleConfig> = {}): Promise<API> => {
+};
+
+export const getClient = async (sentry: Daemon, validator: Daemon, extra: Partial<APIOptions>): Promise<API | SDK> => {
     const auth: DaemonAuth = await validator.getAuth();
 
     const endpoint = ['ruby', 'python', 'go', 'java', 'php', 'c-sharp'].includes(getBluzelleClient() as string) ? `http://${await sentry.getIPAddress()}:1317` : `https://localhost:${sentry.getAdhocPort()}`;
 
     const vuserBz = bluzelle({
         mnemonic: auth.mnemonic,
-        endpoint: endpoint,
+        url: endpoint,
+        gasPrice: 0.002,
+        maxGas: 300000,
         uuid: 'uuid'
+
     });
 
-    const bluzelleConfig: BluzelleConfig = <BluzelleConfig>{
+    const bluzelleConfig: APIOptions = <APIOptions>{
         mnemonic: vuserBz.generateBIP39Account(),
-        endpoint: endpoint,
-        uuid: 'uuid',
-        ...extra
+        url: endpoint,
+        gasPrice: 0.002,
+        maxGas: 300000,
+        uuid: 'uuid'
     };
 
-    let bz: API = bluzelle({...bluzelleConfig, endpoint: `https://localhost:${sentry.getAdhocPort()}`});
+    let bz: API = bluzelle({...bluzelleConfig, url: `https://localhost:${sentry.getAdhocPort()}`});
 
-    await vuserBz.transferTokensTo(bz.address, 1000000, defaultGasParams());
+    await mnemonicToAddress(bz.config.mnemonic || '')
+        .then(address => vuserBz.transferTokensTo(address, 1000000, defaultGasParams()));
 
     getBluzelleClient() === 'c-sharp' && (bz = await cSharpProxy(bz, bluzelleConfig));
     getBluzelleClient() === 'php' && (bz = await phpProxy(bz, bluzelleConfig));
@@ -169,11 +168,14 @@ export const newBzClient = (bz: API): Promise<API> =>
     Some(bz.generateBIP39Account())
         .map(mnemonic => bluzelle({
             mnemonic,
-            endpoint: bz.url,
-            uuid: bz.uuid
+            url: bz.config.url,
+            uuid: bz.config.uuid,
+            gasPrice: 0.002,
+            maxGas: 300000,
         }))
         .map(async (newBz: API) => {
-            await bz.transferTokensTo(newBz.address, 1000, defaultGasParams());
+            await mnemonicToAddress(newBz.config.mnemonic || '')
+                .then(address => bz.transferTokensTo(address, 1000, defaultGasParams()));
             return newBz;
         })
         .join()

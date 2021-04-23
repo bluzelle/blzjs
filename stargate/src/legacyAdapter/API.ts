@@ -1,5 +1,4 @@
 import {Tendermint34Client} from "@cosmjs/tendermint-rpc";
-import {BluzelleConfig} from "./types/BluzelleConfig";
 import {GasInfo} from "./types/GasInfo";
 import {AccountResult} from "./types/cosmos/AccountResult";
 import {AccountsResult} from "./types/cosmos/AccountsResult";
@@ -55,8 +54,8 @@ import {QueryClientImpl} from "../codec/crud/query";
 import {createProtobufRpcClient, QueryClient} from "@cosmjs/stargate";
 import {passThrough} from "promise-passthrough";
 import {MsgCreate, MsgDelete, MsgRead, MsgReadResponse, MsgUpsert} from "../codec/crud/tx";
-import {SDKOptions, SDK, sdk} from '../rpc'
-import {bluzelle} from "./bluzelle-node"
+import {SDKOptions, SDK, sdk, mnemonicToAddress} from '../client-lib/rpc'
+
 // TEMP STUB
 const BLOCK_TIME_IN_SECONDS = 5.5;
 
@@ -165,27 +164,21 @@ export class API {
     // }
     //
     //
-    // async create(key: string, value: string, gasInfo: GasInfo, leaseInfo: LeaseInfo = {}): Promise<TxResult> {
-    //     const blocks = convertLease(leaseInfo);
-    //
-    //     //assert(typeof key === 'string', ClientErrors.KEY_MUST_BE_A_STRING);
-    //     //assert(typeof value === 'string', ClientErrors.VALUE_MUST_BE_A_STRING);
-    //
-    //     return mnemonicToAddress(this.mnemonic)
-    //         .then(address => sendMessage<MsgCreate, void>(this.communicationService, {
-    //             typeUrl: "/bluzelle.curium.crud.MsgCreate",
-    //             value: {
-    //                 key: key,
-    //                 value: new TextEncoder().encode(value),
-    //                 uuid: this.uuid,
-    //                 creator: address,
-    //                 lease: Long.fromInt(blocks),
-    //                 metadata: new Uint8Array()
-    //             }
-    //         }, gasInfo))
-    //         .then(x => x)
-    //         .then(standardTxResult)
-    // }
+    async create(key: string, value: string, leaseInfo: LeaseInfo = {}): Promise<unknown> {
+        const blocks = convertLease(leaseInfo);
+
+        return this.getClient()
+            .then(client => client.tx.Create({
+                key: key,
+                value: new TextEncoder().encode(value),
+                uuid: this.config.uuid,
+                creator: client.address,
+                lease: Long.fromInt(blocks),
+                metadata: new Uint8Array()
+            }))
+            .then(x => x)
+
+    }
     //
     // createProposal(amount: number, title: string, description: string, gasInfo: GasInfo) {
     //     return this.sendMessage({
@@ -244,19 +237,15 @@ export class API {
     // }
     //
     //
-    // delete(key: string, gasInfo: GasInfo): Promise<TxResult> {
-    //     return mnemonicToAddress(this.mnemonic)
-    //         .then(address => sendMessage<MsgDelete, void>(this.communicationService, {
-    //             typeUrl: "/bluzelle.curium.crud.MsgDelete",
-    //             value: {
-    //                 key: key,
-    //                 uuid: this.uuid,
-    //                 creator: address,
-    //             }
-    //         }, gasInfo))
-    //         .then(x => x)
-    //         .then(standardTxResult)
-    // }
+    delete(key: string): Promise<unknown> {
+        return this.getClient()
+            .then(client => client.tx.Delete({
+                key: key,
+                uuid: this.config.uuid,
+                creator: client.address,
+                }))
+            //.then(standardTxResult)
+    }
     //
     // deleteAll(gasInfo: GasInfo): Promise<TxResult> {
     //     return sendMessage<DeleteAllMessage, void>(this.communicationService, {
@@ -282,10 +271,10 @@ export class API {
     //         })
     // }
     //
-    // generateBIP39Account = (entropy: string = ''): string => {
-    //     assert(entropy.length === 0 || entropy.length === 64, 'Entropy must be 64 char hex');
-    //     return entropy ? entropyToMnemonic(entropy) : generateMnemonic(256);
-    // }
+    generateBIP39Account = (entropy: string = ''): string => {
+        assert(entropy.length === 0 || entropy.length === 64, 'Entropy must be 64 char hex');
+        return entropy ? entropyToMnemonic(entropy) : generateMnemonic(256);
+    }
     //
     // async getNShortestLeases(count: number) {
     //     assert(count >= 0, ClientErrors.INVALID_VALUE_SPECIFIED);
@@ -616,53 +605,35 @@ export class API {
     //     }, gasInfo)
     // }
     //
-    // async update(key: string, value: string, gasInfo: GasInfo, leaseInfo: LeaseInfo = {}): Promise<TxResult> {
-    //
-    //     const blocks = convertLease(leaseInfo);
-    //
-    //     //assert(!!key, ClientErrors.KEY_CANNOT_BE_EMPTY);
-    //     //assert(typeof key === 'string', ClientErrors.KEY_MUST_BE_A_STRING);
-    //     // assert(typeof value === 'string', ClientErrors.VALUE_MUST_BE_A_STRING);
-    //     // assert(blocks >= 0, ClientErrors.INVALID_LEASE_TIME);
-    //     // assert(!key.includes('/'), ClientErrors.KEY_CANNOT_CONTAIN_SLASH)
-    //
-    //     return sendMessage<UpdateMessage, void>(this.communicationService, {
-    //         type: "crud/update",
-    //         value: {
-    //             Key: key,
-    //             Value: value,
-    //             UUID: this.uuid,
-    //             Owner: this.address,
-    //             Lease: blocks.toString()
-    //         }
-    //     }, gasInfo)
-    //         .then(standardTxResult)
-    // }
-    //
-    // async upsert(key: string, value: string, gasInfo: GasInfo, leaseInfo: LeaseInfo = {}): Promise<TxResult> {
-    //
-    //     const blocks = convertLease(leaseInfo);
-    //
-    //
-    //     //assert(typeof key === 'string', ClientErrors.KEY_MUST_BE_A_STRING);
-    //     //assert(typeof value === 'string', ClientErrors.VALUE_MUST_BE_A_STRING);
-    //
-    //
-    //     return this.getAddress()
-    //         .then(address =>
-    //             sendMessage<MsgCreate, void>(this.communicationService, {
-    //                 typeUrl: "/bluzelle.curium.crud.MsgUpsert",
-    //                 value: {
-    //                     key: key,
-    //                     value: new TextEncoder().encode(value),
-    //                     uuid: this.uuid,
-    //                     creator: address,
-    //                     lease: Long.fromInt(blocks),
-    //                     metadata: new Uint8Array()
-    //                 }
-    //             }, gasInfo)
-    //                 .then(standardTxResult))
-    // }
+    async update(key: string, value: string, leaseInfo: LeaseInfo = {}): Promise<unknown> {
+
+        const blocks = convertLease(leaseInfo);
+
+        return this.getClient()
+            .then(client => client.tx.Update({
+                creator: client.address,
+                uuid: this.config.uuid,
+                key: key,
+                value: new TextEncoder().encode(value),
+                lease: Long.fromInt(blocks),
+                metadata: new Uint8Array()
+            }))
+    }
+
+    async upsert(key: string, value: string, leaseInfo: LeaseInfo = {}): Promise<unknown> {
+
+        const blocks = convertLease(leaseInfo);
+
+        return this.getClient()
+            .then(client => client.tx.Upsert({
+                        key: key,
+                        value: new TextEncoder().encode(value),
+                        uuid: this.config.uuid,
+                        creator: client.address,
+                        lease: Long.fromInt(blocks),
+                        metadata: new Uint8Array()
+                    }))
+    }
     //
     //
     // version(): Promise<string> {
@@ -783,7 +754,11 @@ const bz = new API({
     uuid: "uuid",
     gasPrice: 0.002,
     maxGas: 300000
-
 })
-bz.read("nick2")
+
+bz.create('chicken', 'dauz')
+    .then(() => bz.create('chicken', 'john'))
+    .then(() => bz.update('superman', 'crazy'))
     .then(x => x)
+    .catch(e => e)
+
