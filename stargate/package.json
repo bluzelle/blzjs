@@ -1,7 +1,7 @@
 {
-  "name": "@bluzelle/db-js",
-  "version": "4.0.5",
-  "description": "JS client for BluzelleDB",
+  "name": "@bluzelle/sdk-js",
+  "version": "1.0.1",
+  "description": "JS sdk for Bluzelle",
   "main": "lib/bluzelle-node.js",
   "license": "MIT",
   "dependencies": {
