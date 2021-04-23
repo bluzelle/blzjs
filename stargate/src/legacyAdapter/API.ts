@@ -54,7 +54,7 @@ import Long from 'long'
 import {QueryClientImpl} from "../codec/crud/query";
 import {createProtobufRpcClient, QueryClient} from "@cosmjs/stargate";
 import {passThrough} from "promise-passthrough";
-import {MsgCreate, MsgDelete, MsgRead, MsgReadResponse, MsgUpsert} from "../codec/crud/tx";
+import {MsgCreate, MsgDelete, MsgUpsert} from "../codec/crud/tx";
 import {SDKOptions, SDK, sdk} from '../rpc'
 import {bluzelle} from "./bluzelle-node"
 // TEMP STUB

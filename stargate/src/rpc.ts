@@ -75,7 +75,6 @@ sdk({
     maxGas: 100000
 })
     .then(client =>
-        client.withTransaction(() => {
             client.tx.Create({
                     creator: client.address,
                     uuid: 'uuid',
@@ -84,13 +83,6 @@ sdk({
                     lease: Long.fromInt(3000),
                     metadata: new Uint8Array()
                 })
-            client.tx.Read({
-                creator: client.address,
-                uuid: 'uuid',
-                key: 'nick2',
-            })
-
-        }, {memo: ''})
     )
     // .then(passThroughAwait((client) => client.tx.Create({
     //     creator: client.address,
