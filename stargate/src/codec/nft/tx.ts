@@ -7,7 +7,8 @@ export const protobufPackage = "bluzelle.curium.nft";
 /** this line is used by starport scaffolding # proto/tx/message */
 export interface MsgChunk {
   creator: string;
-  id: string;
+  id: Long;
+  chunk: Long;
   data: Uint8Array;
 }
 
@@ -37,7 +38,7 @@ export interface MsgDeleteNft {
 
 export interface MsgDeleteNftResponse {}
 
-const baseMsgChunk: object = { creator: "", id: "" };
+const baseMsgChunk: object = { creator: "", id: Long.UZERO, chunk: Long.UZERO };
 
 export const MsgChunk = {
   encode(
@@ -47,11 +48,14 @@ export const MsgChunk = {
     if (message.creator !== "") {
       writer.uint32(10).string(message.creator);
     }
-    if (message.id !== "") {
-      writer.uint32(18).string(message.id);
+    if (!message.id.isZero()) {
+      writer.uint32(16).uint64(message.id);
+    }
+    if (!message.chunk.isZero()) {
+      writer.uint32(24).uint64(message.chunk);
     }
     if (message.data.length !== 0) {
-      writer.uint32(26).bytes(message.data);
+      writer.uint32(34).bytes(message.data);
     }
     return writer;
   },
@@ -67,9 +71,12 @@ export const MsgChunk = {
           message.creator = reader.string();
           break;
         case 2:
-          message.id = reader.string();
+          message.id = reader.uint64() as Long;
           break;
         case 3:
+          message.chunk = reader.uint64() as Long;
+          break;
+        case 4:
           message.data = reader.bytes();
           break;
         default:
@@ -88,9 +95,14 @@ export const MsgChunk = {
       message.creator = "";
     }
     if (object.id !== undefined && object.id !== null) {
-      message.id = String(object.id);
+      message.id = Long.fromString(object.id);
     } else {
-      message.id = "";
+      message.id = Long.UZERO;
+    }
+    if (object.chunk !== undefined && object.chunk !== null) {
+      message.chunk = Long.fromString(object.chunk);
+    } else {
+      message.chunk = Long.UZERO;
     }
     if (object.data !== undefined && object.data !== null) {
       message.data = bytesFromBase64(object.data);
@@ -101,7 +113,10 @@ export const MsgChunk = {
   toJSON(message: MsgChunk): unknown {
     const obj: any = {};
     message.creator !== undefined && (obj.creator = message.creator);
-    message.id !== undefined && (obj.id = message.id);
+    message.id !== undefined &&
+      (obj.id = (message.id || Long.UZERO).toString());
+    message.chunk !== undefined &&
+      (obj.chunk = (message.chunk || Long.UZERO).toString());
     message.data !== undefined &&
       (obj.data = base64FromBytes(
         message.data !== undefined ? message.data : new Uint8Array()
@@ -117,9 +132,14 @@ export const MsgChunk = {
       message.creator = "";
     }
     if (object.id !== undefined && object.id !== null) {
-      message.id = object.id;
+      message.id = object.id as Long;
     } else {
-      message.id = "";
+      message.id = Long.UZERO;
+    }
+    if (object.chunk !== undefined && object.chunk !== null) {
+      message.chunk = object.chunk as Long;
+    } else {
+      message.chunk = Long.UZERO;
     }
     if (object.data !== undefined && object.data !== null) {
       message.data = object.data;

@@ -8,17 +8,20 @@ exports.MsgClientImpl = exports.MsgDeleteNftResponse = exports.MsgDeleteNft = ex
 const long_1 = __importDefault(require("long"));
 const minimal_1 = __importDefault(require("protobufjs/minimal"));
 exports.protobufPackage = "bluzelle.curium.nft";
-const baseMsgChunk = { creator: "", id: "" };
+const baseMsgChunk = { creator: "", id: long_1.default.UZERO, chunk: long_1.default.UZERO };
 exports.MsgChunk = {
     encode(message, writer = minimal_1.default.Writer.create()) {
         if (message.creator !== "") {
             writer.uint32(10).string(message.creator);
         }
-        if (message.id !== "") {
-            writer.uint32(18).string(message.id);
+        if (!message.id.isZero()) {
+            writer.uint32(16).uint64(message.id);
+        }
+        if (!message.chunk.isZero()) {
+            writer.uint32(24).uint64(message.chunk);
         }
         if (message.data.length !== 0) {
-            writer.uint32(26).bytes(message.data);
+            writer.uint32(34).bytes(message.data);
         }
         return writer;
     },
@@ -33,9 +36,12 @@ exports.MsgChunk = {
                     message.creator = reader.string();
                     break;
                 case 2:
-                    message.id = reader.string();
+                    message.id = reader.uint64();
                     break;
                 case 3:
+                    message.chunk = reader.uint64();
+                    break;
+                case 4:
                     message.data = reader.bytes();
                     break;
                 default:
@@ -54,10 +60,16 @@ exports.MsgChunk = {
             message.creator = "";
         }
         if (object.id !== undefined && object.id !== null) {
-            message.id = String(object.id);
+            message.id = long_1.default.fromString(object.id);
         }
         else {
-            message.id = "";
+            message.id = long_1.default.UZERO;
+        }
+        if (object.chunk !== undefined && object.chunk !== null) {
+            message.chunk = long_1.default.fromString(object.chunk);
+        }
+        else {
+            message.chunk = long_1.default.UZERO;
         }
         if (object.data !== undefined && object.data !== null) {
             message.data = bytesFromBase64(object.data);
@@ -67,7 +79,10 @@ exports.MsgChunk = {
     toJSON(message) {
         const obj = {};
         message.creator !== undefined && (obj.creator = message.creator);
-        message.id !== undefined && (obj.id = message.id);
+        message.id !== undefined &&
+            (obj.id = (message.id || long_1.default.UZERO).toString());
+        message.chunk !== undefined &&
+            (obj.chunk = (message.chunk || long_1.default.UZERO).toString());
         message.data !== undefined &&
             (obj.data = base64FromBytes(message.data !== undefined ? message.data : new Uint8Array()));
         return obj;
@@ -84,7 +99,13 @@ exports.MsgChunk = {
             message.id = object.id;
         }
         else {
-            message.id = "";
+            message.id = long_1.default.UZERO;
+        }
+        if (object.chunk !== undefined && object.chunk !== null) {
+            message.chunk = object.chunk;
+        }
+        else {
+            message.chunk = long_1.default.UZERO;
         }
         if (object.data !== undefined && object.data !== null) {
             message.data = object.data;

@@ -17,8 +17,9 @@ service Msg {
 // this line is used by starport scaffolding # proto/tx/message
 message MsgChunk {
   string creator = 1;
-  string id = 2;
-  bytes data = 3;
+  uint64 id = 2;
+  uint64 chunk = 3;
+  bytes data = 4;
 }
 
 message MsgChunkResponse {

@@ -4,10 +4,13 @@ import {MsgClientImpl} from "@bluzelle/sdk-js/lib/codec/nft/tx";
 import {SDKOptions} from "@bluzelle/sdk-js/lib/rpc";
 import {addMessageType} from "@bluzelle/sdk-js/lib/Registry";
 import * as MsgTypes from "@bluzelle/sdk-js/lib/codec/nft/tx";
-import {memoize} from 'lodash'
+import {memoize, chunk} from 'lodash'
 import {createProtobufRpcClient, ProtobufRpcClient, QueryClient} from "@cosmjs/stargate";
 import {DirectSecp256k1HdWallet} from "@cosmjs/proto-signing";
 import {Tendermint34Client} from "@cosmjs/tendermint-rpc";
+import {passThroughAwait} from "promise-passthrough";
+import Long from 'long'
+import {Some} from "monet";
 
 export interface SDK {
     q: QueryClientImpl,
@@ -61,14 +64,6 @@ type Receipt = {
     data: Uint8Array
 }
 
-
-const c = sdk({
-    mnemonic: "method uncover online album combine relief episode congress hidden forest state kitten perfect office tank dress purity sphere ivory canyon extend record bread summer",
-    url: 'http://localhost:26657',
-    maxGas: 100000,
-    gasPrice: 0.002
-})
-
 const mnemonic = "oak ordinary next choose firm pave cry rescue fetch staff joy deputy purchase display bus outside pen must enroll age oppose climb vanish shoe";
 
 const getClient = memoize(() => sdk({
@@ -79,20 +74,43 @@ const getClient = memoize(() => sdk({
     })
 );
 
+interface Ctx {
+    address: string,
+    client: SDK,
+    id: Long,
 
-const storeNft = (meta: string, data: Uint8Array): Promise<string> =>
-    Promise.all([
-        getClient(),
-        mnemonicToAddress(mnemonic),
-    ])
-    .then(([client, address]) => client.tx.CreateNft({
-        creator: address,
-        meta: meta
-    }))
-        .then(x => x.id);
+}
 
-storeNft("meta", new TextEncoder().encode("data"))
-    .then(x => x);
+setTimeout(() => storeNft('meta', new TextEncoder().encode("test data")));
+
+const storeNft = (meta: unknown, data: Uint8Array): Promise<Long> =>
+    getClient()
+        .then(client => ({client} as Ctx))
+        .then(passThroughAwait(ctx => mnemonicToAddress(mnemonic).then(address => ctx.address = address)))
+        .then(passThroughAwait(ctx => ctx.client.tx.CreateNft({
+            creator: ctx.address,
+            meta: JSON.stringify(meta)
+        }).then(x => {ctx.id = x.id})))
+        .then(passThroughAwait(ctx => sendChunks(ctx, data)))
+        .then(ctx => ctx.id)
+        .then(x => x)
 
 
+const sendChunks = (ctx: Ctx, data: Uint8Array) =>
+    Promise.all(Uint8ArrayChunk(data, 100000).map((data, idx) => sendChunk(ctx, data, idx)))
+
+const sendChunk = (ctx: Ctx, data: Uint8Array, idx: number) =>
+    ctx.client.tx.Chunk({
+        id: ctx.id,
+        chunk: Long.fromNumber(idx),
+        creator: ctx.address,
+        data
+    })
+
+const Uint8ArrayChunk = (data: Uint8Array, size: number): Uint8Array[] =>
+    Some(data)
+        .map(arr => arr.map(x => x))
+        .map(arr => chunk(arr, size))
+        .map(arr => arr.map(x => Uint8Array.from(x)))
+        .join()
 
