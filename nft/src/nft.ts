@@ -11,6 +11,7 @@ import {Tendermint34Client} from "@cosmjs/tendermint-rpc";
 import {passThroughAwait} from "promise-passthrough";
 import Long from 'long'
 import {Some} from "monet";
+import {readFileSync} from "fs";
 
 export interface SDK {
     q: QueryClientImpl,
@@ -69,7 +70,7 @@ const mnemonic = "oak ordinary next choose firm pave cry rescue fetch staff joy 
 const getClient = memoize(() => sdk({
         mnemonic,
         url: 'http://localhost:26657',
-        maxGas: 100000,
+        maxGas: 10000000,
         gasPrice: 0.002
     })
 );
@@ -81,7 +82,10 @@ interface Ctx {
 
 }
 
-setTimeout(() => storeNft('meta', new TextEncoder().encode("test data")));
+setTimeout(() => {
+    const file = readFileSync("./image.png");
+    storeNft('meta', file)
+});
 
 const storeNft = (meta: unknown, data: Uint8Array): Promise<number> =>
     getClient()
