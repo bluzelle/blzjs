@@ -17,7 +17,6 @@ export const bluzelle = (options: SDKOptions): Promise<BluzelleSdk> =>
         .then(cs => Promise.all([
                 sdk<CrudQueryClientImpl, CrudMsgClientImpl>(options, CrudQueryClientImpl, CrudMsgClientImpl, MsgTypes, cs),
                 sdk<NftQueryClientImpl, NftMsgClientImpl>(options, NftQueryClientImpl, NftMsgClientImpl, MsgTypes, cs)
-
             ])
         )
         .then(([db, nft]) => ({
@@ -25,22 +24,22 @@ export const bluzelle = (options: SDKOptions): Promise<BluzelleSdk> =>
         }))
 
 
-Promise.resolve(bluzelle({
-    mnemonic: "focus ill drift swift blood bitter move grace ensure diamond year tongue hint weekend bulb rebel avoid gas dose print remove receive yellow shoot",
-    url: "http://localhost:26657",
-    gasPrice: 0.002,
-    maxGas: 1000000
-}))
-    .then(passThroughAwait(sdk => sdk.db.tx.Create({
-        uuid: 'uuid',
-        key: 'foo',
-        value: new TextEncoder().encode('bar'),
-        creator: sdk.db.address,
-        lease: Long.fromInt(10),
-        metadata: new Uint8Array()
-    })))
-    .then(sdk => sdk.db.q.CrudValue({
-        uuid: 'uuid',
-        key: 'foo'
-    }))
-    .then(x => x);
+// Promise.resolve(bluzelle({
+//     mnemonic: "focus ill drift swift blood bitter move grace ensure diamond year tongue hint weekend bulb rebel avoid gas dose print remove receive yellow shoot",
+//     url: "http://localhost:26657",
+//     gasPrice: 0.002,
+//     maxGas: 1000000
+// }))
+//     .then(passThroughAwait(sdk => sdk.db.tx.Create({
+//         uuid: 'uuid',
+//         key: 'foo',
+//         value: new TextEncoder().encode('bar'),
+//         creator: sdk.db.address,
+//         lease: Long.fromInt(10),
+//         metadata: new Uint8Array()
+//     })))
+//     .then(sdk => sdk.db.q.CrudValue({
+//         uuid: 'uuid',
+//         key: 'foo'
+//     }))
+//     .then(x => x);
