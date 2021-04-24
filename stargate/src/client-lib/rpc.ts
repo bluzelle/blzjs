@@ -21,8 +21,7 @@ export interface SDK<Q, M> {
     withTransaction: (fn: () => unknown, options: {memo: string}) => unknown
 };
 
-export const sdk = <Q, M>(options: SDKOptions, qImpl: any, mImpl: any, msgTypes: Record<string, any>): Promise<SDK<Q, M>> => {
-    const cs = newCommunicationService(options.url, options.mnemonic || '')
+export const sdk = <Q, M>(options: SDKOptions, qImpl: any, mImpl: any, msgTypes: Record<string, any>, cs: CommunicationService): Promise<SDK<Q, M>> => {
 
     return Promise.all([
         queryRpc(options),

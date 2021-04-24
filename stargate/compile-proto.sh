@@ -13,5 +13,7 @@ protoc \
   --ts_proto_opt="esModuleInterop=true,forceLong=long,useOptionals=true" \
   "./proto/crud/CrudValue.proto" \
   "./proto/crud/tx.proto" \
-  "./proto/crud/query.proto"
+  "./proto/crud/query.proto" \
+  "./proto/nft/tx.proto" \
+  "./proto/nft/query.proto"
 

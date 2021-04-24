@@ -1,4 +1,4 @@
-export interface BluzelleConfig {
+export interface APIOptions {
     mnemonic: string;
     uuid: string;
     endpoint: string;

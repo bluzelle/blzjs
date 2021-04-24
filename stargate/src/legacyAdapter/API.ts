@@ -1,60 +1,15 @@
 import {Tendermint34Client} from "@cosmjs/tendermint-rpc";
-import {GasInfo} from "./types/GasInfo";
-import {AccountResult} from "./types/cosmos/AccountResult";
-import {AccountsResult} from "./types/cosmos/AccountsResult";
-import {
-    QueryCountResult,
-    QueryGetLeaseResult,
-    QueryGetNShortestLeasesResult,
-    QueryHasResult,
-    QueryKeysResult,
-    QueryKeyValuesResult,
-    QueryOwnerResult
-} from "./types/QueryResult";
-import {
-    CountMessage,
-    DeleteAllMessage,
-    GetLeaseMessage,
-    HasMessage,
-    KeysMessage,
-    KeyValuesMessage,
-    Message,
-    MintMessage,
-    MultiUpdateMessage,
-    RenameMessage,
-    RenewLeaseAllMessage,
-    RenewLeaseMessage,
-    TransferTokensMessage,
-    UpdateMessage
-} from "./types/Message";
-import {
-    MessageResponse,
-    TxCountResponse,
-    TxGetLeaseResponse,
-    TxHasResponse,
-    TxKeysResponse,
-    TxKeyValuesResponse
-} from "./types/MessageResponse";
+import {MessageResponse} from "./types/MessageResponse";
 import {LeaseInfo} from "./types/LeaseInfo";
-import {ClientErrors} from "./ClientErrors";
 import {pullAt} from 'lodash'
-import {
-    TxCountResult,
-    TxGetLeaseResult,
-    TxGetNShortestLeasesResult,
-    TxHasResult,
-    TxKeysResult,
-    TxReadResult,
-    TxResult
-} from "./types/TxResult";
+import {TxResult} from "./types/TxResult";
 import {assert} from "./Assert";
 import {entropyToMnemonic, generateMnemonic} from "bip39";
 import Long from 'long'
 import {QueryClientImpl} from "../codec/crud/query";
 import {createProtobufRpcClient, QueryClient} from "@cosmjs/stargate";
-import {passThrough} from "promise-passthrough";
-import {MsgCreate, MsgDelete, MsgRead, MsgReadResponse, MsgUpsert} from "../codec/crud/tx";
-import {SDKOptions, SDK, sdk, mnemonicToAddress} from '../client-lib/rpc'
+import {SDK, sdk, SDKOptions} from '../client-lib/rpc'
+import {bluzelle, BluzelleSdk} from "../bz-sdk/bz-sdk";
 
 // TEMP STUB
 const BLOCK_TIME_IN_SECONDS = 5.5;
@@ -125,15 +80,15 @@ export type APIOptions = SDKOptions & {uuid: string}
 
 export class API {
     config: APIOptions;
-    client?: SDK;
+    client?: BluzelleSdk;
 
     constructor(config: APIOptions) {
         this.config = config;
     }
 
 
-    getClient(): Promise<SDK> {
-        return this.client ? Promise.resolve(this.client) : sdk(this.config)
+    getClient(): Promise<BluzelleSdk> {
+        return this.client ? Promise.resolve(this.client) : bluzelle(this.config)
     }
 
 
@@ -168,11 +123,11 @@ export class API {
         const blocks = convertLease(leaseInfo);
 
         return this.getClient()
-            .then(client => client.tx.Create({
+            .then(client => client.db.tx.Create({
                 key: key,
                 value: new TextEncoder().encode(value),
                 uuid: this.config.uuid,
-                creator: client.address,
+                creator: client.db.address,
                 lease: Long.fromInt(blocks),
                 metadata: new Uint8Array()
             }))
@@ -239,10 +194,10 @@ export class API {
     //
     delete(key: string): Promise<unknown> {
         return this.getClient()
-            .then(client => client.tx.Delete({
+            .then(client => client.db.tx.Delete({
                 key: key,
                 uuid: this.config.uuid,
-                creator: client.address,
+                creator: client.db.address,
                 }))
             //.then(standardTxResult)
     }
@@ -384,7 +339,7 @@ export class API {
     //
     read(key: string): Promise<string> {
         return this.getClient()
-            .then(client => client.q.CrudValue({
+            .then(client => client.db.q.CrudValue({
                 uuid: this.config.uuid,
                 key
             }))
@@ -610,8 +565,8 @@ export class API {
         const blocks = convertLease(leaseInfo);
 
         return this.getClient()
-            .then(client => client.tx.Update({
-                creator: client.address,
+            .then(client => client.db.tx.Update({
+                creator: client.db.address,
                 uuid: this.config.uuid,
                 key: key,
                 value: new TextEncoder().encode(value),
@@ -625,11 +580,11 @@ export class API {
         const blocks = convertLease(leaseInfo);
 
         return this.getClient()
-            .then(client => client.tx.Upsert({
+            .then(client => client.db.tx.Upsert({
                         key: key,
                         value: new TextEncoder().encode(value),
                         uuid: this.config.uuid,
-                        creator: client.address,
+                        creator: client.db.address,
                         lease: Long.fromInt(blocks),
                         metadata: new Uint8Array()
                     }))

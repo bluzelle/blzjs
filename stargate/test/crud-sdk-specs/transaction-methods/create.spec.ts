@@ -2,7 +2,7 @@ import {DEFAULT_TIMEOUT, getSdk} from "../../helpers/client-helpers/sdk-helpers"
 import {useChaiAsPromised} from "testing/lib/globalHelpers";
 import Long from 'long'
 import {expect} from 'chai'
-import {DbSdk} from "../../../src/crud-sdk/crud-sdk";
+import {DbSdk} from "../../../src/bz-sdk/bz-sdk";
 
 
 

@@ -1,5 +1,5 @@
 import {localChain} from "../../config"
-import {dbSdk, DbSdk} from "../../../src/crud-sdk/crud-sdk";
+import {dbSdk, DbSdk} from "../../../src/bz-sdk/bz-sdk";
 export const DEFAULT_TIMEOUT = 800000;
 
 export const getSdk = (): Promise<DbSdk> => {
