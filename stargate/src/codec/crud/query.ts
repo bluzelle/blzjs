@@ -1,11 +1,11 @@
 /* eslint-disable */
 import Long from "long";
+import _m0 from "protobufjs/minimal";
 import { CrudValue } from "../crud/CrudValue";
 import {
   PageRequest,
   PageResponse,
 } from "../cosmos/base/query/v1beta1/pagination";
-import _m0 from "protobufjs/minimal";
 
 export const protobufPackage = "bluzelle.curium.crud";
 
@@ -49,7 +49,7 @@ export const QueryGetCrudValueRequest = {
     input: _m0.Reader | Uint8Array,
     length?: number
   ): QueryGetCrudValueRequest {
-    const reader = input instanceof Uint8Array ? new _m0.Reader(input) : input;
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = {
       ...baseQueryGetCrudValueRequest,
@@ -132,7 +132,7 @@ export const QueryGetCrudValueResponse = {
     input: _m0.Reader | Uint8Array,
     length?: number
   ): QueryGetCrudValueResponse {
-    const reader = input instanceof Uint8Array ? new _m0.Reader(input) : input;
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = {
       ...baseQueryGetCrudValueResponse,
@@ -207,7 +207,7 @@ export const QueryAllCrudValueRequest = {
     input: _m0.Reader | Uint8Array,
     length?: number
   ): QueryAllCrudValueRequest {
-    const reader = input instanceof Uint8Array ? new _m0.Reader(input) : input;
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = {
       ...baseQueryAllCrudValueRequest,
@@ -299,7 +299,7 @@ export const QueryAllCrudValueResponse = {
     input: _m0.Reader | Uint8Array,
     length?: number
   ): QueryAllCrudValueResponse {
-    const reader = input instanceof Uint8Array ? new _m0.Reader(input) : input;
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = {
       ...baseQueryAllCrudValueResponse,

@@ -63,9 +63,10 @@ export const MsgChunk = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): MsgChunk {
-    const reader = input instanceof Uint8Array ? new _m0.Reader(input) : input;
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = { ...baseMsgChunk } as MsgChunk;
+    message.data = new Uint8Array();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -91,6 +92,7 @@ export const MsgChunk = {
 
   fromJSON(object: any): MsgChunk {
     const message = { ...baseMsgChunk } as MsgChunk;
+    message.data = new Uint8Array();
     if (object.creator !== undefined && object.creator !== null) {
       message.creator = String(object.creator);
     } else {
@@ -163,7 +165,7 @@ export const MsgChunkResponse = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): MsgChunkResponse {
-    const reader = input instanceof Uint8Array ? new _m0.Reader(input) : input;
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = { ...baseMsgChunkResponse } as MsgChunkResponse;
     while (reader.pos < end) {
@@ -213,7 +215,7 @@ export const MsgCreateNft = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): MsgCreateNft {
-    const reader = input instanceof Uint8Array ? new _m0.Reader(input) : input;
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = { ...baseMsgCreateNft } as MsgCreateNft;
     while (reader.pos < end) {
@@ -302,7 +304,7 @@ export const MsgCreateNftResponse = {
     input: _m0.Reader | Uint8Array,
     length?: number
   ): MsgCreateNftResponse {
-    const reader = input instanceof Uint8Array ? new _m0.Reader(input) : input;
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = { ...baseMsgCreateNftResponse } as MsgCreateNftResponse;
     while (reader.pos < end) {
@@ -375,7 +377,7 @@ export const MsgUpdateNft = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): MsgUpdateNft {
-    const reader = input instanceof Uint8Array ? new _m0.Reader(input) : input;
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = { ...baseMsgUpdateNft } as MsgUpdateNft;
     while (reader.pos < end) {
@@ -476,7 +478,7 @@ export const MsgUpdateNftResponse = {
     input: _m0.Reader | Uint8Array,
     length?: number
   ): MsgUpdateNftResponse {
-    const reader = input instanceof Uint8Array ? new _m0.Reader(input) : input;
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = { ...baseMsgUpdateNftResponse } as MsgUpdateNftResponse;
     while (reader.pos < end) {
@@ -523,7 +525,7 @@ export const MsgDeleteNft = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): MsgDeleteNft {
-    const reader = input instanceof Uint8Array ? new _m0.Reader(input) : input;
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = { ...baseMsgDeleteNft } as MsgDeleteNft;
     while (reader.pos < end) {
@@ -596,7 +598,7 @@ export const MsgDeleteNftResponse = {
     input: _m0.Reader | Uint8Array,
     length?: number
   ): MsgDeleteNftResponse {
-    const reader = input instanceof Uint8Array ? new _m0.Reader(input) : input;
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = { ...baseMsgDeleteNftResponse } as MsgDeleteNftResponse;
     while (reader.pos < end) {

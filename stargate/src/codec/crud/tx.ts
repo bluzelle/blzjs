@@ -1,7 +1,7 @@
 /* eslint-disable */
 import Long from "long";
-import { Lease } from "../crud/lease";
 import _m0 from "protobufjs/minimal";
+import { Lease } from "../crud/lease";
 
 export const protobufPackage = "bluzelle.curium.crud";
 
@@ -76,9 +76,11 @@ export const MsgUpsert = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): MsgUpsert {
-    const reader = input instanceof Uint8Array ? new _m0.Reader(input) : input;
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = { ...baseMsgUpsert } as MsgUpsert;
+    message.value = new Uint8Array();
+    message.metadata = new Uint8Array();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -110,6 +112,8 @@ export const MsgUpsert = {
 
   fromJSON(object: any): MsgUpsert {
     const message = { ...baseMsgUpsert } as MsgUpsert;
+    message.value = new Uint8Array();
+    message.metadata = new Uint8Array();
     if (object.creator !== undefined && object.creator !== null) {
       message.creator = String(object.creator);
     } else {
@@ -204,7 +208,7 @@ export const MsgUpsertResponse = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): MsgUpsertResponse {
-    const reader = input instanceof Uint8Array ? new _m0.Reader(input) : input;
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = { ...baseMsgUpsertResponse } as MsgUpsertResponse;
     while (reader.pos < end) {
@@ -263,9 +267,11 @@ export const MsgCreate = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): MsgCreate {
-    const reader = input instanceof Uint8Array ? new _m0.Reader(input) : input;
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = { ...baseMsgCreate } as MsgCreate;
+    message.value = new Uint8Array();
+    message.metadata = new Uint8Array();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -297,6 +303,8 @@ export const MsgCreate = {
 
   fromJSON(object: any): MsgCreate {
     const message = { ...baseMsgCreate } as MsgCreate;
+    message.value = new Uint8Array();
+    message.metadata = new Uint8Array();
     if (object.creator !== undefined && object.creator !== null) {
       message.creator = String(object.creator);
     } else {
@@ -391,7 +399,7 @@ export const MsgCreateResponse = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): MsgCreateResponse {
-    const reader = input instanceof Uint8Array ? new _m0.Reader(input) : input;
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = { ...baseMsgCreateResponse } as MsgCreateResponse;
     while (reader.pos < end) {
@@ -450,9 +458,11 @@ export const MsgUpdate = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): MsgUpdate {
-    const reader = input instanceof Uint8Array ? new _m0.Reader(input) : input;
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = { ...baseMsgUpdate } as MsgUpdate;
+    message.value = new Uint8Array();
+    message.metadata = new Uint8Array();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -484,6 +494,8 @@ export const MsgUpdate = {
 
   fromJSON(object: any): MsgUpdate {
     const message = { ...baseMsgUpdate } as MsgUpdate;
+    message.value = new Uint8Array();
+    message.metadata = new Uint8Array();
     if (object.creator !== undefined && object.creator !== null) {
       message.creator = String(object.creator);
     } else {
@@ -578,7 +590,7 @@ export const MsgUpdateResponse = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): MsgUpdateResponse {
-    const reader = input instanceof Uint8Array ? new _m0.Reader(input) : input;
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = { ...baseMsgUpdateResponse } as MsgUpdateResponse;
     while (reader.pos < end) {
@@ -628,7 +640,7 @@ export const MsgDelete = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): MsgDelete {
-    const reader = input instanceof Uint8Array ? new _m0.Reader(input) : input;
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = { ...baseMsgDelete } as MsgDelete;
     while (reader.pos < end) {
@@ -711,7 +723,7 @@ export const MsgDeleteResponse = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): MsgDeleteResponse {
-    const reader = input instanceof Uint8Array ? new _m0.Reader(input) : input;
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = { ...baseMsgDeleteResponse } as MsgDeleteResponse;
     while (reader.pos < end) {

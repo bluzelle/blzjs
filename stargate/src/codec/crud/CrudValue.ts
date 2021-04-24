@@ -1,7 +1,7 @@
 /* eslint-disable */
 import Long from "long";
-import { Lease } from "../crud/lease";
 import _m0 from "protobufjs/minimal";
+import { Lease } from "../crud/lease";
 
 export const protobufPackage = "bluzelle.curium.crud";
 
@@ -52,9 +52,11 @@ export const CrudValue = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): CrudValue {
-    const reader = input instanceof Uint8Array ? new _m0.Reader(input) : input;
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = { ...baseCrudValue } as CrudValue;
+    message.value = new Uint8Array();
+    message.metadata = new Uint8Array();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -89,6 +91,8 @@ export const CrudValue = {
 
   fromJSON(object: any): CrudValue {
     const message = { ...baseCrudValue } as CrudValue;
+    message.value = new Uint8Array();
+    message.metadata = new Uint8Array();
     if (object.creator !== undefined && object.creator !== null) {
       message.creator = String(object.creator);
     } else {

@@ -1,11 +1,11 @@
 /* eslint-disable */
 import Long from "long";
+import _m0 from "protobufjs/minimal";
 import { Nft } from "../nft/nft";
 import {
   PageRequest,
   PageResponse,
 } from "../cosmos/base/query/v1beta1/pagination";
-import _m0 from "protobufjs/minimal";
 
 export const protobufPackage = "bluzelle.curium.nft";
 
@@ -41,7 +41,7 @@ export const QueryGetNftRequest = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): QueryGetNftRequest {
-    const reader = input instanceof Uint8Array ? new _m0.Reader(input) : input;
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = { ...baseQueryGetNftRequest } as QueryGetNftRequest;
     while (reader.pos < end) {
@@ -100,7 +100,7 @@ export const QueryGetNftResponse = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): QueryGetNftResponse {
-    const reader = input instanceof Uint8Array ? new _m0.Reader(input) : input;
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = { ...baseQueryGetNftResponse } as QueryGetNftResponse;
     while (reader.pos < end) {
@@ -159,7 +159,7 @@ export const QueryAllNftRequest = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): QueryAllNftRequest {
-    const reader = input instanceof Uint8Array ? new _m0.Reader(input) : input;
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = { ...baseQueryAllNftRequest } as QueryAllNftRequest;
     while (reader.pos < end) {
@@ -226,7 +226,7 @@ export const QueryAllNftResponse = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): QueryAllNftResponse {
-    const reader = input instanceof Uint8Array ? new _m0.Reader(input) : input;
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = { ...baseQueryAllNftResponse } as QueryAllNftResponse;
     message.Nft = [];

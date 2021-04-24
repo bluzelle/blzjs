@@ -1,5 +1,6 @@
 syntax = "proto3";
 package bluzelle.curium.crud;
+
 option go_package = "github.com/bluzelle/curium/x/crud/types";
 
 
