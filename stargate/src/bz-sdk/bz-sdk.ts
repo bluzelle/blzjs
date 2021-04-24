@@ -5,8 +5,6 @@ import {QueryClientImpl as NftQueryClientImpl} from "../codec/nft/query";
 import {MsgClientImpl as NftMsgClientImpl} from "../codec/nft/tx";
 import * as MsgTypes from "../codec/crud/tx";
 import {newCommunicationService} from "../client-lib/CommunicationService";
-import Long from 'long'
-import {passThroughAwait} from "promise-passthrough";
 
 export type DbSdk = SDK<CrudQueryClientImpl, CrudMsgClientImpl>
 export type NftSdk = SDK<NftQueryClientImpl, NftMsgClientImpl>
