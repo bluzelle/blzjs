@@ -16,6 +16,7 @@ export interface MsgChunkResponse {}
 
 export interface MsgCreateNft {
   creator: string;
+  mime: string;
   meta: string;
 }
 
@@ -26,6 +27,7 @@ export interface MsgCreateNftResponse {
 export interface MsgUpdateNft {
   creator: string;
   id: Long;
+  mime: string;
   meta: string;
 }
 
@@ -191,7 +193,7 @@ export const MsgChunkResponse = {
   },
 };
 
-const baseMsgCreateNft: object = { creator: "", meta: "" };
+const baseMsgCreateNft: object = { creator: "", mime: "", meta: "" };
 
 export const MsgCreateNft = {
   encode(
@@ -200,6 +202,9 @@ export const MsgCreateNft = {
   ): _m0.Writer {
     if (message.creator !== "") {
       writer.uint32(10).string(message.creator);
+    }
+    if (message.mime !== "") {
+      writer.uint32(18).string(message.mime);
     }
     if (message.meta !== "") {
       writer.uint32(26).string(message.meta);
@@ -216,6 +221,9 @@ export const MsgCreateNft = {
       switch (tag >>> 3) {
         case 1:
           message.creator = reader.string();
+          break;
+        case 2:
+          message.mime = reader.string();
           break;
         case 3:
           message.meta = reader.string();
@@ -235,6 +243,11 @@ export const MsgCreateNft = {
     } else {
       message.creator = "";
     }
+    if (object.mime !== undefined && object.mime !== null) {
+      message.mime = String(object.mime);
+    } else {
+      message.mime = "";
+    }
     if (object.meta !== undefined && object.meta !== null) {
       message.meta = String(object.meta);
     } else {
@@ -246,6 +259,7 @@ export const MsgCreateNft = {
   toJSON(message: MsgCreateNft): unknown {
     const obj: any = {};
     message.creator !== undefined && (obj.creator = message.creator);
+    message.mime !== undefined && (obj.mime = message.mime);
     message.meta !== undefined && (obj.meta = message.meta);
     return obj;
   },
@@ -256,6 +270,11 @@ export const MsgCreateNft = {
       message.creator = object.creator;
     } else {
       message.creator = "";
+    }
+    if (object.mime !== undefined && object.mime !== null) {
+      message.mime = object.mime;
+    } else {
+      message.mime = "";
     }
     if (object.meta !== undefined && object.meta !== null) {
       message.meta = object.meta;
@@ -328,7 +347,12 @@ export const MsgCreateNftResponse = {
   },
 };
 
-const baseMsgUpdateNft: object = { creator: "", id: Long.UZERO, meta: "" };
+const baseMsgUpdateNft: object = {
+  creator: "",
+  id: Long.UZERO,
+  mime: "",
+  meta: "",
+};
 
 export const MsgUpdateNft = {
   encode(
@@ -340,6 +364,9 @@ export const MsgUpdateNft = {
     }
     if (!message.id.isZero()) {
       writer.uint32(16).uint64(message.id);
+    }
+    if (message.mime !== "") {
+      writer.uint32(26).string(message.mime);
     }
     if (message.meta !== "") {
       writer.uint32(34).string(message.meta);
@@ -359,6 +386,9 @@ export const MsgUpdateNft = {
           break;
         case 2:
           message.id = reader.uint64() as Long;
+          break;
+        case 3:
+          message.mime = reader.string();
           break;
         case 4:
           message.meta = reader.string();
@@ -383,6 +413,11 @@ export const MsgUpdateNft = {
     } else {
       message.id = Long.UZERO;
     }
+    if (object.mime !== undefined && object.mime !== null) {
+      message.mime = String(object.mime);
+    } else {
+      message.mime = "";
+    }
     if (object.meta !== undefined && object.meta !== null) {
       message.meta = String(object.meta);
     } else {
@@ -396,6 +431,7 @@ export const MsgUpdateNft = {
     message.creator !== undefined && (obj.creator = message.creator);
     message.id !== undefined &&
       (obj.id = (message.id || Long.UZERO).toString());
+    message.mime !== undefined && (obj.mime = message.mime);
     message.meta !== undefined && (obj.meta = message.meta);
     return obj;
   },
@@ -411,6 +447,11 @@ export const MsgUpdateNft = {
       message.id = object.id as Long;
     } else {
       message.id = Long.UZERO;
+    }
+    if (object.mime !== undefined && object.mime !== null) {
+      message.mime = object.mime;
+    } else {
+      message.mime = "";
     }
     if (object.meta !== undefined && object.meta !== null) {
       message.meta = object.meta;

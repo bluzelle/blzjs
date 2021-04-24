@@ -7,10 +7,11 @@ export const protobufPackage = "bluzelle.curium.nft";
 export interface Nft {
   creator: string;
   id: Long;
+  mime: string;
   meta: string;
 }
 
-const baseNft: object = { creator: "", id: Long.UZERO, meta: "" };
+const baseNft: object = { creator: "", id: Long.UZERO, mime: "", meta: "" };
 
 export const Nft = {
   encode(message: Nft, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -19,6 +20,9 @@ export const Nft = {
     }
     if (!message.id.isZero()) {
       writer.uint32(16).uint64(message.id);
+    }
+    if (message.mime !== "") {
+      writer.uint32(26).string(message.mime);
     }
     if (message.meta !== "") {
       writer.uint32(34).string(message.meta);
@@ -38,6 +42,9 @@ export const Nft = {
           break;
         case 2:
           message.id = reader.uint64() as Long;
+          break;
+        case 3:
+          message.mime = reader.string();
           break;
         case 4:
           message.meta = reader.string();
@@ -62,6 +69,11 @@ export const Nft = {
     } else {
       message.id = Long.UZERO;
     }
+    if (object.mime !== undefined && object.mime !== null) {
+      message.mime = String(object.mime);
+    } else {
+      message.mime = "";
+    }
     if (object.meta !== undefined && object.meta !== null) {
       message.meta = String(object.meta);
     } else {
@@ -75,6 +87,7 @@ export const Nft = {
     message.creator !== undefined && (obj.creator = message.creator);
     message.id !== undefined &&
       (obj.id = (message.id || Long.UZERO).toString());
+    message.mime !== undefined && (obj.mime = message.mime);
     message.meta !== undefined && (obj.meta = message.meta);
     return obj;
   },
@@ -90,6 +103,11 @@ export const Nft = {
       message.id = object.id as Long;
     } else {
       message.id = Long.UZERO;
+    }
+    if (object.mime !== undefined && object.mime !== null) {
+      message.mime = object.mime;
+    } else {
+      message.mime = "";
     }
     if (object.meta !== undefined && object.meta !== null) {
       message.meta = object.meta;

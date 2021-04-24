@@ -12,6 +12,7 @@ export interface MsgChunkResponse {
 }
 export interface MsgCreateNft {
     creator: string;
+    mime: string;
     meta: string;
 }
 export interface MsgCreateNftResponse {
@@ -20,6 +21,7 @@ export interface MsgCreateNftResponse {
 export interface MsgUpdateNft {
     creator: string;
     id: Long;
+    mime: string;
     meta: string;
 }
 export interface MsgUpdateNftResponse {

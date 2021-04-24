@@ -4,6 +4,7 @@ export declare const protobufPackage = "bluzelle.curium.nft";
 export interface Nft {
     creator: string;
     id: Long;
+    mime: string;
     meta: string;
 }
 export declare const Nft: {

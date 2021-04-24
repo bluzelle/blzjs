@@ -8,7 +8,7 @@ exports.Nft = exports.protobufPackage = void 0;
 const long_1 = __importDefault(require("long"));
 const minimal_1 = __importDefault(require("protobufjs/minimal"));
 exports.protobufPackage = "bluzelle.curium.nft";
-const baseNft = { creator: "", id: long_1.default.UZERO, meta: "" };
+const baseNft = { creator: "", id: long_1.default.UZERO, mime: "", meta: "" };
 exports.Nft = {
     encode(message, writer = minimal_1.default.Writer.create()) {
         if (message.creator !== "") {
@@ -16,6 +16,9 @@ exports.Nft = {
         }
         if (!message.id.isZero()) {
             writer.uint32(16).uint64(message.id);
+        }
+        if (message.mime !== "") {
+            writer.uint32(26).string(message.mime);
         }
         if (message.meta !== "") {
             writer.uint32(34).string(message.meta);
@@ -34,6 +37,9 @@ exports.Nft = {
                     break;
                 case 2:
                     message.id = reader.uint64();
+                    break;
+                case 3:
+                    message.mime = reader.string();
                     break;
                 case 4:
                     message.meta = reader.string();
@@ -59,6 +65,12 @@ exports.Nft = {
         else {
             message.id = long_1.default.UZERO;
         }
+        if (object.mime !== undefined && object.mime !== null) {
+            message.mime = String(object.mime);
+        }
+        else {
+            message.mime = "";
+        }
         if (object.meta !== undefined && object.meta !== null) {
             message.meta = String(object.meta);
         }
@@ -72,6 +84,7 @@ exports.Nft = {
         message.creator !== undefined && (obj.creator = message.creator);
         message.id !== undefined &&
             (obj.id = (message.id || long_1.default.UZERO).toString());
+        message.mime !== undefined && (obj.mime = message.mime);
         message.meta !== undefined && (obj.meta = message.meta);
         return obj;
     },
@@ -88,6 +101,12 @@ exports.Nft = {
         }
         else {
             message.id = long_1.default.UZERO;
+        }
+        if (object.mime !== undefined && object.mime !== null) {
+            message.mime = object.mime;
+        }
+        else {
+            message.mime = "";
         }
         if (object.meta !== undefined && object.meta !== null) {
             message.meta = object.meta;

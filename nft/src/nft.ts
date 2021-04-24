@@ -13,15 +13,15 @@ import Long from 'long'
 import {Some} from "monet";
 import {readFileSync} from "fs";
 
-export interface SDK {
-    q: QueryClientImpl,
-    tx: MsgClientImpl,
+export interface SDK<Q, M> {
+    q: Q,
+    tx: M,
     address: string,
     withTransaction: (fn: () => unknown, options: {memo: string}) => unknown
 }
 
 
-const sdk = (options: SDKOptions): Promise<SDK> => {
+const sdk = <Q, M>(options: SDKOptions, qImpl: any, mImpl: any): Promise<SDK<Q, M>> => {
     const cs = newCommunicationService(options.url, options.mnemonic || '')
 
     return Promise.all([
@@ -30,11 +30,11 @@ const sdk = (options: SDKOptions): Promise<SDK> => {
         mnemonicToAddress(options.mnemonic || '')
     ])
         .then(([queryRpc, txRpc, address]) => ({
-            q: new QueryClientImpl(queryRpc),
-            tx: new MsgClientImpl(txRpc),
+            q: new qImpl(queryRpc),
+            tx: new mImpl(txRpc),
             address,
             withTransaction: (fn: () => unknown, options: { memo: string }) => withTransaction(cs, fn, options)
-        }))
+        } as SDK<Q, M>))
 }
 
 const queryRpc = (options: SDKOptions): Promise<ProtobufRpcClient> =>
@@ -65,35 +65,39 @@ type Receipt = {
     data: Uint8Array
 }
 
-const mnemonic = "oak ordinary next choose firm pave cry rescue fetch staff joy deputy purchase display bus outside pen must enroll age oppose climb vanish shoe";
+const mnemonic = "middle race solve wheel oppose size fan claim firm useless volume eternal second mammal corn sample diet sphere party garbage strong drink sentence travel";
 
-const getClient = memoize(() => sdk({
+const getClient = memoize(() => sdk<QueryClientImpl, MsgClientImpl>({
         mnemonic,
         url: 'http://localhost:26657',
         maxGas: 10000000,
         gasPrice: 0.002
-    })
+    }, QueryClientImpl, MsgClientImpl)
 );
+
+
+type NftSDK = SDK<QueryClientImpl, MsgClientImpl>
 
 interface Ctx {
     address: string,
-    client: SDK,
+    client: NftSDK,
     id: Long,
 
 }
 
 setTimeout(() => {
     const file = readFileSync("./image.png");
-    storeNft('meta', file)
+    storeNft(JSON.stringify('some meta data'), 'image/png', file)
 });
 
-const storeNft = (meta: unknown, data: Uint8Array): Promise<number> =>
+const storeNft = (meta: unknown, mime: string, data: Uint8Array): Promise<number> =>
     getClient()
         .then(client => ({client} as Ctx))
         .then(passThroughAwait(ctx => mnemonicToAddress(mnemonic).then(address => ctx.address = address)))
         .then(passThroughAwait(ctx => ctx.client.tx.CreateNft({
             creator: ctx.address,
-            meta: JSON.stringify(meta)
+            meta: JSON.stringify(meta),
+            mime
         }).then(x => {ctx.id = x.id})))
         .then(passThroughAwait(ctx => sendChunks(ctx, data)))
         .then(ctx => ctx.id)
