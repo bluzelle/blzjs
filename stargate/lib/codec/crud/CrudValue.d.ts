@@ -1,4 +1,5 @@
 import Long from "long";
+import { Lease } from "../crud/lease";
 import _m0 from "protobufjs/minimal";
 export declare const protobufPackage = "bluzelle.curium.crud";
 export interface CrudValue {
@@ -6,7 +7,7 @@ export interface CrudValue {
     uuid: string;
     key: string;
     value: Uint8Array;
-    lease: Long;
+    lease?: Lease;
     height: Long;
     metadata: Uint8Array;
 }

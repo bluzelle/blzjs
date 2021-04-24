@@ -1,18 +1,19 @@
 import {Tendermint34Client} from "@cosmjs/tendermint-rpc";
 import {MessageResponse} from "./types/MessageResponse";
-import {LeaseInfo} from "./types/LeaseInfo";
 import {pullAt} from 'lodash'
 import {TxResult} from "./types/TxResult";
 import {assert} from "./Assert";
 import {entropyToMnemonic, generateMnemonic} from "bip39";
-import Long from 'long'
 import {QueryClientImpl} from "../codec/crud/query";
 import {createProtobufRpcClient, QueryClient} from "@cosmjs/stargate";
-import {SDK, sdk, SDKOptions} from '../client-lib/rpc'
+import {SDKOptions} from '../client-lib/rpc'
 import {bluzelle, BluzelleSdk} from "../bz-sdk/bz-sdk";
+import {Lease} from "../codec/crud/lease";
 
 // TEMP STUB
 const BLOCK_TIME_IN_SECONDS = 5.5;
+const DEFAULT_LEASE = {seconds: 0, minutes: 0, hours: 0, days: 0, years: 0}
+
 
 interface QueryError {
     status: number
@@ -119,8 +120,7 @@ export class API {
     // }
     //
     //
-    async create(key: string, value: string, leaseInfo: LeaseInfo = {}): Promise<unknown> {
-        const blocks = convertLease(leaseInfo);
+    async create(key: string, value: string, lease: Lease = DEFAULT_LEASE): Promise<unknown> {
 
         return this.getClient()
             .then(client => client.db.tx.Create({
@@ -128,7 +128,7 @@ export class API {
                 value: new TextEncoder().encode(value),
                 uuid: this.config.uuid,
                 creator: client.db.address,
-                lease: Long.fromInt(blocks),
+                lease: lease,
                 metadata: new Uint8Array()
             }))
             .then(x => x)
@@ -560,9 +560,7 @@ export class API {
     //     }, gasInfo)
     // }
     //
-    async update(key: string, value: string, leaseInfo: LeaseInfo = {}): Promise<unknown> {
-
-        const blocks = convertLease(leaseInfo);
+    async update(key: string, value: string, leaseInfo: Lease = DEFAULT_LEASE): Promise<unknown> {
 
         return this.getClient()
             .then(client => client.db.tx.Update({
@@ -570,14 +568,12 @@ export class API {
                 uuid: this.config.uuid,
                 key: key,
                 value: new TextEncoder().encode(value),
-                lease: Long.fromInt(blocks),
+                lease: leaseInfo,
                 metadata: new Uint8Array()
             }))
     }
 
-    async upsert(key: string, value: string, leaseInfo: LeaseInfo = {}): Promise<unknown> {
-
-        const blocks = convertLease(leaseInfo);
+    async upsert(key: string, value: string, leaseInfo: Lease = DEFAULT_LEASE): Promise<unknown> {
 
         return this.getClient()
             .then(client => client.db.tx.Upsert({
@@ -585,7 +581,7 @@ export class API {
                         value: new TextEncoder().encode(value),
                         uuid: this.config.uuid,
                         creator: client.db.address,
-                        lease: Long.fromInt(blocks),
+                        lease: leaseInfo,
                         metadata: new Uint8Array()
                     }))
     }
@@ -683,9 +679,6 @@ const getRpcClient = (url: string): Promise<QueryClientImpl> => {
 
 const MINUTE = 60
 const HOUR = MINUTE * 60
-const DAY = HOUR * 24
-const convertLease = ({seconds = 0, minutes = 0, hours = 0, days = 0}: LeaseInfo): number =>
-    Math.round((seconds + (minutes * MINUTE) + (hours * HOUR) + (days * DAY)) / BLOCK_TIME_IN_SECONDS) || Math.round((DAY * 10) / BLOCK_TIME_IN_SECONDS)
 
 const findMine = <T>(res: { data: T[] }, condition: (x: T) => boolean): { res: any, data: T | undefined } => {
     for (let i: number = 0; i < res.data.length; i++) {

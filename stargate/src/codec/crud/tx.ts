@@ -1,5 +1,6 @@
 /* eslint-disable */
 import Long from "long";
+import { Lease } from "../crud/lease";
 import _m0 from "protobufjs/minimal";
 
 export const protobufPackage = "bluzelle.curium.crud";
@@ -10,7 +11,7 @@ export interface MsgUpsert {
   uuid: string;
   key: string;
   value: Uint8Array;
-  lease: Long;
+  lease?: Lease;
   metadata: Uint8Array;
 }
 
@@ -21,7 +22,7 @@ export interface MsgCreate {
   uuid: string;
   key: string;
   value: Uint8Array;
-  lease: Long;
+  lease?: Lease;
   metadata: Uint8Array;
 }
 
@@ -32,7 +33,7 @@ export interface MsgUpdate {
   uuid: string;
   key: string;
   value: Uint8Array;
-  lease: Long;
+  lease?: Lease;
   metadata: Uint8Array;
 }
 
@@ -46,12 +47,7 @@ export interface MsgDelete {
 
 export interface MsgDeleteResponse {}
 
-const baseMsgUpsert: object = {
-  creator: "",
-  uuid: "",
-  key: "",
-  lease: Long.ZERO,
-};
+const baseMsgUpsert: object = { creator: "", uuid: "", key: "" };
 
 export const MsgUpsert = {
   encode(
@@ -70,8 +66,8 @@ export const MsgUpsert = {
     if (message.value.length !== 0) {
       writer.uint32(34).bytes(message.value);
     }
-    if (!message.lease.isZero()) {
-      writer.uint32(40).int64(message.lease);
+    if (message.lease !== undefined) {
+      Lease.encode(message.lease, writer.uint32(42).fork()).ldelim();
     }
     if (message.metadata.length !== 0) {
       writer.uint32(50).bytes(message.metadata);
@@ -99,7 +95,7 @@ export const MsgUpsert = {
           message.value = reader.bytes();
           break;
         case 5:
-          message.lease = reader.int64() as Long;
+          message.lease = Lease.decode(reader, reader.uint32());
           break;
         case 6:
           message.metadata = reader.bytes();
@@ -133,9 +129,9 @@ export const MsgUpsert = {
       message.value = bytesFromBase64(object.value);
     }
     if (object.lease !== undefined && object.lease !== null) {
-      message.lease = Long.fromString(object.lease);
+      message.lease = Lease.fromJSON(object.lease);
     } else {
-      message.lease = Long.ZERO;
+      message.lease = undefined;
     }
     if (object.metadata !== undefined && object.metadata !== null) {
       message.metadata = bytesFromBase64(object.metadata);
@@ -153,7 +149,7 @@ export const MsgUpsert = {
         message.value !== undefined ? message.value : new Uint8Array()
       ));
     message.lease !== undefined &&
-      (obj.lease = (message.lease || Long.ZERO).toString());
+      (obj.lease = message.lease ? Lease.toJSON(message.lease) : undefined);
     message.metadata !== undefined &&
       (obj.metadata = base64FromBytes(
         message.metadata !== undefined ? message.metadata : new Uint8Array()
@@ -184,9 +180,9 @@ export const MsgUpsert = {
       message.value = new Uint8Array();
     }
     if (object.lease !== undefined && object.lease !== null) {
-      message.lease = object.lease as Long;
+      message.lease = Lease.fromPartial(object.lease);
     } else {
-      message.lease = Long.ZERO;
+      message.lease = undefined;
     }
     if (object.metadata !== undefined && object.metadata !== null) {
       message.metadata = object.metadata;
@@ -238,12 +234,7 @@ export const MsgUpsertResponse = {
   },
 };
 
-const baseMsgCreate: object = {
-  creator: "",
-  uuid: "",
-  key: "",
-  lease: Long.ZERO,
-};
+const baseMsgCreate: object = { creator: "", uuid: "", key: "" };
 
 export const MsgCreate = {
   encode(
@@ -262,8 +253,8 @@ export const MsgCreate = {
     if (message.value.length !== 0) {
       writer.uint32(34).bytes(message.value);
     }
-    if (!message.lease.isZero()) {
-      writer.uint32(40).int64(message.lease);
+    if (message.lease !== undefined) {
+      Lease.encode(message.lease, writer.uint32(42).fork()).ldelim();
     }
     if (message.metadata.length !== 0) {
       writer.uint32(50).bytes(message.metadata);
@@ -291,7 +282,7 @@ export const MsgCreate = {
           message.value = reader.bytes();
           break;
         case 5:
-          message.lease = reader.int64() as Long;
+          message.lease = Lease.decode(reader, reader.uint32());
           break;
         case 6:
           message.metadata = reader.bytes();
@@ -325,9 +316,9 @@ export const MsgCreate = {
       message.value = bytesFromBase64(object.value);
     }
     if (object.lease !== undefined && object.lease !== null) {
-      message.lease = Long.fromString(object.lease);
+      message.lease = Lease.fromJSON(object.lease);
     } else {
-      message.lease = Long.ZERO;
+      message.lease = undefined;
     }
     if (object.metadata !== undefined && object.metadata !== null) {
       message.metadata = bytesFromBase64(object.metadata);
@@ -345,7 +336,7 @@ export const MsgCreate = {
         message.value !== undefined ? message.value : new Uint8Array()
       ));
     message.lease !== undefined &&
-      (obj.lease = (message.lease || Long.ZERO).toString());
+      (obj.lease = message.lease ? Lease.toJSON(message.lease) : undefined);
     message.metadata !== undefined &&
       (obj.metadata = base64FromBytes(
         message.metadata !== undefined ? message.metadata : new Uint8Array()
@@ -376,9 +367,9 @@ export const MsgCreate = {
       message.value = new Uint8Array();
     }
     if (object.lease !== undefined && object.lease !== null) {
-      message.lease = object.lease as Long;
+      message.lease = Lease.fromPartial(object.lease);
     } else {
-      message.lease = Long.ZERO;
+      message.lease = undefined;
     }
     if (object.metadata !== undefined && object.metadata !== null) {
       message.metadata = object.metadata;
@@ -430,12 +421,7 @@ export const MsgCreateResponse = {
   },
 };
 
-const baseMsgUpdate: object = {
-  creator: "",
-  uuid: "",
-  key: "",
-  lease: Long.ZERO,
-};
+const baseMsgUpdate: object = { creator: "", uuid: "", key: "" };
 
 export const MsgUpdate = {
   encode(
@@ -454,8 +440,8 @@ export const MsgUpdate = {
     if (message.value.length !== 0) {
       writer.uint32(34).bytes(message.value);
     }
-    if (!message.lease.isZero()) {
-      writer.uint32(40).int64(message.lease);
+    if (message.lease !== undefined) {
+      Lease.encode(message.lease, writer.uint32(42).fork()).ldelim();
     }
     if (message.metadata.length !== 0) {
       writer.uint32(50).bytes(message.metadata);
@@ -483,7 +469,7 @@ export const MsgUpdate = {
           message.value = reader.bytes();
           break;
         case 5:
-          message.lease = reader.int64() as Long;
+          message.lease = Lease.decode(reader, reader.uint32());
           break;
         case 6:
           message.metadata = reader.bytes();
@@ -517,9 +503,9 @@ export const MsgUpdate = {
       message.value = bytesFromBase64(object.value);
     }
     if (object.lease !== undefined && object.lease !== null) {
-      message.lease = Long.fromString(object.lease);
+      message.lease = Lease.fromJSON(object.lease);
     } else {
-      message.lease = Long.ZERO;
+      message.lease = undefined;
     }
     if (object.metadata !== undefined && object.metadata !== null) {
       message.metadata = bytesFromBase64(object.metadata);
@@ -537,7 +523,7 @@ export const MsgUpdate = {
         message.value !== undefined ? message.value : new Uint8Array()
       ));
     message.lease !== undefined &&
-      (obj.lease = (message.lease || Long.ZERO).toString());
+      (obj.lease = message.lease ? Lease.toJSON(message.lease) : undefined);
     message.metadata !== undefined &&
       (obj.metadata = base64FromBytes(
         message.metadata !== undefined ? message.metadata : new Uint8Array()
@@ -568,9 +554,9 @@ export const MsgUpdate = {
       message.value = new Uint8Array();
     }
     if (object.lease !== undefined && object.lease !== null) {
-      message.lease = object.lease as Long;
+      message.lease = Lease.fromPartial(object.lease);
     } else {
-      message.lease = Long.ZERO;
+      message.lease = undefined;
     }
     if (object.metadata !== undefined && object.metadata !== null) {
       message.metadata = object.metadata;

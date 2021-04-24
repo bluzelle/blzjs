@@ -1,19 +1,16 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.API = exports.legacyAdapter = void 0;
 const tendermint_rpc_1 = require("@cosmjs/tendermint-rpc");
 const lodash_1 = require("lodash");
 const Assert_1 = require("./Assert");
 const bip39_1 = require("bip39");
-const long_1 = __importDefault(require("long"));
 const query_1 = require("../codec/crud/query");
 const stargate_1 = require("@cosmjs/stargate");
 const bz_sdk_1 = require("../bz-sdk/bz-sdk");
 // TEMP STUB
 const BLOCK_TIME_IN_SECONDS = 5.5;
+const DEFAULT_LEASE = { seconds: 0, minutes: 0, hours: 0, days: 0, years: 0 };
 const legacyAdapter = (options) => new API(options);
 exports.legacyAdapter = legacyAdapter;
 class API {
@@ -78,15 +75,14 @@ class API {
     // }
     //
     //
-    async create(key, value, leaseInfo = {}) {
-        const blocks = convertLease(leaseInfo);
+    async create(key, value, lease = DEFAULT_LEASE) {
         return this.getClient()
             .then(client => client.db.tx.Create({
             key: key,
             value: new TextEncoder().encode(value),
             uuid: this.config.uuid,
             creator: client.db.address,
-            lease: long_1.default.fromInt(blocks),
+            lease: lease,
             metadata: new Uint8Array()
         }))
             .then(x => x);
@@ -488,27 +484,25 @@ class API {
     //     }, gasInfo)
     // }
     //
-    async update(key, value, leaseInfo = {}) {
-        const blocks = convertLease(leaseInfo);
+    async update(key, value, leaseInfo = DEFAULT_LEASE) {
         return this.getClient()
             .then(client => client.db.tx.Update({
             creator: client.db.address,
             uuid: this.config.uuid,
             key: key,
             value: new TextEncoder().encode(value),
-            lease: long_1.default.fromInt(blocks),
+            lease: leaseInfo,
             metadata: new Uint8Array()
         }));
     }
-    async upsert(key, value, leaseInfo = {}) {
-        const blocks = convertLease(leaseInfo);
+    async upsert(key, value, leaseInfo = DEFAULT_LEASE) {
         return this.getClient()
             .then(client => client.db.tx.Upsert({
             key: key,
             value: new TextEncoder().encode(value),
             uuid: this.config.uuid,
             creator: client.db.address,
-            lease: long_1.default.fromInt(blocks),
+            lease: leaseInfo,
             metadata: new Uint8Array()
         }));
     }
@@ -522,8 +516,6 @@ const getRpcClient = (url) => {
 };
 const MINUTE = 60;
 const HOUR = MINUTE * 60;
-const DAY = HOUR * 24;
-const convertLease = ({ seconds = 0, minutes = 0, hours = 0, days = 0 }) => Math.round((seconds + (minutes * MINUTE) + (hours * HOUR) + (days * DAY)) / BLOCK_TIME_IN_SECONDS) || Math.round((DAY * 10) / BLOCK_TIME_IN_SECONDS);
 const findMine = (res, condition) => {
     for (let i = 0; i < res.data.length; i++) {
         if (condition(res.data[i])) {

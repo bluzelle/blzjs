@@ -6,13 +6,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CrudValue = exports.protobufPackage = void 0;
 /* eslint-disable */
 const long_1 = __importDefault(require("long"));
+const lease_1 = require("../crud/lease");
 const minimal_1 = __importDefault(require("protobufjs/minimal"));
 exports.protobufPackage = "bluzelle.curium.crud";
 const baseCrudValue = {
     creator: "",
     uuid: "",
     key: "",
-    lease: long_1.default.ZERO,
     height: long_1.default.ZERO,
 };
 exports.CrudValue = {
@@ -29,8 +29,8 @@ exports.CrudValue = {
         if (message.value.length !== 0) {
             writer.uint32(34).bytes(message.value);
         }
-        if (!message.lease.isZero()) {
-            writer.uint32(40).int64(message.lease);
+        if (message.lease !== undefined) {
+            lease_1.Lease.encode(message.lease, writer.uint32(42).fork()).ldelim();
         }
         if (!message.height.isZero()) {
             writer.uint32(48).int64(message.height);
@@ -60,7 +60,7 @@ exports.CrudValue = {
                     message.value = reader.bytes();
                     break;
                 case 5:
-                    message.lease = reader.int64();
+                    message.lease = lease_1.Lease.decode(reader, reader.uint32());
                     break;
                 case 6:
                     message.height = reader.int64();
@@ -99,10 +99,10 @@ exports.CrudValue = {
             message.value = bytesFromBase64(object.value);
         }
         if (object.lease !== undefined && object.lease !== null) {
-            message.lease = long_1.default.fromString(object.lease);
+            message.lease = lease_1.Lease.fromJSON(object.lease);
         }
         else {
-            message.lease = long_1.default.ZERO;
+            message.lease = undefined;
         }
         if (object.height !== undefined && object.height !== null) {
             message.height = long_1.default.fromString(object.height);
@@ -123,7 +123,7 @@ exports.CrudValue = {
         message.value !== undefined &&
             (obj.value = base64FromBytes(message.value !== undefined ? message.value : new Uint8Array()));
         message.lease !== undefined &&
-            (obj.lease = (message.lease || long_1.default.ZERO).toString());
+            (obj.lease = message.lease ? lease_1.Lease.toJSON(message.lease) : undefined);
         message.height !== undefined &&
             (obj.height = (message.height || long_1.default.ZERO).toString());
         message.metadata !== undefined &&
@@ -157,10 +157,10 @@ exports.CrudValue = {
             message.value = new Uint8Array();
         }
         if (object.lease !== undefined && object.lease !== null) {
-            message.lease = object.lease;
+            message.lease = lease_1.Lease.fromPartial(object.lease);
         }
         else {
-            message.lease = long_1.default.ZERO;
+            message.lease = undefined;
         }
         if (object.height !== undefined && object.height !== null) {
             message.height = object.height;

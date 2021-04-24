@@ -6,14 +6,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MsgClientImpl = exports.MsgDeleteResponse = exports.MsgDelete = exports.MsgUpdateResponse = exports.MsgUpdate = exports.MsgCreateResponse = exports.MsgCreate = exports.MsgUpsertResponse = exports.MsgUpsert = exports.protobufPackage = void 0;
 /* eslint-disable */
 const long_1 = __importDefault(require("long"));
+const lease_1 = require("../crud/lease");
 const minimal_1 = __importDefault(require("protobufjs/minimal"));
 exports.protobufPackage = "bluzelle.curium.crud";
-const baseMsgUpsert = {
-    creator: "",
-    uuid: "",
-    key: "",
-    lease: long_1.default.ZERO,
-};
+const baseMsgUpsert = { creator: "", uuid: "", key: "" };
 exports.MsgUpsert = {
     encode(message, writer = minimal_1.default.Writer.create()) {
         if (message.creator !== "") {
@@ -28,8 +24,8 @@ exports.MsgUpsert = {
         if (message.value.length !== 0) {
             writer.uint32(34).bytes(message.value);
         }
-        if (!message.lease.isZero()) {
-            writer.uint32(40).int64(message.lease);
+        if (message.lease !== undefined) {
+            lease_1.Lease.encode(message.lease, writer.uint32(42).fork()).ldelim();
         }
         if (message.metadata.length !== 0) {
             writer.uint32(50).bytes(message.metadata);
@@ -56,7 +52,7 @@ exports.MsgUpsert = {
                     message.value = reader.bytes();
                     break;
                 case 5:
-                    message.lease = reader.int64();
+                    message.lease = lease_1.Lease.decode(reader, reader.uint32());
                     break;
                 case 6:
                     message.metadata = reader.bytes();
@@ -92,10 +88,10 @@ exports.MsgUpsert = {
             message.value = bytesFromBase64(object.value);
         }
         if (object.lease !== undefined && object.lease !== null) {
-            message.lease = long_1.default.fromString(object.lease);
+            message.lease = lease_1.Lease.fromJSON(object.lease);
         }
         else {
-            message.lease = long_1.default.ZERO;
+            message.lease = undefined;
         }
         if (object.metadata !== undefined && object.metadata !== null) {
             message.metadata = bytesFromBase64(object.metadata);
@@ -110,7 +106,7 @@ exports.MsgUpsert = {
         message.value !== undefined &&
             (obj.value = base64FromBytes(message.value !== undefined ? message.value : new Uint8Array()));
         message.lease !== undefined &&
-            (obj.lease = (message.lease || long_1.default.ZERO).toString());
+            (obj.lease = message.lease ? lease_1.Lease.toJSON(message.lease) : undefined);
         message.metadata !== undefined &&
             (obj.metadata = base64FromBytes(message.metadata !== undefined ? message.metadata : new Uint8Array()));
         return obj;
@@ -142,10 +138,10 @@ exports.MsgUpsert = {
             message.value = new Uint8Array();
         }
         if (object.lease !== undefined && object.lease !== null) {
-            message.lease = object.lease;
+            message.lease = lease_1.Lease.fromPartial(object.lease);
         }
         else {
-            message.lease = long_1.default.ZERO;
+            message.lease = undefined;
         }
         if (object.metadata !== undefined && object.metadata !== null) {
             message.metadata = object.metadata;
@@ -188,12 +184,7 @@ exports.MsgUpsertResponse = {
         return message;
     },
 };
-const baseMsgCreate = {
-    creator: "",
-    uuid: "",
-    key: "",
-    lease: long_1.default.ZERO,
-};
+const baseMsgCreate = { creator: "", uuid: "", key: "" };
 exports.MsgCreate = {
     encode(message, writer = minimal_1.default.Writer.create()) {
         if (message.creator !== "") {
@@ -208,8 +199,8 @@ exports.MsgCreate = {
         if (message.value.length !== 0) {
             writer.uint32(34).bytes(message.value);
         }
-        if (!message.lease.isZero()) {
-            writer.uint32(40).int64(message.lease);
+        if (message.lease !== undefined) {
+            lease_1.Lease.encode(message.lease, writer.uint32(42).fork()).ldelim();
         }
         if (message.metadata.length !== 0) {
             writer.uint32(50).bytes(message.metadata);
@@ -236,7 +227,7 @@ exports.MsgCreate = {
                     message.value = reader.bytes();
                     break;
                 case 5:
-                    message.lease = reader.int64();
+                    message.lease = lease_1.Lease.decode(reader, reader.uint32());
                     break;
                 case 6:
                     message.metadata = reader.bytes();
@@ -272,10 +263,10 @@ exports.MsgCreate = {
             message.value = bytesFromBase64(object.value);
         }
         if (object.lease !== undefined && object.lease !== null) {
-            message.lease = long_1.default.fromString(object.lease);
+            message.lease = lease_1.Lease.fromJSON(object.lease);
         }
         else {
-            message.lease = long_1.default.ZERO;
+            message.lease = undefined;
         }
         if (object.metadata !== undefined && object.metadata !== null) {
             message.metadata = bytesFromBase64(object.metadata);
@@ -290,7 +281,7 @@ exports.MsgCreate = {
         message.value !== undefined &&
             (obj.value = base64FromBytes(message.value !== undefined ? message.value : new Uint8Array()));
         message.lease !== undefined &&
-            (obj.lease = (message.lease || long_1.default.ZERO).toString());
+            (obj.lease = message.lease ? lease_1.Lease.toJSON(message.lease) : undefined);
         message.metadata !== undefined &&
             (obj.metadata = base64FromBytes(message.metadata !== undefined ? message.metadata : new Uint8Array()));
         return obj;
@@ -322,10 +313,10 @@ exports.MsgCreate = {
             message.value = new Uint8Array();
         }
         if (object.lease !== undefined && object.lease !== null) {
-            message.lease = object.lease;
+            message.lease = lease_1.Lease.fromPartial(object.lease);
         }
         else {
-            message.lease = long_1.default.ZERO;
+            message.lease = undefined;
         }
         if (object.metadata !== undefined && object.metadata !== null) {
             message.metadata = object.metadata;
@@ -368,12 +359,7 @@ exports.MsgCreateResponse = {
         return message;
     },
 };
-const baseMsgUpdate = {
-    creator: "",
-    uuid: "",
-    key: "",
-    lease: long_1.default.ZERO,
-};
+const baseMsgUpdate = { creator: "", uuid: "", key: "" };
 exports.MsgUpdate = {
     encode(message, writer = minimal_1.default.Writer.create()) {
         if (message.creator !== "") {
@@ -388,8 +374,8 @@ exports.MsgUpdate = {
         if (message.value.length !== 0) {
             writer.uint32(34).bytes(message.value);
         }
-        if (!message.lease.isZero()) {
-            writer.uint32(40).int64(message.lease);
+        if (message.lease !== undefined) {
+            lease_1.Lease.encode(message.lease, writer.uint32(42).fork()).ldelim();
         }
         if (message.metadata.length !== 0) {
             writer.uint32(50).bytes(message.metadata);
@@ -416,7 +402,7 @@ exports.MsgUpdate = {
                     message.value = reader.bytes();
                     break;
                 case 5:
-                    message.lease = reader.int64();
+                    message.lease = lease_1.Lease.decode(reader, reader.uint32());
                     break;
                 case 6:
                     message.metadata = reader.bytes();
@@ -452,10 +438,10 @@ exports.MsgUpdate = {
             message.value = bytesFromBase64(object.value);
         }
         if (object.lease !== undefined && object.lease !== null) {
-            message.lease = long_1.default.fromString(object.lease);
+            message.lease = lease_1.Lease.fromJSON(object.lease);
         }
         else {
-            message.lease = long_1.default.ZERO;
+            message.lease = undefined;
         }
         if (object.metadata !== undefined && object.metadata !== null) {
             message.metadata = bytesFromBase64(object.metadata);
@@ -470,7 +456,7 @@ exports.MsgUpdate = {
         message.value !== undefined &&
             (obj.value = base64FromBytes(message.value !== undefined ? message.value : new Uint8Array()));
         message.lease !== undefined &&
-            (obj.lease = (message.lease || long_1.default.ZERO).toString());
+            (obj.lease = message.lease ? lease_1.Lease.toJSON(message.lease) : undefined);
         message.metadata !== undefined &&
             (obj.metadata = base64FromBytes(message.metadata !== undefined ? message.metadata : new Uint8Array()));
         return obj;
@@ -502,10 +488,10 @@ exports.MsgUpdate = {
             message.value = new Uint8Array();
         }
         if (object.lease !== undefined && object.lease !== null) {
-            message.lease = object.lease;
+            message.lease = lease_1.Lease.fromPartial(object.lease);
         }
         else {
-            message.lease = long_1.default.ZERO;
+            message.lease = undefined;
         }
         if (object.metadata !== undefined && object.metadata !== null) {
             message.metadata = object.metadata;

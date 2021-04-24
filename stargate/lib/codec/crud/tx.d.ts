@@ -1,4 +1,5 @@
 import Long from "long";
+import { Lease } from "../crud/lease";
 import _m0 from "protobufjs/minimal";
 export declare const protobufPackage = "bluzelle.curium.crud";
 /** this line is used by starport scaffolding # proto/tx/message */
@@ -7,7 +8,7 @@ export interface MsgUpsert {
     uuid: string;
     key: string;
     value: Uint8Array;
-    lease: Long;
+    lease?: Lease;
     metadata: Uint8Array;
 }
 export interface MsgUpsertResponse {
@@ -17,7 +18,7 @@ export interface MsgCreate {
     uuid: string;
     key: string;
     value: Uint8Array;
-    lease: Long;
+    lease?: Lease;
     metadata: Uint8Array;
 }
 export interface MsgCreateResponse {
@@ -27,7 +28,7 @@ export interface MsgUpdate {
     uuid: string;
     key: string;
     value: Uint8Array;
-    lease: Long;
+    lease?: Lease;
     metadata: Uint8Array;
 }
 export interface MsgUpdateResponse {

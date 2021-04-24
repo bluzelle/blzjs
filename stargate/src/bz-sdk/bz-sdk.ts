@@ -22,7 +22,6 @@ export const bluzelle = (options: SDKOptions): Promise<BluzelleSdk> =>
             db, nft
         }))
 
-
 // Promise.resolve(bluzelle({
 //     mnemonic: "focus ill drift swift blood bitter move grace ensure diamond year tongue hint weekend bulb rebel avoid gas dose print remove receive yellow shoot",
 //     url: "http://localhost:26657",

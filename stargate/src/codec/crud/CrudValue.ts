@@ -1,5 +1,6 @@
 /* eslint-disable */
 import Long from "long";
+import { Lease } from "../crud/lease";
 import _m0 from "protobufjs/minimal";
 
 export const protobufPackage = "bluzelle.curium.crud";
@@ -9,7 +10,7 @@ export interface CrudValue {
   uuid: string;
   key: string;
   value: Uint8Array;
-  lease: Long;
+  lease?: Lease;
   height: Long;
   metadata: Uint8Array;
 }
@@ -18,7 +19,6 @@ const baseCrudValue: object = {
   creator: "",
   uuid: "",
   key: "",
-  lease: Long.ZERO,
   height: Long.ZERO,
 };
 
@@ -39,8 +39,8 @@ export const CrudValue = {
     if (message.value.length !== 0) {
       writer.uint32(34).bytes(message.value);
     }
-    if (!message.lease.isZero()) {
-      writer.uint32(40).int64(message.lease);
+    if (message.lease !== undefined) {
+      Lease.encode(message.lease, writer.uint32(42).fork()).ldelim();
     }
     if (!message.height.isZero()) {
       writer.uint32(48).int64(message.height);
@@ -71,7 +71,7 @@ export const CrudValue = {
           message.value = reader.bytes();
           break;
         case 5:
-          message.lease = reader.int64() as Long;
+          message.lease = Lease.decode(reader, reader.uint32());
           break;
         case 6:
           message.height = reader.int64() as Long;
@@ -108,9 +108,9 @@ export const CrudValue = {
       message.value = bytesFromBase64(object.value);
     }
     if (object.lease !== undefined && object.lease !== null) {
-      message.lease = Long.fromString(object.lease);
+      message.lease = Lease.fromJSON(object.lease);
     } else {
-      message.lease = Long.ZERO;
+      message.lease = undefined;
     }
     if (object.height !== undefined && object.height !== null) {
       message.height = Long.fromString(object.height);
@@ -133,7 +133,7 @@ export const CrudValue = {
         message.value !== undefined ? message.value : new Uint8Array()
       ));
     message.lease !== undefined &&
-      (obj.lease = (message.lease || Long.ZERO).toString());
+      (obj.lease = message.lease ? Lease.toJSON(message.lease) : undefined);
     message.height !== undefined &&
       (obj.height = (message.height || Long.ZERO).toString());
     message.metadata !== undefined &&
@@ -166,9 +166,9 @@ export const CrudValue = {
       message.value = new Uint8Array();
     }
     if (object.lease !== undefined && object.lease !== null) {
-      message.lease = object.lease as Long;
+      message.lease = Lease.fromPartial(object.lease);
     } else {
-      message.lease = Long.ZERO;
+      message.lease = undefined;
     }
     if (object.height !== undefined && object.height !== null) {
       message.height = object.height as Long;
