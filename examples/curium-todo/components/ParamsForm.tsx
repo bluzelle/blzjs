@@ -1,20 +1,22 @@
 import {Button, Form, Spinner} from "react-bootstrap";
-import {params as bluzelleParams} from '../services/TodoService'
+import {params as bluzelleParams, userParams as bluzelleUserParams} from '../services/TodoService'
 import {ChangeEvent, EventHandler, useState} from "react";
 import {useRouter} from "next/router";
-import {extend} from 'lodash'
-import {BluzelleConfig} from "bluzelle";
+import {extend} from 'lodash';
 
 export const ParamsForm: React.FC = () => {
-    const [params, setParams] = useState<BluzelleConfig>(bluzelleParams);
+    const [params, setParams]:any = useState(bluzelleParams);
+    const [userParams, setUserParams]:any = useState(bluzelleUserParams);
     const router = useRouter();
     const [connecting, setConnecting] = useState<boolean>(false);
 
     const updateParam = (name: string) => (ev: ChangeEvent<HTMLInputElement>) => setParams({...params, [name]: ev.target.value})
+    const updateUserParam = (name: string) => (ev: ChangeEvent<HTMLInputElement>) => setUserParams({...userParams, [name]: ev.target.value})
 
     const formSubmit = ev => {
         setConnecting(true);
         extend(bluzelleParams, params);
+        extend(bluzelleUserParams, userParams);
         ev.preventDefault();
         router.push('/todo');
     }
@@ -22,9 +24,8 @@ export const ParamsForm: React.FC = () => {
     return (
         <Form onSubmit={formSubmit}>
             <ParamFormField label="Mnemonic" value={params.mnemonic} onChange={updateParam('mnemonic')}/>
-            <ParamFormField label="Endpoint" value={params.endpoint} onChange={updateParam('endpoint')}/>
-            <ParamFormField label="Chain ID" value={params.chain_id} onChange={updateParam('chain_id')}/>
-            <ParamFormField label="UUID" value={params.uuid} onChange={updateParam('uuid')}/>
+            <ParamFormField label="Endpoint" value={params.url} onChange={updateParam('url')}/>
+            <ParamFormField label="UUID" value={bluzelleUserParams.uuid} onChange={updateUserParam('uuid')}/>
             <Button variant="primary" onClick={formSubmit} disabled={connecting}>
                 {connecting ? 'Connecting...' : 'Connect'}
             </Button>
