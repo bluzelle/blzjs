@@ -1,5 +1,10 @@
 module.exports.bluzelleConfig = {
-    mnemonic: "dish film auto bundle nest hospital arctic giraffe surface afford tribe toe swing flavor outdoor hand slice diesel awesome excess liar impulse trumpet rare",
-    uuid: Date.now().toString(),
-    endpoint: 'https://client.sentry.testnet.public.bluzelle.com:1317'
+    mnemonic: "bunker pull true dumb alter exhibit mystery before away bomb scissors net review radar pottery gallery comic giraffe hammer people gas they tuna field", 
+    url: "https://client.sentry.testnet.private.bluzelle.com:26657",
+    maxGas: 100000000, 
+    gasPrice:  0.002 
 };
+
+module.exports.userConfig = {
+    uuid: "todo-app-uuid"
+}

@@ -17,7 +17,7 @@ export const onTodoListUpdated = (fn: (todos: Todo[]) => void) => {
     todosListeners.push(fn);
 }
 
-
+//lets do create!
 export const storeTodo = (todo: Pick<Todo, 'body'>): Promise<any> => {
     const time = new Date().toISOString();
     todos[time] = {...todo, time, synced: false, done: false};
@@ -39,6 +39,7 @@ export const storeTodo = (todo: Pick<Todo, 'body'>): Promise<any> => {
 const notifyListeners = () =>
  todosListeners.forEach(listener => listener(Object.values(todos)));
 
+ // lets do a key value read!
 const loadTodos = (): Promise<void> =>
         bz
         .then(client => client.db.q.KeyValues({uuid:client.db.address}))
@@ -46,6 +47,7 @@ const loadTodos = (): Promise<void> =>
         .then(list => list.map(it => todos[it.time] = extend(todos[it.time] || {},  it)))
         .then(notifyListeners)
 
+// lets do a delete!
 export const deleteTodo = (todo: Todo):Promise<any> => {
     todo.synced = false;
     notifyListeners();
@@ -58,6 +60,7 @@ export const deleteTodo = (todo: Todo):Promise<any> => {
         .then(notifyListeners);
 }
 
+// lets do an update!
 export const toggleTodoDone = (todo: Todo): Promise<any> => {
     todo.done = !todo.done;
     todo.synced = false;
