@@ -5,10 +5,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getCosmos = exports.sendMessage = exports.withTransaction = exports.newCommunicationService = void 0;
 const monet_1 = require("monet");
+const API_1 = require("../API");
 const lodash_1 = require("lodash");
 const promise_passthrough_1 = require("promise-passthrough");
 const delay_1 = __importDefault(require("delay"));
-const cosmosjs = require('cosmosjs');
+const cosmosjs = require('@cosmostation/cosmosjs');
 const TOKEN_NAME = 'ubnt';
 const dummyMessageResponse = {
     height: 0,
@@ -190,6 +191,6 @@ exports.getCosmos = lodash_1.memoize((api) => fetch(`${api.url}/node_info`)
     .then(x => x.json())
     .then(x => x.node_info.network)
     .then(chainId => cosmosjs.network(api.url, chainId))
-    .then(promise_passthrough_1.passThrough(cosmos => cosmos.setPath("m/44\'/118\'/0\'/0/0")))
+    .then(promise_passthrough_1.passThrough(cosmos => cosmos.setPath(API_1.getPath(api.legacyCoin))))
     .then(promise_passthrough_1.passThrough(cosmos => cosmos.bech32MainPrefix = 'bluzelle')));
 //# sourceMappingURL=CommunicationService.js.map
