@@ -53,10 +53,11 @@ interface TransactionResponse {
     };
     timestamp: string;
 }
-export declare const mnemonicToAddress: (mnemonic: string) => string;
+export declare const getPath: (legacyCoin: boolean) => string;
+export declare const mnemonicToAddress: (mnemonic: string, legacyCoin: boolean) => string;
 export declare class API {
     #private;
-    cosmos: any;
+    cosmos: unknown;
     address: string;
     mnemonic: string;
     chainId: string;
@@ -64,6 +65,7 @@ export declare class API {
     url: string;
     config: BluzelleConfig;
     communicationService: CommunicationService;
+    legacyCoin: boolean;
     constructor(config: BluzelleConfig);
     withTransaction<T>(fn: () => any, { memo }?: WithTransactionsOptions): Promise<MessageResponse<T>>;
     setMaxMessagesPerTransaction(count: number): void;

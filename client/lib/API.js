@@ -7,7 +7,7 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
 };
 var _abciQuery, _query;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.API = exports.mnemonicToAddress = void 0;
+exports.API = exports.mnemonicToAddress = exports.getPath = void 0;
 global.fetch || (global.fetch = require('node-fetch'));
 const CommunicationService_1 = require("./services/CommunicationService");
 const lodash_1 = require("lodash");
@@ -15,15 +15,18 @@ const Assert_1 = require("./Assert");
 const bip39_1 = require("bip39");
 const cosmosjs = require('@cosmostation/cosmosjs');
 const BLOCK_TIME_IN_SECONDS = 5.5;
-const mnemonicToAddress = (mnemonic) => {
+const getPath = (legacyCoin) => legacyCoin ? "m/44'/118'/0'/0/0" : "m/44'/443'/0'/0/0";
+exports.getPath = getPath;
+const mnemonicToAddress = (mnemonic, legacyCoin) => {
     const c = cosmosjs.network('http://fake.com', 'fake_chain_id');
-    c.setPath("m/44'/118'/0'/0/0");
+    c.setPath(exports.getPath(legacyCoin));
     c.bech32MainPrefix = "bluzelle";
     return c.getAddress(mnemonic);
 };
 exports.mnemonicToAddress = mnemonicToAddress;
 class API {
     constructor(config) {
+        var _a;
         this.chainId = '';
         this.generateBIP39Account = (entropy = '') => {
             Assert_1.assert(entropy.length === 0 || entropy.length === 64, 'Entropy must be 64 char hex');
@@ -65,7 +68,8 @@ class API {
         }));
         this.config = config;
         this.mnemonic = config.mnemonic;
-        this.address = this.mnemonic ? exports.mnemonicToAddress(this.mnemonic) : '';
+        this.legacyCoin = (_a = config.legacy_coin) !== null && _a !== void 0 ? _a : false;
+        this.address = this.mnemonic ? exports.mnemonicToAddress(this.mnemonic, this.legacyCoin) : '';
         this.uuid = config.uuid;
         this.url = config.endpoint;
         this.communicationService = CommunicationService_1.newCommunicationService(this);
@@ -181,7 +185,7 @@ class API {
             .then(standardTxResult);
     }
     getAddress() {
-        return exports.mnemonicToAddress(this.mnemonic);
+        return exports.mnemonicToAddress(this.mnemonic, this.legacyCoin);
     }
     getLease(key) {
         return __classPrivateFieldGet(this, _abciQuery).call(this, `/custom/crud/getlease/${this.uuid}/${key}`)

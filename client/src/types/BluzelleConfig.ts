@@ -3,4 +3,5 @@ export interface BluzelleConfig {
     uuid: string
     endpoint: string
     chain_id?: string
+    legacy_coin?: boolean
 }

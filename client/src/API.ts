@@ -112,15 +112,19 @@ interface TransactionResponse {
     timestamp: string
 }
 
-export const mnemonicToAddress = (mnemonic: string): string => {
+export const getPath = (legacyCoin:boolean): string =>
+    legacyCoin ? "m/44'/118'/0'/0/0" : "m/44'/483'/0'/0/0";
+
+
+export const mnemonicToAddress = (mnemonic: string, legacyCoin:boolean): string => {
     const c = cosmosjs.network('http://fake.com', 'fake_chain_id');
-    c.setPath("m/44'/118'/0'/0/0");
-    c.bech32MainPrefix = "bluzelle"
+    c.setPath(getPath(legacyCoin));
+    c.bech32MainPrefix = "bluzelle";
     return c.getAddress(mnemonic);
 }
 
 export class API {
-    cosmos: any;
+    cosmos: unknown;
     address: string;
     mnemonic: string;
     chainId: string = '';
@@ -128,12 +132,14 @@ export class API {
     url: string;
     config: BluzelleConfig
     communicationService: CommunicationService
+    legacyCoin: boolean;
 
 
     constructor(config: BluzelleConfig) {
         this.config = config;
         this.mnemonic = config.mnemonic;
-        this.address = this.mnemonic ? mnemonicToAddress(this.mnemonic) : '';
+        this.legacyCoin = config.legacy_coin ?? false;
+        this.address = this.mnemonic ? mnemonicToAddress(this.mnemonic, this.legacyCoin) : '';
         this.uuid = config.uuid;
         this.url = config.endpoint;
         this.communicationService = newCommunicationService(this);
@@ -267,7 +273,7 @@ export class API {
     }
 
     getAddress() {
-        return mnemonicToAddress(this.mnemonic);
+        return mnemonicToAddress(this.mnemonic, this.legacyCoin);
     }
 
     getLease(key: string): Promise<number> {

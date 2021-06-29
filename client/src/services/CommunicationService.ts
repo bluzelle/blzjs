@@ -1,6 +1,6 @@
 import {GasInfo} from "../types/GasInfo";
 import {Either, Left, None, Right, Some} from "monet";
-import {API} from "../API";
+import {API, getPath} from "../API";
 import {MessageResponse} from "../types/MessageResponse";
 import {Message} from "../types/Message";
 import {memoize, takeWhile, without} from 'lodash'
@@ -264,7 +264,7 @@ export const getCosmos = memoize((api: API): Promise<any> =>
         .then(x => x.json())
         .then(x => x.node_info.network)
         .then(chainId => cosmosjs.network(api.url, chainId))
-        .then(passThrough<any>(cosmos => cosmos.setPath("m/44\'/118\'/0\'/0/0")))
+        .then(passThrough<any>(cosmos => cosmos.setPath(getPath(api.legacyCoin))))
         .then(passThrough<any>(cosmos => cosmos.bech32MainPrefix = 'bluzelle'))
 )
 
