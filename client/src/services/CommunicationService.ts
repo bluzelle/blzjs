@@ -126,7 +126,9 @@ const transmitTransaction = (service: CommunicationService, messages: MessageQue
                 sequence: data.seq
             })
                 .map(cosmos.newStdMsg.bind(cosmos))
-                .map((stdSignMsg: any) => cosmos.sign(stdSignMsg, cosmos.getECPairPriv(service.api.mnemonic), 'block'))
+                .map((stdSignMsg: any) => (service.api.signingAgent === "Extension") ?
+                    cosmos.sign(stdSignMsg, cosmos.getECPairPriv(service.api.mnemonic), 'block'):
+                    cosmos.sign(stdSignMsg, cosmos.getECPairPriv(service.api.mnemonic), 'block'))
                 .map(cosmos.broadcast.bind(cosmos))
                 .map((p: any) => p
                     .then(convertDataFromHexToString)

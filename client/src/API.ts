@@ -124,6 +124,7 @@ export class API {
     address: string;
     mnemonic: string;
     chainId: string = '';
+    signingAgent: string;
     uuid: string;
     url: string;
     config: BluzelleConfig
@@ -133,6 +134,7 @@ export class API {
     constructor(config: BluzelleConfig) {
         this.config = config;
         this.mnemonic = config.mnemonic;
+        this.signingAgent = config.signing_Agent || "Cosmostation";
         this.address = this.mnemonic ? mnemonicToAddress(this.mnemonic) : '';
         this.uuid = config.uuid;
         this.url = config.endpoint;
