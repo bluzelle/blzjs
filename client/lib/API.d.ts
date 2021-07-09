@@ -60,6 +60,7 @@ export declare class API {
     address: string;
     mnemonic: string;
     chainId: string;
+    signingAgent: string;
     uuid: string;
     url: string;
     config: BluzelleConfig;

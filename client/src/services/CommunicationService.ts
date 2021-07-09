@@ -5,12 +5,16 @@ import {MessageResponse} from "../types/MessageResponse";
 import {Message} from "../types/Message";
 import {memoize, takeWhile, without} from 'lodash'
 import {passThrough} from "promise-passthrough";
-import delay from "delay";
+import delay from "delay"
+import {Window as KeplrWindow} from '@keplr-wallet/types';
 
 const cosmosjs = require('@cosmostation/cosmosjs');
 
-
 const TOKEN_NAME = 'ubnt';
+
+declare global {
+    interface Window extends KeplrWindow {}
+}
 
 interface MessageQueueItem<T> {
     message: Message<T>
@@ -111,7 +115,19 @@ const sendMessages = (service: CommunicationService, queue: TransactionMessageQu
     });
 
 
+const extensionSign = (service: CommunicationService, stdSignMsg:any )=> {
+    let keplr: any;
+    return (service.api.signingAgent === "Extension") ? (!window.keplr) ? alert("Please install keplr extension") : window.keplr.enable(service.api.chainId)
+            .then(k => keplr = k)
+            .then(keplr.getOfflineSigner(service.api.chainId).getAccounts(service.api.chainId))
+            .then(k => keplr = k)
+            .then(keplr.signAmino(service.api.chainId, service.api.address, stdSignMsg))
+            : cosmosjs.sign(stdSignMsg, cosmosjs.getECPairPriv(service.api.mnemonic), 'block');
+}
+
+
 const transmitTransaction = (service: CommunicationService, messages: MessageQueueItem<any>[], {memo}: { memo: string }): Promise<any> => {
+
     let cosmos: any;
     return getCosmos(service.api)
         .then(c => cosmos = c)
@@ -126,7 +142,7 @@ const transmitTransaction = (service: CommunicationService, messages: MessageQue
                 sequence: data.seq
             })
                 .map(cosmos.newStdMsg.bind(cosmos))
-                .map((stdSignMsg: any) => cosmos.sign(stdSignMsg, cosmos.getECPairPriv(service.api.mnemonic), 'block'))
+                .map((stdSignMsg: any) =>  extensionSign(service, stdSignMsg))
                 .map(cosmos.broadcast.bind(cosmos))
                 .map((p: any) => p
                     .then(convertDataFromHexToString)

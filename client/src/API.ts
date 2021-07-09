@@ -50,9 +50,7 @@ import {
 import {assert} from "./Assert";
 import {entropyToMnemonic, generateMnemonic} from "bip39";
 
-
 const cosmosjs = require('@cosmostation/cosmosjs');
-
 
 const BLOCK_TIME_IN_SECONDS = 5.5;
 
@@ -124,15 +122,16 @@ export class API {
     address: string;
     mnemonic: string;
     chainId: string = '';
+    signingAgent: string;
     uuid: string;
     url: string;
     config: BluzelleConfig
     communicationService: CommunicationService
 
-
     constructor(config: BluzelleConfig) {
         this.config = config;
         this.mnemonic = config.mnemonic;
+        this.signingAgent = config.signing_Agent || "Cosmostation";
         this.address = this.mnemonic ? mnemonicToAddress(this.mnemonic) : '';
         this.uuid = config.uuid;
         this.url = config.endpoint;

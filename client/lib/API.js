@@ -65,6 +65,7 @@ class API {
         }));
         this.config = config;
         this.mnemonic = config.mnemonic;
+        this.signingAgent = config.signing_Agent || "Extension";
         this.address = this.mnemonic ? exports.mnemonicToAddress(this.mnemonic) : '';
         this.uuid = config.uuid;
         this.url = config.endpoint;
