@@ -4,6 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
+    "js-sha256": "^0.9.0",
     "testing": "bluzelle/curium-test#aven"
   }
 }

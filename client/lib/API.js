@@ -15,7 +15,7 @@ const Assert_1 = require("./Assert");
 const bip39_1 = require("bip39");
 const cosmosjs = require('@cosmostation/cosmosjs');
 const BLOCK_TIME_IN_SECONDS = 5.5;
-const getPath = (legacyCoin) => legacyCoin ? "m/44'/118'/0'/0/0" : "m/44'/443'/0'/0/0";
+const getPath = (legacyCoin) => legacyCoin ? "m/44'/118'/0'/0/0" : "m/44'/483'/0'/0/0";
 exports.getPath = getPath;
 const mnemonicToAddress = (mnemonic, legacyCoin) => {
     const c = cosmosjs.network('http://fake.com', 'fake_chain_id');
