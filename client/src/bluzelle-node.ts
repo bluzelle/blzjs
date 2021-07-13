@@ -10,4 +10,3 @@ export {GasInfo} from './types/GasInfo'
 export const bluzelle = (config: BluzelleConfig): API => new API(config);
 
 
-
