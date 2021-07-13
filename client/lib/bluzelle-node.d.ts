@@ -11,5 +11,5 @@ export interface UploadNftResult {
     mimeType: string;
 }
 export declare const bluzelle: (config: BluzelleConfig) => API;
-export declare const uploadNft: (url: string, data: Uint8Array, cb?: ChunkCallback | undefined) => Promise<UploadNftResult>;
+export declare const uploadNft: (url: string, data: Uint8Array, vendor: string, cb?: ChunkCallback | undefined) => Promise<UploadNftResult>;
 //# sourceMappingURL=bluzelle-node.d.ts.map

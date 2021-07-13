@@ -36,13 +36,13 @@ const splitDataIntoChunks = (data: ArrayBuffer, chunkSize = 500 * 1024): Promise
 
 export const bluzelle = (config: BluzelleConfig): API => new API(config);
 
-export const uploadNft = (url: string, data: Uint8Array, cb?: ChunkCallback): Promise<UploadNftResult> =>
+export const uploadNft = (url: string, data: Uint8Array, vendor: string, cb?: ChunkCallback): Promise<UploadNftResult> =>
     splitDataIntoChunks(data)
         .then(chunks => ({data, chunks} as Context))
         .then(ctx => ({...ctx, hash: sha256(ctx.data)}))
         .then(passThroughAwait(ctx =>
             Promise.all(ctx.chunks.map((chunk, chunkNum) =>
-                fetch(`${url}/nft/upload/${ctx.hash}/${chunkNum}`, {
+                fetch(`${url}/nft/upload/${vendor}/${ctx.hash}/${chunkNum}`, {
                     method: 'POST',
                     body: chunk
                 })

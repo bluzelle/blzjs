@@ -12,10 +12,10 @@ Object.defineProperty(exports, "mnemonicToAddress", { enumerable: true, get: fun
 const splitDataIntoChunks = (data, chunkSize = 500 * 1024) => Promise.all(lodash_1.times(Math.ceil(data.byteLength / chunkSize)).map(chunkNum => new Promise(resolve => setTimeout(() => resolve(data.slice(chunkSize * chunkNum, chunkSize * chunkNum + chunkSize))))));
 const bluzelle = (config) => new API_1.API(config);
 exports.bluzelle = bluzelle;
-const uploadNft = (url, data, cb) => splitDataIntoChunks(data)
+const uploadNft = (url, data, vendor, cb) => splitDataIntoChunks(data)
     .then(chunks => ({ data, chunks }))
     .then(ctx => ({ ...ctx, hash: js_sha256_1.sha256(ctx.data) }))
-    .then(promise_passthrough_1.passThroughAwait(ctx => Promise.all(ctx.chunks.map((chunk, chunkNum) => fetch(`${url}/nft/upload/${ctx.hash}/${chunkNum}`, {
+    .then(promise_passthrough_1.passThroughAwait(ctx => Promise.all(ctx.chunks.map((chunk, chunkNum) => fetch(`${url}/nft/upload/${vendor}/${ctx.hash}/${chunkNum}`, {
     method: 'POST',
     body: chunk
 })
