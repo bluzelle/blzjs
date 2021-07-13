@@ -10,6 +10,7 @@ import {Window as KeplrWindow} from '@keplr-wallet/types';
 
 const cosmosjs = require('@cosmostation/cosmosjs');
 
+
 const TOKEN_NAME = 'ubnt';
 
 declare global {
@@ -115,7 +116,8 @@ const sendMessages = (service: CommunicationService, queue: TransactionMessageQu
     });
 
 
-const extensionSign = (service: CommunicationService, stdSignMsg:any )=> {
+const sign = (service: CommunicationService, stdSignMsg:any )=> {
+
     let keplr: any;
     return (service.api.signingAgent === "Extension") ? (!window.keplr) ? alert("Please install keplr extension") : window.keplr.enable(service.api.chainId)
             .then(k => keplr = k)
@@ -142,7 +144,7 @@ const transmitTransaction = (service: CommunicationService, messages: MessageQue
                 sequence: data.seq
             })
                 .map(cosmos.newStdMsg.bind(cosmos))
-                .map((stdSignMsg: any) =>  extensionSign(service, stdSignMsg))
+                .map((stdSignMsg: any) => sign(service, stdSignMsg))
                 .map(cosmos.broadcast.bind(cosmos))
                 .map((p: any) => p
                     .then(convertDataFromHexToString)
