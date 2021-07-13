@@ -8,7 +8,10 @@ import {passThrough} from "promise-passthrough";
 import delay from "delay"
 import {Window as KeplrWindow} from '@keplr-wallet/types';
 
+
+
 const cosmosjs = require('@cosmostation/cosmosjs');
+
 
 const TOKEN_NAME = 'ubnt';
 
@@ -28,7 +31,6 @@ interface FailedTransaction {
     failedMsgIdx?: number
     error: string
 }
-
 
 const dummyMessageResponse = {
     height: 0,
@@ -114,18 +116,6 @@ const sendMessages = (service: CommunicationService, queue: TransactionMessageQu
             .then(() => delay(200))
     });
 
-
-const extensionSign = (service: CommunicationService, stdSignMsg:any )=> {
-    let keplr: any;
-    return (service.api.signingAgent === "Extension") ? (!window.keplr) ? alert("Please install keplr extension") : window.keplr.enable(service.api.chainId)
-            .then(k => keplr = k)
-            .then(keplr.getOfflineSigner(service.api.chainId).getAccounts(service.api.chainId))
-            .then(k => keplr = k)
-            .then(keplr.signAmino(service.api.chainId, service.api.address, stdSignMsg))
-            : cosmosjs.sign(stdSignMsg, cosmosjs.getECPairPriv(service.api.mnemonic), 'block');
-}
-
-
 const transmitTransaction = (service: CommunicationService, messages: MessageQueueItem<any>[], {memo}: { memo: string }): Promise<any> => {
 
     let cosmos: any;
@@ -142,9 +132,9 @@ const transmitTransaction = (service: CommunicationService, messages: MessageQue
                 sequence: data.seq
             })
                 .map(cosmos.newStdMsg.bind(cosmos))
-                .map((stdSignMsg: any) =>  extensionSign(service, stdSignMsg))
-                .map(cosmos.broadcast.bind(cosmos))
+                .map((stdSignMsg: any) => (service.api.config.signing_agent && service.api.config.signing_agent(service, cosmos, stdSignMsg)) as Promise<any>)
                 .map((p: any) => p
+                    .then(cosmos.broadcast.bind(cosmos))
                     .then(convertDataFromHexToString)
                     .then(convertDataToObject)
                     .then(checkErrors)
