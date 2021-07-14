@@ -10,6 +10,10 @@ export interface TxCountResponse {
     count: string
 }
 
+export interface TxCreateNftResponse {
+    id: string
+}
+
 export interface TxGetLeaseResponse {
     key: string
     lease: string

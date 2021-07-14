@@ -1,17 +1,19 @@
 import {expect} from 'chai'
-import {getSdk} from "../../../helpers/client-helpers/sdk-helpers";
-import {BluzelleSdk} from "../../../../src/bz-sdk/bz-sdk";
+
 import {passThroughAwait} from "promise-passthrough";
 
 global.fetch = require('node-fetch')
 import {memoize, times} from 'lodash'
 import {createHash} from 'crypto'
+import {API} from "../../../../src/API";
+
+
 require('chai').use(require("chai-as-promised"));
 
 describe("Store and retriving a NFT", () => {
 
-    let sdk: BluzelleSdk
-    beforeEach(() => getSdk().then(s => sdk = s));
+    let blz: API
+    beforeEach(() => getSentryWithClient());
 
     describe('CreateNft()', () => {
         it('should store a nft record', () => {

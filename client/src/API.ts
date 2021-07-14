@@ -22,7 +22,7 @@ import {
 } from "./services/CommunicationService";
 import {
     CountMessage,
-    CreateMessage,
+    CreateMessage, CreateNftMessage,
     DeleteAllMessage,
     DeleteMessage, GetLeaseMessage, HasMessage, KeysMessage, KeyValuesMessage, MintMessage, MultiUpdateMessage,
     ReadMessage, RenameMessage, RenewLeaseAllMessage,
@@ -30,7 +30,7 @@ import {
 } from "./types/Message";
 import {
     MessageResponse,
-    TxCountResponse,
+    TxCountResponse, TxCreateNftResponse,
     TxGetLeaseResponse,
     TxHasResponse,
     TxKeysResponse, TxKeyValuesResponse,
@@ -112,11 +112,11 @@ interface TransactionResponse {
     timestamp: string
 }
 
-export const getPath = (legacyCoin:boolean): string =>
+export const getPath = (legacyCoin: boolean): string =>
     legacyCoin ? "m/44'/118'/0'/0/0" : "m/44'/483'/0'/0/0";
 
 
-export const mnemonicToAddress = (mnemonic: string, legacyCoin:boolean): string => {
+export const mnemonicToAddress = (mnemonic: string, legacyCoin: boolean): string => {
     const c = cosmosjs.network('http://fake.com', 'fake_chain_id');
     c.setPath(getPath(legacyCoin));
     c.bech32MainPrefix = "bluzelle";
@@ -190,6 +190,22 @@ export class API {
             }
         }, gasInfo)
             .then(standardTxResult)
+    }
+
+    createNft(id: string, hash: string, vendor: string, userId: string, mime: string, meta: string, gasInfo: GasInfo): Promise<string> {
+        return sendMessage<CreateNftMessage, TxCreateNftResponse>(this.communicationService, {
+            type: "nft/CreateNft",
+            value: {
+                Id:     id,
+                Hash:    hash,
+                Vendor: vendor,
+                UserId: userId,
+                Creator: this.address,
+                Mime:    mime,
+                Meta:    meta
+            }
+        }, gasInfo)
+            .then(resp => resp.data[0].id)
     }
 
     createProposal(amount: number, title: string, description: string, gasInfo: GasInfo) {
