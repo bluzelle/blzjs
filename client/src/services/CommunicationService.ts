@@ -9,6 +9,7 @@ import delay from "delay"
 import {Window as KeplrWindow} from '@keplr-wallet/types';
 
 const cosmosjs = require('@cosmostation/cosmosjs');
+const cosmosSigner = require('./cosmosjs');
 
 
 const TOKEN_NAME = 'ubnt';
@@ -116,17 +117,7 @@ const sendMessages = (service: CommunicationService, queue: TransactionMessageQu
     });
 
 
-const sign = (service: CommunicationService, stdSignMsg:any )=> {
-
-    let keplr: any;
-    return (service.api.signingAgent === "Extension") ? (!window.keplr) ? alert("Please install keplr extension") : window.keplr.enable(service.api.chainId)
-            .then(k => keplr = k)
-            .then(keplr.getOfflineSigner(service.api.chainId).getAccounts(service.api.chainId))
-            .then(k => keplr = k)
-            .then(keplr.signAmino(service.api.chainId, service.api.address, stdSignMsg))
-            : cosmosjs.sign(stdSignMsg, cosmosjs.getECPairPriv(service.api.mnemonic), 'block');
-}
-
+const sign = (service: CommunicationService, stdSignMsg:any )=> cosmosSigner.sign(stdSignMsg, cosmosSigner.getECPairPriv(service.api.mnemonic), 'block');
 
 const transmitTransaction = (service: CommunicationService, messages: MessageQueueItem<any>[], {memo}: { memo: string }): Promise<any> => {
 
