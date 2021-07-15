@@ -68,9 +68,10 @@ const sendMessages = (service, queue, retrans = false) => new Promise((resolve, 
         .then(() => delay_1.default(200));
 });
 const sign = (service, stdSignMsg, ECPairPriv = '', signer) => {
-    var _a;
     return (service.api.signingAgent === 'Extension')
-        ? (_a = window.keplr) === null || _a === void 0 ? void 0 : _a.signAmino(service.api.chainId, service.api.address, stdSignMsg)
+        ? (!window.keplr)
+            ? console.log('Keplr is undefined')
+            : window.keplr.enable(service.api.chainId)
         : signer.sign(stdSignMsg, ECPairPriv, 'block');
 };
 const transmitTransaction = (service, messages, { memo }) => {

@@ -117,12 +117,18 @@ export const mnemonicToAddress = (mnemonic: string): string => {
     return c.getAddress(mnemonic);
 }
 
+export enum SigningAgents {
+    EXTENSION = () => {console.log('SIGN IT')},
+    INTERNAL = () => {console.log('sign internal')}
+}
+
+
 export class API {
     cosmos: any;
     address: string;
     mnemonic: string;
     chainId: string = '';
-    signingAgent: string;
+    signingAgent: SigningAgents;
     uuid: string;
     url: string;
     config: BluzelleConfig
@@ -131,7 +137,7 @@ export class API {
     constructor(config: BluzelleConfig) {
         this.config = config;
         this.mnemonic = config.mnemonic;
-        this.signingAgent = config.signing_Agent || "Cosmostation";
+        this.signingAgent = config.signing_Agent || SigningAgents.INTERNAL;
         this.address = this.mnemonic ? mnemonicToAddress(this.mnemonic) : '';
         this.uuid = config.uuid;
         this.url = config.endpoint;
