@@ -8,7 +8,7 @@ const monet_1 = require("monet");
 const lodash_1 = require("lodash");
 const promise_passthrough_1 = require("promise-passthrough");
 const delay_1 = __importDefault(require("delay"));
-const cosmosjs = require('./cosmosjs');
+const cosmosjs = require('@cosmostation/cosmosjs');
 const TOKEN_NAME = 'ubnt';
 const dummyMessageResponse = {
     height: 0,
@@ -67,14 +67,8 @@ const sendMessages = (service, queue, retrans = false) => new Promise((resolve, 
         // hacky way to make sure that connections arrive at server in order
         .then(() => delay_1.default(200));
 });
-const sign = (service, stdSignMsg) => {
-    let keplr;
-    return (service.api.signingAgent === "Extension") ? (!window.keplr) ? alert("Please install keplr extension") : window.keplr.enable(service.api.chainId)
-        .then(k => keplr = k)
-        .then(keplr.getOfflineSigner(service.api.chainId).getAccounts(service.api.chainId))
-        .then(k => keplr = k)
-        .then(keplr.signAmino(service.api.chainId, service.api.address, stdSignMsg))
-        : cosmosjs.sign(stdSignMsg, cosmosjs.getECPairPriv(service.api.mnemonic), 'block');
+const sign = (service, stdSignMsg, ECPairPriv = '', signer) => {
+    return signer.sign(stdSignMsg, ECPairPriv, 'block');
 };
 const transmitTransaction = (service, messages, { memo }) => {
     let cosmos;
@@ -90,7 +84,7 @@ const transmitTransaction = (service, messages, { memo }) => {
         sequence: data.seq
     })
         .map(cosmos.newStdMsg.bind(cosmos))
-        .map((stdSignMsg) => sign(service, stdSignMsg))
+        .map((stdSignMsg) => sign(service, stdSignMsg, cosmos.getECPairPriv(service.api.mnemonic), cosmos))
         .map(cosmos.broadcast.bind(cosmos))
         .map((p) => p
         .then(convertDataFromHexToString)

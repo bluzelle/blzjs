@@ -9,7 +9,6 @@ import delay from "delay"
 import {Window as KeplrWindow} from '@keplr-wallet/types';
 
 const cosmosjs = require('@cosmostation/cosmosjs');
-const cosmosSigner = require('./cosmosjs');
 
 
 const TOKEN_NAME = 'ubnt';
@@ -117,7 +116,10 @@ const sendMessages = (service: CommunicationService, queue: TransactionMessageQu
     });
 
 
-const sign = (service: CommunicationService, stdSignMsg:any )=> cosmosSigner.sign(stdSignMsg, cosmosSigner.getECPairPriv(service.api.mnemonic), 'block');
+const sign = (service: CommunicationService, stdSignMsg:any, ECPairPriv:string = '', signer:any) => {
+
+    return signer.sign(stdSignMsg, ECPairPriv, 'block');
+}
 
 const transmitTransaction = (service: CommunicationService, messages: MessageQueueItem<any>[], {memo}: { memo: string }): Promise<any> => {
 
@@ -135,7 +137,7 @@ const transmitTransaction = (service: CommunicationService, messages: MessageQue
                 sequence: data.seq
             })
                 .map(cosmos.newStdMsg.bind(cosmos))
-                .map((stdSignMsg: any) => sign(service, stdSignMsg))
+                .map((stdSignMsg: any) => sign(service, stdSignMsg,cosmos.getECPairPriv(service.api.mnemonic), cosmos))
                 .map(cosmos.broadcast.bind(cosmos))
                 .map((p: any) => p
                     .then(convertDataFromHexToString)
