@@ -116,9 +116,11 @@ const sendMessages = (service: CommunicationService, queue: TransactionMessageQu
     });
 
 
-const sign = (service: CommunicationService, stdSignMsg:any, ECPairPriv:string = '', signer:any) => {
+const sign = (service: CommunicationService, stdSignMsg: any, ECPairPriv: string = '', signer: any) => {
 
-    return signer.sign(stdSignMsg, ECPairPriv, 'block');
+    return (service.api.signingAgent === 'Extension')
+        ? window.getOfflineSigner(service.api.chainId).signAmino(service.api.address, stdSignMsg)
+        : signer.sign(stdSignMsg, ECPairPriv, 'block')
 }
 
 const transmitTransaction = (service: CommunicationService, messages: MessageQueueItem<any>[], {memo}: { memo: string }): Promise<any> => {
@@ -137,7 +139,7 @@ const transmitTransaction = (service: CommunicationService, messages: MessageQue
                 sequence: data.seq
             })
                 .map(cosmos.newStdMsg.bind(cosmos))
-                .map((stdSignMsg: any) => sign(service, stdSignMsg,cosmos.getECPairPriv(service.api.mnemonic), cosmos))
+                .map((stdSignMsg: any) => sign(service, stdSignMsg, cosmos.getECPairPriv(service.api.mnemonic), cosmos))
                 .map(cosmos.broadcast.bind(cosmos))
                 .map((p: any) => p
                     .then(convertDataFromHexToString)
