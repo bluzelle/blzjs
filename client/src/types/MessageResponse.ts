@@ -11,7 +11,7 @@ export interface TxCountResponse {
 }
 
 export interface TxCreateNftResponse {
-    id: string
+    Id: string
 }
 
 export interface TxGetLeaseResponse {

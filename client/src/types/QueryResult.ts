@@ -1,3 +1,5 @@
+import {Nft} from "./Message";
+
 export interface QueryCountResult {
     count: string
 }
@@ -12,6 +14,16 @@ export interface QueryHasResult {
 
 export interface QueryReadResult {
     value: string
+}
+
+export interface QueryNftResult {
+    Creator: string,
+    Id:      string,
+    Vendor: string,
+    UserId: string,
+    Hash:    string,
+    Meta:    string,
+    Mime:    string,
 }
 
 export interface QueryOwnerResult {

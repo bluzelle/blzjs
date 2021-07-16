@@ -1,6 +1,7 @@
 import { BluzelleConfig } from "./types/BluzelleConfig";
 import { GasInfo } from "./types/GasInfo";
 import { AccountResult } from "./types/cosmos/AccountResult";
+import { QueryNftResult } from "./types/QueryResult";
 import { CommunicationService, WithTransactionsOptions } from "./services/CommunicationService";
 import { MessageResponse } from "./types/MessageResponse";
 import { LeaseInfo } from "./types/LeaseInfo";
@@ -73,6 +74,7 @@ export declare class API {
     isExistingAccount(): Promise<boolean>;
     count(): Promise<number>;
     create(key: string, value: string, gasInfo: GasInfo, leaseInfo?: LeaseInfo): Promise<TxResult>;
+    createNft(id: string, hash: string, vendor: string, userId: string, mime: string, meta: string, gasInfo: GasInfo): Promise<string>;
     createProposal(amount: number, title: string, description: string, gasInfo: GasInfo): Promise<{
         id: any;
     }>;
@@ -108,6 +110,7 @@ export declare class API {
     abciQuery<T>(method: string, data?: unknown): Promise<ABCIResponse<T>>;
     owner(key: string): Promise<string>;
     read(key: string, prove?: boolean): Promise<string>;
+    getNft(id: string): Promise<QueryNftResult>;
     rename(key: string, newKey: string, gasInfo: GasInfo): Promise<TxResult>;
     renewLease(key: string, gasInfo: GasInfo, leaseInfo: LeaseInfo): Promise<TxResult>;
     renewLeaseAll(gasInfo: GasInfo, leaseInfo?: LeaseInfo): Promise<TxResult>;

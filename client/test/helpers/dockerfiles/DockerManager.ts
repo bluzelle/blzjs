@@ -1,7 +1,7 @@
 import {Docker} from "node-docker-api";
 import {pack} from 'tar-fs'
 import {resolve} from 'path'
-
+import {flatMap} from 'lodash'
 
 export const startProxyContainer = (lang: string, env: Record<string, string>): Promise<void> => {
     const docker: Docker = new Docker({socketPath: '/var/run/docker.sock'})

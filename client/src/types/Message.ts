@@ -127,4 +127,14 @@ export interface DeleteAllMessage {
     UUID: string
 }
 
+export interface Nft {
+    Creator: string,
+    Id:      string,
+    Vendor: string,
+    UserId: string,
+    Hash:    string,
+    Meta:    string,
+    Mime:    string,
+}
+
 

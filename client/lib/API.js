@@ -113,6 +113,21 @@ class API {
         }, gasInfo)
             .then(standardTxResult);
     }
+    createNft(id, hash, vendor, userId, mime, meta, gasInfo) {
+        return CommunicationService_1.sendMessage(this.communicationService, {
+            type: "nft/CreateNft",
+            value: {
+                Id: id,
+                Hash: hash,
+                Vendor: vendor,
+                UserId: userId,
+                Creator: this.address,
+                Mime: mime,
+                Meta: meta
+            }
+        }, gasInfo)
+            .then(resp => resp.data[0].Id);
+    }
     createProposal(amount, title, description, gasInfo) {
         return this.sendMessage({
             "type": "cosmos-sdk/MsgSubmitProposal",
@@ -295,6 +310,10 @@ class API {
             }
             throw (new Error(x.error === 'Not Found' ? `key "${key}" not found` : x.error));
         });
+    }
+    getNft(id) {
+        return __classPrivateFieldGet(this, _abciQuery).call(this, `/custom/nft/get-nft/${id}`)
+            .then(resp => resp.result.Nft);
     }
     async rename(key, newKey, gasInfo) {
         Assert_1.assert(typeof key === 'string', "Key must be a string" /* KEY_MUST_BE_A_STRING */);

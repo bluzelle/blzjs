@@ -9,7 +9,7 @@ import {
     QueryCountResult, QueryGetLeaseResult, QueryGetNShortestLeasesResult,
     QueryHasResult,
     QueryKeysResult,
-    QueryKeyValuesResult, QueryOwnerResult,
+    QueryKeyValuesResult, QueryNftResult, QueryOwnerResult,
     QueryReadResult
 } from "./types/QueryResult";
 import {
@@ -24,7 +24,7 @@ import {
     CountMessage,
     CreateMessage, CreateNftMessage,
     DeleteAllMessage,
-    DeleteMessage, GetLeaseMessage, HasMessage, KeysMessage, KeyValuesMessage, MintMessage, MultiUpdateMessage,
+    DeleteMessage, GetLeaseMessage, HasMessage, KeysMessage, KeyValuesMessage, MintMessage, MultiUpdateMessage, Nft,
     ReadMessage, RenameMessage, RenewLeaseAllMessage,
     RenewLeaseMessage, TransferTokensMessage, UpdateMessage, UpsertMessage
 } from "./types/Message";
@@ -205,7 +205,7 @@ export class API {
                 Meta:    meta
             }
         }, gasInfo)
-            .then(resp => resp.data[0].id)
+            .then(resp => resp.data[0].Id)
     }
 
     createProposal(amount: number, title: string, description: string, gasInfo: GasInfo) {
@@ -422,6 +422,12 @@ export class API {
                 }
                 throw(new Error(x.error === 'Not Found' ? `key "${key}" not found` : x.error))
             });
+    }
+
+    getNft(id: string): Promise<QueryNftResult> {
+        return this.#abciQuery<{Nft: Nft} >(`/custom/nft/get-nft/${id}`)
+            .then(resp => resp.result.Nft)
+
     }
 
     async rename(key: string, newKey: string, gasInfo: GasInfo): Promise<TxResult> {
