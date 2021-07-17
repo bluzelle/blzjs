@@ -8,6 +8,7 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
 var _abciQuery, _query;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.API = exports.SigningAgents = exports.mnemonicToAddress = void 0;
+const promise_passthrough_1 = require("promise-passthrough");
 global.fetch || (global.fetch = require('node-fetch'));
 const CommunicationService_1 = require("./services/CommunicationService");
 const lodash_1 = require("lodash");
@@ -23,8 +24,13 @@ const mnemonicToAddress = (mnemonic) => {
 };
 exports.mnemonicToAddress = mnemonicToAddress;
 exports.SigningAgents = {
-    EXTENSION: () => { console.log('SIGN IT'); },
-    INTERNAL: (service, cosmos, stdSignMsg) => cosmos.sign(stdSignMsg, cosmos.getECPairPriv(service.api.mnemonic), 'block')
+    EXTENSION: (service, cosmos, stdSignMsg) => {
+        return CommunicationService_1.getCosmos(service.api)
+            .then(promise_passthrough_1.passThroughAwait(cosmos => { var _a; return (_a = window.keplr) === null || _a === void 0 ? void 0 : _a.enable(cosmos.chainId); }))
+            .then(cosmos => { var _a; return (_a = window.getOfflineSigner) === null || _a === void 0 ? void 0 : _a.call(window, cosmos.chainId); })
+            .then(signer => signer === null || signer === void 0 ? void 0 : signer.signAmino(service.api.address, stdSignMsg));
+    },
+    INTERNAL: (service, cosmos, stdSignMsg) => Promise.resolve(cosmos.sign(stdSignMsg, cosmos.getECPairPriv(service.api.mnemonic), 'block'))
 };
 // export enum SigningAgents {
 //     EXTENSION = () => {console.log('SIGN IT')},

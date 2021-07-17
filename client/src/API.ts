@@ -1,3 +1,5 @@
+import {passThrough, passThroughAwait} from "promise-passthrough";
+
 global.fetch || (global.fetch = require('node-fetch'));
 
 
@@ -119,10 +121,15 @@ export const mnemonicToAddress = (mnemonic: string): string => {
 
 
 
-export type SigningAgentFn = (service: any, cosmos: any, stdSignMsg: any) => any
+export type SigningAgentFn = (service: any, cosmos: any, stdSignMsg: any) => Promise<any>
 export const SigningAgents = {
-    EXTENSION: () => {console.log('SIGN IT')},
-    INTERNAL: (service: any, cosmos: any, stdSignMsg: any) => cosmos.sign(stdSignMsg, cosmos.getECPairPriv(service.api.mnemonic), 'block')
+    EXTENSION: (service: any, cosmos: any, stdSignMsg: any) => {
+        return getCosmos(service.api)
+            .then(passThroughAwait(cosmos => window.keplr?.enable(cosmos.chainId)))
+             .then(cosmos=> window.getOfflineSigner?.(cosmos.chainId))
+             .then(signer => signer?.signAmino(service.api.address, stdSignMsg))
+    },
+    INTERNAL: (service: any, cosmos: any, stdSignMsg: any) => Promise.resolve(cosmos.sign(stdSignMsg, cosmos.getECPairPriv(service.api.mnemonic), 'block'))
 }
 
 // export enum SigningAgents {

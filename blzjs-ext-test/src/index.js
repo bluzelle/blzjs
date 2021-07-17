@@ -8,7 +8,7 @@ const bz = bluzelle({
     mnemonic: "cross paper crucial force warfare marble close brave broom coffee real ten apology design never retire mesh maid know reform decorate bonus crush suspect",
     endpoint: "https://client.sentry.testnet.public.bluzelle.com:1317",
     uuid: uuid,
-    signing_agent: SigningAgents.INTERNAL
+    signing_agent: SigningAgents.EXTENSION
 });
 
 

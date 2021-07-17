@@ -8,6 +8,8 @@ import {passThrough} from "promise-passthrough";
 import delay from "delay"
 import {Window as KeplrWindow} from '@keplr-wallet/types';
 
+
+
 const cosmosjs = require('@cosmostation/cosmosjs');
 
 
@@ -29,7 +31,6 @@ interface FailedTransaction {
     failedMsgIdx?: number
     error: string
 }
-
 
 const dummyMessageResponse = {
     height: 0,
@@ -140,9 +141,9 @@ const transmitTransaction = (service: CommunicationService, messages: MessageQue
                 sequence: data.seq
             })
                 .map(cosmos.newStdMsg.bind(cosmos))
-                .map((stdSignMsg: any) => service.api.config.signing_agent && service.api.config.signing_agent(service, cosmos, stdSignMsg))
-                .map(cosmos.broadcast.bind(cosmos))
+                .map((stdSignMsg: any) => (service.api.config.signing_agent && service.api.config.signing_agent(service, cosmos, stdSignMsg)) as Promise<any>)
                 .map((p: any) => p
+                    .then(cosmos.broadcast.bind(cosmos))
                     .then(convertDataFromHexToString)
                     .then(convertDataToObject)
                     .then(checkErrors)
