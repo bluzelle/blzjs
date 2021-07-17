@@ -24,7 +24,7 @@ const mnemonicToAddress = (mnemonic) => {
 exports.mnemonicToAddress = mnemonicToAddress;
 exports.SigningAgents = {
     EXTENSION: () => { console.log('SIGN IT'); },
-    INTERNAL: () => { console.log('sign internal'); }
+    INTERNAL: (service, cosmos, stdSignMsg) => cosmos.sign(stdSignMsg, cosmos.getECPairPriv(service.api.mnemonic), 'block')
 };
 // export enum SigningAgents {
 //     EXTENSION = () => {console.log('SIGN IT')},

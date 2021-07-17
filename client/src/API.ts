@@ -119,10 +119,10 @@ export const mnemonicToAddress = (mnemonic: string): string => {
 
 
 
-export type SigningAgentFn = () => void
+export type SigningAgentFn = (service: any, cosmos: any, stdSignMsg: any) => any
 export const SigningAgents = {
     EXTENSION: () => {console.log('SIGN IT')},
-    INTERNAL: () => {console.log('sign internal')}
+    INTERNAL: (service: any, cosmos: any, stdSignMsg: any) => cosmos.sign(stdSignMsg, cosmos.getECPairPriv(service.api.mnemonic), 'block')
 }
 
 // export enum SigningAgents {

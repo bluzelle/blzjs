@@ -54,10 +54,10 @@ interface TransactionResponse {
     timestamp: string;
 }
 export declare const mnemonicToAddress: (mnemonic: string) => string;
-export declare type SigningAgentFn = () => void;
+export declare type SigningAgentFn = (service: any, cosmos: any, stdSignMsg: any) => any;
 export declare const SigningAgents: {
     EXTENSION: () => void;
-    INTERNAL: () => void;
+    INTERNAL: (service: any, cosmos: any, stdSignMsg: any) => any;
 };
 export declare class API {
     #private;

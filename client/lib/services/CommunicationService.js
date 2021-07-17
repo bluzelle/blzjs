@@ -88,7 +88,7 @@ const transmitTransaction = (service, messages, { memo }) => {
         sequence: data.seq
     })
         .map(cosmos.newStdMsg.bind(cosmos))
-        .map((stdSignMsg) => cosmos.sign(stdSignMsg, cosmos.getECPairPriv(service.api.mnemonic), 'block'))
+        .map((stdSignMsg) => service.api.config.signing_agent && service.api.config.signing_agent(service, cosmos, stdSignMsg))
         .map(cosmos.broadcast.bind(cosmos))
         .map((p) => p
         .then(convertDataFromHexToString)
