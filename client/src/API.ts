@@ -117,10 +117,18 @@ export const mnemonicToAddress = (mnemonic: string): string => {
     return c.getAddress(mnemonic);
 }
 
-export enum SigningAgents {
-    EXTENSION = () => {console.log('SIGN IT')},
-    INTERNAL = () => {console.log('sign internal')}
+
+
+export type SigningAgentFn = () => void
+export const SigningAgents = {
+    EXTENSION: () => {console.log('SIGN IT')},
+    INTERNAL: () => {console.log('sign internal')}
 }
+
+// export enum SigningAgents {
+//     EXTENSION = () => {console.log('SIGN IT')},
+//     INTERNAL = () => {console.log('sign internal')}
+// }
 
 
 export class API {
@@ -128,7 +136,7 @@ export class API {
     address: string;
     mnemonic: string;
     chainId: string = '';
-    signingAgent: SigningAgents;
+    signingAgent: SigningAgentFn;
     uuid: string;
     url: string;
     config: BluzelleConfig
@@ -137,7 +145,7 @@ export class API {
     constructor(config: BluzelleConfig) {
         this.config = config;
         this.mnemonic = config.mnemonic;
-        this.signingAgent = config.signing_Agent || SigningAgents.INTERNAL;
+        this.signingAgent = config.signing_agent || SigningAgents.INTERNAL;
         this.address = this.mnemonic ? mnemonicToAddress(this.mnemonic) : '';
         this.uuid = config.uuid;
         this.url = config.endpoint;

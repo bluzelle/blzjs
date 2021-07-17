@@ -54,13 +54,18 @@ interface TransactionResponse {
     timestamp: string;
 }
 export declare const mnemonicToAddress: (mnemonic: string) => string;
+export declare type SigningAgentFn = () => void;
+export declare const SigningAgents: {
+    EXTENSION: () => void;
+    INTERNAL: () => void;
+};
 export declare class API {
     #private;
     cosmos: any;
     address: string;
     mnemonic: string;
     chainId: string;
-    signingAgent: string;
+    signingAgent: SigningAgentFn;
     uuid: string;
     url: string;
     config: BluzelleConfig;

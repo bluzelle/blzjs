@@ -7,7 +7,7 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
 };
 var _abciQuery, _query;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.API = exports.mnemonicToAddress = void 0;
+exports.API = exports.SigningAgents = exports.mnemonicToAddress = void 0;
 global.fetch || (global.fetch = require('node-fetch'));
 const CommunicationService_1 = require("./services/CommunicationService");
 const lodash_1 = require("lodash");
@@ -22,6 +22,14 @@ const mnemonicToAddress = (mnemonic) => {
     return c.getAddress(mnemonic);
 };
 exports.mnemonicToAddress = mnemonicToAddress;
+exports.SigningAgents = {
+    EXTENSION: () => { console.log('SIGN IT'); },
+    INTERNAL: () => { console.log('sign internal'); }
+};
+// export enum SigningAgents {
+//     EXTENSION = () => {console.log('SIGN IT')},
+//     INTERNAL = () => {console.log('sign internal')}
+// }
 class API {
     constructor(config) {
         this.chainId = '';
@@ -65,7 +73,7 @@ class API {
         }));
         this.config = config;
         this.mnemonic = config.mnemonic;
-        this.signingAgent = config.signing_Agent || "Cosmostation";
+        this.signingAgent = config.signing_agent || exports.SigningAgents.INTERNAL;
         this.address = this.mnemonic ? exports.mnemonicToAddress(this.mnemonic) : '';
         this.uuid = config.uuid;
         this.url = config.endpoint;

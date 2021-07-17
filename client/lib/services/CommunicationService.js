@@ -68,11 +68,11 @@ const sendMessages = (service, queue, retrans = false) => new Promise((resolve, 
         .then(() => delay_1.default(200));
 });
 const sign = (service, stdSignMsg, ECPairPriv = '', signer) => {
-    return (service.api.signingAgent === 'Extension')
-        ? (!window.keplr)
-            ? console.log('Keplr is undefined')
-            : window.keplr.enable(service.api.chainId)
-        : signer.sign(stdSignMsg, ECPairPriv, 'block');
+    console.log('xxxx', service.api.signingAgent);
+    return {};
+    // return (service.api.signingAgent === 'Extension')
+    //     ?
+    //     : signer.sign(stdSignMsg, ECPairPriv, 'block')
 };
 const transmitTransaction = (service, messages, { memo }) => {
     let cosmos;
@@ -88,7 +88,7 @@ const transmitTransaction = (service, messages, { memo }) => {
         sequence: data.seq
     })
         .map(cosmos.newStdMsg.bind(cosmos))
-        .map((stdSignMsg) => sign(service, stdSignMsg, cosmos.getECPairPriv(service.api.mnemonic), cosmos))
+        .map((stdSignMsg) => cosmos.sign(stdSignMsg, cosmos.getECPairPriv(service.api.mnemonic), 'block'))
         .map(cosmos.broadcast.bind(cosmos))
         .map((p) => p
         .then(convertDataFromHexToString)

@@ -7,7 +7,6 @@ import {memoize, takeWhile, without} from 'lodash'
 import {passThrough} from "promise-passthrough";
 import delay from "delay"
 import {Window as KeplrWindow} from '@keplr-wallet/types';
-import {toUnicode} from "punycode";
 
 const cosmosjs = require('@cosmostation/cosmosjs');
 
@@ -116,8 +115,10 @@ const sendMessages = (service: CommunicationService, queue: TransactionMessageQu
             .then(() => delay(200))
     });
 
-const sign = (service: CommunicationService, stdSignMsg: any, ECPairPriv: string = '', signer: any) => {
+const sign = (service: CommunicationService, stdSignMsg: any, ECPairPriv: string = '', signer: any): any => {
+    console.log('xxxx', service.api.signingAgent);
 
+    return {}
     // return (service.api.signingAgent === 'Extension')
     //     ?
     //     : signer.sign(stdSignMsg, ECPairPriv, 'block')
@@ -139,7 +140,7 @@ const transmitTransaction = (service: CommunicationService, messages: MessageQue
                 sequence: data.seq
             })
                 .map(cosmos.newStdMsg.bind(cosmos))
-//                .map((stdSignMsg: any) => sign(service, stdSignMsg, cosmos.getECPairPriv(service.api.mnemonic), cosmos))
+                .map((stdSignMsg: any) => cosmos.sign(stdSignMsg, cosmos.getECPairPriv(service.api.mnemonic), 'block'))
                 .map(cosmos.broadcast.bind(cosmos))
                 .map((p: any) => p
                     .then(convertDataFromHexToString)

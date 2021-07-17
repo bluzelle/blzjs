@@ -1,4 +1,5 @@
 import {bluzelle} from 'bluzelle';
+import {SigningAgents} from "bluzelle/lib/API";
 
 const uuid = Date.now().toString();
 
@@ -6,7 +7,8 @@ const uuid = Date.now().toString();
 const bz = bluzelle({
     mnemonic: "cross paper crucial force warfare marble close brave broom coffee real ten apology design never retire mesh maid know reform decorate bonus crush suspect",
     endpoint: "https://client.sentry.testnet.public.bluzelle.com:1317",
-    uuid: uuid
+    uuid: uuid,
+    signing_agent: SigningAgents.INTERNAL
 });
 
 
