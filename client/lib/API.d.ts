@@ -56,7 +56,7 @@ interface TransactionResponse {
 export declare const mnemonicToAddress: (mnemonic: string) => string;
 export declare type SigningAgentFn = (service: any, cosmos: any, stdSignMsg: any) => Promise<any>;
 export declare const SigningAgents: {
-    EXTENSION: (service: any, cosmos: any, stdSignMsg: any) => Promise<import("@cosmjs/launchpad").AminoSignResponse | undefined>;
+    EXTENSION: (service: any, cosmos: any, stdSignMsg: any) => Promise<any>;
     INTERNAL: (service: any, cosmos: any, stdSignMsg: any) => Promise<any>;
 };
 export declare class API {

@@ -126,7 +126,7 @@ export const SigningAgents = {
     EXTENSION: (service: any, cosmos: any, stdSignMsg: any) => {
         return getCosmos(service.api)
             .then(passThroughAwait(cosmos => window.keplr?.enable(cosmos.chainId)))
-             .then(cosmos=> window.getOfflineSigner?.(cosmos.chainId))
+             .then(cosmos=> (window as any).keplr.getOfflineSigner(cosmos.chainId))
              .then(signer => signer?.signAmino(service.api.address, stdSignMsg))
     },
     INTERNAL: (service: any, cosmos: any, stdSignMsg: any) => Promise.resolve(cosmos.sign(stdSignMsg, cosmos.getECPairPriv(service.api.mnemonic), 'block'))

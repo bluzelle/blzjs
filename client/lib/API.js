@@ -27,7 +27,7 @@ exports.SigningAgents = {
     EXTENSION: (service, cosmos, stdSignMsg) => {
         return CommunicationService_1.getCosmos(service.api)
             .then(promise_passthrough_1.passThroughAwait(cosmos => { var _a; return (_a = window.keplr) === null || _a === void 0 ? void 0 : _a.enable(cosmos.chainId); }))
-            .then(cosmos => { var _a; return (_a = window.getOfflineSigner) === null || _a === void 0 ? void 0 : _a.call(window, cosmos.chainId); })
+            .then(cosmos => window.keplr.getOfflineSigner(cosmos.chainId))
             .then(signer => signer === null || signer === void 0 ? void 0 : signer.signAmino(service.api.address, stdSignMsg));
     },
     INTERNAL: (service, cosmos, stdSignMsg) => Promise.resolve(cosmos.sign(stdSignMsg, cosmos.getECPairPriv(service.api.mnemonic), 'block'))
