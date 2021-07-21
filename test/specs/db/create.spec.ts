@@ -17,7 +17,7 @@ describe('create()', function () {
     });
 
     //Ask whether or not 863995 is the default lease time if an empty object is provided
-    it('should allow for empty lease info',() => {
+    it.skip('should allow for empty lease info',() => {
         return bz.create('key', 'value', defaultGasParams(), {})
             .then(() => bz.read('key'))
             .then(val => expect(val).to.equal('value'))
@@ -56,31 +56,51 @@ describe('create()', function () {
             .then(val => expect(val).to.equal('value'));
     })
 
-    it('should timeout a lease after the lease period',async () => {
-        return bz.create('key', 'value', defaultGasParams(), {seconds: 10})
-            .then(() => delay(11000))
-            .then(() => expect(bz.read('key')).to.be.undefined);
+    it('should timeout a lease after the lease period', async() => {
+        // return bz.create('key', 'value', defaultGasParams(), {seconds: 10})
+        //     .then(() => delay(11000))
+        //     .then(() => bz.read('key'))
 
-        // await bz.create('myKey', 'myValue', defaultGasParams(), {seconds: 10});
-        // const start = Date.now();
-        // const TIMEOUT = 20000;
-        //
-        // while ((await canReadKey()) === false);
-        //
-        // while ((await canReadKey()) && lessThanTimeout());
-        //
-        // expect(await canReadKey()).to.be.false;
-        //
-        // async function canReadKey() {
-        //     try {
-        //         return !!(await bz.read('myKey'));
-        //     } catch (e) {
-        //         return false;
-        //     }
-        // }
-        //
-        // function lessThanTimeout() {
-        //     return Date.now() - start < TIMEOUT;
-        // }
+        await bz.create('myKey', 'myValue', defaultGasParams(), {seconds: 10});
+        const start = Date.now();
+        const TIMEOUT = 20000;
+
+        while ((await canReadKey()) === false);
+
+        while ((await canReadKey()) && lessThanTimeout());
+
+        expect(await canReadKey()).to.be.false;
+
+        async function canReadKey() {
+            try {
+                return !!(await bz.read('myKey'));
+            } catch (e) {
+                return false;
+            }
+        }
+
+        function lessThanTimeout() {
+            return Date.now() - start < TIMEOUT;
+        }
     })
+
+    it.skip('should charge extra for longer leases', async () => {
+        const value = 'a'.repeat(200000)
+        const c1 = {
+            days: 10,
+            leaseRate: 2.9615511
+        }
+        const c2 = {
+            days: 20,
+            leaseRate: 2.7949135
+        }
+        const create1 = await bz.create('foo1', value, defaultGasParams(), {days: c1.days});
+        const create2 = await bz.create('foo2', value, defaultGasParams(), {days: c2.days});
+
+        const calculateLeaseCost = (rate: number, days: number) =>
+            Math.round(rate * days * (bz.uuid.length + 'foo1'.length + value.length))
+
+        expect(create1.gasUsed - calculateLeaseCost(c1.leaseRate, c1.days))
+            .to.be.closeTo(create2.gasUsed - calculateLeaseCost(c2.leaseRate, c2.days), 3)
+    });
 })
