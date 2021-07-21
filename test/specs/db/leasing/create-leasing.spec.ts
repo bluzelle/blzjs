@@ -1,12 +1,13 @@
 import {APIAndSwarm, defaultGasParams, sentryWithClient, DEFAULT_TIMEOUT} from "../../../helpers/client-helpers";
 import {expect} from 'chai';
 import delay from 'delay';
-import assert from "assert";
+import {useChaiAsPromised} from "../../../helpers/global-helpers";
 
 describe('create()', function () {
     this.timeout(DEFAULT_TIMEOUT);
     let bz: APIAndSwarm;
 
+    beforeEach(()=> useChaiAsPromised());
     beforeEach(() => sentryWithClient()
         .then(db => bz = db));
 
@@ -56,32 +57,10 @@ describe('create()', function () {
             .then(val => expect(val).to.equal('value'));
     })
 
-    it('should timeout a lease after the lease period', async() => {
-        // return bz.create('key', 'value', defaultGasParams(), {seconds: 10})
-        //     .then(() => delay(11000))
-        //     .then(() => assert.isRejected(bz.read('key'), 'Error: unknown request: key not found'));
-
-        await bz.create('myKey', 'myValue', defaultGasParams(), {seconds: 10});
-        const start = Date.now();
-        const TIMEOUT = 20000;
-
-        while ((await canReadKey()) === false);
-
-        while ((await canReadKey()) && lessThanTimeout());
-
-        expect(await canReadKey()).to.be.false;
-
-        async function canReadKey() {
-            try {
-                return !!(await bz.read('myKey'));
-            } catch (e) {
-                return false;
-            }
-        }
-
-        function lessThanTimeout() {
-            return Date.now() - start < TIMEOUT;
-        }
+    it('should timeout a lease after the lease period',  () => {
+        return bz.create('key', 'value', defaultGasParams(), {seconds: 10})
+            .then(() => delay(11000))
+            .then(() => expect(bz.read('key')).to.be.rejectedWith('unknown request: key not found'));
     })
 
     it.skip('should charge extra for longer leases', async () => {
