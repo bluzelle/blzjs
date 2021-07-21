@@ -11,6 +11,7 @@ import {extend} from 'lodash';
 export const defaultGasParams = (gasInfo: GasInfo = {}): GasInfo => ({gas_price: 0.004, max_gas: 100000000, ...gasInfo})
 export type APIAndSwarm = API & { swarm?: Swarm };
 export const DEFAULT_TIMEOUT = 800000;
+
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 export const getClient = async (sentry: Daemon, validator: Daemon, extra: Partial<BluzelleConfig> = {}): Promise<API> => {
