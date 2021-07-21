@@ -1,4 +1,4 @@
-import {APIAndSwarm, defaultGasParams, sentryWithClient, DEFAULT_TIMEOUT} from "../../helpers/client-helpers";
+import {APIAndSwarm, defaultGasParams, sentryWithClient, DEFAULT_TIMEOUT} from "../../../helpers/client-helpers";
 import {expect} from 'chai';
 import delay from 'delay';
 import assert from "assert";
@@ -17,12 +17,12 @@ describe('create()', function () {
     });
 
     //Ask whether or not 863995 is the default lease time if an empty object is provided
-    it.skip('should allow for empty lease info',() => {
+    it('should allow for empty lease info',() => {
         return bz.create('key', 'value', defaultGasParams(), {})
             .then(() => bz.read('key'))
             .then(val => expect(val).to.equal('value'))
             .then(() => bz.getLease('key'))
-            .then(lease => expect(lease).to.be.equal({}));
+            .then(lease => expect(lease).to.be.equal(863995));
     });
 
     ['days', 'hours', 'minutes', 'seconds'].forEach((unit) => {
@@ -59,7 +59,7 @@ describe('create()', function () {
     it('should timeout a lease after the lease period', async() => {
         // return bz.create('key', 'value', defaultGasParams(), {seconds: 10})
         //     .then(() => delay(11000))
-        //     .then(() => bz.read('key'))
+        //     .then(() => assert.isRejected(bz.read('key'), 'Error: unknown request: key not found'));
 
         await bz.create('myKey', 'myValue', defaultGasParams(), {seconds: 10});
         const start = Date.now();
