@@ -55,13 +55,13 @@ describe('create()', function () {
             .then(() => delay(9000))
             .then(() => bz.read('key'))
             .then(val => expect(val).to.equal('value'));
-    })
+    });
 
     it('should timeout a lease after the lease period',  () => {
         return bz.create('key', 'value', defaultGasParams(), {seconds: 10})
             .then(() => delay(11000))
             .then(() => expect(bz.read('key')).to.be.rejectedWith('unknown request: key not found'));
-    })
+    });
 
     it.skip('should charge extra for longer leases', async () => {
         const value = 'a'.repeat(200000)

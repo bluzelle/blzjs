@@ -1,19 +1,25 @@
-import {APIAndSwarm, DEFAULT_TIMEOUT, sentryWithClient} from "../../../helpers/client-helpers";
+import {APIAndSwarm, defaultGasParams, DEFAULT_TIMEOUT, sentryWithClient} from "../../../helpers/client-helpers";
 import {useChaiAsPromised} from "../../../helpers/global-helpers";
 import {expect} from 'chai';
+import delay from "delay";
 
 
 describe('getLease', function (){
    this.timeout(DEFAULT_TIMEOUT);
    let bz: APIAndSwarm;
 
-
-    beforeEach(() => sentryWithClient()
+   beforeEach(()=> useChaiAsPromised());
+   beforeEach(() => sentryWithClient()
         .then(db => bz = db));
 
-    beforeEach(()=> useChaiAsPromised());
+    it('should throw exception if key does not exist',() => {
+        return expect(bz.getLease('key')).to.be.rejectedWith(/key not found/);
+    })
 
-    it('should throw exception if key does not exist', async () => {
-        await expect(bz.getLease('myKey')).to.be.rejectedWith(/key not found/);
+    it('should return the lease time left', () => {
+        return bz.create('key', 'value', defaultGasParams(), {seconds: 30})
+            .then(() => delay(20000))
+            .then(() => bz.getLease('key'))
+            .then(lease => expect(lease).to.be.lessThan(20));
     })
 });
