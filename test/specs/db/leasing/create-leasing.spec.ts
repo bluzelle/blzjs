@@ -3,7 +3,7 @@ import {expect} from 'chai';
 import delay from 'delay';
 import {useChaiAsPromised} from "../../../helpers/global-helpers";
 
-describe('create()', function () {
+describe('create()', function(){
     this.timeout(DEFAULT_TIMEOUT);
     let bz: APIAndSwarm;
 
@@ -17,7 +17,6 @@ describe('create()', function () {
             .then(val => expect(val).to.equal('value'));
     });
 
-    //Ask whether or not 863995 is the default lease time if an empty object is provided
     it('should allow for empty lease info',() => {
         return bz.create('key', 'value', defaultGasParams(), {})
             .then(() => bz.read('key'))
