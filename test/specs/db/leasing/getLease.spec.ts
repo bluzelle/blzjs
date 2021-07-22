@@ -4,15 +4,15 @@ import {expect} from 'chai';
 import delay from "delay";
 
 
-describe('getLease', function(){
-   this.timeout(DEFAULT_TIMEOUT);
-   let bz: APIAndSwarm;
+describe('getLease', function () {
+    this.timeout(DEFAULT_TIMEOUT);
+    let bz: APIAndSwarm;
 
-   beforeEach(()=> useChaiAsPromised());
-   beforeEach(() => sentryWithClient()
+    beforeEach(() => useChaiAsPromised());
+    beforeEach(() => sentryWithClient()
         .then(db => bz = db));
 
-    it('should throw exception if key does not exist',() => {
+    it('should throw exception if key does not exist', () => {
         return expect(bz.getLease('key')).to.be.rejectedWith(/key not found/);
     });
 
