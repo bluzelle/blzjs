@@ -82,4 +82,4 @@ describe('create()', function () {
         expect(create1.gasUsed - calculateLeaseCost(c1.leaseRate, c1.days))
             .to.be.closeTo(create2.gasUsed - calculateLeaseCost(c2.leaseRate, c2.days), 3)
     });
-})
+});
