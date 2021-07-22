@@ -8,9 +8,9 @@ describe('create()', function () {
     this.timeout(DEFAULT_TIMEOUT);
     let bz: APIAndSwarm;
 
-    beforeEach(() => useChaiAsPromised());
     beforeEach(() => sentryWithClient()
-        .then(db => bz = db));
+        .then(db => bz = db)
+        .then(() => useChaiAsPromised()));
 
     it("stores a key value pair", () => {
         return bz.create('key', 'value', defaultGasParams())

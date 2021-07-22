@@ -2,26 +2,25 @@ import {APIAndSwarm, DEFAULT_TIMEOUT, defaultGasParams, sentryWithClient} from "
 import {expect} from 'chai';
 
 
-describe('getNShortestLeases()', function () {
+describe('txGetNShortestLeases()', function () {
     this.timeout(DEFAULT_TIMEOUT);
     let bz: APIAndSwarm;
 
     beforeEach(() => sentryWithClient()
         .then(db => bz = db));
 
-    it('should return the first 2 shortest leases', async () => {
+    it.skip('should return the first 2 shortest leases', async () => {
         await Promise.all([
             bz.create('key1', 'value', defaultGasParams(), {days: 1}),
             bz.create('key2', 'value', defaultGasParams(), {hours: 1}),
             bz.create('key4', 'value', defaultGasParams(), {seconds: 30}),
             bz.create('key3', 'value', defaultGasParams(), {minutes: 1})
         ]);
-        // .then(() => bz.getNShortestLeases(2))
-        // .then(result => expect(result.find(({key}) => key === 'key3')?.lease).to.be.closeTo(60, 12));
-        // .then(result => expect(result.find(({key}) => key === 'key4')?.lease).to.be.closeTo(30, 12));
-        const result = await bz.getNShortestLeases(2);
 
-        expect(result.find(({key}) => key === 'key3')?.lease).to.be.closeTo(60, 12);
-        expect(result.find(({key}) => key === 'key4')?.lease).to.be.closeTo(30, 12);
+        const result = await bz.txGetNShortestLeases(2, defaultGasParams());
+        expect(result.leases[0].key).to.equal('key4');
+        expect(result.leases[0].lease).to.be.closeTo(30, 12);
+        expect(result.leases[1].key).to.equal('key3');
+        expect(result.leases[1].lease).to.be.closeTo(60, 12);
     });
 });

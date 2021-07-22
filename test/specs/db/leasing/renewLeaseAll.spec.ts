@@ -2,7 +2,7 @@ import {APIAndSwarm, DEFAULT_TIMEOUT, defaultGasParams, sentryWithClient} from "
 import {expect} from 'chai';
 
 
-describe('renewLeaseAll', function () {
+describe('renewLeaseAll()', function () {
     this.timeout(DEFAULT_TIMEOUT);
     let bz: APIAndSwarm;
 
