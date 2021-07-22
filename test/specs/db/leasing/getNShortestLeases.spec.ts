@@ -13,13 +13,13 @@ describe('getNShortestLeases()', function () {
         return Promise.all([
             bz.create('key1', 'value', defaultGasParams(), {days: 1}),
             bz.create('key2', 'value', defaultGasParams(), {hours: 1}),
-            bz.create('key4', 'value', defaultGasParams(), {seconds: 30}),
-            bz.create('key3', 'value', defaultGasParams(), {minutes: 1})
+            bz.create('key3', 'value', defaultGasParams(), {seconds: 30}),
+            bz.create('key4', 'value', defaultGasParams(), {minutes: 1})
         ])
             .then(() => bz.getNShortestLeases(2))
             .then(result => {
-                expect(result.find(({key}) => key === 'key3')?.lease).to.be.closeTo(60, 12);
-                expect(result.find(({key}) => key === 'key4')?.lease).to.be.closeTo(30, 12);
+                expect(result.find(({key}) => key === 'key3')?.lease).to.be.closeTo(30, 12);
+                expect(result.find(({key}) => key === 'key4')?.lease).to.be.closeTo(60, 12);
             });
     });
 });
