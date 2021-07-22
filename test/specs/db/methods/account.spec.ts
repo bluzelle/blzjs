@@ -3,12 +3,12 @@ import {expect} from 'chai';
 import {mnemonicToAddress} from "../../../../client/lib/API";
 
 
-describe('account()', function(){
-   this.timeout(DEFAULT_TIMEOUT);
-   let bz: APIAndSwarm;
+describe('account()', function () {
+    this.timeout(DEFAULT_TIMEOUT);
+    let bz: APIAndSwarm;
 
-   beforeEach(() => sentryWithClient()
-       .then(db => bz = db));
+    beforeEach(() => sentryWithClient()
+        .then(db => bz = db));
 
     it('should return account information', async () => {
         const account = await bz.account();
