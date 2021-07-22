@@ -3,11 +3,12 @@ import {expect} from 'chai';
 import delay from 'delay';
 import {useChaiAsPromised} from "../../../helpers/global-helpers";
 
-describe('create()', function(){
+
+describe('create()', function () {
     this.timeout(DEFAULT_TIMEOUT);
     let bz: APIAndSwarm;
 
-    beforeEach(()=> useChaiAsPromised());
+    beforeEach(() => useChaiAsPromised());
     beforeEach(() => sentryWithClient()
         .then(db => bz = db));
 
@@ -17,7 +18,7 @@ describe('create()', function(){
             .then(val => expect(val).to.equal('value'));
     });
 
-    it('should allow for empty lease info',() => {
+    it('should allow for empty lease info', () => {
         return bz.create('key', 'value', defaultGasParams(), {})
             .then(() => bz.read('key'))
             .then(val => expect(val).to.equal('value'))
@@ -33,7 +34,7 @@ describe('create()', function(){
         })
     });
 
-    it('should allow for lease time in multiple units',() => {
+    it('should allow for lease time in multiple units', () => {
         return bz.create('key', 'value', defaultGasParams(), {minutes: 30, hours: 1, days: 1, seconds: 30})
             .then(() => bz.read('key'))
             .then(val => expect(val).to.equal('value'))
@@ -41,7 +42,7 @@ describe('create()', function(){
             .then(lease => expect(lease).to.be.closeTo(91830, 5));
     });
 
-    it('should allow for a long lease period',() => {
+    it('should allow for a long lease period', () => {
         return bz.create('key', 'value', defaultGasParams(), {days: 180})
             .then(() => bz.read('key'))
             .then(val => expect(val).to.equal('value'))
@@ -56,7 +57,7 @@ describe('create()', function(){
             .then(val => expect(val).to.equal('value'));
     });
 
-    it('should timeout a lease after the lease period',  () => {
+    it('should timeout a lease after the lease period', () => {
         return bz.create('key', 'value', defaultGasParams(), {seconds: 10})
             .then(() => delay(11000))
             .then(() => expect(bz.read('key')).to.be.rejectedWith('unknown request: key not found'));
