@@ -7,7 +7,8 @@ describe('count()', function () {
     let bz: APIAndSwarm;
 
     beforeEach(() => sentryWithClient()
-        .then(db => bz = db));
+        .then(db => bz = db)
+    );
 
     it('should return 0 if no keys', () => {
         return bz.count()

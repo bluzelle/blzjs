@@ -7,7 +7,8 @@ describe('renewLease()', function () {
     let bz: APIAndSwarm;
 
     beforeEach(() => sentryWithClient()
-        .then(db => bz = db));
+        .then(db => bz = db)
+    );
 
     it('should increase the lease time in days', () => {
         return bz.create('key', 'value', defaultGasParams(), {days: 1})

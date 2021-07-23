@@ -10,7 +10,8 @@ describe('getLease()', function () {
 
     beforeEach(() => sentryWithClient()
         .then(db => bz = db)
-        .then(() => useChaiAsPromised()));
+        .then(() => useChaiAsPromised())
+    );
 
     it('should throw exception if key does not exist', () => {
         return expect(bz.getLease('key')).to.be.rejectedWith('unknown request: key not found');

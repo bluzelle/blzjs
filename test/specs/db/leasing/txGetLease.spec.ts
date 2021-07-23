@@ -8,9 +8,10 @@ describe('txGetLease()', function () {
     this.timeout(DEFAULT_TIMEOUT);
     let bz: APIAndSwarm;
 
-    beforeEach(() => useChaiAsPromised());
     beforeEach(() => sentryWithClient()
-        .then(db => bz = db));
+        .then(db => bz = db)
+        .then(() => useChaiAsPromised())
+    );
 
     it('should throw exception if key does not exist', () => {
         return () => expect(bz.txGetLease('fake', defaultGasParams())).to.be.rejectedWith('unknown request: key does not exist');

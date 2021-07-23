@@ -7,7 +7,8 @@ describe('renewLeaseAll()', function () {
     let bz: APIAndSwarm;
 
     beforeEach(() => sentryWithClient()
-        .then(db => bz = db));
+        .then(db => bz = db)
+    );
 
     it('should increase the lease time to the amount passed', () => {
         return bz.create('key1', 'myValue', defaultGasParams(), {days: 1})
@@ -56,6 +57,6 @@ describe('renewLeaseAll()', function () {
 
         // using closeTo due to possible rounding error
         expect(renew1.gasUsed - leaseGas1)
-            .to.be.closeTo(renew2.gasUsed - leaseGas2, 10)
+            .to.be.closeTo(renew2.gasUsed - leaseGas2, 10);
     });
 });
