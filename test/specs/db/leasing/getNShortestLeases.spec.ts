@@ -7,7 +7,8 @@ describe('getNShortestLeases()', function () {
     let bz: APIAndSwarm;
 
     beforeEach(() => sentryWithClient()
-        .then(db => bz = db));
+        .then(db => bz = db)
+    );
 
     it('should return the first 2 shortest leases', () => {
         return Promise.all([

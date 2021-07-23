@@ -12,7 +12,8 @@ describe('create()', function () {
 
     beforeEach(() => sentryWithClient()
         .then(db => bz = db)
-        .then(() => useChaiAsPromised()));
+        .then(() => useChaiAsPromised())
+    );
 
     it('should return chain info', () => {
         return bz.create('key', 'value', defaultGasParams())
@@ -85,22 +86,22 @@ describe('create()', function () {
             .then(() => bz.read('key'))
             .then(value => expect(value).to.equal('value'))
             .then(() => bz.create('key', 'secondValue', defaultGasParams())
-                .catch(e => expect(e.error).to.equal('invalid request: Key already exists: failed to execute message')));
+                .catch(e => expect(e.error).to.equal('invalid request: Key already exists: failed to execute message'))
+            );
     });
 
-    // Ask whether or not my way of creating actually tests the systems functionality
     it('should be able to handle parallel creates', () => {
         return Promise.all([
             bz.create('key1', 'value', defaultGasParams()),
             bz.create('key2', 'value', defaultGasParams()),
             bz.create('key3', 'value', defaultGasParams()),
             bz.create('key4', 'value', defaultGasParams())
-        ]).then(() => bz.count())
+        ])
+            .then(() => bz.count())
             .then(count => expect(count).to.equal(4));
     });
 
-    //Ask what this test should be checking
-    it('should handle creates that are sent simultaneously', async () => {
+    it('should handle creates that are sent simultaneously from seperate clients', async () => {
         const bz2 = bluzelle({
             mnemonic: bz.generateBIP39Account(),
             uuid: bz.uuid,
@@ -130,10 +131,8 @@ describe('create()', function () {
             .catch(e => expect(e.error).to.be.equal('insufficient fees'));
     });
 
-    //Ask how gas works, this test might not be correct
-    it('should throw an error if assigned insufficient gas', () => {
-        return bz.create('key', 'value', {max_gas: 1})
-            .catch(e => expect(e.error).to.equal('insufficient fees'));
+    it('should charge for gas on transactions', async () => {
+        expect(await bz.create('key', 'value', {max_gas: 1}).catch(e => e.error)).to.equal('insufficient fees');
     });
 
     it('should throw an error if assigned insufficient max fee', () => {

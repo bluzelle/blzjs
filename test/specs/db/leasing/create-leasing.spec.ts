@@ -10,7 +10,8 @@ describe('create()', function () {
 
     beforeEach(() => sentryWithClient()
         .then(db => bz = db)
-        .then(() => useChaiAsPromised()));
+        .then(() => useChaiAsPromised())
+    );
 
     it("stores a key value pair", () => {
         return bz.create('key', 'value', defaultGasParams())
@@ -31,7 +32,7 @@ describe('create()', function () {
             return bz.create('key', 'value', defaultGasParams(), {[unit]: 20})
                 .then(() => bz.read('key'))
                 .then(val => expect(val).to.equal('value'));
-        })
+        });
     });
 
     it('should allow for lease time in multiple units', () => {

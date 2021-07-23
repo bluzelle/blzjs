@@ -8,7 +8,8 @@ describe('abciQuery()', function () {
 
     beforeEach(() => sentryWithClient()
         .then(db => bz = db)
-        .then(() => useChaiAsPromised()));
+        .then(() => useChaiAsPromised())
+    );
 
     it('should send a abci query', () => {
         return bz.abciQuery<any>('custom/acc/account', {
@@ -19,7 +20,7 @@ describe('abciQuery()', function () {
                     .then(value => {
                         expect(result.value.coins[0].amount).to.equal(value.toString())
                     })
-            })
+            });
     });
 
     it('should return an error for a bad path', async () => {
