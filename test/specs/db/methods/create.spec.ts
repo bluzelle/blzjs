@@ -3,6 +3,7 @@ import {useChaiAsPromised} from "../../../helpers/global-helpers";
 import {expect} from 'chai';
 import * as fs from 'fs';
 import {getPrintableChars} from "../../../helpers/test-helpers";
+import {bluzelle} from "../../../../client/lib/bluzelle-node";
 
 
 describe('create()', function () {
@@ -62,7 +63,7 @@ describe('create()', function () {
     });
 
     it('should throw an error if key is empty', () => {
-        return expect(bz.create('', 'value', defaultGasParams())).to.be.rejectedWith(Error, 'Key cannot be empty');
+        return expect(bz.create('', 'value', defaultGasParams())).to.be.rejectedWith('Key cannot be empty');
     });
 
     it('should handle values with symbols', () => {
@@ -85,5 +86,47 @@ describe('create()', function () {
             .then(value => expect(value).to.equal('value'))
             .then(() => bz.create('key', 'secondValue', defaultGasParams())
                 .catch(e => expect(e.error).to.equal('invalid request: Key already exists: failed to execute message')));
+    });
+
+    // Ask whether or not my way of creating actually tests the systems functionality
+    it('should be able to handle parallel creates', () => {
+        return Promise.all([
+            bz.create('key1', 'value', defaultGasParams()),
+            bz.create('key2', 'value', defaultGasParams()),
+            bz.create('key3', 'value', defaultGasParams()),
+            bz.create('key4', 'value', defaultGasParams())
+        ]).then(() => bz.count())
+            .then(count => expect(count).to.equal(4));
+    });
+
+    //Ask what this test should be checking
+    it('should handle creates that are sent simultaneously', async () => {
+        const bz2 = bluzelle({
+            mnemonic: bz.generateBIP39Account(),
+            uuid: bz.uuid,
+            endpoint: bz.url
+        })
+
+        await bz.transferTokensTo(bz2.address, 10000, defaultGasParams())
+
+
+        let caught = false;
+
+        await Promise.all([
+            bz.create('foo', 'bar1', defaultGasParams()).catch(e => {
+                expect(e.error).to.equal('Key already exists')
+                caught = true;
+            }),
+            bz2.create('foo', 'bar2', defaultGasParams()).catch(e => {
+                expect(e.error).to.match(/Key already exists/)
+                caught = true;
+            })
+        ])
+        expect(caught).to.be.true;
+    });
+
+    it('should throw an error if assigned insufficient gas price', () => {
+        return bz.create('key', 'value', {gas_price: .0001})
+            .catch(e => expect(e.error).to.equal('insufficient fees'));
     });
 });
