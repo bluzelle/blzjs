@@ -129,4 +129,13 @@ describe('create()', function () {
         return bz.create('key', 'value', {gas_price: .0001})
             .catch(e => expect(e.error).to.equal('insufficient fees'));
     });
+
+    it('should throw an error if assigned insufficient gas', () => {
+        // return bz.create('key', 'value', {max_gas: 1})
+        //     .catch(e => expect(e.error).to.equal('insufficient fees'));
+
+        expect(
+            await bz.create('myKey', 'myValue', {max_gas: 1}).catch(e => e.error)
+        ).to.equal('insufficient fees');
+    });
 });
