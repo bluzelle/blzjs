@@ -127,12 +127,37 @@ describe('create()', function () {
 
     it('should throw an error if assigned insufficient gas price', () => {
         return bz.create('key', 'value', {gas_price: 0.0001})
-            .catch(e => expect(e.error).to.equal('insufficient fees'));
+            .catch(e => expect(e.error).to.be.equal('insufficient fees'));
     });
 
     //Ask how gas works, this test might not be correct
     it('should throw an error if assigned insufficient gas', () => {
-        return bz.create('key', 'value', {max_gas: 1} )
+        return bz.create('key', 'value', {max_gas: 1})
             .catch(e => expect(e.error).to.equal('insufficient fees'));
+    });
+
+    it('should throw an error if assigned insufficient max fee', () => {
+        return bz.create('key', 'value', {max_fee: 1})
+            .catch(e => expect(e.error).to.equal('insufficient fees'));
+    });
+
+    it('should throw an error if the key is not a string', () => {
+        // @ts-ignore - testing bad param
+        return expect(bz.create(10, 'value', defaultGasParams())).to.be.rejectedWith('Key must be a string');
+    });
+
+    it('should throw an error if the value is not a string', () => {
+        // @ts-ignore - testing bad param
+        return expect(bz.create('key', 10, defaultGasParams())).to.be.rejectedWith('Value must be a string');
+    });
+
+    it('should throw an error if the lease time is less than 0', () => {
+        return expect(bz.create('key', 'value', defaultGasParams(), {days: -1})).to.be.rejectedWith('Invalid lease time');
+    });
+
+    it('can store json', async () => {
+        const testJson = JSON.stringify({foo: 10, bar: 'baz', t: true, arr: [1, 2, 3]});
+        await bz.create('key', testJson, defaultGasParams())
+        expect(await bz.read('key')).to.equal(testJson);
     });
 });
