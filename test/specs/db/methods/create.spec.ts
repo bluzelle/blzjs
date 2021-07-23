@@ -154,9 +154,27 @@ describe('create()', function () {
         return expect(bz.create('key', 'value', defaultGasParams(), {days: -1})).to.be.rejectedWith('Invalid lease time');
     });
 
-    it('can store json', async () => {
+    it('can store json', () => {
         const testJson = JSON.stringify({foo: 10, bar: 'baz', t: true, arr: [1, 2, 3]});
-        await bz.create('key', testJson, defaultGasParams())
-        expect(await bz.read('key')).to.equal(testJson);
+        return bz.create('key', testJson, defaultGasParams())
+            .then(() => bz.read('key'))
+            .then(jsonValue => expect(jsonValue).to.equal(testJson));
     });
+
+    it('can handle multiple creates', () =>
+        Promise.all([
+            bz.create('key1', 'value1', defaultGasParams()),
+            bz.create('key2', 'value2', defaultGasParams()),
+            bz.create('key3', 'value3', defaultGasParams()),
+            bz.create('key4', 'value4', defaultGasParams()),
+        ])
+            .then(x => x)
+            .then(() => Promise.all([
+                bz.read('key1'),
+                bz.read('key2'),
+                bz.read('key3'),
+                bz.read('key4'),
+            ]))
+            .then(responses => expect(responses).to.deep.equal(['value1', 'value2', 'value3', 'value4']))
+    );
 });
