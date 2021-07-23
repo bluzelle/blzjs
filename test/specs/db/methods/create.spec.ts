@@ -83,13 +83,7 @@ describe('create()', function () {
         return bz.create('key', 'value', defaultGasParams())
             .then(() => bz.read('key'))
             .then(value => expect(value).to.equal('value'))
-            .then(() => expect(bz.create('key', 'secondValue', defaultGasParams())).to.be.rejectedWith('Key already exists'))
-
-        // expect(await bz.read('key')).to.equal('value');
-        //
-        // let caught;
-        // await bz.create('key', 'secondValue', defaultGasParams())
-        //     .catch(e => caught = e.error)
-        // expect(caught).to.match(/Key already exists/);
+            .then(() => bz.create('key', 'secondValue', defaultGasParams())
+                .catch(e => expect(e.error).to.equal('invalid request: Key already exists: failed to execute message')));
     });
 });
