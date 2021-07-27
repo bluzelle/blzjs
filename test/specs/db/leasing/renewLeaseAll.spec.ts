@@ -11,8 +11,8 @@ describe('renewLeaseAll()', function () {
     );
 
     it('should increase the lease time to the amount passed', () => {
-        return bz.create('key1', 'myValue', defaultGasParams(), {days: 1})
-            .then(() => bz.create('key2', 'myValue', defaultGasParams(), {days: 2}))
+        return bz.create('key1', 'value', defaultGasParams(), {days: 1})
+            .then(() => bz.create('key2', 'value', defaultGasParams(), {days: 2}))
             .then(() => bz.getLease('key1'))
             .then(lease => expect(lease).to.be.closeTo(86400, 12))
             .then(() => bz.getLease('key2'))
@@ -25,8 +25,8 @@ describe('renewLeaseAll()', function () {
     });
 
     it('should restore the lease time to 10 days if no lease passed', () => {
-        return bz.create('key1', 'myValue', defaultGasParams(), {seconds: 30})
-            .then(() => bz.create('key2', 'myValue', defaultGasParams(), {seconds: 60}))
+        return bz.create('key1', 'value', defaultGasParams(), {seconds: 30})
+            .then(() => bz.create('key2', 'value', defaultGasParams(), {seconds: 60}))
             .then(() => bz.getLease('key1'))
             .then(lease1 => expect(lease1).to.be.closeTo(30, 12))
             .then(() => bz.getLease('key2'))

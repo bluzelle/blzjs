@@ -1,4 +1,10 @@
-import {APIAndSwarm, DEFAULT_TIMEOUT, defaultGasParams, sentryWithClient} from "../../../helpers/client-helpers";
+import {
+    APIAndSwarm,
+    createKeys,
+    DEFAULT_TIMEOUT,
+    defaultGasParams,
+    sentryWithClient
+} from "../../../helpers/client-helpers";
 import {expect} from 'chai';
 
 
@@ -16,16 +22,11 @@ describe('count()', function () {
     });
 
     it('should return the number of keys', () => {
-        return Promise.all([
-            bz.create('key1', 'value', defaultGasParams(), {days: 1}),
-            bz.create('key2', 'value', defaultGasParams(), {hours: 1}),
-            bz.create('key3', 'value', defaultGasParams(), {seconds: 30}),
-            bz.create('key4', 'value', defaultGasParams(), {minutes: 1})
-        ])
+        return createKeys(bz, 5)
             .then(() => bz.count())
-            .then(count => expect(count).to.be.equal(4))
+            .then(count => expect(count).to.be.equal(5))
             .then(() => bz.delete('key4', defaultGasParams()))
             .then(() => bz.count())
-            .then(count => expect(count).to.be.equal(3));
+            .then(count => expect(count).to.be.equal(4));
     });
 });

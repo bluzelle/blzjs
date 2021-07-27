@@ -47,8 +47,8 @@ export const sentryWithClient = async (extra: Partial<BluzelleConfig> = {}): Pro
         );
 
 export const createKeys = async (bz: APIAndSwarm, count: number): Promise<{ keys: string[], values: string[] }> => {
-    const keys = range(0, count).map(n => `key-${n}`);
-    const values = range(0, count).map(n => `value-${n}`);
+    const keys = range(0, count).map(n => `key${n}`);
+    const values = range(0, count).map(n => `value${n}`);
     await bz.withTransaction(() => keys.map((key, idx) => bz.create(key, values[idx], defaultGasParams())));
     return {keys, values};
 };
