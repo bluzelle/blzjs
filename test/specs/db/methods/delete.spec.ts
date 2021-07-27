@@ -20,16 +20,19 @@ describe('delete()', function () {
             });
     });
 
-    it('should delete a key in the database', () => {
+    it('should delete a key/value pair in the database', () => {
         return bz.create('key', 'value', defaultGasParams())
             .then(() => bz.read('key'))
             .then(value => expect(value).to.equal('value'))
             .then(() => bz.delete('key', defaultGasParams()))
-            .then(() => expect(bz.read('key')).to.be.rejectedWith('key not found'));
+            .then(() => bz.has('key'))
+            .then(keyStatus => expect(keyStatus).to.be.false);
+    });
 
-
-        // expect(await bz.read('key')).to.equal('value');
-        // await bz.delete('key', defaultGasParams());
-        // await expect(bz.read('key')).to.be.rejectedWith(Error, /key not found/);
+    it('should be able to delete an empty value', async () => {
+        await bz.create('key', '', defaultGasParams());
+        expect(await bz.has('key')).to.be.true;
+        await bz.delete('key', defaultGasParams());
+        expect(await bz.has('key')).to.be.false;
     });
 });

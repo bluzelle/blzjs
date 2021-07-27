@@ -61,7 +61,8 @@ describe('create()', function () {
     it('should timeout a lease after the lease period', () => {
         return bz.create('key', 'value', defaultGasParams(), {seconds: 10})
             .then(() => delay(11000))
-            .then(() => expect(bz.read('key')).to.be.rejectedWith('unknown request: key not found'));
+            .then(() => bz.has('key'))
+            .then(keyResult => expect(keyResult).to.be.false);
     });
 
     it.skip('should charge extra for longer leases', async () => {
