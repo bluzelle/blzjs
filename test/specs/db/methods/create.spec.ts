@@ -131,6 +131,7 @@ describe('create()', function () {
             .catch(e => expect(e.error).to.be.equal('insufficient fees'));
     });
 
+    // Revisit this test to make it test on gas left in account
     it('should charge for gas on transactions', async () => {
         expect(await bz.create('key', 'value', {max_gas: 1}).catch(e => e.error)).to.equal('insufficient fees');
     });
