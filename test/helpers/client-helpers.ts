@@ -5,7 +5,7 @@ import {getSwarm, SINGLE_SENTRY_SWARM} from '@bluzelle/testing/lib/helpers/swarm
 import {GasInfo} from '../../client/lib/types/GasInfo';
 import {API} from "../../client/lib/API";
 import {bluzelle} from "../../client/lib/bluzelle-node";
-import {extend} from 'lodash';
+import {extend, range} from 'lodash';
 
 
 export const defaultGasParams = (gasInfo: GasInfo = {}): GasInfo => ({gas_price: 0.004, max_gas: 100000000, ...gasInfo})
@@ -43,5 +43,12 @@ export const sentryWithClient = async (extra: Partial<BluzelleConfig> = {}): Pro
     getSwarm([SINGLE_SENTRY_SWARM])
         .then(swarm =>
             getClient(swarm.getSentries()[0], swarm.getValidators()[0], extra)
-                .then(client => extend(client,{swarm}))
+                .then(client => extend(client, {swarm}))
         );
+
+export const createKeys = async (bz: APIAndSwarm, count: number): Promise<{ keys: string[], values: string[] }> => {
+    const keys = range(0, count).map(n => `key-${n}`);
+    const values = range(0, count).map(n => `value-${n}`);
+    await bz.withTransaction(() => keys.map((key, idx) => bz.create(key, values[idx], defaultGasParams())));
+    return {keys, values};
+};
