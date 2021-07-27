@@ -1,4 +1,10 @@
-import {APIAndSwarm, DEFAULT_TIMEOUT, defaultGasParams, sentryWithClient} from "../../../helpers/client-helpers";
+import {
+    APIAndSwarm,
+    createKeys,
+    DEFAULT_TIMEOUT,
+    defaultGasParams,
+    sentryWithClient
+} from "../../../helpers/client-helpers";
 import {useChaiAsPromised} from "../../../helpers/global-helpers";
 import {expect} from 'chai';
 import * as fs from 'fs';
@@ -91,14 +97,9 @@ describe('create()', function () {
     });
 
     it('should be able to handle parallel creates', () => {
-        return Promise.all([
-            bz.create('key1', 'value', defaultGasParams()),
-            bz.create('key2', 'value', defaultGasParams()),
-            bz.create('key3', 'value', defaultGasParams()),
-            bz.create('key4', 'value', defaultGasParams())
-        ])
+        return createKeys(bz, 5)
             .then(() => bz.count())
-            .then(count => expect(count).to.equal(4));
+            .then(count => expect(count).to.equal(5));
     });
 
     it('should handle creates that are sent simultaneously from seperate clients', async () => {
@@ -162,20 +163,16 @@ describe('create()', function () {
             .then(jsonValue => expect(jsonValue).to.equal(testJson));
     });
 
-    it('can handle multiple creates', () =>
-        Promise.all([
-            bz.create('key1', 'value1', defaultGasParams()),
-            bz.create('key2', 'value2', defaultGasParams()),
-            bz.create('key3', 'value3', defaultGasParams()),
-            bz.create('key4', 'value4', defaultGasParams()),
-        ])
+    it('can handle multiple creates', () => {
+        return createKeys(bz, 5)
             .then(x => x)
             .then(() => Promise.all([
+                bz.read('key0'),
                 bz.read('key1'),
                 bz.read('key2'),
                 bz.read('key3'),
                 bz.read('key4'),
             ]))
-            .then(responses => expect(responses).to.deep.equal(['value1', 'value2', 'value3', 'value4']))
-    );
+            .then(responses => expect(responses).to.deep.equal(['value0', 'value1', 'value2', 'value3', 'value4']))
+    });
 });

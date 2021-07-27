@@ -17,7 +17,7 @@ describe('txGetLease()', function () {
         return () => expect(bz.txGetLease('fake', defaultGasParams())).to.be.rejectedWith('unknown request: key does not exist');
     });
 
-    it('should return the lease time left', async () => {
+    it('should return the lease time left', () => {
         return bz.create('key', 'value', defaultGasParams(), {seconds: 30})
             .then(() => delay(20000))
             .then(() => bz.txGetLease('key', defaultGasParams()))
