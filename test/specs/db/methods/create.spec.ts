@@ -171,7 +171,7 @@ describe('create()', function () {
                 bz.read('key1'),
                 bz.read('key2'),
                 bz.read('key3'),
-                bz.read('key4'),
+                bz.read('key4')
             ]))
             .then(responses => expect(responses).to.deep.equal(['value0', 'value1', 'value2', 'value3', 'value4']))
     });
