@@ -9,7 +9,7 @@ import {useChaiAsPromised} from "../../../helpers/global-helpers";
 import {expect} from 'chai';
 import * as fs from 'fs';
 import {getPrintableChars} from "../../../helpers/test-helpers";
-import {bluzelle} from "../../../../client/lib/bluzelle-node";
+import {bluzelle} from "../../../../client";
 
 
 describe('create()', function () {
