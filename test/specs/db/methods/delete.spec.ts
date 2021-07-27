@@ -51,7 +51,9 @@ describe('delete()', function () {
 
     it('should handle parallel deletes', async () => {
         const {keys} = await createKeys(bz, 5);
-        await Promise.all(keys.map(key => bz.delete(key, defaultGasParams())));
-        expect(await bz.keys()).to.have.length(0);
+
+        return Promise.all(keys.map(key => bz.delete(key, defaultGasParams())))
+            .then(() => bz.keys())
+            .then(keyLength => expect(keyLength).to.have.length(0));
     });
 });
