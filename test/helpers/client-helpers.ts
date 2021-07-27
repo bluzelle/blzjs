@@ -6,6 +6,7 @@ import {GasInfo} from '../../client/lib/types/GasInfo';
 import {API} from "../../client/lib/API";
 import {bluzelle} from "../../client/lib/bluzelle-node";
 import {extend, range} from 'lodash';
+import {Some} from 'monet';
 
 
 export const defaultGasParams = (gasInfo: GasInfo = {}): GasInfo => ({gas_price: 0.004, max_gas: 100000000, ...gasInfo})
@@ -52,3 +53,16 @@ export const createKeys = async (bz: APIAndSwarm, count: number): Promise<{ keys
     await bz.withTransaction(() => keys.map((key, idx) => bz.create(key, values[idx], defaultGasParams())));
     return {keys, values};
 };
+
+export const newBzClient = (bz: APIAndSwarm): Promise<APIAndSwarm> =>
+    Some(bz.generateBIP39Account())
+        .map(mnemonic => bluzelle({
+            mnemonic,
+            endpoint: bz.url,
+            uuid: bz.uuid
+        }))
+        .map(async (newBz: API) => {
+            await bz.transferTokensTo(newBz.address, 1000, defaultGasParams());
+            return newBz;
+        })
+        .join()
