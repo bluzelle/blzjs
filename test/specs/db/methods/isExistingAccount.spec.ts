@@ -24,5 +24,5 @@ describe('isExistingAccount()', function () {
 
         return bz2.isExistingAccount()
             .then(accountExists => expect(accountExists).to.be.false);
-    })
+    });
 });

@@ -54,6 +54,6 @@ describe('delete()', function () {
 
         return Promise.all(keys.map(key => bz.delete(key, defaultGasParams())))
             .then(() => bz.keys())
-            .then(keyLength => expect(keyLength).to.have.length(0));
+            .then(keys => expect(keys).to.have.length(0));
     });
 });
