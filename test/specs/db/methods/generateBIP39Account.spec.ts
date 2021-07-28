@@ -2,7 +2,7 @@ import {
     APIAndSwarm,
     DEFAULT_TIMEOUT,
     defaultGasParams,
-    newBzClient,
+    createNewBzClient,
     sentryWithClient
 } from "../../../helpers/client-helpers";
 import {expect} from 'chai';
@@ -28,7 +28,7 @@ describe('generateBIP39Account()', function () {
     });
 
     it('should generate a valid account', async () => {
-        const bz2 = await newBzClient(bz);
+        const bz2 = await createNewBzClient(bz);
         return bz2.create('key', 'value', defaultGasParams())
             .then(() => bz2.read('key'))
             .then(value => expect(value).to.equal('value'));

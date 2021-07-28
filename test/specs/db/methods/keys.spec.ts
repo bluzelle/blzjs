@@ -2,7 +2,7 @@ import {
     APIAndSwarm,
     createKeys,
     DEFAULT_TIMEOUT,
-    defaultGasParams, newBzClient,
+    defaultGasParams, createNewBzClient,
     sentryWithClient
 } from "../../../helpers/client-helpers";
 import {expect} from 'chai';
@@ -38,7 +38,7 @@ describe('keys()', function () {
     });
 
     it('should return all keys including ones that are not mine', async () => {
-        const bz2 = await newBzClient(bz);
+        const bz2 = await createNewBzClient(bz);
 
         return bz.withTransaction(() => {
             bz.create('key1', 'value', defaultGasParams());
