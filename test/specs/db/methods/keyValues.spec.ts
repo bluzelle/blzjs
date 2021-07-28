@@ -51,7 +51,6 @@ describe('keyValues()', function () {
                 return memo
             }, []
         );
-
         expect(await bz.keyValues()).to.deep.equal(expectedResults);
     });
 });
