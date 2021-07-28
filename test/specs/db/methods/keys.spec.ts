@@ -46,8 +46,6 @@ describe('keys()', function () {
             bz2.create('other', 'value', defaultGasParams());
         })
             .then(() => bz.keys())
-            .then(keys => )
-
-        expect(await bz.keys()).to.deep.equal(['key1', 'key2', 'other']);
+            .then(keys => expect(keys).to.deep.equal(['key1', 'key2', 'other']));
     });
 });
