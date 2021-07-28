@@ -31,7 +31,7 @@ describe('getBNT()', function () {
         return bz.transferTokensTo(newAccount.address, 10, defaultGasParams(), {ubnt: true})
             .then(() => newAccount.getBNT())
             .then(bnt => expect(bnt).to.equal(0))
-            .then(() => newAccount.getBNT({ubnt:true}))
+            .then(() => newAccount.getBNT({ubnt: true}))
             .then(ubnt => expect(ubnt).to.equal(10));
     });
 
