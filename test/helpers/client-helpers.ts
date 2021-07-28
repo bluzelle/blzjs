@@ -54,7 +54,7 @@ export const createKeys = async (bz: APIAndSwarm, count: number): Promise<{ keys
     return {keys, values};
 };
 
-export const newBzClient = (bz: APIAndSwarm): Promise<APIAndSwarm> =>
+export const createNewBzClient = (bz: APIAndSwarm): Promise<APIAndSwarm> =>
     Some(bz.generateBIP39Account())
         .map(mnemonic => bluzelle({
             mnemonic,

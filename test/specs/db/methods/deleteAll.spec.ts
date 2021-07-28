@@ -2,7 +2,7 @@ import {
     APIAndSwarm,
     createKeys,
     DEFAULT_TIMEOUT,
-    defaultGasParams, newBzClient,
+    defaultGasParams, createNewBzClient,
     sentryWithClient
 } from "../../../helpers/client-helpers";
 import {expect} from 'chai';
@@ -34,7 +34,7 @@ describe('deleteAll()', function () {
     });
 
     it('should delete all keys that you own and only keys that you own', async () => {
-        const bz2 = await newBzClient(bz);
+        const bz2 = await createNewBzClient(bz);
         return bz.withTransaction(() => {
             bz.create('key1', 'value', defaultGasParams());
             bz.create('key2', 'value', defaultGasParams());
