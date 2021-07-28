@@ -27,7 +27,7 @@ describe('generateBIP39Account()', function () {
         expect(() => bz.generateBIP39Account('5648883')).to.throw('Entropy must be 64 char hex')
     });
 
-    it('should generate a valid account', async() => {
+    it('should generate a valid account', async () => {
         const bz2 = await newBzClient(bz);
         return bz2.create('key', 'value', defaultGasParams())
             .then(() => bz2.read('key'))
