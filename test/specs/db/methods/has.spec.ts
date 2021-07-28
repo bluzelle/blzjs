@@ -14,10 +14,10 @@ describe('has()', function () {
             .then(keyStatus => expect(keyStatus).to.be.false);
     });
 
-    it('should return true if key exists', async () => {
+    it('should return true if key exists',  () => {
         return bz.create('key', 'value', defaultGasParams())
-            .then(() => bz.has('mkey'))
-            .then(keyStatus => expect(keyStatus).to.be.false);
+            .then(() => bz.has('key'))
+            .then(keyStatus => expect(keyStatus).to.be.true);
     });
 
     it('should work with an empty value', () => {
