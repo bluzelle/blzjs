@@ -7,6 +7,7 @@ import {
 } from "../../../helpers/client-helpers";
 import {useChaiAsPromised} from "../../../helpers/global-helpers";
 import {expect} from "chai";
+import {keys} from "lodash";
 
 describe('multiUpdate()', function () {
     this.timeout(DEFAULT_TIMEOUT);
@@ -58,17 +59,28 @@ describe('multiUpdate()', function () {
     });
 
     it('should update multiple values in a store', async () => {
-        const {keys, values} = await createKeys(bz, 3);
-        return bz.multiUpdate([{
-            key: keys[0], value: 'newValue'
-        }, {
-            key: keys[2], value: 'newValue'
-        }], defaultGasParams())
-            .then(() => bz.read(keys[0]))
-            .then(firstValue => expect(firstValue).to.equal('newValue'))
-            .then(() => bz.read(keys[1]))
-            .then(firstValue => expect(firstValue).to.equal(values[1]))
-            .then(() => bz.read(keys[2]))
-            .then(firstValue => expect(firstValue).to.equal('newValue'));
+        return createKeys(bz, 3)
+            .then((pairs = {keys: [], values: []}) => {
+                    Promise.all(pairs.keys.map(keys => bz.multiUpdate([{
+                                key: keys[0], value: 'newValue'
+                            }, {
+                                key: keys[2], value: 'newValue'
+                            }], defaultGasParams()))
+                    )
+                });
+
+        //     const {keys, values} = await createKeys(bz, 3);
+        //
+        //     return bz.multiUpdate([{
+        //         key: keys[0], value: 'newValue'
+        //     }, {
+        //         key: keys[2], value: 'newValue'
+        //     }], defaultGasParams())
+        //         .then(() => bz.read(keys[0]))
+        //         .then(value => expect(value).to.equal('newValue'))
+        //         .then(() => bz.read(keys[1]))
+        //         .then(value => expect(value).to.equal(values[1]))
+        //         .then(() => bz.read(keys[2]))
+        //         .then(value => expect(value).to.equal('newValue'));
+         });
     });
-});
