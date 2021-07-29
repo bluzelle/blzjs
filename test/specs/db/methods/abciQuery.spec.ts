@@ -23,20 +23,18 @@ describe('abciQuery()', function () {
             });
     });
 
-    it('should return an error for a bad path', async () => {
-        let caught: any;
-        await bz.abciQuery<any>('fake/path')
-            .catch((e: Error) => caught = e)
-        expect(caught.status).to.equal(400);
-        expect(caught.error).to.match(/unknown request: unknown query path/);
+    it('should return an error for a bad path', () => {
+        return bz.abciQuery<any>('fake/path')
+            .catch(e => {
+                expect(e.status).to.equal(400);
+                expect(e.error).to.equal('unknown request: unknown query path');
+            });
     });
 
-    it('should return any errors', async () => {
-        let caught: any;
-        await bz.abciQuery<any>('custom/acc/account', {
+    it('should return any errors', () => {
+        return bz.abciQuery<any>('custom/acc/account', {
             Address: 'bluzelle1ws42h2gjr6q8u5d2teexhrzz9xr9lqrxru50u5'
         })
-            .catch((e: Error) => caught = e)
-        expect(caught.status).to.equal(400);
+            .catch(e => expect(e.status).to.equal(400));
     });
 });
