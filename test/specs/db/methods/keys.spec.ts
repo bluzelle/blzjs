@@ -30,22 +30,24 @@ describe('keys()', function () {
             .then(keys => expect(keys).to.deep.equal(['key1', 'key2']));
     });
 
-    it('should return a list of keys', async () => {
-        const {keys} = await createKeys(bz, 5);
-
-        return bz.keys()
-            .then(testKeys => expect(testKeys).to.deep.equal(keys));
+    it('should return a list of keys', () => {
+        return createKeys(bz, 5)
+            .then((pairs = {keys: [], values: []}) =>
+                bz.keys()
+                    .then(keys => expect(keys).to.deep.equal(pairs.keys))
+            );
     });
 
-    it('should return all keys including ones that are not mine', async () => {
-        const bz2 = await createNewBzClient(bz);
-
-        return bz.withTransaction(() => {
-            bz.create('key1', 'value', defaultGasParams());
-            bz.create('key2', 'value', defaultGasParams());
-            bz2.create('other', 'value', defaultGasParams());
-        })
-            .then(() => bz.keys())
-            .then(keys => expect(keys).to.deep.equal(['key1', 'key2', 'other']));
+    it('should return all keys including ones that are not mine', () => {
+        return createNewBzClient(bz)
+            .then(bz2 =>
+                bz.withTransaction(() => {
+                    bz.create('key1', 'value', defaultGasParams());
+                    bz.create('key2', 'value', defaultGasParams());
+                    bz2.create('other', 'value', defaultGasParams());
+                })
+                    .then(() => bz.keys())
+                    .then(keys => expect(keys).to.deep.equal(['key1', 'key2', 'other']))
+            );
     });
 });

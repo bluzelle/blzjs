@@ -33,17 +33,19 @@ describe('deleteAll()', function () {
             .then(count => expect(count).to.equal(0));
     });
 
-    it('should delete all keys that you own and only keys that you own', async () => {
-        const bz2 = await createNewBzClient(bz);
-        return bz.withTransaction(() => {
-            bz.create('key1', 'value', defaultGasParams());
-            bz.create('key2', 'value', defaultGasParams());
-            bz.create('key3', 'value', defaultGasParams());
-            bz.create('key4', 'value', defaultGasParams());
-            bz2.create('notMyKey', 'notMyValue', defaultGasParams());
-        })
-            .then(() => bz.deleteAll(defaultGasParams()))
-            .then(() => bz2.keys())
-            .then(keysResult => expect(keysResult).to.deep.equal(['notMyKey']));
+    it('should delete all keys that you own and only keys that you own', () => {
+        return createNewBzClient(bz)
+            .then(bz2 =>
+                bz.withTransaction(() => {
+                    bz.create('key1', 'value', defaultGasParams());
+                    bz.create('key2', 'value', defaultGasParams());
+                    bz.create('key3', 'value', defaultGasParams());
+                    bz.create('key4', 'value', defaultGasParams());
+                    bz2.create('notMyKey', 'notMyValue', defaultGasParams());
+                })
+                    .then(() => bz.deleteAll(defaultGasParams()))
+                    .then(() => bz2.keys())
+                    .then(keysResult => expect(keysResult).to.deep.equal(['notMyKey']))
+            );
     });
 });
