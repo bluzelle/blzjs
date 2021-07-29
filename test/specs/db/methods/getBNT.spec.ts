@@ -36,9 +36,9 @@ describe('getBNT()', function () {
     });
 
     it('should return the account information of the passed address', () => {
-        const a = mnemonicToAddress(bz.generateBIP39Account());
-        return bz.transferTokensTo(a, 1000, defaultGasParams())
-            .then(() => Promise.all([bz.getBNT(), bz.getBNT({address: a})]))
+        const testAddress = mnemonicToAddress(bz.generateBIP39Account());
+        return bz.transferTokensTo(testAddress, 1000, defaultGasParams())
+            .then(() => Promise.all([bz.getBNT(), bz.getBNT({address: testAddress})]))
             .then(([a1, a2]) => {
                 expect(a1).to.be.greaterThan(1000);
                 expect(a2).to.equal(1000);
