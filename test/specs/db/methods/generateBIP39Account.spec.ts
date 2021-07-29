@@ -15,8 +15,7 @@ describe('generateBIP39Account()', function () {
         .then(db => bz = db));
 
     it('should generate a new mnemonic if not given entropy', () => {
-        const mnemonic = bz.generateBIP39Account();
-        expect(mnemonic.split(' ')).to.have.length(24);
+        expect(bz.generateBIP39Account().split(' ')).to.have.length(24);
     });
 
     it('should generate the same mnemonic if provided with entropy', () => {
@@ -27,10 +26,12 @@ describe('generateBIP39Account()', function () {
         expect(() => bz.generateBIP39Account('5648883')).to.throw('Entropy must be 64 char hex')
     });
 
-    it('should generate a valid account', async () => {
-        const bz2 = await createNewBzClient(bz);
-        return bz2.create('key', 'value', defaultGasParams())
-            .then(() => bz2.read('key'))
-            .then(value => expect(value).to.equal('value'));
+    it('should generate a valid account', () => {
+        return createNewBzClient(bz)
+            .then(bz2 =>
+                bz2.create('key', 'value', defaultGasParams())
+                    .then(() => bz2.read('key'))
+                    .then(value => expect(value).to.equal('value'))
+            );
     });
 });

@@ -17,18 +17,19 @@ describe('myKeys()', function () {
         .then(db => bz = db)
     );
 
-    it('should return a list of only keys that I own', async () => {
-        const bz2 = await createNewBzClient(bz);
-
-        return bz.withTransaction(() => {
-            bz.create('key1', 'value', defaultGasParams());
-            bz.create('key2', 'value', defaultGasParams());
-            bz2.create('diffKey', 'value', defaultGasParams());
-        })
-            .then(() => bz.myKeys())
-            .then(keys => expect(keys).to.deep.equal(['key1', 'key2']))
-            .then(() => bz2.myKeys())
-            .then(diffKeys => expect(diffKeys).to.deep.equal(['diffKey']));
+    it('should return a list of only keys that I own', () => {
+        return createNewBzClient(bz)
+            .then(bz2 =>
+                bz.withTransaction(() => {
+                    bz.create('key1', 'value', defaultGasParams());
+                    bz.create('key2', 'value', defaultGasParams());
+                    bz2.create('diffKey', 'value', defaultGasParams());
+                })
+                    .then(() => bz.myKeys())
+                    .then(keys => expect(keys).to.deep.equal(['key1', 'key2']))
+                    .then(() => bz2.myKeys())
+                    .then(diffKeys => expect(diffKeys).to.deep.equal(['diffKey']))
+            );
     });
 
     it('should not show keys that have been deleted', () => {
@@ -55,24 +56,25 @@ describe('myKeys()', function () {
             .then(keys => expect(keys).to.deep.equal(['key2']));
     });
 
-    it('should not show keys after a deleteAll', async () => {
-        const bz2 = await createNewBzClient(bz);
-
-        return bz.withTransaction(() => {
-            bz.create('key1', 'value', defaultGasParams());
-            bz.create('key2', 'value', defaultGasParams());
-            bz2.create('diffKey', 'value', defaultGasParams());
-        })
-            .then(() => bz.myKeys())
-            .then(keys => expect(keys).to.deep.equal(['key1', 'key2']))
-            .then(() => bz.deleteAll(defaultGasParams()))
-            .then(() => bz.myKeys())
-            .then(keys => expect(keys).to.deep.equal([]))
-            .then(() => bz2.myKeys())
-            .then(keys => expect(keys).to.deep.equal(['diffKey']))
-            .then(() => bz2.deleteAll(defaultGasParams()))
-            .then(() => bz2.myKeys())
-            .then(keys => expect(keys).to.deep.equal([]));
+    it('should not show keys after a deleteAll', () => {
+        return createNewBzClient(bz)
+            .then(bz2 =>
+                bz.withTransaction(() => {
+                    bz.create('key1', 'value', defaultGasParams());
+                    bz.create('key2', 'value', defaultGasParams());
+                    bz2.create('diffKey', 'value', defaultGasParams());
+                })
+                    .then(() => bz.myKeys())
+                    .then(keys => expect(keys).to.deep.equal(['key1', 'key2']))
+                    .then(() => bz.deleteAll(defaultGasParams()))
+                    .then(() => bz.myKeys())
+                    .then(keys => expect(keys).to.deep.equal([]))
+                    .then(() => bz2.myKeys())
+                    .then(keys => expect(keys).to.deep.equal(['diffKey']))
+                    .then(() => bz2.deleteAll(defaultGasParams()))
+                    .then(() => bz2.myKeys())
+                    .then(keys => expect(keys).to.deep.equal([]))
+            );
     });
 
     it('should show the right keys if you rename a key', () => {

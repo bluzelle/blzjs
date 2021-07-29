@@ -49,11 +49,12 @@ describe('delete()', function () {
             .catch(e => expect(e.error).to.equal('invalid request: Key does not exist: failed to execute message'));
     });
 
-    it('should handle parallel deletes', async () => {
-        const {keys} = await createKeys(bz, 5);
-
-        return Promise.all(keys.map(key => bz.delete(key, defaultGasParams())))
-            .then(() => bz.keys())
-            .then(keys => expect(keys).to.have.length(0));
+    it('should handle parallel deletes', () => {
+        return createKeys(bz, 5)
+            .then((pairs = {keys: [], values: []}) =>
+                Promise.all(pairs.keys.map(key => bz.delete(key, defaultGasParams())))
+                    .then(() => bz.keys())
+                    .then(keys => expect(keys).to.have.length(0))
+            );
     });
 });
