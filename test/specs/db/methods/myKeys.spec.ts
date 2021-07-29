@@ -54,4 +54,36 @@ describe('myKeys()', function () {
             .then(() => bz.myKeys())
             .then(keys => expect(keys).to.deep.equal(['key2']));
     });
+
+    it('should not show keys after a deleteAll', async () => {
+        const bz2 = await createNewBzClient(bz);
+
+        return bz.withTransaction(() => {
+            bz.create('key1', 'value', defaultGasParams());
+            bz.create('key2', 'value', defaultGasParams());
+            bz2.create('diffKey', 'value', defaultGasParams());
+        })
+            .then(() => bz.myKeys())
+            .then(keys => expect(keys).to.deep.equal(['key1', 'key2']))
+            .then(() => bz.deleteAll(defaultGasParams()))
+            .then(() => bz.myKeys())
+            .then(keys => expect(keys).to.deep.equal([]))
+            .then(() => bz2.myKeys())
+            .then(keys => expect(keys).to.deep.equal(['diffKey']))
+            .then(() => bz2.deleteAll(defaultGasParams()))
+            .then(() => bz2.myKeys())
+            .then(keys => expect(keys).to.deep.equal([]));
+    });
+
+    it('should show the right keys if you rename a key', () => {
+        return bz.withTransaction(() => {
+            bz.create('key1', 'value', defaultGasParams());
+            bz.create('key2', 'value', defaultGasParams());
+        })
+            .then(() => bz.myKeys())
+            .then(keys => expect(keys).to.deep.equal(['key1', 'key2']))
+            .then(() => bz.rename('key1', 'newKeyName', defaultGasParams()))
+            .then(() => bz.myKeys())
+            .then(keys => expect(keys).to.deep.equal(['key2', 'newKeyName']));
+    });
 });
