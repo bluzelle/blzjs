@@ -46,10 +46,9 @@ describe('keyValues()', function () {
         return createKeys(bz, 5)
             .then((pairs = {keys: [], values: []}) =>
                 pairs.keys.reduce((memo: any[], key, idx) => {
-                        memo.push({key, value: pairs.values[idx]})
-                        return memo
-                    }, []
-                )
+                    memo.push({key, value: pairs.values[idx]})
+                    return memo
+                }, [])
             )
             .then(expectedResults => bz.keyValues()
                 .then(keys => expect(keys).to.deep.equal(expectedResults))

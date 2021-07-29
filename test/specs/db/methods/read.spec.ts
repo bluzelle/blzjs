@@ -7,6 +7,7 @@ import {
 } from "../../../helpers/client-helpers";
 import {useChaiAsPromised} from "../../../helpers/global-helpers";
 import {expect} from "chai";
+import {bluzelle} from "../../../../client";
 
 describe('read()', function () {
     this.timeout(DEFAULT_TIMEOUT);
@@ -42,5 +43,27 @@ describe('read()', function () {
                 Promise.all(pairs.keys.map(key => bz.read(key)))
                     .then(testValues => expect(testValues).to.deep.equal(pairs.values))
             );
+    });
+
+    it('should work when the account has no transactions', () => {
+        const bz2 = bluzelle({
+            mnemonic: bz.generateBIP39Account(),
+            uuid: bz.uuid,
+            endpoint: bz.url
+        });
+        return bz.create('key', 'value', defaultGasParams())
+            .then(() => bz2.read('key'))
+            .then(value => expect(value).to.equal('value'));
+    });
+
+    it('should work when there is no mnemonic',  () => {
+        const bz2 = bluzelle({
+            mnemonic: '',
+            uuid: bz.uuid,
+            endpoint: bz.url
+        });
+        return bz.create('key', 'value', defaultGasParams())
+            .then(() => bz2.read('key'))
+            .then(value => expect(value).to.equal('value'));
     });
 });
