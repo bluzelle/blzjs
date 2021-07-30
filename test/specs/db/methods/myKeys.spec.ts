@@ -62,7 +62,8 @@ describe('myKeys()', function () {
                 bz.withTransaction(() => {
                     bz.create('key1', 'value', defaultGasParams());
                     bz.create('key2', 'value', defaultGasParams());
-                    bz2.create('diffKey', 'value', defaultGasParams());
+                    bz2.create('diffKey1', 'value', defaultGasParams());
+                    bz2.create('diffKey2', 'value', defaultGasParams());
                 })
                     .then(() => bz.myKeys())
                     .then(keys => expect(keys).to.deep.equal(['key1', 'key2']))
@@ -70,7 +71,7 @@ describe('myKeys()', function () {
                     .then(() => bz.myKeys())
                     .then(keys => expect(keys).to.deep.equal([]))
                     .then(() => bz2.myKeys())
-                    .then(keys => expect(keys).to.deep.equal(['diffKey']))
+                    .then(keys => expect(keys).to.deep.equal(['diffKey1', 'diffKey2']))
                     .then(() => bz2.deleteAll(defaultGasParams()))
                     .then(() => bz2.myKeys())
                     .then(keys => expect(keys).to.deep.equal([]))
