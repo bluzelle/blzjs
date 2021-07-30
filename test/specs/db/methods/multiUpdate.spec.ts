@@ -60,20 +60,17 @@ describe('multiUpdate()', function () {
 
     it('should update multiple values in a store', () => {
         return createKeys(bz, 3)
-            .then((pairs = {keys: [], values: []}) => {
-                    Promise.all(pairs.keys.map(keys => bz.multiUpdate([{
-                            key: keys[0], value: 'newValue'
-                        }, {
-                            key: keys[2], value: 'newValue'
-                        }], defaultGasParams()))
-                    );
-                    bz.read(pairs.keys[0])
-                        .then(value => expect(value).to.equal('newValue'));
-                    bz.read(pairs.keys[1])
-                        .then(values => expect(values).to.equal(pairs.values[1]));
-                    bz.read(pairs.keys[2])
-                        .then(values => expect(values).to.equal('value'));
-                }
-            );
+            .then(() => bz.multiUpdate([{
+                    key: 'key0', value: 'newValue'
+                }, {
+                    key: 'key2', value: 'newValue'
+                }], defaultGasParams())
+            )
+            .then(() => bz.read('key0'))
+            .then(value => expect(value).to.be.equal('newValue'))
+            .then(() => bz.read('key1'))
+            .then(value => expect(value).to.equal('value'))
+            .then(() => bz.read('key2'))
+            .then(value => expect(value).to.be.equal('newValue'));
     });
 });
