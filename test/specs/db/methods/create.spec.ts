@@ -165,7 +165,6 @@ describe('create()', function () {
 
     it('can handle multiple creates', () => {
         return createKeys(bz, 5)
-            .then(x => x)
             .then(() => Promise.all([
                 bz.read('key0'),
                 bz.read('key1'),
@@ -173,6 +172,6 @@ describe('create()', function () {
                 bz.read('key3'),
                 bz.read('key4')
             ]))
-            .then(responses => expect(responses).to.deep.equal(['value0', 'value1', 'value2', 'value3', 'value4']))
+            .then(responses => expect(responses).to.deep.equal(['value', 'value', 'value', 'value', 'value']))
     });
 });
