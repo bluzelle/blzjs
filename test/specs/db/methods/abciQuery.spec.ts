@@ -7,8 +7,10 @@ describe('abciQuery()', function () {
     let bz: APIAndSwarm;
 
     beforeEach(() => sentryWithClient()
-        .then(db => bz = db)
-        .then(() => useChaiAsPromised())
+        .then(db => {
+            bz = db
+            useChaiAsPromised()
+        })
     );
 
     it('should send a abci query', () => {

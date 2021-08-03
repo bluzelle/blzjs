@@ -14,8 +14,10 @@ describe('multiUpdate()', function () {
     let bz: APIAndSwarm;
 
     beforeEach(() => sentryWithClient()
-        .then(db => bz = db)
-        .then(() => useChaiAsPromised())
+        .then(db => {
+            bz = db
+            useChaiAsPromised()
+        })
     );
 
     it('should throw an error if a key does not exist', () => {

@@ -9,14 +9,15 @@ describe('transferTokensTo()', function () {
     let otherUser: API;
 
     beforeEach(() => sentryWithClient()
-        .then(db => bz = db)
-        .then(() => useChaiAsPromised())
-        .then(() => otherUser = bluzelle({
+        .then(db => {
+            bz = db
+            useChaiAsPromised()
+            otherUser = bluzelle({
                 mnemonic: bz.generateBIP39Account(),
                 endpoint: bz.url,
                 uuid: bz.uuid
             })
-        )
+        })
     );
 
     it('should transfer tokens to another account', () => {

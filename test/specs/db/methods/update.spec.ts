@@ -14,8 +14,10 @@ describe('update()', function () {
     let bz: APIAndSwarm;
 
     beforeEach(() => sentryWithClient()
-        .then(db => bz = db)
-        .then(() => useChaiAsPromised())
+        .then(db => {
+            bz = db
+            useChaiAsPromised()
+        })
     );
 
     it('should work with empty value', () => {
