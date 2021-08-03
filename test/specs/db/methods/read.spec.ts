@@ -14,8 +14,10 @@ describe('read()', function () {
     let bz: APIAndSwarm;
 
     beforeEach(() => sentryWithClient()
-        .then(db => bz = db)
-        .then(() => useChaiAsPromised())
+        .then(db => {
+            bz = db
+            useChaiAsPromised()
+        })
     );
 
     it('should immediately retrieve a value from the store', () => {
@@ -56,7 +58,7 @@ describe('read()', function () {
             .then(value => expect(value).to.equal('value'));
     });
 
-    it('should work when there is no mnemonic',  () => {
+    it('should work when there is no mnemonic', () => {
         const bz2 = bluzelle({
             mnemonic: '',
             uuid: bz.uuid,

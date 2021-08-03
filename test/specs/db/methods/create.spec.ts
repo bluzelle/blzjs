@@ -17,8 +17,10 @@ describe('create()', function () {
     let bz: APIAndSwarm;
 
     beforeEach(() => sentryWithClient()
-        .then(db => bz = db)
-        .then(() => useChaiAsPromised())
+        .then(db => {
+            bz = db
+            useChaiAsPromised()
+        })
     );
 
     it('should return chain info', () => {

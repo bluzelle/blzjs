@@ -13,8 +13,11 @@ describe('deleteAll()', function () {
     let bz: APIAndSwarm;
 
     beforeEach(() => sentryWithClient()
-        .then(db => bz = db)
-        .then(() => useChaiAsPromised()));
+        .then(db => {
+            bz = db
+            useChaiAsPromised()
+        })
+    );
 
     it('should do nothing if there are no keys', () => {
         return bz.count()
