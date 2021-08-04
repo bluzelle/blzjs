@@ -49,16 +49,11 @@ describe('txread()', function () {
             .catch(e => expect(e.error).to.equal('invalid request: Key does not exist: failed to execute message'));
     });
 
-    //Ask Scott about this test
+    //Rearrange/test
     it('should handle parallel reads', () => {
         return createKeys(bz, 3)
-            .then(() => Promise.all([
-                    bz.txRead('key0', defaultGasParams())
-                        .then(tx => expect(tx?.value).to.equal('value')),
-                    bz.txRead('key1', defaultGasParams())
-                        .then(tx => expect(tx?.value).to.equal('value')),
-                    bz.txRead('key2', defaultGasParams())
-                        .then(tx => expect(tx?.value).to.equal('value'))
+            .then(keys => Promise.all([
+                    keys.map(key => bz.txRead(key, defaultGasParams()).then(x => x?.value))
                 ])
             );
         // const {keys, values} = await createKeys(bz, 5);
