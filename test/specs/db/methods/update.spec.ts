@@ -52,7 +52,6 @@ describe('update()', function () {
             .catch(e => expect(e.error).to.equal('invalid request: Key does not exist: failed to execute message'));
     });
 
-    // Ask Scott about this test
     it.skip('should charge if you increase the size of the data', async () => {
         const leaseRate10 = 2.9615511;
         const leaseRate20 = 2.7949135;

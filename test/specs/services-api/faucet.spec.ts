@@ -43,7 +43,6 @@ describe('faucet', function () {
             .then(bnt => expect(bnt).to.equal(3000));
     });
 
-    //Ask Scott, this seems incorrect: returning 5000 rather than 3000
     it('should not add tokens a second time when requests are made back to back', async () => {
         const mnemonic = bz.generateBIP39Account();
         const address = mnemonicToAddress(mnemonic);
