@@ -15,6 +15,7 @@ import {SwarmConfig, SentryTypes, PruningTypes} from 'daemon-manager/lib/SwarmCo
 import {Daemon} from 'daemon-manager/lib/Daemon'
 import waitUntil from 'async-wait-until';
 import {passThrough, passThroughAwait} from "promise-passthrough";
+
 import {Some} from "monet";
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
@@ -92,6 +93,24 @@ const checkFileReplication = (daemon: Daemon, hash: string, fileSize: number): P
 const checkInfoFileReplication = (daemon: Daemon, hash: string): Promise<Daemon> =>
     waitUntil(() =>
             daemon.exec(`ls .blzd/nft/${hash}.info`)
+                .then(x => /No such file/.test(x) === false)
+        , {timeout: 50000}
+    )
+        .then(() => console.log("Metadata file replicated on ", daemon.getName()))
+        .then(() => daemon);
+
+const checkUpload = (daemon: Daemon, hash: string, vendor: string): Promise<Daemon> =>
+    waitUntil(() =>
+            daemon.exec(`ls .blzd/nft-upload/${vendor}/${hash}*`)
+                .then(x => /No such file/.test(x) === false)
+        , {timeout: 50000}
+    )
+        .then(() => console.log("Files were uploaded", daemon.getName()))
+        .then(() => daemon);
+
+const checkVendorInfoFileReplication = (daemon: Daemon, vendor: string, id: string): Promise<Daemon> =>
+    waitUntil(() =>
+            daemon.exec(`ls .blzd/nft/${vendor}-${id}.info`)
                 .then(x => /No such file/.test(x) === false)
         , {timeout: 50000}
     )
@@ -227,7 +246,7 @@ describe("Store and retriving a NFT", function () {
             const mintedBz = await createMintedBz()
 
             const id = Date.now().toString()
-            await  uploadNft(getSentryUrl(), new TextEncoder().encode('new nft'), 'binance')
+            await uploadNft(getSentryUrl(), new TextEncoder().encode('new nft'), 'binance')
                 .then(passThroughAwait(({hash}) => mintedBz.createNft(id, hash, "binance", "myUserId", 'text/txt', "", defaultGasParams())))
                 .then(({hash}) =>
                     Promise.all(swarm.getDaemons()
@@ -359,8 +378,10 @@ describe("Store and retriving a NFT", function () {
                 .then(() => bz.createNft(id, hashBinance, "mintable", "myUserId", 'text/plain', "", defaultGasParams()))
                 .then(() => Promise.all(swarm.getDaemons()
                     .map(d =>
-                            checkFileReplication(d, hashBinance, 'identical nft'.length)
-                                .then(() => checkInfoFileReplication(d, hashBinance))
+                        checkFileReplication(d, hashBinance, 'identical nft'.length)
+                            .then(() => checkInfoFileReplication(d, hashBinance))
+                            .then(() => checkVendorInfoFileReplication(d, 'binance', id))
+                            .then(() => checkVendorInfoFileReplication(d, 'mintable', id))
                     )
                 ))
                 .then(() => Promise.all(swarm.getSentries('client')
@@ -465,6 +486,111 @@ describe("Store and retriving a NFT", function () {
                 )
         });
 
+        it('should handle a large number of uploads', () => {
+            const id = Date.now().toString();
+            return Promise.all(times(200).map(idx =>
+                    uploadNft(getSentryUrl(), encodeData(`nft-${idx}`), "mintable")
+                        .then(({hash}) => hash)
+                )
+            )
+                .then(passThroughAwait(hashArray =>
+                    Promise.all(hashArray.map((hash, idx) =>
+                            Some(swarm.getSentries()[0])
+                                .map(sentry => checkUpload(sentry, hash, 'mintable'))
+                                .join()
+                        )
+                    )
+                ))
+        });
+
+        it('should handle large number of creates from multiple users', () => {
+            const id = Date.now().toString();
+            return Promise.all(times(2).map(idx =>
+                    uploadNft(getSentryUrl(), encodeData(`nft-${idx}`), "mintable")
+                        .then(passThroughAwait(({hash}) =>
+                            createMintedBz()
+                                .then(newBz => newBz.createNft(
+                                    id,
+                                    hash,
+                                    "mintable",
+                                    "myUserId",
+                                    "text/plain",
+                                    "",
+                                    defaultGasParams()
+                                ))))
+                        .then(({hash}) => hash)
+                )
+            )
+                .then(passThroughAwait(hashArray =>
+                    Promise.all(hashArray.map((hash, idx) =>
+                            Promise.all(swarm.getDaemons().map(daemon =>
+                                    checkFileReplication(daemon, hash, `nft-${idx}`.length)
+                                        .then(() => checkInfoFileReplication(daemon, hash))
+                                )
+                            )
+                                .then(() => Promise.all(swarm.getSentries('client').map(sentry =>
+                                    checkHashEndpoint(sentry, hash, `nft-${idx}`)
+                                        .then(sentry => checkVendorIdEndpoint(sentry, id, 'mintable', `nft-${idx}`))
+                                )))
+                        )
+                    )
+                ))
+        });
+
+        it('should replicate a large number of files', () => {
+            const id = Date.now().toString();
+            return Promise.all(times(200).map(idx =>
+                    uploadNft(getSentryUrl(), encodeData(`nft-${idx}`), "mintable")
+                        .then(passThroughAwait(({hash}) => bz.createNft(
+                            id,
+                            hash,
+                            "mintable",
+                            "myUserId",
+                            "text/plain",
+                            "",
+                            defaultGasParams()
+                        )))
+                        .then(({hash}) => hash)
+                )
+            )
+                .then(passThroughAwait(hashArray =>
+                    Promise.all(hashArray.map((hash, idx) =>
+                            Promise.all(swarm.getDaemons().map(daemon =>
+                                    checkFileReplication(daemon, hash, `nft-${idx}`.length)
+                                        .then(() => checkInfoFileReplication(daemon, hash))
+                                )
+                            )
+                                .then(() => Promise.all(swarm.getSentries('client').map(sentry =>
+                                    checkHashEndpoint(sentry, hash, `nft-${idx}`)
+                                        .then(sentry => checkVendorIdEndpoint(sentry, id, 'mintable', `nft-${idx}`))
+                                )))
+                        )
+                    )
+                ))
+        });
+
+        it('should handle large number of uploads of large files', () => {
+            const id = Date.now().toString();
+            return Promise.all(times(200).map(idx =>
+                    uploadNft(getSentryUrl(), getLargePayload(idx), "mintable")
+                        .then(({hash}) => hash)
+                )
+            )
+                .then(passThroughAwait(hashArray =>
+                    Promise.all(hashArray.map((hash, idx) =>
+                            Some(swarm.getSentries()[0])
+                                .map(sentry => checkUpload(sentry, hash, 'mintable'))
+                                .join()
+                        )
+                    )
+                ))
+        });
+
+        it('should do parallel crud creates', () => {
+            return Promise.all(times(2).map(idx => bz.create(idx.toString(), "someValue", defaultGasParams())))
+                .then(() => expect('1').to.equal('someValue'))
+        });
+
     });
 
 
@@ -518,8 +644,7 @@ describe("Store and retriving a NFT", function () {
             '54.179.6.127',
             '3.37.164.193',
             '3.37.151.39',
-            'ls' +
-            '',
+            '3.36.7.190',
             '18.139.187.86'
         ].map((ip, idx) => ({
             host: ip,
