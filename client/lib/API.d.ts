@@ -71,6 +71,7 @@ export declare class API {
     isExistingAccount(): Promise<boolean>;
     count(): Promise<number>;
     create(key: string, value: string, gasInfo: GasInfo, leaseInfo?: LeaseInfo): Promise<TxResult>;
+    createNft(id: string, hash: string, vendor: string, userId: string, mime: string, meta: string, gasInfo: GasInfo): Promise<string>;
     createProposal(amount: number, title: string, description: string, gasInfo: GasInfo): Promise<{
         id: any;
     }>;

@@ -22,6 +22,16 @@ export interface CreateMessage {
     UUID: string
 }
 
+export interface CreateNftMessage {
+    Id:      string
+    Hash:    string
+    Vendor: string
+    UserId: string
+    Creator: string
+    Mime:    string
+    Meta:    string
+}
+
 export interface GetLeaseMessage {
     Key: string
     Owner: string
@@ -115,6 +125,16 @@ export interface DeleteMessage {
 export interface DeleteAllMessage {
     Owner: string
     UUID: string
+}
+
+export interface Nft {
+    Creator: string,
+    Id:      string,
+    Vendor: string,
+    UserId: string,
+    Hash:    string,
+    Meta:    string,
+    Mime:    string,
 }
 
 
