@@ -1,8 +1,11 @@
+import {Swarm} from '@bluzelle/testing/node_modules/curium-control/daemon-manager/lib/Swarm';
+import {SwarmConfig} from '@bluzelle/testing/node_modules/curium-control/daemon-manager/src/SwarmConfig';
 import {DEFAULT_TIMEOUT, defaultGasParams, sentryWithClient} from "../../../helpers/client-helpers";
 import {expect} from "chai";
 import {range} from "lodash";
 import {passThroughAwait} from "promise-passthrough";
 import {bluzelle} from "../../../../client";
+import {getSwarm} from "@bluzelle/testing/lib/helpers/swarmHelpers";
 
 
 // Ask Scott about this test
@@ -11,6 +14,8 @@ describe('high-load-text', function () {
 
     // it('should store all of the keys', async () => {
     //     const bz = await sentryWithClient();
+    //     const swarm = await getSwarm();
+    //     const valoper = await swarm.getValidators()[0].getValoper();
     //
     //     await bz.withTransaction(() =>
     //         range(0, 100).map(l => bz.create(`key${l}`, 'value'.repeat(l), defaultGasParams()))
@@ -19,7 +24,7 @@ describe('high-load-text', function () {
     //         range(100000, 200000, 20000).map(l => bz.create(`key${l}`, 'value'.repeat(l), defaultGasParams()))
     //     );
     //
-    //     const swarm2: Swarm | undefined | void = await bz.swarm?.export()
+    //     const swarm2: Swarm | undefined | void = await bz.swarm?.export({whitelist: [valoper]})
     //         .then(passThroughAwait(() => Swarm.stopDaemons(bz.swarm?.getSwarmConfig() || ({} as SwarmConfig))))
     //         .then(genesis =>
     //             new Swarm(bz.swarm?.getSwarmConfig() || ({} as SwarmConfig)).fork(genesis)

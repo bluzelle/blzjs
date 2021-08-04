@@ -1,5 +1,5 @@
-import {APIAndSwarm, createKeys, DEFAULT_TIMEOUT, defaultGasParams, sentryWithClient} from "../helpers/client-helpers";
-import {useChaiAsPromised} from "../helpers/global-helpers";
+import {APIAndSwarm, createKeys, DEFAULT_TIMEOUT, defaultGasParams, sentryWithClient} from "../../helpers/client-helpers";
+import {useChaiAsPromised} from "../../helpers/global-helpers";
 import {expect} from "chai";
 
 describe('transactions', function () {
