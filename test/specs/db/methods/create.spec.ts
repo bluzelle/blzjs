@@ -11,7 +11,6 @@ import * as fs from 'fs';
 import {getPrintableChars} from "../../../helpers/test-helpers";
 import {bluzelle} from "../../../../client";
 
-
 describe('create()', function () {
     this.timeout(DEFAULT_TIMEOUT);
     let bz: APIAndSwarm;

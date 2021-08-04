@@ -1,5 +1,5 @@
-import {APIAndSwarm, DEFAULT_TIMEOUT, sentryWithClient} from "../helpers/client-helpers";
-import {useChaiAsPromised} from "../helpers/global-helpers";
+import {APIAndSwarm, DEFAULT_TIMEOUT, sentryWithClient} from "../../helpers/client-helpers";
+import {useChaiAsPromised} from "../../helpers/global-helpers";
 
 describe('connection tests', function () {
     this.timeout(DEFAULT_TIMEOUT);
