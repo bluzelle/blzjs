@@ -15,7 +15,7 @@ import {SwarmConfig, SentryTypes, PruningTypes} from 'daemon-manager/lib/SwarmCo
 import {Daemon} from 'daemon-manager/lib/Daemon'
 import waitUntil from 'async-wait-until';
 import {passThrough, passThroughAwait} from "promise-passthrough";
-
+import {newBzClient} from "../../../helpers/client-helpers";
 import {Some} from "monet";
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
