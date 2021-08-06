@@ -12,6 +12,7 @@
     "@types/mime-types": "^2.1.0",
     "@types/node": "^15.0.2",
     "@types/node-fetch": "^2.5.12",
+    "bluzelle": "^3.0.8",
     "delay": "^5.0.0",
     "events": "^3.3.0",
     "js-sha256": "^0.9.0",

@@ -2,9 +2,8 @@ import {bluzelle, API} from "bluzelle"
 import {memoize} from 'lodash'
 import {passThrough, passThroughAwait} from "promise-passthrough";
 import delay from "delay";
-import {SigningAgents} from "bluzelle/lib/API";
 
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+
 
 
 export const getUrl = (prodPort: number, devPort: number, path: string = '') =>
@@ -19,8 +18,6 @@ export const getSdk = memoize<() => Promise<API>>(() =>
                 mnemonic,
                 endpoint: getUrl(1317, 1317),
                 uuid: Date.now().toString(),
-                legacyCoin: true,
-                signing_agent: SigningAgents.INTERNAL
             })
         )
 );
@@ -32,11 +29,7 @@ const getMnemonic = (): Promise<string> =>
             body: new Uint8Array(resp.buf),
             contentType: resp.x.headers.get('content-type') || ''
         }))
-        .then(passThrough(({body, contentType}) => console.log("RESPONSE FROM MINTING ENDPOINT", new TextDecoder().decode(body))))
         .then(({body}) => new TextDecoder().decode(body))
         .then(x => JSON.parse(x))
-        .then(x => {
-            console.log(x.mnemonic)
-            return x.mnemonic
-        })
+        .then(x => x.mnemonic)
         .then(passThrough(mnemonic => console.log('MNEMONIC: ', mnemonic)))
