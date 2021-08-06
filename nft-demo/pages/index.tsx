@@ -74,7 +74,7 @@ const NodeLink: React.FC<{ id: string, vendor: string , hash: string}> = ({id, v
             </a>
         </div>
         <div style={{padding: 5}}>
-            <a href={`https://b.client.sentry.testnet.private.bluzelle.com:1317/nft/${vendor}/${id}`} target="_blank">
+            <a href={`https://b.client.sentry.testnet.public.bluzelle.com:1317/nft/${vendor}/${id}`} target="_blank">
                 https://b.client.sentry.testnet.public.bluzelle.com:1317/nft/{vendor}/{id}
             </a>
         </div>
