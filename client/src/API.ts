@@ -1,5 +1,3 @@
-import {passThrough, passThroughAwait} from "promise-passthrough";
-
 global.fetch || (global.fetch = require('node-fetch'));
 
 
@@ -24,15 +22,15 @@ import {
 } from "./services/CommunicationService";
 import {
     CountMessage,
-    CreateMessage,
+    CreateMessage, CreateNftMessage,
     DeleteAllMessage,
-    DeleteMessage, GetLeaseMessage, HasMessage, KeysMessage, KeyValuesMessage, MintMessage, MultiUpdateMessage,
+    DeleteMessage, GetLeaseMessage, HasMessage, KeysMessage, KeyValuesMessage, MintMessage, MultiUpdateMessage, Nft,
     ReadMessage, RenameMessage, RenewLeaseAllMessage,
     RenewLeaseMessage, TransferTokensMessage, UpdateMessage, UpsertMessage
 } from "./types/Message";
 import {
     MessageResponse,
-    TxCountResponse,
+    TxCountResponse, TxCreateNftResponse,
     TxGetLeaseResponse,
     TxHasResponse,
     TxKeysResponse, TxKeyValuesResponse,
@@ -52,7 +50,9 @@ import {
 import {assert} from "./Assert";
 import {entropyToMnemonic, generateMnemonic} from "bip39";
 
+
 const cosmosjs = require('@cosmostation/cosmosjs');
+
 
 const BLOCK_TIME_IN_SECONDS = 5.5;
 
@@ -119,55 +119,20 @@ export const mnemonicToAddress = (mnemonic: string): string => {
     return c.getAddress(mnemonic);
 }
 
-
-export type SigningAgentFn = (service: any, cosmos: any, stdSignMsg: any) => Promise<any>
-export const SigningAgents = {
-    EXTENSION: (service: any, cosmos: any, stdSignMsg: any) => {
-        return getCosmos(service.api)
-            .then(passThroughAwait(cosmos => window.keplr?.enable(cosmos.chainId)))
-            .then(cosmos => (window as any).keplr.getOfflineSigner(cosmos.chainId))
-            .then(signer => signer?.signAmino(service.api.address, stdSignMsg.json))
-            .then(fixupForBroadcast('block'))
-
-    },
-    INTERNAL: (service: any, cosmos: any, stdSignMsg: any) => Promise.resolve(cosmos.sign(stdSignMsg, cosmos.getECPairPriv(service.api.mnemonic), 'block'))
-}
-
-
-const fixupForBroadcast = (modeType: string) => (signed: any) => ({
-    "tx": {
-        "msg": signed.signed.msgs,
-        "fee": signed.signed.fee,
-        "signatures": [
-            {
-                "account_number": signed.signed.account_number,
-                "sequence": signed.signed.sequence,
-                "signature": signed.signature.signature,
-                "pub_key":
-                signed.signature.pub_key
-            }
-        ],
-        "memo": signed.signed.memo
-    },
-    "mode": modeType
-});
-
-
 export class API {
     cosmos: any;
     address: string;
     mnemonic: string;
     chainId: string = '';
-    signingAgent: SigningAgentFn;
     uuid: string;
     url: string;
     config: BluzelleConfig
     communicationService: CommunicationService
 
+
     constructor(config: BluzelleConfig) {
         this.config = config;
         this.mnemonic = config.mnemonic;
-        this.signingAgent = config.signing_agent || SigningAgents.INTERNAL;
         this.address = this.mnemonic ? mnemonicToAddress(this.mnemonic) : '';
         this.uuid = config.uuid;
         this.url = config.endpoint;
@@ -219,6 +184,22 @@ export class API {
             }
         }, gasInfo)
             .then(standardTxResult)
+    }
+
+    createNft(id: string, hash: string, vendor: string, userId: string, mime: string, meta: string, gasInfo: GasInfo): Promise<string> {
+        return sendMessage<CreateNftMessage, TxCreateNftResponse>(this.communicationService, {
+            type: "nft/CreateNft",
+            value: {
+                Id:     id,
+                Hash:    hash,
+                Vendor: vendor,
+                UserId: userId,
+                Creator: this.address,
+                Mime:    mime,
+                Meta:    meta
+            }
+        }, gasInfo)
+            .then(resp => resp.data[0].Id)
     }
 
     createProposal(amount: number, title: string, description: string, gasInfo: GasInfo) {

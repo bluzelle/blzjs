@@ -54,31 +54,12 @@ interface TransactionResponse {
     timestamp: string;
 }
 export declare const mnemonicToAddress: (mnemonic: string) => string;
-export declare type SigningAgentFn = (service: any, cosmos: any, stdSignMsg: any) => Promise<any>;
-export declare const SigningAgents: {
-    EXTENSION: (service: any, cosmos: any, stdSignMsg: any) => Promise<{
-        tx: {
-            msg: any;
-            fee: any;
-            signatures: {
-                account_number: any;
-                sequence: any;
-                signature: any;
-                pub_key: any;
-            }[];
-            memo: any;
-        };
-        mode: string;
-    }>;
-    INTERNAL: (service: any, cosmos: any, stdSignMsg: any) => Promise<any>;
-};
 export declare class API {
     #private;
     cosmos: any;
     address: string;
     mnemonic: string;
     chainId: string;
-    signingAgent: SigningAgentFn;
     uuid: string;
     url: string;
     config: BluzelleConfig;
@@ -90,6 +71,7 @@ export declare class API {
     isExistingAccount(): Promise<boolean>;
     count(): Promise<number>;
     create(key: string, value: string, gasInfo: GasInfo, leaseInfo?: LeaseInfo): Promise<TxResult>;
+    createNft(id: string, hash: string, vendor: string, userId: string, mime: string, meta: string, gasInfo: GasInfo): Promise<string>;
     createProposal(amount: number, title: string, description: string, gasInfo: GasInfo): Promise<{
         id: any;
     }>;

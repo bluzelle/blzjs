@@ -7,8 +7,7 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
 };
 var _abciQuery, _query;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.API = exports.SigningAgents = exports.mnemonicToAddress = void 0;
-const promise_passthrough_1 = require("promise-passthrough");
+exports.API = exports.mnemonicToAddress = void 0;
 global.fetch || (global.fetch = require('node-fetch'));
 const CommunicationService_1 = require("./services/CommunicationService");
 const lodash_1 = require("lodash");
@@ -23,32 +22,6 @@ const mnemonicToAddress = (mnemonic) => {
     return c.getAddress(mnemonic);
 };
 exports.mnemonicToAddress = mnemonicToAddress;
-exports.SigningAgents = {
-    EXTENSION: (service, cosmos, stdSignMsg) => {
-        return CommunicationService_1.getCosmos(service.api)
-            .then(promise_passthrough_1.passThroughAwait(cosmos => { var _a; return (_a = window.keplr) === null || _a === void 0 ? void 0 : _a.enable(cosmos.chainId); }))
-            .then(cosmos => window.keplr.getOfflineSigner(cosmos.chainId))
-            .then(signer => signer === null || signer === void 0 ? void 0 : signer.signAmino(service.api.address, stdSignMsg.json))
-            .then(fixupForBroadcast('block'));
-    },
-    INTERNAL: (service, cosmos, stdSignMsg) => Promise.resolve(cosmos.sign(stdSignMsg, cosmos.getECPairPriv(service.api.mnemonic), 'block'))
-};
-const fixupForBroadcast = (modeType) => (signed) => ({
-    "tx": {
-        "msg": signed.signed.msgs,
-        "fee": signed.signed.fee,
-        "signatures": [
-            {
-                "account_number": signed.signed.account_number,
-                "sequence": signed.signed.sequence,
-                "signature": signed.signature.signature,
-                "pub_key": signed.signature.pub_key
-            }
-        ],
-        "memo": signed.signed.memo
-    },
-    "mode": modeType
-});
 class API {
     constructor(config) {
         this.chainId = '';
@@ -92,7 +65,6 @@ class API {
         }));
         this.config = config;
         this.mnemonic = config.mnemonic;
-        this.signingAgent = config.signing_agent || exports.SigningAgents.INTERNAL;
         this.address = this.mnemonic ? exports.mnemonicToAddress(this.mnemonic) : '';
         this.uuid = config.uuid;
         this.url = config.endpoint;
@@ -136,6 +108,21 @@ class API {
             }
         }, gasInfo)
             .then(standardTxResult);
+    }
+    createNft(id, hash, vendor, userId, mime, meta, gasInfo) {
+        return CommunicationService_1.sendMessage(this.communicationService, {
+            type: "nft/CreateNft",
+            value: {
+                Id: id,
+                Hash: hash,
+                Vendor: vendor,
+                UserId: userId,
+                Creator: this.address,
+                Mime: mime,
+                Meta: meta
+            }
+        }, gasInfo)
+            .then(resp => resp.data[0].Id);
     }
     createProposal(amount, title, description, gasInfo) {
         return this.sendMessage({

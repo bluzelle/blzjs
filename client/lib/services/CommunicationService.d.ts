@@ -2,11 +2,6 @@ import { GasInfo } from "../types/GasInfo";
 import { API } from "../API";
 import { MessageResponse } from "../types/MessageResponse";
 import { Message } from "../types/Message";
-import { Window as KeplrWindow } from '@keplr-wallet/types';
-declare global {
-    interface Window extends KeplrWindow {
-    }
-}
 interface MessageQueueItem<T> {
     message: Message<T>;
     gasInfo: GasInfo;
