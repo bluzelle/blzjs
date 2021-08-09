@@ -5,12 +5,19 @@ import {MessageResponse} from "../types/MessageResponse";
 import {Message} from "../types/Message";
 import {memoize, takeWhile, without} from 'lodash'
 import {passThrough} from "promise-passthrough";
-import delay from "delay";
+import delay from "delay"
+import {Window as KeplrWindow} from '@keplr-wallet/types';
+
+
 
 const cosmosjs = require('@cosmostation/cosmosjs');
 
 
 const TOKEN_NAME = 'ubnt';
+
+declare global {
+    interface Window extends KeplrWindow {}
+}
 
 interface MessageQueueItem<T> {
     message: Message<T>
@@ -126,9 +133,9 @@ const transmitTransaction = (service: CommunicationService, messages: MessageQue
                 sequence: data.seq
             })
                 .map(cosmos.newStdMsg.bind(cosmos))
-                .map((stdSignMsg: any) => cosmos.sign(stdSignMsg, cosmos.getECPairPriv(service.api.mnemonic), 'block'))
-                .map(cosmos.broadcast.bind(cosmos))
+                .map((stdSignMsg: any) => (service.api.config.signing_agent && service.api.config.signing_agent(service, cosmos, stdSignMsg)) as Promise<any>)
                 .map((p: any) => p
+                    .then(cosmos.broadcast.bind(cosmos))
                     .then(convertDataFromHexToString)
                     .then(convertDataToObject)
                     .then(checkErrors)

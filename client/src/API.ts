@@ -1,3 +1,5 @@
+import {passThrough, passThroughAwait} from "promise-passthrough";
+
 global.fetch || (global.fetch = require('node-fetch'));
 
 
@@ -119,20 +121,55 @@ export const mnemonicToAddress = (mnemonic: string): string => {
     return c.getAddress(mnemonic);
 }
 
+
+export type SigningAgentFn = (service: any, cosmos: any, stdSignMsg: any) => Promise<any>
+export const SigningAgents = {
+    EXTENSION: (service: any, cosmos: any, stdSignMsg: any) => {
+        return getCosmos(service.api)
+            .then(passThroughAwait(cosmos => window.keplr?.enable(cosmos.chainId)))
+            .then(cosmos => (window as any).keplr.getOfflineSigner(cosmos.chainId))
+            .then(signer => signer?.signAmino(service.api.address, stdSignMsg.json))
+            .then(fixupForBroadcast('block'))
+
+    },
+    INTERNAL: (service: any, cosmos: any, stdSignMsg: any) => Promise.resolve(cosmos.sign(stdSignMsg, cosmos.getECPairPriv(service.api.mnemonic), 'block'))
+}
+
+
+const fixupForBroadcast = (modeType: string) => (signed: any) => ({
+    "tx": {
+        "msg": signed.signed.msgs,
+        "fee": signed.signed.fee,
+        "signatures": [
+            {
+                "account_number": signed.signed.account_number,
+                "sequence": signed.signed.sequence,
+                "signature": signed.signature.signature,
+                "pub_key":
+                signed.signature.pub_key
+            }
+        ],
+        "memo": signed.signed.memo
+    },
+    "mode": modeType
+});
+
+
 export class API {
     cosmos: any;
     address: string;
     mnemonic: string;
     chainId: string = '';
+    signingAgent: SigningAgentFn;
     uuid: string;
     url: string;
     config: BluzelleConfig
     communicationService: CommunicationService
 
-
     constructor(config: BluzelleConfig) {
         this.config = config;
         this.mnemonic = config.mnemonic;
+        this.signingAgent = config.signing_agent || SigningAgents.INTERNAL;
         this.address = this.mnemonic ? mnemonicToAddress(this.mnemonic) : '';
         this.uuid = config.uuid;
         this.url = config.endpoint;

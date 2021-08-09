@@ -1,12 +1,10 @@
 import {expect} from 'chai'
 
 global.fetch = require('node-fetch')
-import {createHash} from 'crypto'
 import {API} from "../../../../lib/API";
-import {bluzelle} from "../../../../lib/bluzelle-node";
+import {bluzelle, uploadNft} from "../../../../lib/bluzelle-node";
 import {memoize, times} from "lodash"
 import {GasInfo} from "../../../../lib/types/GasInfo";
-import {uploadNft} from "../../../../lib/bluzelle-node";
 import fs, {promises} from "fs";
 import path from "path";
 import delay from "delay";
@@ -453,18 +451,19 @@ describe("Store and retriving a NFT", function () {
                 )
         });
 
-        it('should allow one client to facilitate createNft() in parallel to the same sentry', async () => {
+
+
+        it('should allow one client to facilitate two createNft() in parallel to the same sentry', async () => {
             const id = Date.now().toString()
             await Promise.all([
                 uploadNft(getSentryUrl(), encodeData('binance nft'), 'binance'),
                 uploadNft(getSentryUrl(), encodeData('mintable nft'), 'mintable')]
             )
                 .then(passThroughAwait(([binanceResp, mintableResp]) =>
-                    Promise.all([
+                    bz.withTransaction(() => {
                         bz.createNft(id, binanceResp.hash, "binance", "myUserId", 'text/plain', "", defaultGasParams()),
-                        bz.createNft(id, mintableResp.hash, "mintable", "myUserId", 'text/plain', "", defaultGasParams())]
-                    )
-                ))
+                        bz.createNft(id, mintableResp.hash, "mintable", "myUserId", 'text/plain', "", defaultGasParams())}
+                    )))
                 .then(passThroughAwait(([binanceResp, mintableResp]) =>
                     Promise.all(swarm.getDaemons().map(daemon =>
                             checkFileReplication(daemon, binanceResp.hash, 'binance nft'.length)
@@ -482,6 +481,41 @@ describe("Store and retriving a NFT", function () {
                                 .then(sentry => checkVendorIdEndpoint(sentry, id, 'mintable', 'mintable nft'))
                         )
                     )
+                )
+        });
+
+        it('should allow one client to send many createNft() in parallel to the same sentry', async () => {
+            const id = Date.now().toString()
+            await Promise.all(
+                times(2).map((idx) =>
+                    uploadNft(getSentryUrl(), encodeData(`nft-${idx}`), "mintable")
+                )
+            )
+                .then(passThroughAwait((hashResps) =>
+                    bz.withTransaction(() =>
+                        hashResps.map((hashResp) =>
+                            bz.createNft(id, hashResp.hash, "mintable", "myUserId", 'text/plain', "", defaultGasParams())
+                        )
+                    )
+                ))
+                .then(passThroughAwait((hashResps) =>
+                    Promise.all(hashResps.map((hashResp, idx) =>
+                        Promise.all(swarm.getDaemons().map(daemon =>
+                                checkFileReplication(daemon, hashResp.hash, `nft-${idx}`.length)
+                                    .then(() => checkInfoFileReplication(daemon, hashResp.hash))
+                            )
+                        )
+                    ))
+
+                ))
+                .then(hashResps =>
+                    Promise.all(hashResps.map((hashResp, idx) =>
+                        Promise.all(swarm.getSentries('client').map(sentry =>
+                                checkHashEndpoint(sentry, hashResp.hash, `nft-${idx}`)
+                                    .then(sentry => checkVendorIdEndpoint(sentry, id, 'mintable', `nft-${idx}`))
+                            )
+                        )
+                    ))
                 )
         });
 
