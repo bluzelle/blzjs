@@ -9,7 +9,7 @@
     "bluzelle": "^2.0.1",
     "bootstrap": "^4.4.1",
     "date-fns": "^2.12.0",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.21",
     "mobx": "^5.15.4",
     "mobx-react": "^6.2.2",
     "next": "^9.3.6",
