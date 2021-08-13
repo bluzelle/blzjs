@@ -24,15 +24,15 @@ import {
 } from "./services/CommunicationService";
 import {
     CountMessage,
-    CreateMessage,
+    CreateMessage, CreateNftMessage,
     DeleteAllMessage,
-    DeleteMessage, GetLeaseMessage, HasMessage, KeysMessage, KeyValuesMessage, MintMessage, MultiUpdateMessage,
+    DeleteMessage, GetLeaseMessage, HasMessage, KeysMessage, KeyValuesMessage, MintMessage, MultiUpdateMessage, Nft,
     ReadMessage, RenameMessage, RenewLeaseAllMessage,
     RenewLeaseMessage, TransferTokensMessage, UpdateMessage, UpsertMessage
 } from "./types/Message";
 import {
     MessageResponse,
-    TxCountResponse,
+    TxCountResponse, TxCreateNftResponse,
     TxGetLeaseResponse,
     TxHasResponse,
     TxKeysResponse, TxKeyValuesResponse,
@@ -219,6 +219,22 @@ export class API {
             }
         }, gasInfo)
             .then(standardTxResult)
+    }
+
+    createNft(id: string, hash: string, vendor: string, userId: string, mime: string, meta: string, gasInfo: GasInfo): Promise<string> {
+        return sendMessage<CreateNftMessage, TxCreateNftResponse>(this.communicationService, {
+            type: "nft/CreateNft",
+            value: {
+                Id:     id,
+                Hash:    hash,
+                Vendor: vendor,
+                UserId: userId,
+                Creator: this.address,
+                Mime:    mime,
+                Meta:    meta
+            }
+        }, gasInfo)
+            .then(resp => resp.data[0].Id)
     }
 
     createProposal(amount: number, title: string, description: string, gasInfo: GasInfo) {

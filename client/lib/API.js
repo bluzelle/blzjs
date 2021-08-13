@@ -137,6 +137,21 @@ class API {
         }, gasInfo)
             .then(standardTxResult);
     }
+    createNft(id, hash, vendor, userId, mime, meta, gasInfo) {
+        return CommunicationService_1.sendMessage(this.communicationService, {
+            type: "nft/CreateNft",
+            value: {
+                Id: id,
+                Hash: hash,
+                Vendor: vendor,
+                UserId: userId,
+                Creator: this.address,
+                Mime: mime,
+                Meta: meta
+            }
+        }, gasInfo)
+            .then(resp => resp.data[0].Id);
+    }
     createProposal(amount, title, description, gasInfo) {
         return this.sendMessage({
             "type": "cosmos-sdk/MsgSubmitProposal",
