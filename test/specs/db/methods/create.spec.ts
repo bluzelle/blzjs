@@ -25,7 +25,7 @@ describe('create()', function () {
     it('should return chain info', () => {
         return bz.create('key', 'value', defaultGasParams())
             .then(result => {
-                expect(result.height).to.be.lessThan(10);
+                expect(result.height).to.be.closeTo(10, 5);
                 expect(result.txhash).to.be.a('string');
                 expect(result.gasWanted).to.be.a('number');
                 expect(result.gasUsed).to.be.a('number');

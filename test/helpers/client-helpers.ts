@@ -1,6 +1,6 @@
 import {BluzelleConfig, GasInfo, bluzelle, API, } from "../../client";
-import {Swarm} from '@bluzelle/testing/node_modules/curium-control/daemon-manager/lib/Swarm';
-import {Daemon, DaemonAuth} from '@bluzelle/testing/node_modules/curium-control/daemon-manager/lib/Daemon';
+import {Swarm} from 'daemon-manager/lib/Swarm';
+import {Daemon, DaemonAuth} from 'daemon-manager/lib/Daemon';
 import {getSwarm, SINGLE_SENTRY_SWARM} from '@bluzelle/testing/lib/helpers/swarmHelpers';
 import {extend, pad, range, times, uniqueId} from 'lodash';
 import {Some} from 'monet';

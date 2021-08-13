@@ -132,7 +132,7 @@ const transmitTransaction = (service: CommunicationService, messages: MessageQue
                 sequence: data.seq
             })
                 .map(cosmos.newStdMsg.bind(cosmos))
-                .map((stdSignMsg: any) => (service.api.config.signing_agent && service.api.config.signing_agent(service, cosmos, stdSignMsg)) as Promise<any>)
+                .map((stdSignMsg: any) => (service.api.signingAgent && service.api.signingAgent(service, cosmos, stdSignMsg)) as Promise<any>)
                 .map((p: any) => p
                     .then(cosmos.broadcast.bind(cosmos))
                     .then(convertDataFromHexToString)
